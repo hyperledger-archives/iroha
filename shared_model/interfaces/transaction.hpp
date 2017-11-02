@@ -75,7 +75,7 @@ namespace shared_model {
        */
       virtual const QuorumType &quorum() const = 0;
 
-      iroha::model::Transaction *makeOldModel() const {
+      iroha::model::Transaction *makeOldModel() const override {
         iroha::model::Transaction *oldStyleTransaction =
             new iroha::model::Transaction();
         oldStyleTransaction->created_ts = createdTime();
@@ -100,7 +100,7 @@ namespace shared_model {
         return oldStyleTransaction;
       }
 
-      std::string toString() const {
+      std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("Transaction")
             .append("hash", hash().hex())

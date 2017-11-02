@@ -15,35 +15,40 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
-#define IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
+#ifndef IROHA_SHARED_MODEL_GET_ASSET_INFO_HPP
+#define IROHA_SHARED_MODEL_GET_ASSET_INFO_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "model/queries/get_account.hpp"
+#include "model/queries/get_asset_info.hpp"
 
 namespace shared_model {
   namespace interface {
-    class GetAccount : public Hashable<GetAccount, iroha::model::GetAccount> {
+    /**
+     * Get meta data of asset
+     */
+    class GetAssetInfo
+        : public Hashable<GetAssetInfo, iroha::model::GetAssetInfo> {
      public:
       /**
-       * @return Identity of user, for fetching data
+       * @return asset identifier to get asset's information
        */
-      virtual const types::AccountIdType &accountId() const = 0;
+      virtual const types::AssetIdType &assetId() const = 0;
 
       OldModelType *makeOldModel() const override {
-        auto oldModel = new iroha::model::GetAccount;
-        oldModel->account_id = accountId();
+        auto oldModel = new iroha::model::GetAssetInfo;
+        oldModel->asset_id = assetId();
         return oldModel;
       }
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-            .init("GetAccount")
-            .append("account_id", accountId())
+            .init("GetAssetInfo")
+            .append("asset_id", assetId())
             .finalize();
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
+
+#endif  // IROHA_SHARED_MODEL_GET_ASSET_INFO_HPP

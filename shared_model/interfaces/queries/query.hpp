@@ -23,6 +23,11 @@
 #include "interfaces/polymorphic_wrapper.hpp"
 #include "interfaces/primitive.hpp"
 #include "interfaces/queries/get_account.hpp"
+#include "interfaces/queries/get_account_assets.hpp"
+#include "interfaces/queries/get_asset_info.hpp"
+#include "interfaces/queries/get_roles.hpp"
+#include "interfaces/queries/get_signatories.hpp"
+#include "interfaces/queries/get_transactions.hpp"
 #include "interfaces/signable.hpp"
 #include "interfaces/visitor_apply_for_all.hpp"
 #include "model/query.hpp"
@@ -43,7 +48,14 @@ namespace shared_model {
 
      public:
       /// Type of variant, that handle concrete query
-      using QueryVariantType = boost::variant<w<GetAccount>>;
+      using QueryVariantType = boost::variant<w<GetAccount>,
+                                              w<GetAccountAssets>,
+                                              w<GetAssetInfo>,
+                                              w<GetRoles>,
+                                              w<GetRolePermissions>,
+                                              w<GetAccountAssetTransactions>,
+                                              w<GetAccountTransactions>,
+                                              w<GetSignatories>>;
 
       /// Types of concrete commands, in attached variant
       using QueryListType = QueryVariantType::types;
@@ -73,7 +85,7 @@ namespace shared_model {
         return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
 
-      OldModelType *makeOldModel() const {
+      OldModelType *makeOldModel() const override {
         return boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
       }

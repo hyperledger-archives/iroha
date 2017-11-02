@@ -15,35 +15,53 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
-#define IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
+#ifndef IROHA_SHARED_MODEL_GET_ROLES_HPP
+#define IROHA_SHARED_MODEL_GET_ROLES_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "model/queries/get_account.hpp"
+#include "model/queries/get_roles.hpp"
 
 namespace shared_model {
   namespace interface {
-    class GetAccount : public Hashable<GetAccount, iroha::model::GetAccount> {
+    /**
+     * Get all roles in the current system
+     */
+    class GetRoles : public Hashable<GetRoles, iroha::model::GetRoles> {
+     public:
+      OldModelType *makeOldModel() const override { return new iroha::model::GetRoles; }
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder().init("GetRoles").finalize();
+      }
+    };
+
+    /**
+     * Get all permissions related to specific role
+     */
+    class GetRolePermissions
+        : public Hashable<GetRolePermissions,
+                          iroha::model::GetRolePermissions> {
      public:
       /**
-       * @return Identity of user, for fetching data
+       * @return role identifier containing requested permissions
        */
-      virtual const types::AccountIdType &accountId() const = 0;
+      virtual const types::RoleIdType &roleId() const = 0;
 
       OldModelType *makeOldModel() const override {
-        auto oldModel = new iroha::model::GetAccount;
-        oldModel->account_id = accountId();
+        auto oldModel = new iroha::model::GetRolePermissions;
+        oldModel->role_id = roleId();
         return oldModel;
       }
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-            .init("GetAccount")
-            .append("account_id", accountId())
+            .init("GetRolePermissions")
+            .append("role_id", roleId())
             .finalize();
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
+
+#endif  // IROHA_SHARED_MODEL_GET_ROLES_HPP

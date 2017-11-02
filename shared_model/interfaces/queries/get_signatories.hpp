@@ -15,35 +15,41 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
-#define IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
+#ifndef IROHA_SHARED_MODEL_GET_SIGNATORIES_HPP
+#define IROHA_SHARED_MODEL_GET_SIGNATORIES_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "model/queries/get_account.hpp"
+#include "model/queries/get_signatories.hpp"
 
 namespace shared_model {
   namespace interface {
-    class GetAccount : public Hashable<GetAccount, iroha::model::GetAccount> {
+
+    /**
+     * Query for getting all signatories attached to account
+     */
+    class GetSignatories
+        : public Hashable<GetSignatories, iroha::model::GetSignatories> {
      public:
       /**
-       * @return Identity of user, for fetching data
+       * @return account_id of requested signatories
        */
       virtual const types::AccountIdType &accountId() const = 0;
 
       OldModelType *makeOldModel() const override {
-        auto oldModel = new iroha::model::GetAccount;
+        auto oldModel = new iroha::model::GetSignatories;
         oldModel->account_id = accountId();
         return oldModel;
       }
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-            .init("GetAccount")
+            .init("GetSignatories")
             .append("account_id", accountId())
             .finalize();
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_GET_ACCOUNT_HPP
+
+#endif  // IROHA_SHARED_MODEL_GET_SIGNATORIES_HPP

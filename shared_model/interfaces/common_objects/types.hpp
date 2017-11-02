@@ -22,8 +22,12 @@ namespace shared_model {
     namespace types {
       /// Type of account id
       using AccountIdType = std::string;
+      /// Type of asset id
+      using AssetIdType = std::string;
       /// Type of height (for Block, Proposal etc)
       using HeightType = uint64_t;
+      /// Type of role (i.e admin, user)
+      using RoleIdType = std::string;
     }  // namespace types
   }    // namespace interface
 }  // namespace shared_model
