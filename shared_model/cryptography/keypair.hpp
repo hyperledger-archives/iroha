@@ -20,7 +20,7 @@
 
 #include "cryptography/private_key.hpp"
 #include "cryptography/public_key.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/model_primitive.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
@@ -28,8 +28,7 @@ namespace shared_model {
     /**
      * Class for holding a keypair: public key and private key
      */
-    // TODO: luckychess 02.11.2017 Think about type for old model IR-559
-    class Keypair : public interface::Primitive<Keypair, Keypair> {
+    class Keypair : public interface::ModelPrimitive<Keypair> {
      public:
       /// Type of public key
       using PublicKeyType = PublicKey;
