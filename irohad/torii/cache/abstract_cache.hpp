@@ -71,6 +71,7 @@ namespace iroha {
        * @param value - value to insert
        */
       void addItem(const KeyType &key, const ValueType &value) {
+        std::lock_guard<std::mutex> lock(add_item_mutex_);
         static_cast<T &>(*this).addItemImpl(key, value);
       }
 
@@ -82,6 +83,9 @@ namespace iroha {
       boost::optional<ValueType> findItem(const KeyType &key) const {
         return static_cast<const T &>(*this).findItemImpl(key);
       }
+
+     private:
+      std::mutex add_item_mutex_;
     };
   }
 }

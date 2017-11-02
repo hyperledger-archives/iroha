@@ -37,7 +37,6 @@ namespace iroha {
       }
 
       void addItemImpl(const KeyType &key, const ValueType &value) {
-        std::lock_guard<std::mutex> lock(handler_map_mutex_);
         // elements with the same hash should be replaced
         handler_map_[key] = value;
         handler_map_index_.push_back(key);
@@ -61,7 +60,6 @@ namespace iroha {
      private:
       std::unordered_map<KeyType, ValueType> handler_map_;
       std::list<KeyType> handler_map_index_;
-      std::mutex handler_map_mutex_;
 
       /**
       * Protection from handler map overflow.
