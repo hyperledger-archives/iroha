@@ -23,6 +23,7 @@
 #include "interfaces/common_objects/signature.hpp"
 #include "interfaces/hashable.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -88,6 +89,27 @@ namespace shared_model {
        * @return time of creation
        */
       virtual const TimestampType &createdTime() const = 0;
+
+      /**
+       * Provides comparison based on equality of objects and signatures.
+       * @param rhs - another model object
+       * @return true, if objects totally equal
+       */
+      virtual bool equals(const Model &rhs) const {
+        return *this == rhs and this->signatures() == rhs.signatures()
+            and this->createdTime() == rhs.createdTime();
+      }
+
+      // ------------------------| Primitive override |-------------------------
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("Signable")
+            .append("created_time", std::to_string(createdTime()))
+            .appendAll(signatures(),
+                       [](auto &signature) { return signature->toString(); })
+            .finalize();
+      }
     };
 
   }  // namespace interface

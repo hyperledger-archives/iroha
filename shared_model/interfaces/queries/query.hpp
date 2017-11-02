@@ -31,6 +31,7 @@
 #include "interfaces/signable.hpp"
 #include "interfaces/visitor_apply_for_all.hpp"
 #include "model/query.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -77,17 +78,38 @@ namespace shared_model {
        * system queries plus 1. Required for preventing replay attacks.
        * @return attached query counter
        */
-      virtual const QueryCounterType &queryCounter() = 0;
+      virtual const QueryCounterType &queryCounter() const = 0;
 
       // ------------------------| Primitive override |-------------------------
 
       std::string toString() const override {
-        return boost::apply_visitor(detail::ToStringVisitor(), get());
+        return detail::PrettyStringBuilder()
+            .init("Query")
+            .append("creatorId", creatorAccountId())
+            .append("queryCounter", std::to_string(queryCounter()))
+            .append(Signable::toString())
+            .append(boost::apply_visitor(detail::ToStringVisitor(), get()))
+            .finalize();
       }
 
       OldModelType *makeOldModel() const override {
-        return boost::apply_visitor(
+        auto old_model = boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
+        old_model->creator_account_id = creatorAccountId();
+        old_model->query_counter = queryCounter();
+        // signature related
+        old_model->created_ts = createdTime();
+        std::for_each(signatures().begin(),
+                      signatures().end(),
+                      [&old_model](auto &signature_wrapper) {
+                        // for_each cycle will assign last signature for old
+                        // model. Also, if in new model absence at least one
+                        // signature, this part will be worked correctly.
+                        auto old_sig = signature_wrapper->makeOldModel();
+                        old_model->signature = *old_sig;
+                        delete old_sig;
+                      });
+        return old_model;
       }
 
       bool operator==(const ModelType &rhs) const override {
