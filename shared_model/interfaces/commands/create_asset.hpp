@@ -15,34 +15,39 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_PEER_HPP
-#define IROHA_SHARED_MODEL_ADD_PEER_HPP
+#ifndef IROHA_SHARED_MODEL_CREATE_ASSET_HPP
+#define IROHA_SHARED_MODEL_CREATE_ASSET_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
-#include "model/commands/add_peer.hpp"
+#include "model/commands/create_asset.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Add new peer to Iroha
+     * Create asset in Iroha domain
      */
-    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
+    class CreateAsset
+        : public Primitive<CreateAsset, iroha::model::CreateAsset> {
      public:
+      /// Type returned by assetName function
+      using AssetNameType = std::string;
       /**
-       * @return Peer key, acts like peer identifier
+       * @return Asset name to create
        */
-      virtual const types::PubkeyType &peerKey() const = 0;
-
-      /// Type of peer address
-      using AddressType = std::string;
+      virtual const AssetNameType &assetName() const = 0;
       /**
-       * @return New peer's address
+       * @return Iroha domain of the asset
        */
-      virtual const AddressType &peerAddress() const = 0;
+      virtual const types::DomainIdType &domainId() const = 0;
+      /// Precision type
+      using PrecisionType = uint8_t;
+      /**
+       * @return precision of the asset
+       */
+      virtual const PrecisionType &precision() const = 0;
     };
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_ADD_PEER_HPP
+#endif  // IROHA_SHARED_MODEL_CREATE_ASSET_HPP

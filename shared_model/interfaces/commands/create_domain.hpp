@@ -15,34 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_PEER_HPP
-#define IROHA_SHARED_MODEL_ADD_PEER_HPP
+#ifndef IROHA_SHARED_MODEL_CREATE_DOMAIN_HPP
+#define IROHA_SHARED_MODEL_CREATE_DOMAIN_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
-#include "model/commands/add_peer.hpp"
+#include "model/commands/create_domain.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Add new peer to Iroha
+     * Create domain in Iroha
      */
-    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
+    class CreateDomain
+        : public Primitive<CreateDomain, iroha::model::CreateDomain> {
      public:
       /**
-       * @return Peer key, acts like peer identifier
+       * @return Id of the domain to create
        */
-      virtual const types::PubkeyType &peerKey() const = 0;
-
-      /// Type of peer address
-      using AddressType = std::string;
+      virtual const types::DomainIdType &domainId() const = 0;
       /**
-       * @return New peer's address
+       * @return default role of the user in the domain
        */
-      virtual const AddressType &peerAddress() const = 0;
+      virtual const types::RoleIdType &userDefaultRole() const = 0;
     };
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_ADD_PEER_HPP
+#endif  // IROHA_SHARED_MODEL_CREATE_DOMAIN_HPP

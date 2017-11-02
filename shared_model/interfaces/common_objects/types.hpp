@@ -25,14 +25,20 @@ namespace shared_model {
     namespace types {
       /// Type of account id
       using AccountIdType = std::string;
-      /// Type of asset id
-      using AssetIdType = std::string;
       /// Type of height (for Block, Proposal etc)
       using HeightType = uint64_t;
       /// Type of public key
-      using PubkeyType = iroha::pubkey_t; // TODO: replace with shared
+      using PubkeyType = iroha::pubkey_t;  // TODO: replace with shared lib?
       /// Type of role (i.e admin, user)
       using RoleIdType = std::string;
+      /// Iroha domain id type
+      using DomainIdType = std::string;
+      /// Type of asset id
+      using AssetIdType = std::string;
+      /// Permission type used in permission commands
+      using PermissionNameType = std::string;
+      /// Type of amount
+      using AmountType = iroha::Amount;
     }  // namespace types
   }    // namespace interface
 }  // namespace shared_model

@@ -15,34 +15,32 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_PEER_HPP
-#define IROHA_SHARED_MODEL_ADD_PEER_HPP
+#ifndef IROHA_SHARED_MODEL_REVOKE_PERMISSION_HPP
+#define IROHA_SHARED_MODEL_REVOKE_PERMISSION_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
-#include "model/commands/add_peer.hpp"
+#include "model/commands/revoke_permission.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Add new peer to Iroha
+     * Revoke permission from account
      */
-    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
+    class RevokePermission
+        : public Primitive<RevokePermission, iroha::model::RevokePermission> {
      public:
       /**
-       * @return Peer key, acts like peer identifier
+       * @return account from which revoke permission
        */
-      virtual const types::PubkeyType &peerKey() const = 0;
+      virtual const types::AccountIdType &accountId() const = 0;
 
-      /// Type of peer address
-      using AddressType = std::string;
       /**
-       * @return New peer's address
+       * @return Permission to revoke
        */
-      virtual const AddressType &peerAddress() const = 0;
+      virtual const types::PermissionNameType &permissionName() const = 0;
     };
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_ADD_PEER_HPP
+#endif  // IROHA_SHARED_MODEL_REVOKE_PERMISSION_HPP

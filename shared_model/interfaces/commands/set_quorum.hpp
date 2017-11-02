@@ -15,34 +15,32 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_PEER_HPP
-#define IROHA_SHARED_MODEL_ADD_PEER_HPP
+#ifndef IROHA_SHARED_MODEL_SET_QUORUM_HPP
+#define IROHA_SHARED_MODEL_SET_QUORUM_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
-#include "model/commands/add_peer.hpp"
+#include "model/commands/set_quorum.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Add new peer to Iroha
+     * Set quorum of the account
      */
-    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
+    class SetQuorum : public Primitive<SetQuorum, iroha::model::SetQuorum> {
      public:
       /**
-       * @return Peer key, acts like peer identifier
+       * @return Id of the account to set quorum
        */
-      virtual const types::PubkeyType &peerKey() const = 0;
-
-      /// Type of peer address
-      using AddressType = std::string;
+      virtual const types::AccountIdType &accountId() const = 0;
+      /// Quorum type used in newQuorum()
+      using QuorumType = uint32_t;
       /**
-       * @return New peer's address
+       * @return value of a new quorum
        */
-      virtual const AddressType &peerAddress() const = 0;
+      virtual const QuorumType &newQuorum() const = 0;
     };
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_ADD_PEER_HPP
+#endif  // IROHA_SHARED_MODEL_SET_QUORUM_HPP

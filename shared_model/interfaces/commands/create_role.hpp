@@ -15,34 +15,33 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_PEER_HPP
-#define IROHA_SHARED_MODEL_ADD_PEER_HPP
+#ifndef IROHA_SHARED_MODEL_CREATE_ROLE_HPP
+#define IROHA_SHARED_MODEL_CREATE_ROLE_HPP
 
+#include <set>
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
-#include "model/commands/add_peer.hpp"
+#include "model/commands/create_role.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Add new peer to Iroha
+     * Create new role in Iroha
      */
-    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
+    class CreateRole : public Primitive<CreateRole, iroha::model::CreateRole> {
      public:
       /**
-       * @return Peer key, acts like peer identifier
+       * @return Id of the domain to create
        */
-      virtual const types::PubkeyType &peerKey() const = 0;
-
-      /// Type of peer address
-      using AddressType = std::string;
+      virtual const types::RoleIdType &roleName() const = 0;
+      /// Set of Permissions
+      using PermissionsType = std::set<std::string>;
       /**
-       * @return New peer's address
+       * @return permissions associated with the role
        */
-      virtual const AddressType &peerAddress() const = 0;
+      virtual const PermissionsType &rolePermissions() const = 0;
     };
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_ADD_PEER_HPP
+#endif  // IROHA_SHARED_MODEL_CREATE_ROLE_HPP

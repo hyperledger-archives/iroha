@@ -15,34 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_PEER_HPP
-#define IROHA_SHARED_MODEL_ADD_PEER_HPP
+#ifndef IROHA_SHARED_MODEL_REMOVE_SIGNATORY_HPP
+#define IROHA_SHARED_MODEL_REMOVE_SIGNATORY_HPP
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
-#include "model/commands/add_peer.hpp"
+#include "model/commands/remove_signatory.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Add new peer to Iroha
+     * Remove signatory from the account
      */
-    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
+    class RemoveSignatory
+        : public Primitive<RemoveSignatory, iroha::model::RemoveSignatory> {
      public:
       /**
-       * @return Peer key, acts like peer identifier
+       * @return account from which remove signatory
        */
-      virtual const types::PubkeyType &peerKey() const = 0;
-
-      /// Type of peer address
-      using AddressType = std::string;
+      virtual const types::AccountIdType &accountId() const = 0;
       /**
-       * @return New peer's address
+       * @return Public key to remove from account
        */
-      virtual const AddressType &peerAddress() const = 0;
+      virtual const types::PubkeyType &pubkey() const = 0;
     };
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_ADD_PEER_HPP
+#endif  // IROHA_SHARED_MODEL_REMOVE_SIGNATORY_HPP

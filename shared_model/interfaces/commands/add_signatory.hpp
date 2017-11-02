@@ -23,26 +23,24 @@
 #include "model/commands/add_signatory.hpp.hpp"
 
 namespace shared_model {
-namespace interface {
+  namespace interface {
 
-/**
- * Add amount of asset to an account
- */
-class AddSignatory : public Primitive<AddSignatory, iroha::model::AddSignatory> {
- public:
-  /**
-   * @return New signatory is identified with public key
-   */
-  virtual const types::PubkeyType &pubkey() const = 0;
-
-  /// Type of peer address
-  using AddressType = std::string;
-  /**
-   * @return peer address
-   */
-  virtual const AddressType &address() const = 0;
-};
-}  // namespace interface
+    /**
+     * Add new signatory to account
+     */
+    class AddSignatory
+        : public Primitive<AddSignatory, iroha::model::AddSignatory> {
+     public:
+      /**
+       * @return New signatory is identified with public key
+       */
+      virtual const types::PubkeyType &pubkey() const = 0;
+      /**
+       * @return Account to which add new signatory
+       */
+      virtual const types::AccountIdType &accountId() const = 0;
+    };
+  }  // namespace interface
 }  // namespace shared_model
 
 #endif  // IROHA_SHARED_MODEL_ADD_SIGNATORY_HPP
