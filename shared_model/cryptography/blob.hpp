@@ -18,9 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_BLOB_HPP
 #define IROHA_SHARED_MODEL_BLOB_HPP
 
-#include <string>
 #include "interfaces/primitive.hpp"
-#include "model/signature.hpp"
 
 namespace shared_model {
   namespace crypto {

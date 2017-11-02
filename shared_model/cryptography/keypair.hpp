@@ -18,9 +18,9 @@
 #ifndef IROHA_SHARED_MODEL_KEYPAIR_HPP
 #define IROHA_SHARED_MODEL_KEYPAIR_HPP
 
-#include "interfaces/primitive.hpp"
-#include "cryptography/public_key.hpp
 #include "cryptography/private_key.hpp"
+#include "cryptography/public_key.hpp"
+#include "interfaces/primitive.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
@@ -28,27 +28,21 @@ namespace shared_model {
     /**
      * Class for holding a keypair: public key and private key
      */
-    class Keypair : public Primitive<Keypair, Keypair> {
+    class Keypair : public interface::Primitive<Keypair, Keypair> {
      public:
-      /// Type of public key
-      using PublicKeyType = PublicKey;
-
       /**
        * @return public key
        */
-      virtual const PublicKeyType &publicKey() const = 0;
-
-      /// Type of private key
-      using PrivateKeyType = PrivateKey;
+      virtual const PublicKey &publicKey() const = 0;
 
       /**
        * @return private key
        */
-      virtual const PrivateKeyType &privateKey() const = 0;
+      virtual const PrivateKey &privateKey() const = 0;
 
       bool operator==(const Keypair &keypair) const override {
-        return this->publicKey() == keypair.publicKey()
-            and this->privateKey() == keypair.privateKey();
+        return publicKey() == keypair.publicKey()
+            and privateKey() == keypair.privateKey();
       }
 
       std::string toString() const override {
