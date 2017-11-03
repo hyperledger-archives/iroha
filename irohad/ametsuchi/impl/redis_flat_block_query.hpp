@@ -24,6 +24,8 @@
 
 #include "model/converters/json_block_factory.hpp"
 
+#include <boost/optional.hpp>
+
 namespace iroha {
   namespace ametsuchi {
     class RedisFlatBlockQuery : public FlatFileBlockQuery {
@@ -32,10 +34,13 @@ namespace iroha {
                           FlatFile &file_store);
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
-          std::string account_id) override;
+          const std::string &account_id) override;
 
       rxcpp::observable<model::Transaction> getAccountAssetTransactions(
-          std::string account_id, std::string asset_id) override;
+          const std::string &account_id, const std::string &asset_id) override;
+
+      boost::optional<model::Transaction> getTxByHashSync(
+          const std::string &hash) override;
 
      private:
       /**
@@ -43,7 +48,16 @@ namespace iroha {
        * @param account_id
        * @return vector of block ids
        */
-      std::vector<uint64_t> getBlockIds(const std::string &account_id);
+      std::vector<iroha::model::Block::BlockHeightType> getBlockIds(
+          const std::string &account_id);
+
+      /**
+       * Returns block id which contains transaction with a given hash
+       * @param hash - hash of transaction
+       * @return block id or boost::none
+       */
+      boost::optional<iroha::model::Block::BlockHeightType> getBlockId(
+          const std::string &hash);
 
       /**
        * creates callback to lrange query to redis to supply result to

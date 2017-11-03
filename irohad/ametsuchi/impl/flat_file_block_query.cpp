@@ -17,8 +17,8 @@
 
 #include "ametsuchi/impl/flat_file_block_query.hpp"
 
-#include "model/converters/json_common.hpp"
 #include "model/commands/transfer_asset.hpp"
+#include "model/converters/json_common.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -26,7 +26,7 @@ namespace iroha {
         : block_store_(block_store) {}
 
     rxcpp::observable<model::Transaction>
-    FlatFileBlockQuery::getAccountTransactions(std::string account_id) {
+    FlatFileBlockQuery::getAccountTransactions(const std::string &account_id) {
       return getBlocksFrom(1)
           .flat_map([](auto block) {
             return rxcpp::observable<>::iterate(block.transactions);
@@ -85,22 +85,24 @@ namespace iroha {
     }
 
     rxcpp::observable<model::Transaction>
-    FlatFileBlockQuery::getAccountAssetTransactions(std::string account_id,
-                                                    std::string asset_id) {
+    FlatFileBlockQuery::getAccountAssetTransactions(
+        const std::string &account_id, const std::string &asset_id) {
       return getAccountTransactions(account_id)
           .filter([account_id, asset_id](auto tx) {
             return std::any_of(
-                tx.commands.begin(), tx.commands.end(),
+                tx.commands.begin(),
+                tx.commands.end(),
                 [account_id, asset_id](auto command) {
                   if (instanceof <model::TransferAsset>(*command)) {
                     auto transferAsset = (model::TransferAsset *)command.get();
-                    return (transferAsset->src_account_id == account_id or
-                            transferAsset->dest_account_id == account_id) and
-                           transferAsset->asset_id == asset_id;
+                    return (transferAsset->src_account_id == account_id
+                            or transferAsset->dest_account_id == account_id)
+                        and transferAsset->asset_id == asset_id;
                   }
                   return false;
                 });
           });
     }
+
   }  // namespace ametsuchi
 }  // namespace iroha

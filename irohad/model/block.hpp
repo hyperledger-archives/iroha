@@ -62,6 +62,8 @@ namespace iroha {
        */
       uint64_t height{};
 
+      using BlockHeightType = decltype(height);
+
       /**
        * Hash of a previous block in the ledger
        * part of PAYLOAD

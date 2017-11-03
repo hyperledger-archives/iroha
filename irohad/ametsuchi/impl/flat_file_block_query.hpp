@@ -30,7 +30,7 @@ namespace iroha {
       explicit FlatFileBlockQuery(FlatFile &block_store);
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
-          std::string account_id) override;
+          const std::string &account_id) override;
 
       rxcpp::observable<model::Block> getBlocks(uint32_t height,
                                                 uint32_t count) override;
@@ -40,7 +40,7 @@ namespace iroha {
       rxcpp::observable<model::Block> getTopBlocks(uint32_t count) override;
 
       rxcpp::observable<model::Transaction> getAccountAssetTransactions(
-          std::string account_id, std::string asset_id) override;
+          const std::string &account_id, const std::string &asset_id) override;
 
      protected:
       FlatFile &block_store_;

@@ -16,6 +16,7 @@
  */
 
 #include "ametsuchi/impl/redis_flat_block_query.hpp"
+#include "crypto/hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -24,8 +25,8 @@ namespace iroha {
                                              FlatFile &file_store)
         : FlatFileBlockQuery(file_store), client_(client) {}
 
-    std::vector<uint64_t> RedisFlatBlockQuery::getBlockIds(
-        const std::string &account_id) {
+    std::vector<iroha::model::Block::BlockHeightType>
+    RedisFlatBlockQuery::getBlockIds(const std::string &account_id) {
       std::vector<uint64_t> block_ids;
       client_.lrange(
           account_id, 0, -1, [this, &block_ids](cpp_redis::reply &reply) {
@@ -40,6 +41,21 @@ namespace iroha {
           });
       client_.sync_commit();
       return block_ids;
+    }
+
+    boost::optional<iroha::model::Block::BlockHeightType>
+    RedisFlatBlockQuery::getBlockId(const std::string &hash) {
+      boost::optional<uint64_t> blockId;
+      client_.get(hash, [this, &blockId](cpp_redis::reply &reply) {
+        if (reply.is_null()) {
+          blockId = boost::none;
+        } else {
+          blockId = std::stoul(reply.as_string());
+        }
+      });
+      client_.sync_commit();
+
+      return blockId;
     }
 
     std::function<void(cpp_redis::reply &)>
@@ -63,7 +79,7 @@ namespace iroha {
     }
 
     rxcpp::observable<model::Transaction>
-    RedisFlatBlockQuery::getAccountTransactions(std::string account_id) {
+    RedisFlatBlockQuery::getAccountTransactions(const std::string &account_id) {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, account_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
@@ -84,8 +100,8 @@ namespace iroha {
     }
 
     rxcpp::observable<model::Transaction>
-    RedisFlatBlockQuery::getAccountAssetTransactions(std::string account_id,
-                                                     std::string asset_id) {
+    RedisFlatBlockQuery::getAccountAssetTransactions(
+        const std::string &account_id, const std::string &asset_id) {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, account_id, asset_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
@@ -110,6 +126,25 @@ namespace iroha {
             client_.sync_commit();
             subscriber.on_completed();
           });
+    }
+
+    boost::optional<model::Transaction> RedisFlatBlockQuery::getTxByHashSync(
+        const std::string &hash) {
+      return getBlockId(hash) |
+          [this](auto blockId) { return block_store_.get(blockId); } |
+          [](auto bytes) {
+            return model::converters::stringToJson(bytesToString(bytes));
+          }
+      | [this](const auto &json) { return serializer_.deserialize(json); }
+      | [&](const auto &block) {
+          auto it = std::find_if(
+              block.transactions.begin(),
+              block.transactions.end(),
+              [&hash](auto tx) { return iroha::hash(tx).to_string() == hash; });
+          return (it == block.transactions.end())
+              ? boost::none
+              : boost::optional<model::Transaction>(*it);
+        };
     }
 
   }  // namespace ametsuchi

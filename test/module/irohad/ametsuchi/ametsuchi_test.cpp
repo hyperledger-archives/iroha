@@ -783,8 +783,8 @@ Block getBlock() {
   block.height = 1;
   block.prev_hash.fill(0);
   auto block1hash = iroha::hash(block);
-  block.hash = block1hash;
   block.txs_number = block.transactions.size();
+  block.hash = block1hash;
   return block;
 }
 
@@ -852,4 +852,78 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_EQ(0, wsv->getPeers().value().size());
   new_storage->dropStorage();
+}
+
+/**
+ * @given initialized storage
+ * @when insert block with 2 transactions in
+ * @then both of them are found with getTxByHashSync call by hash. Transaction
+ * with some other hash is not found.
+ */
+TEST_F(AmetsuchiTest, FindTxByHashTest) {
+  auto storage =
+      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  ASSERT_TRUE(storage);
+  auto blocks = storage->getBlockQuery();
+
+  iroha::pubkey_t pubkey1, pubkey2;
+  pubkey1.at(0) = 1;
+  pubkey2.at(0) = 2;
+
+  CreateRole createRole;
+  createRole.role_name = "user";
+  createRole.permissions = {can_add_peer, can_create_asset, can_get_my_account};
+
+  Transaction tx1;
+  tx1.creator_account_id = "admin1";
+
+  tx1.commands.push_back(std::make_shared<CreateRole>(createRole));
+  CreateDomain createDomain;
+  createDomain.domain_id = "domain";
+  createDomain.user_default_role = "user";
+  tx1.commands.push_back(std::make_shared<CreateDomain>(createDomain));
+
+  CreateAccount createAccount;
+  createAccount.account_name = "user1";
+  createAccount.domain_id = "domain";
+  createAccount.pubkey = pubkey1;
+  tx1.commands.push_back(std::make_shared<CreateAccount>(createAccount));
+
+  CreateRole createRole2;
+  createRole2.role_name = "user2";
+  createRole2.permissions = {
+      can_add_peer, can_create_asset, can_get_my_account};
+
+  Transaction tx2;
+  tx2.commands.push_back(std::make_shared<CreateRole>(createRole2));
+  CreateDomain createDomain2;
+  createDomain2.domain_id = "domain2";
+  createDomain2.user_default_role = "user";
+  tx2.commands.push_back(std::make_shared<CreateDomain>(createDomain2));
+
+  Block block;
+  block.transactions.push_back(tx1);
+  block.transactions.push_back(tx2);
+  block.height = 1;
+  block.prev_hash.fill(0);
+  block.txs_number = block.transactions.size();
+  block.hash = iroha::hash(block);
+
+  {
+    auto ms = storage->createMutableStorage();
+    ms->apply(block, [](const auto &blk, auto &query, const auto &top_hash) {
+      return true;
+    });
+    storage->commit(std::move(ms));
+  }
+
+  // TODO: 31.10.2017 luckychess move tx3hash case into a separate test after
+  // ametsuchi_test redesign
+  auto tx1hash = iroha::hash(tx1).to_string();
+  auto tx2hash = iroha::hash(tx2).to_string();
+  auto tx3hash = "some garbage";
+
+  ASSERT_EQ(*blocks->getTxByHashSync(tx1hash), tx1);
+  ASSERT_EQ(*blocks->getTxByHashSync(tx2hash), tx2);
+  ASSERT_EQ(blocks->getTxByHashSync(tx3hash), boost::none);
 }

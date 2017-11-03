@@ -103,6 +103,7 @@ namespace iroha_cli {
           QueryParams params);
       std::shared_ptr<iroha::model::Query> parseGetAssetInfo(
           QueryParams params);
+
       // ------ Result parsers -------
       using ResultHandler = bool (InteractiveQueryCli::*)(QueryParams);
       std::unordered_map<QueryName, ResultHandler> result_handlers_;

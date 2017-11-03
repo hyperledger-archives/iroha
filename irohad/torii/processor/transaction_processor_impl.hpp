@@ -18,11 +18,11 @@
 #ifndef IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 #define IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 
-#include <model/transaction_response.hpp>
-#include <network/peer_communication_service.hpp>
-#include <torii/processor/transaction_processor.hpp>
-#include <validation/stateless_validator.hpp>
 #include "logger/logger.hpp"
+#include "model/transaction_response.hpp"
+#include "network/peer_communication_service.hpp"
+#include "torii/processor/transaction_processor.hpp"
+#include "validation/stateless_validator.hpp"
 
 namespace iroha {
   namespace torii {
@@ -30,9 +30,7 @@ namespace iroha {
      public:
       /**
        * @param pcs - provide information proposals and commits
-       * @param os - ordering service for sharing transactions
        * @param validator - perform stateless validation
-       * @param crypto_provider - sign income transactions
        */
       TransactionProcessorImpl(
           std::shared_ptr<network::PeerCommunicationService> pcs,

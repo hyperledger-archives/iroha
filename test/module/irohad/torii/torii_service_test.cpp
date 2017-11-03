@@ -1,5 +1,5 @@
 /*
-Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -84,6 +84,7 @@ class ToriiServiceTest : public testing::Test {
           prop_notifier_, commit_notifier_);
       statelessValidatorMock = std::make_shared<MockStatelessValidator>();
       wsv_query = std::make_shared<MockWsvQuery>();
+      storageMock = std::make_shared<MockStorage>();
       block_query = std::make_shared<MockBlockQuery>();
 
       auto tx_processor =
@@ -91,8 +92,8 @@ class ToriiServiceTest : public testing::Test {
               pcsMock, statelessValidatorMock);
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
-      auto command_service =
-          std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
+      auto command_service = std::make_unique<torii::CommandService>(
+          pb_tx_factory, tx_processor, storageMock);
 
       //----------- Query Service ----------
       auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
@@ -108,6 +109,11 @@ class ToriiServiceTest : public testing::Test {
 
       auto query_service = std::make_unique<torii::QueryService>(
           pb_query_factory, pb_query_resp_factory, qpi);
+
+      EXPECT_CALL(*storageMock, getBlockQuery())
+          .WillRepeatedly(Return(block_query));
+      EXPECT_CALL(*block_query, getTxByHashSync(_))
+          .WillRepeatedly(Return(boost::none));
 
       //----------- Server run ----------------
       runner->run(std::move(command_service), std::move(query_service));
@@ -127,6 +133,7 @@ class ToriiServiceTest : public testing::Test {
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
+  std::shared_ptr<MockStorage> storageMock;
 
   rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier_;
   rxcpp::subjects::subject<Commit> commit_notifier_;
@@ -213,15 +220,14 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     iroha::protocol::ToriiResponse toriiResponse;
     torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
 
-    ASSERT_EQ(
-        toriiResponse.tx_status(),
-        iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
+    ASSERT_EQ(toriiResponse.tx_status(),
+              iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
   }
 
   // create block from the all transactions but the last one
   iroha::model::Block block;
-  block.transactions.insert(block.transactions.begin(), txs.begin(),
-                            txs.end() - 1);
+  block.transactions.insert(
+      block.transactions.begin(), txs.begin(), txs.end() - 1);
 
   // create commit from block notifier's observable
   rxcpp::subjects::subject<iroha::model::Block> block_notifier_;
@@ -238,9 +244,8 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     iroha::protocol::ToriiResponse toriiResponse;
     torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
 
-    ASSERT_EQ(
-        toriiResponse.tx_status(),
-        iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
+    ASSERT_EQ(toriiResponse.tx_status(),
+              iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
   }
 
   // end current commit
@@ -253,8 +258,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     iroha::protocol::ToriiResponse toriiResponse;
     torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
 
-    ASSERT_EQ(toriiResponse.tx_status(),
-              iroha::protocol::TxStatus::COMMITTED);
+    ASSERT_EQ(toriiResponse.tx_status(), iroha::protocol::TxStatus::COMMITTED);
   }
 
   // check if the last transaction from txs has failed stateful validation
@@ -295,7 +299,7 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
     tx_hashes.push_back(iroha::hash(*iroha_tx).to_string());
   }
 
-  // wait untill all transactions are sent
+  // wait until all transactions are sent
   while (torii_count < (int)TimesToriiNonBlocking)
     ;
   ASSERT_EQ(torii_count, TimesToriiNonBlocking);
@@ -313,9 +317,8 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
     tx_request.set_tx_hash(tx_hashes.at(i));
     iroha::protocol::ToriiResponse toriiResponse;
     client.Status(tx_request, [&status_counter](auto response) {
-      ASSERT_EQ(
-          response.tx_status(),
-          iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
+      ASSERT_EQ(response.tx_status(),
+                iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
       status_counter++;
     });
   }
@@ -342,9 +345,8 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
     tx_request.set_tx_hash(tx_hashes.at(i));
     iroha::protocol::ToriiResponse toriiResponse;
     client.Status(tx_request, [&status_counter](auto response) {
-      ASSERT_EQ(
-          response.tx_status(),
-          iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
+      ASSERT_EQ(response.tx_status(),
+                iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
       status_counter++;
     });
   }
@@ -362,8 +364,7 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
     tx_request.set_tx_hash(tx_hashes.at(i));
     iroha::protocol::ToriiResponse toriiResponse;
     client.Status(tx_request, [&status_counter](auto response) {
-      ASSERT_EQ(response.tx_status(),
-                iroha::protocol::TxStatus::COMMITTED);
+      ASSERT_EQ(response.tx_status(), iroha::protocol::TxStatus::COMMITTED);
       status_counter++;
     });
   }

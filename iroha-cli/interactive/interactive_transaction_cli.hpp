@@ -151,6 +151,11 @@ namespace iroha_cli {
       bool parseGoBack(std::vector<std::string> params);
       bool parseAddCommand(std::vector<std::string> params);
 
+      /**
+       * Prints hash of a transaction for user in a readable form
+       */
+      void printTxHash(iroha::model::Transaction &tx);
+
       // ---- Tx data ----
 
       //  Creator account id
