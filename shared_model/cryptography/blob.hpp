@@ -58,14 +58,14 @@ namespace shared_model {
 
       /**
        * Method perform transforming object to old-fashion blob_t format
-       * @tparam Blob - type of blob
+       * @tparam BlobType - type of blob
        * @return blob_t array with own data
        * Design note: this method is deprecated and should be removed after
        * migration to shared model in whole project
        */
-      template <typename Blob>
-      [[deprecated]] Blob makeOldModel() {
-        return Blob::from_string(hex());
+      template <typename BlobType>
+      [[deprecated]] BlobType makeOldModel() {
+        return BlobType::from_string(blob());
       }
     };
   }  // namespace crypto
