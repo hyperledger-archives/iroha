@@ -66,11 +66,11 @@ namespace iroha {
 
         // ------|Network notifications|------
 
-        virtual void on_commit(model::Peer from, CommitMessage commit);
+        virtual void on_commit(CommitMessage commit);
 
-        virtual void on_reject(model::Peer from, RejectMessage reject);
+        virtual void on_reject(RejectMessage reject);
 
-        virtual void on_vote(model::Peer from, VoteMessage vote);
+        virtual void on_vote(VoteMessage vote);
 
        private:
         // ------|Private interface|------
@@ -87,9 +87,11 @@ namespace iroha {
         void closeRound();
 
         // ------|Apply data|------
-        void applyCommit(model::Peer from, CommitMessage commit);
-        void applyReject(model::Peer from, RejectMessage reject);
-        void applyVote(model::Peer from, VoteMessage vote);
+        void applyCommit(nonstd::optional<model::Peer> from,
+                         CommitMessage commit);
+        void applyReject(nonstd::optional<model::Peer> from,
+                         RejectMessage reject);
+        void applyVote(nonstd::optional<model::Peer> from, VoteMessage vote);
 
         // ------|Propagation|------
         void propagateCommit(CommitMessage msg);

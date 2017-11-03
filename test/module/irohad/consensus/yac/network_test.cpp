@@ -34,8 +34,7 @@ namespace iroha {
           notifications = std::make_shared<MockYacNetworkNotifications>();
 
           peer = mk_peer("0.0.0.0:50051");
-          std::vector<model::Peer> peers = {peer};
-          network = std::make_shared<NetworkImpl>(peer.address, peers);
+          network = std::make_shared<NetworkImpl>();
 
           message.hash.proposal_hash = "proposal";
           message.hash.block_hash = "block";
@@ -72,7 +71,7 @@ namespace iroha {
        * @then vote handled
        */
       TEST_F(YacNetworkTest, MessageHandledWhenMessageSent) {
-        EXPECT_CALL(*notifications, on_vote(peer, message))
+        EXPECT_CALL(*notifications, on_vote(message))
             .Times(1)
             .WillRepeatedly(
                 InvokeWithoutArgs(&cv, &std::condition_variable::notify_one));
@@ -93,13 +92,12 @@ namespace iroha {
         auto client = proto::Yac::NewStub(grpc::CreateChannel(
             peer.address, grpc::InsecureChannelCredentials()));
 
-        EXPECT_CALL(*notifications, on_vote(_, _))
+        EXPECT_CALL(*notifications, on_vote(_))
             .Times(1)
             .WillRepeatedly(
                 InvokeWithoutArgs(&cv, &std::condition_variable::notify_one));
 
         grpc::ClientContext context;
-        context.AddMetadata("address", "0.0.0.0:50052");
         auto vote = PbConverters::serializeVote(message);
         google::protobuf::Empty response;
 

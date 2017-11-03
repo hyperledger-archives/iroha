@@ -168,9 +168,9 @@ namespace iroha {
 
       class MockYacNetworkNotifications : public YacNetworkNotifications {
        public:
-        MOCK_METHOD2(on_commit, void(model::Peer, CommitMessage));
-        MOCK_METHOD2(on_reject, void(model::Peer, RejectMessage));
-        MOCK_METHOD2(on_vote, void(model::Peer, VoteMessage));
+        MOCK_METHOD1(on_commit, void(CommitMessage));
+        MOCK_METHOD1(on_reject, void(RejectMessage));
+        MOCK_METHOD1(on_vote, void(VoteMessage));
       };
 
       class YacTest : public ::testing::Test {

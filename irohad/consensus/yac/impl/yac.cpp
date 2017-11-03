@@ -24,10 +24,9 @@ namespace iroha {
     namespace yac {
 
       template <typename T>
-      std::string cryptoError(const model::Peer &peer, const T &votes) {
-        std::string result = "Crypto verification failed for message from ";
-        result += peer.address;
-        result += ". \nVotes: ";
+      std::string cryptoError(const T &votes) {
+        std::string result =
+            "Crypto verification failed for message.\n Votes: ";
         result += logger::to_string(votes, [](const auto &vote) {
           std::string result = "(Public key: ";
           result += vote.signature.pubkey.to_hexstring();
@@ -40,9 +39,8 @@ namespace iroha {
       }
 
       template <typename T>
-      std::string cryptoError(const model::Peer &peer,
-                              const std::initializer_list<T> &votes) {
-        return cryptoError<std::initializer_list<T>>(peer, votes);
+      std::string cryptoError(const std::initializer_list<T> &votes) {
+        return cryptoError<std::initializer_list<T>>(votes);
       }
 
       std::shared_ptr<Yac> Yac::create(
@@ -89,30 +87,39 @@ namespace iroha {
 
       // ------|Network notifications|------
 
-      void Yac::on_vote(model::Peer from, VoteMessage vote) {
+      void Yac::on_vote(VoteMessage vote) {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(vote)) {
+          nonstd::optional<model::Peer> from;
+          auto peers = cluster_order_.getPeers();
+          auto it =
+              std::find_if(peers.begin(), peers.end(), [&](const auto &peer) {
+                return peer.pubkey == vote.signature.pubkey;
+              });
+          if (it != peers.end()) {
+            from = *it;
+          }
           this->applyVote(from, vote);
         } else {
-          log_->warn(cryptoError(from, {vote}));
+          log_->warn(cryptoError({vote}));
         }
       }
 
-      void Yac::on_commit(model::Peer from, CommitMessage commit) {
+      void Yac::on_commit(CommitMessage commit) {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(commit)) {
-          this->applyCommit(from, commit);
+          this->applyCommit(nonstd::nullopt, commit);
         } else {
-          log_->warn(cryptoError(from, commit.votes));
+          log_->warn(cryptoError(commit.votes));
         }
       }
 
-      void Yac::on_reject(model::Peer from, RejectMessage reject) {
+      void Yac::on_reject(RejectMessage reject) {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(reject)) {
-          this->applyReject(from, reject);
+          this->applyReject(nonstd::nullopt, reject);
         } else {
-          log_->warn(cryptoError(from, reject.votes));
+          log_->warn(cryptoError(reject.votes));
         }
       }
 
@@ -140,7 +147,8 @@ namespace iroha {
 
       // ------|Apply data|------
 
-      void Yac::applyCommit(model::Peer from, CommitMessage commit) {
+      void Yac::applyCommit(nonstd::optional<model::Peer> from,
+                            CommitMessage commit) {
         auto answer =
             vote_storage_.store(commit, cluster_order_.getNumberOfPeers());
         if (not answer.has_value()) {
@@ -166,14 +174,23 @@ namespace iroha {
         closeRound();
       }
 
-      void Yac::applyReject(model::Peer from, RejectMessage reject) {
+      void Yac::applyReject(nonstd::optional<model::Peer> from,
+                            RejectMessage reject) {
         // TODO 01/08/17 Muratov: apply to vote storage IR-497
         closeRound();
       }
 
-      void Yac::applyVote(model::Peer from, VoteMessage vote) {
-        log_->info(
-            "Apply vote: {} from {}", vote.hash.block_hash, from.address);
+      void Yac::applyVote(nonstd::optional<model::Peer> from,
+                          VoteMessage vote) {
+        if (from.has_value()) {
+          log_->info("Apply vote: {} from ledger peer {}",
+                     vote.hash.block_hash,
+                     from.value().address);
+        } else {
+          log_->info("Apply vote: {} from unknown peer {}",
+                     vote.hash.block_hash,
+                     vote.signature.pubkey.to_hexstring());
+        }
 
         auto answer =
             vote_storage_.store(vote, cluster_order_.getNumberOfPeers());
@@ -195,14 +212,14 @@ namespace iroha {
                        vote.hash.block_hash);
 
             propagateCommit(answer->commit.value());
-          } else {
+          } else if (from.has_value()) {
             // propagate directly
 
             log_->info("Propagate commit {} directly to {}",
                        vote.hash.block_hash,
-                       from.address);
+                       from.value().address);
 
-            propagateCommitDirectly(from, answer->commit.value());
+            propagateCommitDirectly(from.value(), answer->commit.value());
           }
         }
 
@@ -212,9 +229,9 @@ namespace iroha {
           if (not already_processed) {
             // propagate reject for all
             propagateReject(answer->reject.value());
-          } else {
+          } else if (from.has_value()) {
             // propagate directly
-            propagateRejectDirectly(from, answer->reject.value());
+            propagateRejectDirectly(from.value(), answer->reject.value());
           }
         }
       }

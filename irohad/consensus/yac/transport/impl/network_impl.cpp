@@ -27,12 +27,7 @@ namespace iroha {
     namespace yac {
       // ----------| Public API |----------
 
-      NetworkImpl::NetworkImpl(const std::string &address,
-                               const std::vector<model::Peer> &peers)
-          : address_(address) {
-        for (const auto &peer : peers) {
-          createPeerConnection(peer);
-        }
+      NetworkImpl::NetworkImpl() {
         log_ = logger::log("YacNetwork");
       }
 
@@ -47,8 +42,6 @@ namespace iroha {
         auto request = PbConverters::serializeVote(vote);
 
         auto call = new AsyncClientCall;
-
-        call->context.AddMetadata("address", address_);
 
         call->response_reader =
             peers_.at(to)->AsyncSendVote(&call->context, request, &cq_);
@@ -68,8 +61,6 @@ namespace iroha {
         }
 
         auto call = new AsyncClientCall;
-
-        call->context.AddMetadata("address", address_);
 
         call->response_reader =
             peers_.at(to)->AsyncSendCommit(&call->context, request, &cq_);
@@ -92,8 +83,6 @@ namespace iroha {
 
         auto call = new AsyncClientCall;
 
-        call->context.AddMetadata("address", address_);
-
         call->response_reader =
             peers_.at(to)->AsyncSendReject(&call->context, request, &cq_);
 
@@ -108,20 +97,12 @@ namespace iroha {
           ::grpc::ServerContext *context,
           const ::iroha::consensus::yac::proto::Vote *request,
           ::google::protobuf::Empty *response) {
-        auto it = context->client_metadata().find("address");
-        if (it == context->client_metadata().end()) {
-          log_->error("Missing source address");
-          return grpc::Status::CANCELLED;
-        }
-        auto address = std::string(it->second.data(), it->second.size());
-        auto peer = peers_addresses_.at(address);
-
         auto vote = *PbConverters::deserializeVote(*request);
 
         log_->info(
-            "Receive vote {} from {}", vote.hash.block_hash, peer.address);
+            "Receive vote {} from {}", vote.hash.block_hash, context->peer());
 
-        handler_.lock()->on_vote(peer, vote);
+        handler_.lock()->on_vote(vote);
         return grpc::Status::OK;
       }
 
@@ -129,14 +110,6 @@ namespace iroha {
           ::grpc::ServerContext *context,
           const ::iroha::consensus::yac::proto::Commit *request,
           ::google::protobuf::Empty *response) {
-        auto it = context->client_metadata().find("address");
-        if (it == context->client_metadata().end()) {
-          log_->error("Missing source address");
-          return grpc::Status::CANCELLED;
-        }
-        auto address = std::string(it->second.data(), it->second.size());
-        auto peer = peers_addresses_.at(address);
-
         CommitMessage commit;
         for (const auto &pb_vote : request->votes()) {
           auto vote = *PbConverters::deserializeVote(pb_vote);
@@ -145,9 +118,9 @@ namespace iroha {
 
         log_->info("Receive commit[size={}] from {}",
                    commit.votes.size(),
-                   peer.address);
+                   context->peer());
 
-        handler_.lock()->on_commit(peer, commit);
+        handler_.lock()->on_commit(commit);
         return grpc::Status::OK;
       }
 
@@ -155,14 +128,6 @@ namespace iroha {
           ::grpc::ServerContext *context,
           const ::iroha::consensus::yac::proto::Reject *request,
           ::google::protobuf::Empty *response) {
-        auto it = context->client_metadata().find("address");
-        if (it == context->client_metadata().end()) {
-          log_->error("Missing source address");
-          return grpc::Status::CANCELLED;
-        }
-        auto address = std::string(it->second.data(), it->second.size());
-        auto peer = peers_addresses_.at(address);
-
         RejectMessage reject;
         for (const auto &pb_vote : request->votes()) {
           auto vote = *PbConverters::deserializeVote(pb_vote);
@@ -171,9 +136,9 @@ namespace iroha {
 
         log_->info("Receive reject[size={}] from {}",
                    reject.votes.size(),
-                   peer.address);
+                   context->peer());
 
-        handler_.lock()->on_reject(peer, reject);
+        handler_.lock()->on_reject(reject);
         return grpc::Status::OK;
       }
 
@@ -181,7 +146,6 @@ namespace iroha {
         if (peers_.count(peer) == 0) {
           peers_[peer] = proto::Yac::NewStub(grpc::CreateChannel(
               peer.address, grpc::InsecureChannelCredentials()));
-          peers_addresses_[peer.address] = peer;
         }
       }
 

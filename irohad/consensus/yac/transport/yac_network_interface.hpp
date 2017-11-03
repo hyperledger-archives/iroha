@@ -30,24 +30,21 @@ namespace iroha {
        public:
         /**
          * Callback on receiving commit message
-         * @param from - peer that provide message
          * @param commit - provided message
          */
-        virtual void on_commit(model::Peer from, CommitMessage commit) = 0;
+        virtual void on_commit(CommitMessage commit) = 0;
 
         /**
          * Callback on receiving reject message
-         * @param from - peer that provide message
          * @param reject - provided message
          */
-        virtual void on_reject(model::Peer from, RejectMessage reject) = 0;
+        virtual void on_reject(RejectMessage reject) = 0;
 
         /**
          * Callback on receiving vote message
-         * @param from - peer that provide message
          * @param vote - provided message
          */
-        virtual void on_vote(model::Peer from, VoteMessage vote) = 0;
+        virtual void on_vote(VoteMessage vote) = 0;
 
         virtual ~YacNetworkNotifications() = default;
       };

@@ -69,7 +69,7 @@ TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {
   yac->vote(my_hash, my_order);
 
   for (auto i = 0; i < 3; ++i) {
-    yac->on_vote(my_peers.at(i), create_vote(my_hash, std::to_string(i)));
+    yac->on_vote(create_vote(my_hash, std::to_string(i)));
   };
 }
 
@@ -118,7 +118,7 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
   for (auto i = 0; i < 4; ++i) {
     votes.push_back(create_vote(my_hash, std::to_string(i)));
   };
-  yac->on_commit(my_peers.at(0), CommitMessage(votes));
+  yac->on_commit(CommitMessage(votes));
   ASSERT_TRUE(wrapper.validate());
 }
 
@@ -168,13 +168,13 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
   for (auto i = 0; i < 3; ++i) {
     votes.push_back(create_vote(my_hash, std::to_string(i)));
   };
-  yac->on_commit(my_peers.at(0), CommitMessage(votes));
+  yac->on_commit(CommitMessage(votes));
 
   // second commit
   for (auto i = 1; i < 4; ++i) {
     votes.push_back(create_vote(my_hash, std::to_string(i)));
   };
-  yac->on_commit(my_peers.at(1), CommitMessage(votes));
+  yac->on_commit(CommitMessage(votes));
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -222,11 +222,11 @@ TEST_F(YacTest, ValidCaseWhenSoloConsensus) {
 
   auto vote_message = create_vote(my_hash, std::to_string(0));
 
-  yac->on_vote(my_peers.at(0), vote_message);
+  yac->on_vote(vote_message);
 
   auto commit_message = CommitMessage({vote_message});
 
-  yac->on_commit(my_peers.at(0), commit_message);
+  yac->on_commit(commit_message);
 
   ASSERT_TRUE(wrapper.validate());
 }
@@ -267,7 +267,7 @@ TEST_F(YacTest, ValidCaseWhenVoteAfterCommit) {
   for (auto i = 0; i < 3; ++i) {
     votes.push_back(create_vote(my_hash, std::to_string(i)));
   };
-  yac->on_commit(my_peers.at(0), CommitMessage(votes));
+  yac->on_commit(CommitMessage(votes));
 
   yac->vote(my_hash, my_order);
 }

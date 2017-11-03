@@ -43,8 +43,7 @@ namespace iroha {
 
         auto createPeerOrderer(std::shared_ptr<ametsuchi::PeerQuery> wsv);
 
-        auto createNetwork(std::string network_address,
-                           std::vector<model::Peer> initial_peers);
+        auto createNetwork();
 
         auto createCryptoProvider(const keypair_t &keypair);
 
@@ -53,14 +52,12 @@ namespace iroha {
         auto createHashProvider();
 
         std::shared_ptr<consensus::yac::Yac> createYac(
-            std::string network_address,
             ClusterOrdering initial_order,
             const keypair_t &keypair,
             std::chrono::milliseconds delay_milliseconds);
 
        public:
         std::shared_ptr<YacGate> initConsensusGate(
-            std::string network_address,
             std::shared_ptr<ametsuchi::PeerQuery> wsv,
             std::shared_ptr<simulator::BlockCreator> block_creator,
             std::shared_ptr<network::BlockLoader> block_loader,
