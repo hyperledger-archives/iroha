@@ -19,6 +19,7 @@
 #define IROHA_SHARED_MODEL_TYPES_HPP
 
 #include "common/types.hpp"
+#include "cryptography/public_key.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -28,7 +29,7 @@ namespace shared_model {
       /// Type of height (for Block, Proposal etc)
       using HeightType = uint64_t;
       /// Type of public key
-      using PubkeyType = iroha::pubkey_t;  // TODO: replace with shared lib?
+      using PubkeyType = crypto::PublicKey;
       /// Type of role (i.e admin, user)
       using RoleIdType = std::string;
       /// Iroha domain id type
