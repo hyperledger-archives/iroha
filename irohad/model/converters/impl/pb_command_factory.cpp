@@ -93,6 +93,9 @@ namespace iroha {
             // Can grant add signatory
             (protocol::RolePermission::can_grant_add_signatory,
              can_grant + can_add_signatory)
+             // Can grant + can_transfer
+             (protocol::RolePermission::can_grant_can_transfer,
+             can_grant + can_transfer)
             // Can get roles
             (protocol::RolePermission::can_get_roles, can_get_roles);
 
