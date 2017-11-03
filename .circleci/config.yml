@@ -22,13 +22,21 @@ jobs:
           paths:
             - ~/.ccache
       - run:
+          name: ccache setup
+          command: |
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=1G
+      - run:
           name: cmake
           command: >
             cmake \
               -DCOVERAGE=ON \
               -H$IROHA_HOME \
               -B$IROHA_BUILD \
-              -DCMAKE_BUILD_TYPE=Debug
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DIROHA_VERSION="$IROHA_VERSION"
       - run:
           name: make
           command: |
@@ -68,6 +76,13 @@ jobs:
           paths:
             - ~/.ccache
       - run:
+          name: ccache setup
+          command: |
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=1G
+      - run:
           name: cmake
           command: >
             cmake \
@@ -77,7 +92,8 @@ jobs:
               -B$IROHA_BUILD \
               -DCMAKE_BUILD_TYPE=Release \
               -DPACKAGE_DEB=ON \
-              -DPACKAGE_TGZ=ON
+              -DPACKAGE_TGZ=ON \
+              -DIROHA_VERSION="$IROHA_VERSION"
       - run:
           name: make and package
           command: |
@@ -90,14 +106,12 @@ jobs:
           name: copy deb file
           command: |
             cd $IROHA_BUILD
+            # iroha-$IROHA_VERSION-Linux.{tar.gz, deb}
             cp iroha-*.deb ./iroha.deb
             cp iroha-*.tar.gz ./iroha.tar.gz
-            # if IROHA_VERSION is not set, then CIRCLE_BUILD_NUM
-            echo ${IROHA_VERSION:-$CIRCLE_BUILD_NUM} > version.txt
+            # if IROHA_VERSION is not set, then CIRCLE_SHA1
+            echo ${IROHA_VERSION:-$CIRCLE_SHA1} > version.txt
             cd $IROHA_HOME
-      - run:
-          name: copy dockerfile to build dir
-          command: cp $IROHA_HOME/docker/release_dockerfile $IROHA_HOME/build/release_dockerfile.tmp
       - store_artifacts:
           path: build/iroha.deb
           destination: iroha-linux.deb
@@ -111,7 +125,6 @@ jobs:
           root: build
           paths:
             - iroha.deb
-            - release_dockerfile.tmp
 
 
 
@@ -128,10 +141,7 @@ jobs:
       - run:
           name: Copy deb
           command: |
-            cp $IROHA_BUILD/iroha.deb $IROHA_HOME/docker/iroha.deb
-      - run:
-          name: Copy dockerfile
-          command: cp $IROHA_HOME/build/release_dockerfile.tmp $IROHA_HOME/docker
+            cp $IROHA_BUILD/iroha.deb $IROHA_HOME/docker/release/iroha.deb
       - run:
           name: Docker login
           command: |
@@ -145,8 +155,7 @@ jobs:
               elif [ "$CIRCLE_BRANCH" == "master" ]; then
                 tag=latest
               fi
-              cd $IROHA_HOME/docker
-              docker build -f release_dockerfile -t hyperledger/iroha-docker:$tag .
+              docker build -t hyperledger/iroha-docker:$tag $IROHA_HOME/docker/release
               docker push hyperledger/iroha-docker:$tag
 
 
@@ -251,7 +260,13 @@ jobs:
             - external-{{ arch }}
           paths:
             - external
-      - run: ccache --show-stats
+      - run:
+          name: ccache setup
+          command: |
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=1G
       - run:
           name: cmake
           command: >
@@ -259,7 +274,8 @@ jobs:
               -DCOVERAGE=OFF \
               -DTESTING=OFF \
               -DPACKAGE_TGZ=ON \
-              -DCMAKE_BUILD_TYPE=Release
+              -DCMAKE_BUILD_TYPE=Release \
+              -DIROHA_VERSION="$IROHA_VERSION"
       - run:
           name: make
           command: |
@@ -276,9 +292,10 @@ jobs:
       - run:
           name: rename artifacts
           command: |
+            # iroha-$IROHA_VERSION-Darwin.tar.gz
             cp build/iroha-*.tar.gz build/iroha-darwin.tar.gz
-            # if IROHA_VERSION is not set, then CIRCLE_BUILD_NUM
-            echo ${IROHA_VERSION:-$CIRCLE_BUILD_NUM} > build/version.txt
+            # if IROHA_VERSION is not set, then CIRCLE_SHA1
+            echo ${IROHA_VERSION:-$CIRCLE_SHA1} > build/version.txt
       - store_artifacts:
           path: build/iroha-darwin.tar.gz
           destination: iroha-darwin.tar.gz
