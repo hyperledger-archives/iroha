@@ -52,7 +52,7 @@ namespace shared_model {
             .init("CreateAsset")
             .append("asset_name", assetName())
             .append("domain_id", domainId())
-            .append("precision", precision())
+            .append("precision", std::to_string(precision()))
             .finalize();
       }
 

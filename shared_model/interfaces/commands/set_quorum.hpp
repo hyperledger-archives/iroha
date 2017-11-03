@@ -42,7 +42,7 @@ namespace shared_model {
         return detail::PrettyStringBuilder()
             .init("SetQuorum")
             .append("account_id", accountId())
-            .append("quorum", newQuorum())
+            .append("quorum", std::to_string(newQuorum()))
             .finalize();
       }
 

@@ -19,6 +19,7 @@
 #define IROHA_SHARED_MODEL_CREATE_ROLE_HPP
 
 #include <set>
+#include <numeric>
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
 #include "model/commands/create_role.hpp"
@@ -42,17 +43,26 @@ namespace shared_model {
       virtual const PermissionsType &rolePermissions() const = 0;
 
       std::string toString() const override {
+        auto roles_set = rolePermissions();
+        std::string roles_accum =
+            std::accumulate(std::begin(roles_set),
+                            std::end(roles_set),
+                            std::string{},
+                            [](const std::string &a, const std::string &b) {
+                              return a.empty() ? b : a + ", " + b;
+                            });
         return detail::PrettyStringBuilder()
             .init("CreateRole")
             .append("role_name", roleName())
-            .append("role_permissions", rolePermissions())
+            .append("Role_permissions", roles_accum)
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::CreateRole;
         oldModel->role_name = roleName();
-        oldModel->permissions = rolePermissions();
+        auto roles = rolePermissions();
+        oldModel->permissions = std::unordered_set<std::string>(roles.begin(), roles.end());
         return oldModel;
       }
     };

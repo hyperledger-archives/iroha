@@ -43,14 +43,15 @@ namespace shared_model {
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("AddSignatory")
-            .append("pubkey", pubkey())
+            .append("pubkey", pubkey().toString())
             .append("account_id", accountId())
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AddSignatory;
-        oldModel->pubkey = pubkey();
+        // TODO: check if this is right
+        oldModel->pubkey.from_string(pubkey().blob());
         oldModel->account_id = accountId();
         return oldModel;
       }

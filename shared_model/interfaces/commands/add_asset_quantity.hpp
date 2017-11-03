@@ -50,7 +50,7 @@ namespace shared_model {
             .init("AddAssetQuantity")
             .append("account_id", accountId())
             .append("asset_id", assetId())
-            .append("amount", amount())
+            .append("amount", amount().to_string())
             .finalize();
       }
 

@@ -43,14 +43,15 @@ namespace shared_model {
         return detail::PrettyStringBuilder()
             .init("RemoveSignatory")
             .append("account_id", accountId())
-            .append("pubkey", pubkey())
+            .append("pubkey", pubkey().toString())
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::RemoveSignatory;
         oldModel->account_id = accountId();
-        oldModel->pubkey = pubkey();
+        // TODO: check if this is right
+        oldModel->pubkey.from_string(pubkey().blob());
         return oldModel;
       }
     };

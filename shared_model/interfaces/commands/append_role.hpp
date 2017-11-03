@@ -37,7 +37,7 @@ namespace shared_model {
       /**
        * @return Role name to add to account
        */
-      virtual const types::RoleType &roleName() const = 0;
+      virtual const types::RoleIdType &roleName() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

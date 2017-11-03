@@ -60,7 +60,7 @@ namespace shared_model {
             .append("dest_account_id", destAccountId())
             .append("asset_id", assetId())
             .append("message", message())
-            .append("amount", amount())
+            .append("amount", amount().to_string())
             .finalize();
       }
 
