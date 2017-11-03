@@ -23,7 +23,55 @@ namespace iroha {
 
     RedisFlatBlockQuery::RedisFlatBlockQuery(cpp_redis::redis_client &client,
                                              FlatFile &file_store)
-        : FlatFileBlockQuery(file_store), client_(client) {}
+        : block_store_(file_store), client_(client) {}
+
+    rxcpp::observable<model::Block> RedisFlatBlockQuery::getBlocks(
+        uint32_t height, uint32_t count) {
+      auto to = height + count;
+      auto last_id = block_store_.last_id();
+      if (to > last_id) {
+        to = last_id;
+      }
+      if (height > to) {
+        return rxcpp::observable<>::empty<model::Block>();
+      }
+      return rxcpp::observable<>::range(height, to).flat_map([this](auto i) {
+        auto bytes = block_store_.get(i);
+        return rxcpp::observable<>::create<model::Block>([this, bytes](auto s) {
+          if (not bytes.has_value()) {
+            s.on_completed();
+            return;
+          }
+          auto document =
+              model::converters::stringToJson(bytesToString(bytes.value()));
+          if (not document.has_value()) {
+            s.on_completed();
+            return;
+          }
+          auto block = serializer_.deserialize(document.value());
+          if (not block.has_value()) {
+            s.on_completed();
+            return;
+          }
+          s.on_next(block.value());
+          s.on_completed();
+        });
+      });
+    }
+
+    rxcpp::observable<model::Block> RedisFlatBlockQuery::getBlocksFrom(
+        uint32_t height) {
+      return getBlocks(height, block_store_.last_id());
+    }
+
+    rxcpp::observable<model::Block> RedisFlatBlockQuery::getTopBlocks(
+        uint32_t count) {
+      auto last_id = block_store_.last_id();
+      if (count > last_id) {
+        count = last_id;
+      }
+      return getBlocks(last_id - count + 1, count);
+    }
 
     std::vector<iroha::model::Block::BlockHeightType>
     RedisFlatBlockQuery::getBlockIds(const std::string &account_id) {
