@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_SET_QUORUM_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/commands/set_quorum.hpp"
 
 namespace shared_model {
@@ -27,18 +27,31 @@ namespace shared_model {
     /**
      * Set quorum of the account
      */
-    class SetQuorum : public Primitive<SetQuorum, iroha::model::SetQuorum> {
+    class SetQuorum : public Hashable<SetQuorum, iroha::model::SetQuorum> {
      public:
       /**
        * @return Id of the account to set quorum
        */
       virtual const types::AccountIdType &accountId() const = 0;
-      /// Quorum type used in newQuorum()
-      using QuorumType = uint32_t;
       /**
        * @return value of a new quorum
        */
-      virtual const QuorumType &newQuorum() const = 0;
+      virtual const types::QuorumType &newQuorum() const = 0;
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("SetQuorum")
+            .append("account_id", accountId())
+            .append("quorum", newQuorum())
+            .finalize();
+      }
+
+      OldModelType *makeOldModel() const override {
+        auto oldModel = new iroha::model::SetQuorum;
+        oldModel->account_id = accountId();
+        oldModel->new_quorum = newQuorum();
+        return oldModel;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

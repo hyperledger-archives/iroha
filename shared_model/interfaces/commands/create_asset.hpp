@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_CREATE_ASSET_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/commands/create_asset.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Create asset in Iroha domain
      */
     class CreateAsset
-        : public Primitive<CreateAsset, iroha::model::CreateAsset> {
+        : public Hashable<CreateAsset, iroha::model::CreateAsset> {
      public:
       /// Type returned by assetName function
       using AssetNameType = std::string;
@@ -46,6 +46,23 @@ namespace shared_model {
        * @return precision of the asset
        */
       virtual const PrecisionType &precision() const = 0;
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("CreateAsset")
+            .append("asset_name", assetName())
+            .append("domain_id", domainId())
+            .append("precision", precision())
+            .finalize();
+      }
+
+      OldModelType *makeOldModel() const override {
+        auto oldModel = new iroha::model::CreateAsset;
+        oldModel->asset_name = assetName();
+        oldModel->domain_id = domainId();
+        oldModel->precision = precision();
+        return oldModel;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

@@ -20,7 +20,7 @@
 
 #include <set>
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/commands/create_role.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
     /**
      * Create new role in Iroha
      */
-    class CreateRole : public Primitive<CreateRole, iroha::model::CreateRole> {
+    class CreateRole : public Hashable<CreateRole, iroha::model::CreateRole> {
      public:
       /**
        * @return Id of the domain to create
@@ -40,6 +40,21 @@ namespace shared_model {
        * @return permissions associated with the role
        */
       virtual const PermissionsType &rolePermissions() const = 0;
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("CreateRole")
+            .append("role_name", roleName())
+            .append("role_permissions", rolePermissions())
+            .finalize();
+      }
+
+      OldModelType *makeOldModel() const override {
+        auto oldModel = new iroha::model::CreateRole;
+        oldModel->role_name = roleName();
+        oldModel->permissions = rolePermissions();
+        return oldModel;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

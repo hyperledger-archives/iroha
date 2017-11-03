@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_APPEND_ROLE_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/commands/append_role.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
     /**
      * Add role to account used in Iroha
      */
-    class AppendRole : public Primitive<AppendRole, iroha::model::AppendRole> {
+    class AppendRole : public Hashable<AppendRole, iroha::model::AppendRole> {
      public:
       /**
        * @return Account to add the role
@@ -38,6 +38,21 @@ namespace shared_model {
        * @return Role name to add to account
        */
       virtual const types::RoleType &roleName() const = 0;
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("AppendRole")
+            .append("role_name", roleName())
+            .append("account_id", accountId())
+            .finalize();
+      }
+
+      OldModelType *makeOldModel() const override {
+        auto oldModel = new iroha::model::AppendRole;
+        oldModel->role_name = roleName();
+        oldModel->account_id = accountId();
+        return oldModel;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

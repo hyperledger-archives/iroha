@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_CREATE_ACCOUNT_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/commands/create_account.hpp"
 
 namespace shared_model {
@@ -29,7 +29,7 @@ namespace shared_model {
      * Create acccount in Iroha domain
      */
     class CreateAccount
-        : public Primitive<CreateAccount, iroha::model::CreateAccount> {
+        : public Hashable<CreateAccount, iroha::model::CreateAccount> {
      public:
       /// Type returned by accountName method
       using AccountNameType = std::string;
@@ -45,6 +45,23 @@ namespace shared_model {
        * @return Initial account public key
        */
       virtual const types::PubkeyType &pubkey() const = 0;
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("CreateAccount")
+            .append("account_name", accountName())
+            .append("domain_id", domainId())
+            .append("pubkey", pubkey())
+            .finalize();
+      }
+
+      OldModelType *makeOldModel() const override {
+        auto oldModel = new iroha::model::CreateAccount;
+        oldModel->account_name = accountName();
+        oldModel->domain_id = domainId();
+        oldModel->pubkey = pubkey();
+        return oldModel;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

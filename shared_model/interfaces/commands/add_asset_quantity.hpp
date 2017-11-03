@@ -20,7 +20,7 @@
 
 #include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/commands/add_asset_quantity.hpp"
 
 namespace shared_model {
@@ -30,23 +30,37 @@ namespace shared_model {
      * Add amount of asset to an account
      */
     class AddAssetQuantity
-        : public Primitive<AddAssetQuantity, iroha::model::AddAssetQuantity> {
+        : public Hashable<AddAssetQuantity, iroha::model::AddAssetQuantity> {
      public:
       /**
        * @return Identity of user, that add quantity
        */
       virtual const types::AccountIdType &accountId() const = 0;
-
       /**
        * @return asset identifier
        */
       virtual const types::AssetIdType &assetId() const = 0;
-
-
       /**
        * @return quantity of asset for adding
        */
       virtual const types::AmountType &amount() const = 0;
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("AddAssetQuantity")
+            .append("account_id", accountId())
+            .append("asset_id", assetId())
+            .append("amount", amount())
+            .finalize();
+      }
+
+      OldModelType *makeOldModel() const override {
+        auto oldModel = new iroha::model::AddAssetQuantity;
+        oldModel->amount = amount();
+        oldModel->account_id = accountId();
+        oldModel->asset_id = assetId();
+        return oldModel;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

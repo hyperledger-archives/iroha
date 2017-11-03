@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_TRANSFER_ASSET_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/commands/transfer_asset.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Grant permission to account
      */
     class TransferAsset
-        : public Primitive<TransferAsset, iroha::model::TransferAsset> {
+        : public Hashable<TransferAsset, iroha::model::TransferAsset> {
      public:
       /**
        * @return Id of the account from which transfer assets
@@ -52,6 +52,27 @@ namespace shared_model {
        * @return asset amount to transfer
        */
       virtual const types::AmountType &amount() const = 0;
+
+      std::string toString() const override {
+        return detail::PrettyStringBuilder()
+            .init("TransferAsset")
+            .append("src_account_id", srcAccountId())
+            .append("dest_account_id", destAccountId())
+            .append("asset_id", assetId())
+            .append("message", message())
+            .append("amount", amount())
+            .finalize();
+      }
+
+      OldModelType *makeOldModel() const override {
+        auto oldModel = new iroha::model::TransferAsset;
+        oldModel->src_account_id = srcAccountId();
+        oldModel->dest_account_id = destAccountId();
+        oldModel->amount = amount();
+        oldModel->asset_id = assetId();
+        oldModel->description = message();
+        return oldModel;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

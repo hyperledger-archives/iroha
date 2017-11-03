@@ -39,6 +39,8 @@ namespace shared_model {
       using PermissionNameType = std::string;
       /// Type of amount
       using AmountType = iroha::Amount;
+      /// Type of Quorum used in transaction and set quorum
+      using QuorumType = uint32_t;
     }  // namespace types
   }    // namespace interface
 }  // namespace shared_model
