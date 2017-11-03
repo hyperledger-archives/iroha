@@ -15,6 +15,7 @@ jobs:
       - image: redis:3.2.8
     steps:
       - checkout
+      - run: echo $(eval echo "$IROHA_VERSION")
       - restore_cache:
           keys:
             - build-cache-debug-{{ arch }}-{{ .Branch }}-
@@ -36,7 +37,7 @@ jobs:
               -H$IROHA_HOME \
               -B$IROHA_BUILD \
               -DCMAKE_BUILD_TYPE=Debug \
-              -DIROHA_VERSION="$IROHA_VERSION"
+              -DIROHA_VERSION=$(eval echo "$IROHA_VERSION")
       - run:
           name: make
           command: |
@@ -93,7 +94,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=Release \
               -DPACKAGE_DEB=ON \
               -DPACKAGE_TGZ=ON \
-              -DIROHA_VERSION="$IROHA_VERSION"
+              -DIROHA_VERSION=$(eval echo "$IROHA_VERSION")
       - run:
           name: make and package
           command: |
@@ -105,8 +106,9 @@ jobs:
       - run:
           name: copy deb file
           command: |
+            IROHA_VERSION=$(eval echo "$IROHA_VERSION")
             cd $IROHA_BUILD
-            # iroha-$IROHA_VERSION-Linux.{tar.gz, deb}
+            # iroha-$IROHA_VERSION-Linux.{tar.gz, deb}, always matches 1 file
             cp iroha-*.deb ./iroha.deb
             cp iroha-*.tar.gz ./iroha.tar.gz
             # if IROHA_VERSION is not set, then CIRCLE_SHA1
@@ -275,7 +277,7 @@ jobs:
               -DTESTING=OFF \
               -DPACKAGE_TGZ=ON \
               -DCMAKE_BUILD_TYPE=Release \
-              -DIROHA_VERSION="$IROHA_VERSION"
+              -DIROHA_VERSION=$(eval echo "$IROHA_VERSION")
       - run:
           name: make
           command: |
@@ -292,7 +294,8 @@ jobs:
       - run:
           name: rename artifacts
           command: |
-            # iroha-$IROHA_VERSION-Darwin.tar.gz
+            IROHA_VERSION=$(eval echo "$IROHA_VERSION")
+            # iroha-$IROHA_VERSION-Darwin.tar.gz, always matches 1 file
             cp build/iroha-*.tar.gz build/iroha-darwin.tar.gz
             # if IROHA_VERSION is not set, then CIRCLE_SHA1
             echo ${IROHA_VERSION:-$CIRCLE_SHA1} > build/version.txt
