@@ -91,14 +91,12 @@ TEST(CacheTest, InsertSameHashes) {
  */
 TEST(CacheTest, FindValues) {
   Cache<std::string, ToriiResponse> cache;
-  auto item = cache.findItem("0");
-  ASSERT_EQ(item, boost::none);
   for (int i = 0; i < typicalInsertAmount; ++i) {
     ToriiResponse response;
     response.set_tx_status(TxStatus::STATEFUL_VALIDATION_SUCCESS);
     cache.addItem(std::to_string(i), response);
   }
-  item = cache.findItem("2");
+  auto item = cache.findItem("2");
   ASSERT_NE(item, boost::none);
   ASSERT_EQ(item->tx_status(), TxStatus::STATEFUL_VALIDATION_SUCCESS);
 }
@@ -112,4 +110,24 @@ TEST(CacheTest, FindInEmptyCache) {
   Cache<std::string, ToriiResponse> cache;
   auto item = cache.findItem("0");
   ASSERT_EQ(item, boost::none);
+}
+
+/**
+ * @given Initialized cache
+ * @when insert cache.getIndexSizeHigh() items into it + 1
+ * @then the oldest inserted item was in cache initially but not in cache
+ * anymore
+ */
+TEST(CacheTest, FindVeryOldTransaction) {
+  Cache<std::string, ToriiResponse> cache;
+  ToriiResponse resp;
+  resp.set_tx_status(TxStatus::COMMITTED);
+  cache.addItem("0", resp);
+  ASSERT_EQ(cache.findItem("0")->tx_status(), TxStatus::COMMITTED);
+  for (uint32_t i = 0; i < cache.getIndexSizeHigh(); ++i) {
+    ToriiResponse response;
+    response.set_tx_status(TxStatus::STATEFUL_VALIDATION_FAILED);
+    cache.addItem("abcdefg" + std::to_string(i), response);
+  }
+  ASSERT_EQ(cache.findItem("0"), boost::none);
 }

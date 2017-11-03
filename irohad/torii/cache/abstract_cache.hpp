@@ -18,7 +18,6 @@
 #ifndef IROHA_ABSTRACT_CACHE_HPP
 #define IROHA_ABSTRACT_CACHE_HPP
 
-#include <endpoint.pb.h>
 #include <boost/optional.hpp>
 #include <list>
 #include <mutex>
@@ -33,9 +32,8 @@ namespace iroha {
      * reached. Implemented as a CRTP pattern.
      * @tparam KeyType - type of cache keys
      * @tparam ValueType - type of cache values
-     * @tparam T - need for CRTP
+     * @tparam T - type of implementation
      */
-
     template <typename KeyType, typename ValueType, typename T>
     class AbstractCache {
      public:
@@ -43,21 +41,21 @@ namespace iroha {
        * @return high border of cache limit (@see AbstractCache#addItem)
        */
       uint32_t getIndexSizeHigh() const {
-        return static_cast<const T &>(*this).getIndexSizeHighImpl();
+        return constUnderlying().getIndexSizeHighImpl();
       }
 
       /**
        * @return low border of cache limit (@see AbstractCache#addItem)
        */
       uint32_t getIndexSizeLow() const {
-        return static_cast<const T &>(*this).getIndexSizeLowImpl();
+        return constUnderlying().getIndexSizeLowImpl();
       }
 
       /**
        * @return amount of items in cache
        */
       uint32_t getCacheItemCount() const {
-        return static_cast<const T &>(*this).getCacheItemCountImpl();
+        return constUnderlying().getCacheItemCountImpl();
       }
 
       /**
@@ -72,7 +70,7 @@ namespace iroha {
        */
       void addItem(const KeyType &key, const ValueType &value) {
         std::lock_guard<std::mutex> lock(add_item_mutex_);
-        static_cast<T &>(*this).addItemImpl(key, value);
+        underlying().addItemImpl(key, value);
       }
 
       /**
@@ -81,10 +79,13 @@ namespace iroha {
        * @return Optional of ValueType
        */
       boost::optional<ValueType> findItem(const KeyType &key) const {
-        return static_cast<const T &>(*this).findItemImpl(key);
+        return constUnderlying().findItemImpl(key);
       }
 
      private:
+      const T &constUnderlying() const { return static_cast<const T &>(*this); }
+      T &underlying() { return static_cast<T &>(*this); }
+
       std::mutex add_item_mutex_;
     };
   }

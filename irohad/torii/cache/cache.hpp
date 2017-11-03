@@ -18,6 +18,7 @@
 #ifndef IROHA_CACHE_HPP
 #define IROHA_CACHE_HPP
 
+#include <unordered_map>
 #include "torii/cache/abstract_cache.hpp"
 
 namespace iroha {
