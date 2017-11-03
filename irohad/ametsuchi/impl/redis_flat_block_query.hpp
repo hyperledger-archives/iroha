@@ -28,6 +28,9 @@
 
 namespace iroha {
   namespace ametsuchi {
+    /**
+     * Class which implements BlockQuery with a Redis backend.
+     */
     class RedisFlatBlockQuery : public BlockQuery {
      public:
       RedisFlatBlockQuery(cpp_redis::redis_client &client,
