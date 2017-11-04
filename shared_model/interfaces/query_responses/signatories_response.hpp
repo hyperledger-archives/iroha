@@ -65,9 +65,11 @@ namespace shared_model {
        */
       OldModelType *makeOldModel() const override {
         OldModelType *oldModel = new OldModelType();
-        //        BOOST_ASSERT(decltype(oldModel->keys)::value_type::size()
-        //                     == publicKeys().size());
-        // for (size_t )
+        const auto vs = keys();
+        std::for_each(vs.begin(), vs.end(), [&oldModel](const auto &key) {
+          oldModel->keys.push_back(
+              key->template makeOldModel<iroha::pubkey_t>());
+        });
         return oldModel;
       }
     };
