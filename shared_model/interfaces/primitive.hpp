@@ -18,47 +18,24 @@
 #ifndef IROHA_PRIMITIVE_HPP
 #define IROHA_PRIMITIVE_HPP
 
-#include <string>
+#include "interfaces/model_primitive.hpp"
 
 namespace shared_model {
   namespace interface {
 
     /**
-     * Primitive is a base class of whole domain objects in system.
-     * This class required for guarantee consistent interface on all model
-     * objects.
+     * Primitive is the base class for all model objects, that require backward
+     * compatibility
      * @tparam Model - your new style model;
      * @tparam OldModel - old-style model, that changed with new model;
      */
     template <typename Model, typename OldModel>
-    class Primitive {
+    class Primitive : public ModelPrimitive<Model> {
      public:
-      /**
-       * Reference for model type.
-       */
-      using ModelType = Model;
-
       /**
        * Reference for old-style model type
        */
       using OldModelType = OldModel;
-
-      /**
-       * Make string developer representation of object
-       * @return string with internal state of object
-       */
-      virtual std::string toString() const {
-        std::string s = "Primitive at address[";
-        s += std::to_string(reinterpret_cast<uint64_t>(this));
-        s += "]";
-        return s;
-      }
-
-      virtual bool operator==(const ModelType &rhs) const = 0;
-
-      virtual bool operator!=(const ModelType &rhs) const {
-        return not(*this == rhs);
-      }
 
       /**
        * Create new old-style object for model.
@@ -69,18 +46,6 @@ namespace shared_model {
        * @return pointer for old-style object
        */
       [[deprecated]] virtual OldModelType *makeOldModel() const = 0;
-
-      /**
-       * Polymorphic copy constructor.
-       * Method guarantee deep-copy.
-       * @return pointer to copied object
-       * discussion note: this method possible to rework with in-place pointer
-       * as parameter. such as: copy(T* ptr=nullptr), on nullptr allocate object
-       * on heap, otherwise in passed pointer
-       */
-      virtual ModelType *copy() const = 0;
-
-      virtual ~Primitive() = default;
     };
 
   }  // namespace interface

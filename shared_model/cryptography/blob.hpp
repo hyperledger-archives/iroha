@@ -18,7 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_BLOB_HPP
 #define IROHA_SHARED_MODEL_BLOB_HPP
 
-#include "interfaces/primitive.hpp"
+#include "interfaces/model_primitive.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Blob interface present user-friendly blob for working with low-level
      * binary stuff. Its length is not fixed in compile time.
      */
-    class Blob : public interface::Primitive<Blob, Blob> {
+    class Blob : public interface::ModelPrimitive<Blob> {
      public:
       /**
        * @return provides raw representation of blob
@@ -54,6 +54,18 @@ namespace shared_model {
 
       bool operator==(const Blob &rhs) const override {
         return blob() == rhs.blob();
+      }
+
+      /**
+       * Method perform transforming object to old-fashion blob_t format
+       * @tparam BlobType - type of blob
+       * @return blob_t array with own data
+       * Design note: this method is deprecated and should be removed after
+       * migration to shared model in whole project
+       */
+      template <typename BlobType>
+      [[deprecated]] BlobType makeOldModel() {
+        return BlobType::from_string(blob());
       }
     };
   }  // namespace crypto
