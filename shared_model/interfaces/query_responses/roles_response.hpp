@@ -34,7 +34,7 @@ namespace shared_model {
       /**
        * @return all roles of the current system
        */
-      virtual const types::RolesType &roles() const = 0;
+      virtual const std::vector<types::RoleIdType> &roles() const = 0;
 
       /**
        * Stringify the data.

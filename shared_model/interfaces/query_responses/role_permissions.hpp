@@ -35,7 +35,8 @@ namespace shared_model {
       /**
        * @return role permissions
        */
-      virtual const types::RolePermissionsType &rolePermissions() const = 0;
+      virtual const std::vector<types::PermissionNameType> &rolePermissions()
+          const = 0;
 
       /**
        * Stringify the data.

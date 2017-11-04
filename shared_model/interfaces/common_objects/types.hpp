@@ -18,18 +18,28 @@
 #ifndef IROHA_SHARED_MODEL_TYPES_HPP
 #define IROHA_SHARED_MODEL_TYPES_HPP
 
+#include <cstdint>
+#include <string>
+#include <vector>
 #include "common/types.hpp"
 #include "cryptography/public_key.hpp"
+#include "interfaces/polymorphic_wrapper.hpp"
 
 namespace shared_model {
+
   namespace interface {
     namespace types {
       /// Type of account id
       using AccountIdType = std::string;
+      /// Type of precision
+      using PrecisionType = uint8_t;
       /// Type of height (for Block, Proposal etc)
       using HeightType = uint64_t;
       /// Type of public key
       using PubkeyType = crypto::PublicKey;
+      /// Type of public keys' collection
+      using PublicKeyCollectionType =
+          std::vector<detail::PolymorphicWrapper<PubkeyType>>;
       /// Type of role (i.e admin, user)
       using RoleIdType = std::string;
       /// Iroha domain id type
