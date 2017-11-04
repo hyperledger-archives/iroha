@@ -55,7 +55,7 @@ namespace shared_model {
 
       /**
        * Polymorphic copy constructor.
-       * Method guarantee deep-copy.
+       * Method guarantees deep-copy.
        * @return pointer to copied object
        * discussion note: this method possible to rework with in-place pointer
        * as parameter. such as: copy(T* ptr=nullptr), on nullptr allocate object

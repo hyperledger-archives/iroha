@@ -24,7 +24,7 @@ namespace shared_model {
   namespace interface {
 
     /**
-     * Primitive it the base class for all model objects, that require backward
+     * Primitive is the base class for all model objects, that require backward
      * compatibility
      * @tparam Model - your new style model;
      * @tparam OldModel - old-style model, that changed with new model;
@@ -32,7 +32,6 @@ namespace shared_model {
     template <typename Model, typename OldModel>
     class Primitive : public ModelPrimitive<Model> {
      public:
-
       /**
        * Reference for old-style model type
        */
