@@ -19,8 +19,8 @@
 #define IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
 
 #include <cpp_redis/redis_client.hpp>
+#include "ametsuchi/block_query.hpp"
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
-#include "ametsuchi/impl/flat_file_block_query.hpp"
 
 #include "model/converters/json_block_factory.hpp"
 
@@ -28,10 +28,12 @@
 
 namespace iroha {
   namespace ametsuchi {
-    class RedisFlatBlockQuery : public FlatFileBlockQuery {
+    /**
+     * Class which implements BlockQuery with a Redis backend.
+     */
+    class RedisBlockQuery : public BlockQuery {
      public:
-      RedisFlatBlockQuery(cpp_redis::redis_client &client,
-                          FlatFile &file_store);
+      RedisBlockQuery(cpp_redis::redis_client &client, FlatFile &file_store);
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
           const std::string &account_id) override;
@@ -41,6 +43,13 @@ namespace iroha {
 
       boost::optional<model::Transaction> getTxByHashSync(
           const std::string &hash) override;
+
+      rxcpp::observable<model::Block> getBlocks(uint32_t height,
+                                                uint32_t count) override;
+
+      rxcpp::observable<model::Block> getBlocksFrom(uint32_t height) override;
+
+      rxcpp::observable<model::Block> getTopBlocks(uint32_t count) override;
 
      private:
       /**
@@ -69,7 +78,9 @@ namespace iroha {
       std::function<void(cpp_redis::reply &)> callbackToLrange(
           const rxcpp::subscriber<model::Transaction> &s, uint64_t block_id);
 
+      FlatFile &block_store_;
       cpp_redis::redis_client &client_;
+      model::converters::JsonBlockFactory serializer_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

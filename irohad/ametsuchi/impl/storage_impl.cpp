@@ -19,7 +19,7 @@
 
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-#include "ametsuchi/impl/redis_flat_block_query.hpp"
+#include "ametsuchi/impl/redis_block_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "model/converters/json_common.hpp"
 
@@ -44,8 +44,7 @@ namespace iroha {
           wsv_connection_(std::move(wsv_connection)),
           wsv_transaction_(std::move(wsv_transaction)),
           wsv_(std::make_shared<PostgresWsvQuery>(*wsv_transaction_)),
-          blocks_(
-              std::make_shared<RedisFlatBlockQuery>(*index_, *block_store_)) {
+          blocks_(std::make_shared<RedisBlockQuery>(*index_, *block_store_)) {
       log_ = logger::log("StorageImpl");
 
       wsv_transaction_->exec(init_);

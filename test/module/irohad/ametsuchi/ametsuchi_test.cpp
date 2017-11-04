@@ -34,8 +34,6 @@
 #include "model/permissions.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
-#include "ametsuchi/impl/redis_flat_block_query.hpp"
-
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
 using namespace framework::test_subscriber;
