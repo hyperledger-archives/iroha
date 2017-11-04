@@ -15,23 +15,21 @@
  * limitations under the License.
  */
 
-#include "ametsuchi/impl/redis_flat_block_query.hpp"
+#include "ametsuchi/impl/redis_block_query.hpp"
 #include "crypto/hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {
 
-    RedisFlatBlockQuery::RedisFlatBlockQuery(cpp_redis::redis_client &client,
-                                             FlatFile &file_store)
+    RedisBlockQuery::RedisBlockQuery(cpp_redis::redis_client &client,
+                                     FlatFile &file_store)
         : block_store_(file_store), client_(client) {}
 
-    rxcpp::observable<model::Block> RedisFlatBlockQuery::getBlocks(
-        uint32_t height, uint32_t count) {
+    rxcpp::observable<model::Block> RedisBlockQuery::getBlocks(uint32_t height,
+                                                               uint32_t count) {
       auto to = height + count;
       auto last_id = block_store_.last_id();
-      if (to > last_id) {
-        to = last_id;
-      }
+      to = std::min(to, last_id);
       if (height > to) {
         return rxcpp::observable<>::empty<model::Block>();
       }
@@ -59,22 +57,20 @@ namespace iroha {
       });
     }
 
-    rxcpp::observable<model::Block> RedisFlatBlockQuery::getBlocksFrom(
+    rxcpp::observable<model::Block> RedisBlockQuery::getBlocksFrom(
         uint32_t height) {
       return getBlocks(height, block_store_.last_id());
     }
 
-    rxcpp::observable<model::Block> RedisFlatBlockQuery::getTopBlocks(
+    rxcpp::observable<model::Block> RedisBlockQuery::getTopBlocks(
         uint32_t count) {
       auto last_id = block_store_.last_id();
-      if (count > last_id) {
-        count = last_id;
-      }
+      count = std::min(count, last_id);
       return getBlocks(last_id - count + 1, count);
     }
 
     std::vector<iroha::model::Block::BlockHeightType>
-    RedisFlatBlockQuery::getBlockIds(const std::string &account_id) {
+    RedisBlockQuery::getBlockIds(const std::string &account_id) {
       std::vector<uint64_t> block_ids;
       client_.lrange(
           account_id, 0, -1, [this, &block_ids](cpp_redis::reply &reply) {
@@ -92,7 +88,7 @@ namespace iroha {
     }
 
     boost::optional<iroha::model::Block::BlockHeightType>
-    RedisFlatBlockQuery::getBlockId(const std::string &hash) {
+    RedisBlockQuery::getBlockId(const std::string &hash) {
       boost::optional<uint64_t> blockId;
       client_.get(hash, [this, &blockId](cpp_redis::reply &reply) {
         if (reply.is_null()) {
@@ -106,8 +102,7 @@ namespace iroha {
       return blockId;
     }
 
-    std::function<void(cpp_redis::reply &)>
-    RedisFlatBlockQuery::callbackToLrange(
+    std::function<void(cpp_redis::reply &)> RedisBlockQuery::callbackToLrange(
         const rxcpp::subscriber<model::Transaction> &s, uint64_t block_id) {
       return [this, &s, block_id](cpp_redis::reply &reply) {
         auto tx_ids_reply = reply.as_array();
@@ -127,7 +122,7 @@ namespace iroha {
     }
 
     rxcpp::observable<model::Transaction>
-    RedisFlatBlockQuery::getAccountTransactions(const std::string &account_id) {
+    RedisBlockQuery::getAccountTransactions(const std::string &account_id) {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, account_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
@@ -148,8 +143,8 @@ namespace iroha {
     }
 
     rxcpp::observable<model::Transaction>
-    RedisFlatBlockQuery::getAccountAssetTransactions(
-        const std::string &account_id, const std::string &asset_id) {
+    RedisBlockQuery::getAccountAssetTransactions(const std::string &account_id,
+                                                 const std::string &asset_id) {
       return rxcpp::observable<>::create<model::Transaction>(
           [this, account_id, asset_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
@@ -176,7 +171,7 @@ namespace iroha {
           });
     }
 
-    boost::optional<model::Transaction> RedisFlatBlockQuery::getTxByHashSync(
+    boost::optional<model::Transaction> RedisBlockQuery::getTxByHashSync(
         const std::string &hash) {
       return getBlockId(hash) |
           [this](auto blockId) { return block_store_.get(blockId); } |

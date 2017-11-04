@@ -31,10 +31,9 @@ namespace iroha {
     /**
      * Class which implements BlockQuery with a Redis backend.
      */
-    class RedisFlatBlockQuery : public BlockQuery {
+    class RedisBlockQuery : public BlockQuery {
      public:
-      RedisFlatBlockQuery(cpp_redis::redis_client &client,
-                          FlatFile &file_store);
+      RedisBlockQuery(cpp_redis::redis_client &client, FlatFile &file_store);
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
           const std::string &account_id) override;
