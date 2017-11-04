@@ -15,23 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_STATELESS_RESPONSE_HPP
-#define IROHA_STATELESS_RESPONSE_HPP
+#ifndef IROHA_UNKNOWN_TX_RESPONSE_HPP
+#define IROHA_UNKNOWN_TX_RESPONSE_HPP
 
-#include "model/transaction_response.hpp"
+#include "interfaces/primitive.hpp"
 
-namespace iroha {
-  namespace model {
-
+namespace shared_model {
+  namespace interface {
     /**
-     * Transaction response that contains
+     * Transaction not found
      */
-    struct TransactionStatelessResponse : TransactionResponse {
-      /**
-       * Is stateless validation passed
-       */
-      bool passed{};
+    class UnknownTxResponse : public AbstractTxResponse<UnknownTxResponse> {
+     private:
+      std::string className() const override { return "UnknownTxResponse"; }
+
+      iroha::model::TransactionResponse::Status modelStatus() const {
+        return iroha::model::TransactionResponse::Status::
+            STATELESS_VALIDATION_FAILED;
+      }
     };
-  }  // namespace model
-}  // namespace iroha
-#endif  // IROHA_STATELESS_RESPONSE_HPP
+  }  // namespace interface
+}  // namespace shared_model
+#endif  // IROHA_UNKNOWN_TX_RESPONSE_HPP

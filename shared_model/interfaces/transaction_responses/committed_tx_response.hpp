@@ -15,23 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_STATELESS_RESPONSE_HPP
-#define IROHA_STATELESS_RESPONSE_HPP
+#ifndef IROHA_COMMITTED_TX_RESPONSE_HPP
+#define IROHA_COMMITTED_TX_RESPONSE_HPP
 
-#include "model/transaction_response.hpp"
+#include "interfaces/transaction_responses/abstract_tx_response.hpp"
 
-namespace iroha {
-  namespace model {
-
+namespace shared_model {
+  namespace interface {
     /**
-     * Transaction response that contains
+     * Tx pipeline succeeded, tx is committed in ledger
      */
-    struct TransactionStatelessResponse : TransactionResponse {
-      /**
-       * Is stateless validation passed
-       */
-      bool passed{};
+    class CommittedTxResponse : public AbstractTxResponse<CommittedTxResponse> {
+     private:
+      std::string className() const override { return "CommittedTxResponse"; }
+
+      iroha::model::TransactionResponse::Status modelStatus() const {
+        return iroha::model::TransactionResponse::Status::COMMITTED;
+      }
     };
-  }  // namespace model
-}  // namespace iroha
-#endif  // IROHA_STATELESS_RESPONSE_HPP
+
+  }  // namespace interface
+}  // namespace shared_model
+#endif  // IROHA_COMMITTED_TX_RESPONSE_HPP
