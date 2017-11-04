@@ -29,7 +29,7 @@ namespace shared_model {
      private:
       std::string className() const override { return "CommittedTxResponse"; }
 
-      iroha::model::TransactionResponse::Status modelStatus() const {
+      iroha::model::TransactionResponse::Status oldModelStatus() const {
         return iroha::model::TransactionResponse::Status::COMMITTED;
       }
     };

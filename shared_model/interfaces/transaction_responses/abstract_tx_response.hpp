@@ -40,7 +40,8 @@ namespace shared_model {
       /**
        * @return old model status
        */
-      virtual iroha::model::TransactionResponse::Status modelStatus() const = 0;
+      virtual iroha::model::TransactionResponse::Status oldModelStatus()
+          const = 0;
 
      public:
       // ------------------------| Primitive override |-------------------------
@@ -51,7 +52,7 @@ namespace shared_model {
 
       iroha::model::TransactionResponse *makeOldModel() const override {
         auto tx_response = new iroha::model::TransactionResponse();
-        tx_response->current_status = modelStatus();
+        tx_response->current_status = oldModelStatus();
         return tx_response;
       }
 
