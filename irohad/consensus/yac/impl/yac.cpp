@@ -195,45 +195,46 @@ namespace iroha {
         auto answer =
             vote_storage_.store(vote, cluster_order_.getNumberOfPeers());
 
-        if (not answer.has_value()) {
-          // commit don't applied
-          return;
-        }
-
-        auto proposal_hash = vote.hash.proposal_hash;
-        auto already_processed =
-            vote_storage_.getProcessingState(proposal_hash);
-
-        if (answer->commit.has_value()) {
-          if (not already_processed) {
-            // propagate for all
-
-            log_->info("Propagate commit {} to whole network",
-                       vote.hash.block_hash);
-
-            propagateCommit(answer->commit.value());
-          } else if (from.has_value()) {
-            // propagate directly
-
-            log_->info("Propagate commit {} directly to {}",
-                       vote.hash.block_hash,
-                       from.value().address);
-
-            propagateCommitDirectly(from.value(), answer->commit.value());
-          }
-        }
-
-        if (answer->reject.has_value()) {
-          log_->info("Reject case on hash {} achieved", proposal_hash);
+        answer | [&](const auto &answer) {
+          auto &proposal_hash = vote.hash.proposal_hash;
+          auto already_processed =
+              vote_storage_.getProcessingState(proposal_hash);
 
           if (not already_processed) {
-            // propagate reject for all
-            propagateReject(answer->reject.value());
-          } else if (from.has_value()) {
-            // propagate directly
-            propagateRejectDirectly(from.value(), answer->reject.value());
+            answer.commit | [&](const auto &commit) {
+              // propagate for all
+
+              log_->info("Propagate commit {} to whole network",
+                         vote.hash.block_hash);
+
+              this->propagateCommit(commit);
+            };
+            answer.reject | [&](const auto &reject) {
+              log_->info("Reject case on hash {} achieved", proposal_hash);
+
+              // propagate reject for all
+              this->propagateReject(reject);
+            };
+          } else {
+            from | [&](const auto &from) {
+              answer.commit | [&](const auto &commit) {
+                // propagate directly
+
+                log_->info("Propagate commit {} directly to {}",
+                           vote.hash.block_hash,
+                           from.address);
+
+                this->propagateCommitDirectly(from, commit);
+              };
+              answer.reject | [&](const auto &reject) {
+                log_->info("Reject case on hash {} achieved", proposal_hash);
+
+                // propagate directly
+                this->propagateRejectDirectly(from, reject);
+              };
+            };
           }
-        }
+        };
       }
 
       // ------|Propagation|------
