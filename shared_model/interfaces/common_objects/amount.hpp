@@ -25,12 +25,12 @@
 #include "interfaces/common_objects/amount.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
-    class Amount : public Primitive<Amount, iroha::Amount> {
+    class Amount : public Hashable<Amount, iroha::Amount> {
      public:
       /**
        * Converts to uint64_t vector
@@ -68,10 +68,6 @@ namespace shared_model {
           const Amount &percents) const = 0;
 
       /**
-       * Comparisons are possible between amounts with different precisions.
-       */
-
-      /**
        * Checks equality of objects inside
        * @param rhs - other wrapped value
        * @return true, if wrapped objects are same
@@ -79,11 +75,6 @@ namespace shared_model {
       bool operator==(const ModelType &rhs) const override {
         return intValue() == rhs.intValue() and precision() == rhs.precision();
       }
-
-      virtual bool operator<(const Amount &) const = 0;
-      virtual bool operator>(const Amount &) const = 0;
-      virtual bool operator<=(const Amount &) const = 0;
-      virtual bool operator>=(const Amount &) const = 0;
 
       /**
        * Stringify the data.

@@ -19,13 +19,13 @@
 #define IROHA_SHARED_MODEL_ASSET_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/asset.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
-    class Asset : public Primitive<Asset, iroha::model::Asset> {
+    class Asset : public Hashable<Asset, iroha::model::Asset> {
      public:
       /**
        * @return Identity of asset

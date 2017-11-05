@@ -18,8 +18,6 @@
 #ifndef IROHA_SHARED_MODEL_TRANSACTIONS_RESPONSE_HPP
 #define IROHA_SHARED_MODEL_TRANSACTIONS_RESPONSE_HPP
 
-#include <algorithm>
-#include <boost/algorithm/string/join.hpp>
 #include <rxcpp/rx-observable.hpp>
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
@@ -56,7 +54,6 @@ namespace shared_model {
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("TransactionsResponse")
-            .append("transactions")
             .appendAll(transactions(), [](auto &tx) { return tx->toString(); })
             .finalize();
       }

@@ -18,8 +18,6 @@
 #ifndef IROHA_SHARED_MODEL_SIGNATORIES_RESPONSE_HPP
 #define IROHA_SHARED_MODEL_SIGNATORIES_RESPONSE_HPP
 
-#include <boost/assert.hpp>
-#include "crypto/hash.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
 #include "interfaces/visitor_apply_for_all.hpp"
@@ -47,7 +45,6 @@ namespace shared_model {
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("SignatoriesResponse")
-            .append("signatories")
             .appendAll(keys(), [](auto &key) { return key->toString(); })
             .finalize();
       }
@@ -67,7 +64,7 @@ namespace shared_model {
         OldModelType *oldModel = new OldModelType();
         const auto vs = keys();
         std::for_each(vs.begin(), vs.end(), [&oldModel](const auto &key) {
-          oldModel->keys.push_back(
+          oldModel->keys.emplace_back(
               key->template makeOldModel<iroha::pubkey_t>());
         });
         return oldModel;

@@ -21,7 +21,7 @@
 #include "cryptography/blob.hpp"
 #include "cryptography/public_key.hpp"
 #include "cryptography/signed.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/signature.hpp"
 #include "utils/string_builder.hpp"
 
@@ -31,7 +31,7 @@ namespace shared_model {
     /**
      * Class represents signature of high-level domain objects.
      */
-    class Signature : public Primitive<Signature, iroha::model::Signature> {
+    class Signature : public Hashable<Signature, iroha::model::Signature> {
      public:
       /**
        * Type of public key

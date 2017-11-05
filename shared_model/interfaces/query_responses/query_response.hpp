@@ -24,10 +24,10 @@
 #include "interfaces/query_responses/account_asset_response.hpp"
 #include "interfaces/query_responses/account_response.hpp"
 #include "interfaces/query_responses/asset_response.hpp"
-#include "interfaces/query_responses/error_response.hpp"
 #include "interfaces/query_responses/role_permissions.hpp"
 #include "interfaces/query_responses/roles_response.hpp"
 #include "interfaces/query_responses/signatories_response.hpp"
+#include "interfaces/query_responses/stateless_failed_error_response.hpp"
 #include "interfaces/query_responses/transactions_response.hpp"
 #include "model/query_response.hpp"
 
@@ -47,14 +47,15 @@ namespace shared_model {
 
      public:
       /// Type of container with all concrete query response
-      using QueryResponseVariantType = boost::variant<w<AccountAssetResponse>,
-                                                      w<AccountResponse>,
-                                                      w<AssetResponse>,
-                                                      w<ErrorResponse>,
-                                                      w<RolePermissionsResponse>,
-                                                      w<RolesResponse>,
-                                                      w<SignatoriesResponse>,
-                                                      w<TransactionsResponse>>;
+      using QueryResponseVariantType =
+          boost::variant<w<AccountAssetResponse>,
+                         w<AccountResponse>,
+                         w<AssetResponse>,
+                         w<RolePermissionsResponse>,
+                         w<RolesResponse>,
+                         w<SignatoriesResponse>,
+                         w<TransactionsResponse>,
+                         w<StatelessFailedErrorResponse>>;
 
       /// Type of all available query responses
       using QueryResponseListType = QueryResponseVariantType::types;

@@ -40,6 +40,11 @@ namespace shared_model {
       virtual const Account &account() const = 0;
 
       /**
+       * @return roles attached to the account
+       */
+      virtual const types::RolesType &roles() const = 0;
+
+      /**
        * Stringify the data.
        * @return string representation of data.
        */
@@ -47,6 +52,8 @@ namespace shared_model {
         return detail::PrettyStringBuilder()
             .init("AccountResponse")
             .append(account().toString())
+            .append("roles")
+            .appendAll(roles(), [](auto s) { return s; })
             .finalize();
       }
 
@@ -56,7 +63,7 @@ namespace shared_model {
        * @return true if they have same values.
        */
       bool operator==(const ModelType &rhs) const override {
-        return account() == rhs.account();
+        return account() == rhs.account() and roles() == rhs.roles();
       }
 
       /**
@@ -66,6 +73,8 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         OldModelType *oldModel = new OldModelType();
         using OldAccountType = decltype(oldModel->account);
+        /// Use shared_ptr and placement-new to copy new model field to oldModel's field and
+        /// to return raw pointer
         auto p = std::shared_ptr<OldAccountType>(account().makeOldModel());
         new (&oldModel->account) OldAccountType(*p);
         return oldModel;

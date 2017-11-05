@@ -18,6 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_ASSET_RESPONSE_HPP
 #define IROHA_SHARED_MODEL_ASSET_RESPONSE_HPP
 
+#include <new>
 #include "interfaces/common_objects/asset.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
@@ -63,6 +64,8 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         OldModelType *oldModel = new OldModelType();
         using OldAssetType = decltype(oldModel->asset);
+        /// Use shared_ptr and placement-new to copy new model field to oldModel's field and
+        /// to return raw pointer
         auto p = std::shared_ptr<OldAssetType>(asset().makeOldModel());
         new (&oldModel->asset) OldAssetType(*p);
         return oldModel;

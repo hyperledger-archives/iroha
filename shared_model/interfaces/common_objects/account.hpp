@@ -19,13 +19,14 @@
 #define IROHA_SHARED_MODEL_ACCOUNT_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
+#include "cryptography/hash.hpp"
 #include "model/account.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
-    class Account : public Primitive<Account, iroha::model::Account> {
+    class Account : public Hashable<Account, iroha::model::Account> {
      public:
       /**
        * @return Identity of user, for fetching data
@@ -53,16 +54,6 @@ namespace shared_model {
             .append("domainId", domainId())
             .append("quorum", std::to_string(quorum()))
             .finalize();
-      }
-
-      /**
-       * Checks equality of objects inside
-       * @param rhs - other wrapped value
-       * @return true, if wrapped objects are same
-       */
-      bool operator==(const ModelType &rhs) const override {
-        return accountId() == rhs.accountId() and domainId() == rhs.domainId()
-            and quorum() == rhs.quorum();
       }
 
       /**

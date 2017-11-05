@@ -21,14 +21,14 @@
 #include <new>
 #include "interfaces/common_objects/amount.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "model/account_asset.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
     class AccountAsset
-        : public Primitive<AccountAsset, iroha::model::AccountAsset> {
+        : public Hashable<AccountAsset, iroha::model::AccountAsset> {
      public:
       /**
        * @return Identity of user, for fetching data
@@ -77,6 +77,8 @@ namespace shared_model {
         oldModel->account_id = accountId();
         oldModel->asset_id = assetId();
         using OldBalanceType = decltype(oldModel->balance);
+        /// Use shared_ptr and placement-new to copy new model field to oldModel's field and
+        /// to return raw pointer
         auto p = std::shared_ptr<OldBalanceType>(balance().makeOldModel());
         new (&oldModel->balance) OldBalanceType(*p);
         return oldModel;

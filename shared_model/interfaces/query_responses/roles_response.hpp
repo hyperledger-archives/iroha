@@ -43,7 +43,6 @@ namespace shared_model {
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("RolesResponse")
-            .append("roles")
             .appendAll(roles(), [](auto s) { return s; })
             .finalize();
       }
