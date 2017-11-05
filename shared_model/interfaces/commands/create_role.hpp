@@ -35,7 +35,7 @@ namespace shared_model {
        * @return Id of the domain to create
        */
       virtual const types::RoleIdType &roleName() const = 0;
-      /// Set of Permissions
+      /// Set of Permissions to insure the order for consistent hash
       using PermissionsType = std::set<std::string>;
       /**
        * @return permissions associated with the role
@@ -44,17 +44,12 @@ namespace shared_model {
 
       std::string toString() const override {
         auto roles_set = rolePermissions();
-        std::string roles_accum =
-            std::accumulate(std::begin(roles_set),
-                            std::end(roles_set),
-                            std::string{},
-                            [](const std::string &a, const std::string &b) {
-                              return a.empty() ? b : a + ", " + b;
-                            });
         return detail::PrettyStringBuilder()
             .init("CreateRole")
             .append("role_name", roleName())
-            .append("Role_permissions", roles_accum)
+            .appendAll(roles_set, [](auto& role){
+              return role;
+            })
             .finalize();
       }
 

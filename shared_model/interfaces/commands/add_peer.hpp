@@ -45,7 +45,7 @@ namespace shared_model {
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("AddPeer")
-            .append("peer_key", peerKey().toString())
+            .append(peerKey().toString())
             .append("peer_address", peerAddress())
             .finalize();
       }
@@ -53,8 +53,7 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AddPeer;
         oldModel->address = peerAddress();
-        // TODO: check if this is right
-        oldModel->peer_key.from_string(peerKey().blob());
+        oldModel->peer_key.from_string(peerKey().makeOldModel()->blob());
         return oldModel;
       }
     };

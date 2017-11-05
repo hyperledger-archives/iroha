@@ -51,7 +51,7 @@ namespace shared_model {
             .init("CreateAccount")
             .append("account_name", accountName())
             .append("domain_id", domainId())
-            .append("pubkey", pubkey().toString())
+            .append(pubkey().toString())
             .finalize();
       }
 
@@ -59,8 +59,7 @@ namespace shared_model {
         auto oldModel = new iroha::model::CreateAccount;
         oldModel->account_name = accountName();
         oldModel->domain_id = domainId();
-        //  TODO: check if this is right
-        oldModel->pubkey.from_string(pubkey().blob());
+        oldModel->pubkey.from_string(pubkey().makeOldModel()->blob());
         return oldModel;
       }
     };
