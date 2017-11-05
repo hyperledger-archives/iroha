@@ -151,27 +151,23 @@ namespace iroha {
                             CommitMessage commit) {
         auto answer =
             vote_storage_.store(commit, cluster_order_.getNumberOfPeers());
-        if (not answer.has_value()) {
-          // commit don't applied
-          return;
-        }
+        answer | [&](const auto &answer) {
+          auto proposal_hash = getProposalHash(commit.votes).value();
+          auto already_processed =
+              vote_storage_.getProcessingState(proposal_hash);
 
-        auto proposal_hash = getProposalHash(commit.votes).value();
-        auto already_processed =
-            vote_storage_.getProcessingState(proposal_hash);
-
-        if (not already_processed) {
-          if (answer->commit.has_value()) {
-            notifier_.get_subscriber().on_next(*answer->commit);
+          if (not already_processed) {
+            answer.commit | [&](const auto &commit) {
+              notifier_.get_subscriber().on_next(commit);
+            };
+            answer.reject | [&](const auto &reject) {
+              log_->warn("reject case");
+              // TODO 14/08/17 Muratov: work on reject case IR-497
+            };
+            vote_storage_.markAsProcessedState(proposal_hash);
           }
-
-          if (answer->reject.has_value()) {
-            log_->warn("reject case");
-            // TODO 14/08/17 Muratov: work on reject case IR-497
-          }
-          vote_storage_.markAsProcessedState(proposal_hash);
-        }
-        closeRound();
+          this->closeRound();
+        };
       }
 
       void Yac::applyReject(nonstd::optional<model::Peer> from,
