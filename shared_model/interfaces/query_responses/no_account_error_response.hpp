@@ -28,14 +28,12 @@ namespace shared_model {
      * Error response of broken query, no specified account
      */
     class NoAccountErrorResponse
-      : public AbstractErrorResponse<NoAccountErrorResponse> {
-    private:
+        : public AbstractErrorResponse<NoAccountErrorResponse> {
+     private:
       /**
        * @return stateful failed error as error reason
        */
-      std::string reason() const override {
-        return "NoAccountErrorResponse";
-      }
+      std::string reason() const override { return "NoAccountErrorResponse"; }
 
       /**
        * @return Old model error reason.

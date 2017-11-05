@@ -28,8 +28,8 @@ namespace shared_model {
      * Error response of broken query, account has no specified account assets.
      */
     class NoAccountAssetsErrorResponse
-      : public AbstractErrorResponse<NoAccountAssetsErrorResponse> {
-    private:
+        : public AbstractErrorResponse<NoAccountAssetsErrorResponse> {
+     private:
       /**
        * @return stateful failed error as error reason
        */
