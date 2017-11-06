@@ -90,16 +90,7 @@ namespace iroha {
       void Yac::on_vote(VoteMessage vote) {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(vote)) {
-          nonstd::optional<model::Peer> from;
-          auto peers = cluster_order_.getPeers();
-          auto it =
-              std::find_if(peers.begin(), peers.end(), [&](const auto &peer) {
-                return peer.pubkey == vote.signature.pubkey;
-              });
-          if (it != peers.end()) {
-            from = *it;
-          }
-          this->applyVote(from, vote);
+          this->applyVote(findPeer(vote), vote);
         } else {
           log_->warn(cryptoError({vote}));
         }
@@ -144,6 +135,15 @@ namespace iroha {
       }
 
       void Yac::closeRound() { timer_->deny(); }
+
+      nonstd::optional<model::Peer> Yac::findPeer(const VoteMessage &vote) {
+        auto peers = cluster_order_.getPeers();
+        auto it =
+            std::find_if(peers.begin(), peers.end(), [&](const auto &peer) {
+              return peer.pubkey == vote.signature.pubkey;
+            });
+        return it != peers.end() ? nonstd::make_optional(*it) : nonstd::nullopt;
+      }
 
       // ------|Apply data|------
 

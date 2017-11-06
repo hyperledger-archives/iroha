@@ -86,6 +86,13 @@ namespace iroha {
          */
         void closeRound();
 
+        /**
+         * Find corresponding peer in the ledger from vote message
+         * @param vote message containing peer information
+         * @return peer if it is present in the ledger, nullopt otherwise
+         */
+        nonstd::optional<model::Peer> findPeer(const VoteMessage &vote);
+
         // ------|Apply data|------
         void applyCommit(nonstd::optional<model::Peer> from,
                          CommitMessage commit);
