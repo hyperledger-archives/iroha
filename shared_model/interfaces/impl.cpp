@@ -20,3 +20,4 @@
 #include "interfaces/queries/query.hpp"
 #include "interfaces/query_responses/query_response.hpp"
 #include "interfaces/transaction.hpp"
+#include "interfaces/transaction_responses/tx_response.hpp"
