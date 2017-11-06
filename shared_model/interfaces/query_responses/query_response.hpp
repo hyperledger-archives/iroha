@@ -64,7 +64,9 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         auto query_response = boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
-        // // TODO 06/11/2017 muratovv fix query hash
+        using hashType = decltype(query_response->query_hash);
+        query_response->query_hash =
+            queryHash().makeOldModel<hashType>();
         return query_response;
       }
 
