@@ -29,9 +29,9 @@ namespace shared_model {
      private:
       std::string className() const override { return "UnknownTxResponse"; }
 
-      iroha::model::TransactionResponse::Status oldModelStatus() const {
-        return iroha::model::TransactionResponse::Status::
-            NOT_RECEIVED;
+      iroha::model::TransactionResponse::Status oldModelStatus()
+          const override {
+        return iroha::model::TransactionResponse::Status::NOT_RECEIVED;
       }
     };
   }  // namespace interface

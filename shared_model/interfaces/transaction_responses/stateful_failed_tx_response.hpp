@@ -35,7 +35,8 @@ namespace shared_model {
         return "StatefulFailedTxResponse";
       }
 
-      iroha::model::TransactionResponse::Status oldModelStatus() const {
+      iroha::model::TransactionResponse::Status oldModelStatus()
+          const override {
         return iroha::model::TransactionResponse::Status::
             STATEFUL_VALIDATION_FAILED;
       }

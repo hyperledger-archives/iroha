@@ -32,7 +32,8 @@ namespace shared_model {
         return "StatelessValidTxResponse";
       }
 
-      iroha::model::TransactionResponse::Status oldModelStatus() const {
+      iroha::model::TransactionResponse::Status oldModelStatus()
+          const override {
         return iroha::model::TransactionResponse::Status::
             STATELESS_VALIDATION_SUCCESS;
       }
