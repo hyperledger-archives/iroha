@@ -94,6 +94,13 @@ namespace iroha {
         nonstd::optional<model::Peer> findPeer(const VoteMessage &vote);
 
         // ------|Apply data|------
+
+        /**
+         * Methods take optional peer as argument since peer which sent the
+         * message could be missing from the ledger. This is the case when the
+         * top block in ledger does not correspond to consensus round number
+         */
+
         void applyCommit(nonstd::optional<model::Peer> from,
                          CommitMessage commit);
         void applyReject(nonstd::optional<model::Peer> from,

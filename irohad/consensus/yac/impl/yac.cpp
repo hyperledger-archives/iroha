@@ -99,6 +99,7 @@ namespace iroha {
       void Yac::on_commit(CommitMessage commit) {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(commit)) {
+          // Commit does not contain data about peer which sent the message
           this->applyCommit(nonstd::nullopt, commit);
         } else {
           log_->warn(cryptoError(commit.votes));
@@ -108,6 +109,7 @@ namespace iroha {
       void Yac::on_reject(RejectMessage reject) {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(reject)) {
+          // Reject does not contain data about peer which sent the message
           this->applyReject(nonstd::nullopt, reject);
         } else {
           log_->warn(cryptoError(reject.votes));
