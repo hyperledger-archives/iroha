@@ -19,8 +19,9 @@
 #define IROHA_TX_RESPONSE_HPP
 
 #include <boost/variant.hpp>
-#include "interfaces/hashable.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
+#include "interfaces/primitive.hpp"
+#include "interfaces/transaction.hpp"
 #include "interfaces/transaction_responses/committed_tx_response.hpp"
 #include "interfaces/transaction_responses/stateful_failed_tx_response.hpp"
 #include "interfaces/transaction_responses/stateful_valid_tx_response.hpp"
@@ -33,12 +34,11 @@
 namespace shared_model {
   namespace interface {
     /**
-     * Architecture note: TransactionResponse inherit from hashable, because tx
-     * response should hold hash of transaction for what it attached.
+     * TransactionResponse is a status of transaction in system
      */
     class TransactionResponse
-        : public Hashable<TransactionResponse,
-                          iroha::model::TransactionResponse> {
+        : public Primitive<TransactionResponse,
+                           iroha::model::TransactionResponse> {
      private:
       /// PolymorphicWrapper shortcut type
       template <typename Value>
@@ -57,6 +57,11 @@ namespace shared_model {
       using ResponseListType = ResponseVariantType::types;
 
       /**
+       * @return hash of corresponding transaction
+       */
+      virtual const Transaction::HashType &transactionHash() const = 0;
+
+      /**
        * @return attached concrete tx response
        */
       virtual const ResponseVariantType &get() const = 0;
@@ -70,12 +75,13 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         auto response = boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
-        response->tx_hash = hash().blob();
+        response->tx_hash = transactionHash().blob();
         return response;
       }
 
       bool operator==(const ModelType &rhs) const override {
-        return hash() == rhs.hash() and get() == rhs.get();
+        return transactionHash() == rhs.transactionHash()
+            and get() == rhs.get();
       }
     };
   }  // namespace interface

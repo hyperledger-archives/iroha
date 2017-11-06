@@ -19,7 +19,8 @@
 #define IROHA_SHARED_MODEL_QUERY_RESPONSE_HPP
 
 #include <boost/variant.hpp>
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
+#include "interfaces/queries/query.hpp"
 #include "interfaces/query_responses/account_assets_response.hpp"
 #include "model/query_response.hpp"
 
@@ -29,12 +30,9 @@ namespace shared_model {
      * Class QueryResponse(qr) provides container with concrete query responses
      * available in the system.
      * General note: this class is container for QRs but not a base class.
-     * Architecture note: query responses should be attached to following query.
-     * To perform it make QueryResponse hashable, thus, in hash() method
-     * expects hash of the following query.
      */
     class QueryResponse
-        : public Hashable<QueryResponse, iroha::model::QueryResponse> {
+        : public Primitive<QueryResponse, iroha::model::QueryResponse> {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename Value>
@@ -52,6 +50,11 @@ namespace shared_model {
        */
       virtual const QueryResponseVariantType &get() const = 0;
 
+      /**
+       * @return hash of corresponding query
+       */
+      virtual const Query::HashType &queryHash() const = 0;
+
       // ------------------------| Primitive override |-------------------------
 
       std::string toString() const override {
@@ -59,12 +62,14 @@ namespace shared_model {
       }
 
       OldModelType *makeOldModel() const override {
-        return boost::apply_visitor(
+        auto query_response = boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
+        // // TODO 06/11/2017 muratovv fix query hash
+        return query_response;
       }
 
       bool operator==(const ModelType &rhs) const override {
-        return this->get() == rhs.get();
+        return queryHash() == rhs.queryHash() and get() == rhs.get();
       }
     };
   }  // namespace interface
