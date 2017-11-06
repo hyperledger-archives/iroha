@@ -89,7 +89,7 @@ namespace iroha {
     boost::optional<iroha::model::Block::BlockHeightType>
     RedisBlockQuery::getBlockId(const std::string &hash) {
       boost::optional<uint64_t> blockId;
-      client_.get(hash, [this, &blockId](cpp_redis::reply &reply) {
+      client_.get(hash, [&blockId](cpp_redis::reply &reply) {
         if (reply.is_null()) {
           blockId = boost::none;
         } else {
