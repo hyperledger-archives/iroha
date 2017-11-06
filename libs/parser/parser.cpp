@@ -31,7 +31,7 @@ namespace parser {
       return nonstd::nullopt;
     }
     return vec[0];
-  };
+  }
 
   std::vector<std::string> split(std::string line) {
     std::transform(line.begin(), line.end(), line.begin(), ::tolower);

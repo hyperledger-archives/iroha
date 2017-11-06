@@ -36,7 +36,6 @@ namespace iroha {
         // TODO 01/08/17 Muratov: implement effective ordering based on hash value IR-504
         return getInitialOrdering();
       }
-
     }  // namespace yac
   }    // namespace consensus
 }  // namespace iroha

@@ -84,7 +84,7 @@ namespace iroha {
           }
         }
         return getState();
-      };
+      }
 
       nonstd::optional<Answer> YacProposalStorage::insert(std::vector<
           VoteMessage> messages) {

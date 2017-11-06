@@ -18,7 +18,6 @@
 #include <algorithm>
 
 #include <gtest/gtest.h>
-#include <rapidjson/writer.h>
 
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"

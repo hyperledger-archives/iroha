@@ -31,6 +31,8 @@ namespace iroha {
        */
       class PbTransactionFactory {
        public:
+        PbTransactionFactory() {}
+
         /**
          * Convert block to proto block
          * @param block - reference to block

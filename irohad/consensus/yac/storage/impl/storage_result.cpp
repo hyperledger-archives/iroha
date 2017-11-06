@@ -24,7 +24,7 @@ namespace iroha {
       bool Answer::operator==(const Answer &rhs) const {
         return this->commit == rhs.commit and
             this->reject == rhs.reject;
-      };
+      }
     } // namespace yac
   } // namespace consensus
 } // namespace iroha

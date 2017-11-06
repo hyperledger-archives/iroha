@@ -35,7 +35,7 @@ namespace iroha {
         return false;
       }
       return true;
-    };
+    }
 
     bool PostgresWsvCommand::insertAccountRole(const std::string &account_id,
                                                const std::string &role_name) {
@@ -49,7 +49,7 @@ namespace iroha {
         return false;
       }
       return true;
-    };
+    }
 
     bool PostgresWsvCommand::insertRolePermissions(
         const std::string &role_id,
@@ -71,7 +71,7 @@ namespace iroha {
         return false;
       }
       return true;
-    };
+    }
 
     bool PostgresWsvCommand::insertAccountGrantablePermission(
         const std::string &permittee_account_id, const std::string &account_id,
@@ -89,7 +89,7 @@ namespace iroha {
         return false;
       }
       return true;
-    };
+    }
 
     bool PostgresWsvCommand::deleteAccountGrantablePermission(
         const std::string &permittee_account_id, const std::string &account_id,
@@ -106,7 +106,7 @@ namespace iroha {
         return false;
       }
       return true;
-    };
+    }
 
     bool PostgresWsvCommand::insertAccount(const model::Account &account) {
       try {

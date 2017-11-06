@@ -155,7 +155,7 @@ namespace iroha_cli {
     template <typename K, typename V>
     std::size_t getNextIndex(std::unordered_map<K, V> parsers_map) {
       return parsers_map.size() == 0 ? 1 : parsers_map.size();
-    };
+    }
 
     /**
      * Find in unordered map with error reporting.
@@ -223,7 +223,7 @@ namespace iroha_cli {
         return nonstd::nullopt;
       }
       return (class_pointer->*parser.value())(params.value());
-    };
+    }
 
     /**
      * Add new  cli command to menu points and menu handlers (parsers)

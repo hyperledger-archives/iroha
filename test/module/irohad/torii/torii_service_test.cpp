@@ -39,7 +39,6 @@ constexpr int Port = 50051;
 
 constexpr size_t TimesToriiBlocking = 5;
 constexpr size_t TimesToriiNonBlocking = 5;
-constexpr size_t TimesFind = 10;
 
 using ::testing::Return;
 using ::testing::A;

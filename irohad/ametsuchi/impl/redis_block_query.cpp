@@ -72,17 +72,16 @@ namespace iroha {
     std::vector<iroha::model::Block::BlockHeightType>
     RedisBlockQuery::getBlockIds(const std::string &account_id) {
       std::vector<uint64_t> block_ids;
-      client_.lrange(
-          account_id, 0, -1, [this, &block_ids](cpp_redis::reply &reply) {
-            for (const auto &block_reply : reply.as_array()) {
-              const auto &string_reply = block_reply.as_string();
+      client_.lrange(account_id, 0, -1, [&block_ids](cpp_redis::reply &reply) {
+        for (const auto &block_reply : reply.as_array()) {
+          const auto &string_reply = block_reply.as_string();
 
-              // check if reply is an integer
-              if (isdigit(string_reply.c_str()[0])) {
-                block_ids.push_back(std::stoul(string_reply));
-              }
-            }
-          });
+          // check if reply is an integer
+          if (isdigit(string_reply.c_str()[0])) {
+            block_ids.push_back(std::stoul(string_reply));
+          }
+        }
+      });
       client_.sync_commit();
       return block_ids;
     }
@@ -90,7 +89,7 @@ namespace iroha {
     boost::optional<iroha::model::Block::BlockHeightType>
     RedisBlockQuery::getBlockId(const std::string &hash) {
       boost::optional<uint64_t> blockId;
-      client_.get(hash, [this, &blockId](cpp_redis::reply &reply) {
+      client_.get(hash, [&blockId](cpp_redis::reply &reply) {
         if (reply.is_null()) {
           blockId = boost::none;
         } else {

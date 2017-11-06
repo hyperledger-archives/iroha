@@ -98,7 +98,7 @@ namespace iroha {
         return command_executors_->getCommandExecutor(command)->execute(
             *command, *wsv_, *executor_);
       };
-      auto execute_transaction = [this, execute_command](auto &transaction) {
+      auto execute_transaction = [execute_command](auto &transaction) {
         return std::all_of(transaction.commands.begin(),
                            transaction.commands.end(),
                            execute_command);

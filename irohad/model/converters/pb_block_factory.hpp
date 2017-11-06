@@ -30,6 +30,8 @@ namespace iroha {
        */
       class PbBlockFactory {
        public:
+        PbBlockFactory() {}
+
         /**
          * Convert block to proto block
          * @param block - reference to block

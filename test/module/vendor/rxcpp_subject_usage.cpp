@@ -35,23 +35,23 @@ struct Person {
 };
 
 TEST(rxcppTest, usage_subject_test) {
-  subject<Person> person$;
+  subject<Person> person;
 
   // group ages by gender
-  auto agebygender$ = person$.
+  auto agebygender = person.
       get_observable().subscribe([](auto val) {
     cout << val.name << " " << val.gender << endl;
   });
 
-  person$.get_observable().subscribe([](auto val) {
+  person.get_observable().subscribe([](auto val) {
     cout << "YET ANOTHER " << val.name << " " << val.gender << endl;
   });
 
   for (auto i = 0; i < 10; i++) {
-    person$.get_subscriber().on_next(Person{"Tom", "Male", 32});
+    person.get_subscriber().on_next(Person{"Tom", "Male", 32});
     cout << "next" << endl;
   }
-  person$.get_subscriber().on_completed();
-  person$.get_subscriber().on_next(Person{"Vasya", "Male", 32});
+  person.get_subscriber().on_completed();
+  person.get_subscriber().on_next(Person{"Vasya", "Male", 32});
 }
 #endif //IROHA_RXCPP_SUBJECT_USAGE_HPP
