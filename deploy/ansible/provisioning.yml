@@ -83,8 +83,8 @@
         state: started
         restart: yes
         env:
-          IROHA_POSTGRES_USER: '{{ user }}'
-          IROHA_POSTGRES_PASSWORD: '{{ postgres_passwd }}'
+          POSTGRES_USER: '{{ user }}'
+          POSTGRES_PASSWORD: '{{ postgres_passwd }}'
         networks:
           - name: iroha_network
         volumes:

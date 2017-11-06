@@ -1,8 +1,12 @@
 [centos7]
-35.187.116.62
 
 [ubuntu16]
-35.195.150.11
+35.195.78.162 
+35.195.60.152
+35.195.251.237
+35.195.52.118
+35.195.159.165
 
 [all:vars]
 ansible_ssh_user=iroha
+host_key_checking=False
