@@ -28,7 +28,6 @@ using namespace framework::test_subscriber;
 class BlockQueryTest : public AmetsuchiTest {
  protected:
   void SetUp() override {
-
     AmetsuchiTest::SetUp();
     storage =
         StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
@@ -80,24 +79,41 @@ class BlockQueryTest : public AmetsuchiTest {
 /**
  * @given block store with 2 blocks totally containing 3 txs created by
  * user1@test and 1 tx created by user2@test
- * @when queries to get transactions created by both users are invoked
- * @then query over user1@test returns 3 txs and query over user2@test returns 1
+ * @when query to get transactions created by user1@test is invoked
+ * @then query over user1@test returns 2 txs and query over user2@test returns 1
  * tx and query over non-existing user returns 0 txs
  */
-TEST_F(BlockQueryTest, GetAccountTransactions) {
+TEST_F(BlockQueryTest, GetAccountTransactionsFromSeveralBlocks) {
   // Check that creator1 has created 3 transactions
   auto getCreator1TxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions(creator1), 3);
   getCreator1TxWrapper.subscribe(
       [this](auto val) { EXPECT_EQ(val.creator_account_id, creator1); });
   ASSERT_TRUE(getCreator1TxWrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test and 1 tx created by user2@test
+ * @when query to get transactions created by user2@test is invoked
+ * @then query over user2@test returns 1 tx
+ */
+TEST_F(BlockQueryTest, GetAccountTransactionsFromSingleBlock) {
   // Check that creator1 has created 1 transaction
   auto getCreator2TxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions(creator2), 1);
   getCreator2TxWrapper.subscribe(
       [this](auto val) { EXPECT_EQ(val.creator_account_id, creator2); });
   ASSERT_TRUE(getCreator2TxWrapper.validate());
+}
 
+/**
+ * @given block store
+ * @when query to get transactions created by user with id not registered in the
+ * system is invoked
+ * @then query returns empty result
+ */
+TEST_F(BlockQueryTest, GetAccountTransactionsNonExistingUser) {
   // Check that "nonexisting" user has no transaction
   auto getNonexistingTxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions("nonexisting user"), 0);
