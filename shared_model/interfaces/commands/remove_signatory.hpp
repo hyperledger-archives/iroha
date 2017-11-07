@@ -50,7 +50,7 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::RemoveSignatory;
         oldModel->account_id = accountId();
-        oldModel->pubkey.from_string(pubkey().makeOldModel()->blob());
+        oldModel->pubkey = pubkey().makeOldModel<decltype(oldModel->pubkey)>();
         return oldModel;
       }
     };

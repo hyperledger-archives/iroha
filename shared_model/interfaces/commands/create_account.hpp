@@ -59,7 +59,7 @@ namespace shared_model {
         auto oldModel = new iroha::model::CreateAccount;
         oldModel->account_name = accountName();
         oldModel->domain_id = domainId();
-        oldModel->pubkey.from_string(pubkey().makeOldModel()->blob());
+        oldModel->pubkey = pubkey().makeOldModel<decltype(oldModel->pubkey)>();
         return oldModel;
       }
     };

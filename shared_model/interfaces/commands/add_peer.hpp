@@ -53,7 +53,7 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AddPeer;
         oldModel->address = peerAddress();
-        oldModel->peer_key.from_string(peerKey().makeOldModel()->blob());
+        oldModel->peer_key = peerKey().makeOldModel<decltype(oldModel->peer_key)>();
         return oldModel;
       }
     };
