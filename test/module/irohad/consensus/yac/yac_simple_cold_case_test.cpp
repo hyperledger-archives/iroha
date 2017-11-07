@@ -127,7 +127,7 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveSupermajorityOfVotes) {
       .WillRepeatedly(Return(true));
 
   YacHash received_hash("my_proposal", "my_block");
-  for (auto &peer : default_peers) {
+  for (size_t i = 0; i < default_peers.size(); ++i) {
     network->notification->on_vote(crypto->getVote(received_hash));
   }
 
@@ -160,11 +160,8 @@ TEST_F(YacTest, YacWhenColdStartAndAchieveCommitMessage) {
 
   auto committed_peer = default_peers.at(0);
   auto msg = CommitMessage();
-  uint64_t number_of_peer = 0;
-  for (auto &peer : default_peers) {
-    (void) peer;
-    msg.votes.push_back(create_vote(propagated_hash,
-                                    std::to_string(number_of_peer++)));
+  for (size_t i = 0; i < default_peers.size(); ++i) {
+    msg.votes.push_back(create_vote(propagated_hash, std::to_string(i)));
   }
   network->notification->on_commit(msg);
 
