@@ -38,13 +38,27 @@ void runQueryTest(std::shared_ptr<Query> query){
 }
 
 TEST(PbQueryFactoryTest, SerializeGetAccount){
+  auto createdTime = 111u;
+  auto creatorAccountId = "creator";
+  auto queryCounter = 222u;
+  auto accountId = "test";
   PbQueryFactory queryFactory;
   QueryGenerator queryGenerator;
-  auto query = queryGenerator.generateGetAccount(0, "123", 0, "test");
+  auto query = queryGenerator.generateGetAccount(createdTime, creatorAccountId, queryCounter, accountId);
   auto pb_query = queryFactory.serialize(query);
   ASSERT_TRUE(pb_query.has_value());
+  auto &pl = pb_query.value().payload();
+  auto &pb_cast = pb_query.value().payload().get_account();
+  ASSERT_TRUE(pl.created_time() == createdTime);
+  ASSERT_TRUE(pl.creator_account_id() == creatorAccountId);
+  ASSERT_TRUE(pl.query_counter() == queryCounter);
+  ASSERT_TRUE(pb_cast.account_id() == accountId);
   auto res_query = queryFactory.deserialize(pb_query.value());
   ASSERT_TRUE(res_query.has_value());
+  ASSERT_TRUE((*res_query)->created_ts == createdTime);
+  ASSERT_TRUE((*res_query)->creator_account_id == creatorAccountId);
+  ASSERT_TRUE((*res_query)->query_counter == queryCounter);
+  ASSERT_TRUE(((iroha::model::GetAccount&)(**res_query)).account_id == accountId);
   // TODO 26/09/17 grimadas: overload operator == for queries and replace with it IR-512 #goodfirstissue
   ASSERT_EQ(iroha::hash(*res_query.value()), iroha::hash(*query));
 }
