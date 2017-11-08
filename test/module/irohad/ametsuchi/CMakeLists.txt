@@ -16,8 +16,8 @@ target_link_libraries(flat_file_test
     libs_common
     )
 
-addtest(redis_block_query_test redis_block_query_test.cpp)
-target_link_libraries(redis_block_query_test
+addtest(block_query_test block_query_test.cpp)
+target_link_libraries(block_query_test
         ametsuchi
         libs_common
         )

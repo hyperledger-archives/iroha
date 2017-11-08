@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-#include "ametsuchi/impl/redis_block_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "crypto/hash.hpp"
 #include "framework/test_subscriber.hpp"
