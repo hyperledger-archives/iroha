@@ -66,7 +66,8 @@ namespace shared_model {
     template <typename Source, typename Transform>
     auto makeLazy(Source &&source, Transform &&transform) {
       using targetType = decltype(transform(source));
-      return Lazy<Source, targetType>(source, transform);
+      return Lazy<Source, targetType>(std::forward<Source>(source),
+                                      std::forward<Transform>(transform));
     }
   }  // namespace detail
 }  // namespace shared_model
