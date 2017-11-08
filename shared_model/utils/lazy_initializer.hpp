@@ -39,6 +39,8 @@ namespace shared_model {
       LazyInitializer(const Source &source, const TransformType &transform)
           : source_(source), transform_(transform) {}
 
+      LazyInitializer(const LazyInitializer &) = default;
+
       /**
        * @return value after transformation
        */
