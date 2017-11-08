@@ -50,7 +50,7 @@ namespace shared_model {
       }
 
      private:
-      Source source_;
+      const Source &source_;
       TransformType transform_;
       std::shared_ptr<Target> target_value_;
     };
