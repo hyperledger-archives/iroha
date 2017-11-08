@@ -15,31 +15,35 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_HASH_HPP
-#define IROHA_SHARED_MODEL_HASH_HPP
+#ifndef IROHA_SHARED_MODEL_STUB_HASH_HPP
+#define IROHA_SHARED_MODEL_STUB_HASH_HPP
 
-#include "cryptography/blob.hpp"
-#include "utils/string_builder.hpp"
+#include "cryptography/hash.hpp"
 
 namespace shared_model {
   namespace crypto {
-    /**
-     * A special class for storing hashes. Main reason to introduce it is to
-     * make difference between Hash which should represent a hashing result and
-     * a generic Blob which should represent any binary data.
-     */
-    class Hash : public Blob {
-     public:
-      explicit Hash(const std::string &hash) : Blob(hash) {}
 
-      std::string toString() const override {
-        return detail::PrettyStringBuilder()
-            .init("Hash")
-            .append(Blob::hex())
-            .finalize();
+    class StubHash : public Hash {
+     public:
+      const std::string &blob() const override {
+        return string;
       }
+
+      const std::string &hex() const override {
+        return string;
+      }
+
+      size_t size() const override {
+        return 0;
+      }
+
+      ModelType *copy() const override {
+        return new StubHash;
+      }
+
+      const std::string string = "";
     };
   }  // namespace crypto
 }  // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_HASH_HPP
+#endif  // IROHA_SHARED_MODEL_STUB_HASH_HPP

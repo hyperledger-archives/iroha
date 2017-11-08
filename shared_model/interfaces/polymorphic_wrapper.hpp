@@ -29,7 +29,9 @@ namespace shared_model {
      */
     template <class T>
     class PolymorphicWrapper final {
-      template <typename> friend class PolymorphicWrapper;
+      template <typename>
+      friend class PolymorphicWrapper;
+
      public:
       /// Type of wrapped object
       using WrappedType = T;
@@ -57,8 +59,8 @@ namespace shared_model {
           : ptr(std::shared_ptr<T>(rhs.ptr->copy())) {}
 
       template <typename Y>
-      PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept : ptr(nullptr) {
-        std::swap(this->ptr, rhs.ptr);
+      PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept : ptr(rhs.ptr) {
+        rhs.ptr = nullptr;
       }
       /**
        * Copy constructor that performs deep copy
