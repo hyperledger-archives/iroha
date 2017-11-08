@@ -78,10 +78,10 @@ class BlockQueryTest : public AmetsuchiTest {
 
 /**
  * @given block store with 2 blocks totally containing 3 txs created by
- * user1@test and 1 tx created by user2@test
+ * user1@test
+ * AND 1 tx created by user2@test
  * @when query to get transactions created by user1@test is invoked
- * @then query over user1@test returns 2 txs and query over user2@test returns 1
- * tx and query over non-existing user returns 0 txs
+ * @then query over user1@test returns 3 txs
  */
 TEST_F(BlockQueryTest, GetAccountTransactionsFromSeveralBlocks) {
   // Check that creator1 has created 3 transactions
@@ -94,7 +94,8 @@ TEST_F(BlockQueryTest, GetAccountTransactionsFromSeveralBlocks) {
 
 /**
  * @given block store with 2 blocks totally containing 3 txs created by
- * user1@test and 1 tx created by user2@test
+ * user1@test
+ * AND 1 tx created by user2@test
  * @when query to get transactions created by user2@test is invoked
  * @then query over user2@test returns 1 tx
  */
