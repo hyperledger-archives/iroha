@@ -29,6 +29,7 @@ namespace shared_model {
      */
     template <class T>
     class PolymorphicWrapper final {
+      template <typename> friend class PolymorphicWrapper;
      public:
       /// Type of wrapped object
       using WrappedType = T;
@@ -44,8 +45,21 @@ namespace shared_model {
        * Value constructor
        * @param value - pointer for wrapping
        */
-      PolymorphicWrapper(const T *value) : ptr(std::shared_ptr<T>(value)) {}
+      template <typename Y>
+      PolymorphicWrapper(const Y *value) : ptr(std::shared_ptr<Y>(value)) {}
 
+      template <typename... Args>
+      PolymorphicWrapper(Args &&... args)
+          : ptr(std::make_shared<T>(std::forward<Args>(args)...)) {}
+
+      template <typename Y>
+      PolymorphicWrapper(const PolymorphicWrapper<Y> &rhs)
+          : ptr(std::shared_ptr<T>(rhs.ptr->copy())) {}
+
+      template <typename Y>
+      PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept : ptr(nullptr) {
+        std::swap(this->ptr, rhs.ptr);
+      }
       /**
        * Copy constructor that performs deep copy
        * @param rhs - another wrapped value
