@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#include "utils/lazy_initializer.hpp"
 #include <gtest/gtest.h>
 #include <string>
 #include "logger/logger.hpp"
+#include "utils/lazy_initializer.hpp"
 
 struct SourceValue {
   int val;
@@ -34,11 +34,9 @@ struct TargetValue {
  * @then Assert that transform invoked
  */
 TEST(LazyTest, GetterTest) {
-  SourceValue v;
-  v.val = 100500;
-  auto lazy = shared_model::detail::makeLazy(v, [](auto source) {
-    return TargetValue{std::to_string(source.val)};
-  });
+  SourceValue v{100500};
+  auto lazy = shared_model::detail::makeLazyInitializer(
+      v, [](auto source) { return TargetValue{std::to_string(source.val)}; });
   ASSERT_EQ("100500", lazy.get().target);
 }
 
@@ -48,13 +46,13 @@ TEST(LazyTest, GetterTest) {
  * @then Assert that transform invoked once
  */
 TEST(LazyTest, CheckLaziness) {
-  SourceValue v;
-  v.val = 100500;
+  SourceValue v{100500};
   auto call_counter = 0;
-  auto lazy = shared_model::detail::makeLazy(v, [&call_counter](auto source) {
-    call_counter++;
-    return TargetValue{std::to_string(source.val)};
-  });
+  auto lazy = shared_model::detail::makeLazyInitializer(
+      v, [&call_counter](auto source) {
+        call_counter++;
+        return TargetValue{std::to_string(source.val)};
+      });
   ASSERT_EQ(0, call_counter);
   ASSERT_EQ("100500", lazy.get().target);
   ASSERT_EQ(1, call_counter);

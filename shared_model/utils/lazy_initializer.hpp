@@ -64,7 +64,7 @@ namespace shared_model {
      * @return initialized lazy value
      */
     template <typename Source, typename Transform>
-    auto makeLazy(Source &&source, Transform &&transform) {
+    auto makeLazyInitializer(Source &&source, Transform &&transform) {
       using targetType = decltype(transform(source));
       return LazyInitializer<Source, targetType>(std::forward<Source>(source),
                                       std::forward<Transform>(transform));

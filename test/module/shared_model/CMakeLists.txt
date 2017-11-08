@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-# Hash Test
 AddTest(lazy_test lazy_test.cpp)
 
 
