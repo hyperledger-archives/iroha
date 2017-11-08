@@ -24,17 +24,10 @@
 #include "interfaces/query_responses/account_asset_response.hpp"
 #include "interfaces/query_responses/account_response.hpp"
 #include "interfaces/query_responses/asset_response.hpp"
-#include "interfaces/query_responses/no_account_assets_error_response.hpp"
-#include "interfaces/query_responses/no_account_error_response.hpp"
-#include "interfaces/query_responses/no_asset_error_response.hpp"
-#include "interfaces/query_responses/no_roles_error_response.hpp"
-#include "interfaces/query_responses/no_signatories_error_response.hpp"
-#include "interfaces/query_responses/not_supported_error_response.hpp"
+#include "interfaces/query_responses/error_query_response.hpp"
 #include "interfaces/query_responses/role_permissions.hpp"
 #include "interfaces/query_responses/roles_response.hpp"
 #include "interfaces/query_responses/signatories_response.hpp"
-#include "interfaces/query_responses/stateful_failed_error_response.hpp"
-#include "interfaces/query_responses/stateless_failed_error_response.hpp"
 #include "interfaces/query_responses/transactions_response.hpp"
 #include "model/query_response.hpp"
 
@@ -62,14 +55,7 @@ namespace shared_model {
                          w<RolesResponse>,
                          w<SignatoriesResponse>,
                          w<TransactionsResponse>,
-                         w<StatelessFailedErrorResponse>,
-                         w<StatefulFailedErrorResponse>,
-                         w<NoAccountErrorResponse>,
-                         w<NoAssetErrorResponse>,
-                         w<NoRolesErrorResponse>,
-                         w<NoAccountAssetsErrorResponse>,
-                         w<NoSignatoriesErrorResponse>,
-                         w<NotSupportedErrorResponse>>;
+                         w<ErrorQueryResponse>>;
 
       /// Type of all available query responses
       using QueryResponseListType = QueryResponseVariantType::types;
