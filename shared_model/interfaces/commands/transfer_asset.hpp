@@ -15,53 +15,66 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
-#define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+#ifndef IROHA_SHARED_MODEL_TRANSFER_ASSET_HPP
+#define IROHA_SHARED_MODEL_TRANSFER_ASSET_HPP
 
-#include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/transfer_asset.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Add amount of asset to an account
+     * Grant permission to account
      */
-    class AddAssetQuantity
-        : public Hashable<AddAssetQuantity, iroha::model::AddAssetQuantity> {
+    class TransferAsset
+        : public Hashable<TransferAsset, iroha::model::TransferAsset> {
      public:
       /**
-       * @return Identity of user, that add quantity
+       * @return Id of the account from which transfer assets
        */
-      virtual const types::AccountIdType &accountId() const = 0;
+      virtual const types::AccountIdType &srcAccountId() const = 0;
       /**
-       * @return asset identifier
+       * @return Id of the account to which transfer assets
+       */
+      virtual const types::AccountIdType &destAccountId() const = 0;
+      /**
+       * @return Id of the asset to transfer
        */
       virtual const types::AssetIdType &assetId() const = 0;
+      /// Type of the transfer message
+      using MessageType = std::string;
       /**
-       * @return quantity of asset for adding
+       * @return message of the transfer
+       */
+      virtual const MessageType &message() const = 0;
+      /**
+       * @return asset amount to transfer
        */
       virtual const types::AmountType &amount() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-            .init("AddAssetQuantity")
-            .append("account_id", accountId())
+            .init("TransferAsset")
+            .append("src_account_id", srcAccountId())
+            .append("dest_account_id", destAccountId())
             .append("asset_id", assetId())
+            .append("message", message())
             .append("amount", amount().to_string())
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
-        auto oldModel = new iroha::model::AddAssetQuantity;
+        auto oldModel = new iroha::model::TransferAsset;
+        oldModel->src_account_id = srcAccountId();
+        oldModel->dest_account_id = destAccountId();
         oldModel->amount = amount();
-        oldModel->account_id = accountId();
         oldModel->asset_id = assetId();
+        oldModel->description = message();
         return oldModel;
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+
+#endif  // IROHA_SHARED_MODEL_TRANSFER_ASSET_HPP

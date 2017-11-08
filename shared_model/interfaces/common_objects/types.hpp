@@ -17,17 +17,31 @@
 
 #ifndef IROHA_SHARED_MODEL_TYPES_HPP
 #define IROHA_SHARED_MODEL_TYPES_HPP
+
+#include "common/types.hpp"
+#include "cryptography/public_key.hpp"
+
 namespace shared_model {
   namespace interface {
     namespace types {
       /// Type of account id
       using AccountIdType = std::string;
-      /// Type of asset id
-      using AssetIdType = std::string;
       /// Type of height (for Block, Proposal etc)
       using HeightType = uint64_t;
+      /// Type of public key
+      using PubkeyType = crypto::PublicKey;
       /// Type of role (i.e admin, user)
       using RoleIdType = std::string;
+      /// Iroha domain id type
+      using DomainIdType = std::string;
+      /// Type of asset id
+      using AssetIdType = std::string;
+      /// Permission type used in permission commands
+      using PermissionNameType = std::string;
+      /// Type of amount
+      using AmountType = iroha::Amount;
+      /// Type of Quorum used in transaction and set quorum
+      using QuorumType = uint32_t;
     }  // namespace types
   }    // namespace interface
 }  // namespace shared_model

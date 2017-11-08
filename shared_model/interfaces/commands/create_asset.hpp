@@ -15,53 +15,56 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
-#define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+#ifndef IROHA_SHARED_MODEL_CREATE_ASSET_HPP
+#define IROHA_SHARED_MODEL_CREATE_ASSET_HPP
 
-#include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/create_asset.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Add amount of asset to an account
+     * Create asset in Iroha domain
      */
-    class AddAssetQuantity
-        : public Hashable<AddAssetQuantity, iroha::model::AddAssetQuantity> {
+    class CreateAsset
+        : public Hashable<CreateAsset, iroha::model::CreateAsset> {
      public:
+      /// Type returned by assetName function
+      using AssetNameType = std::string;
       /**
-       * @return Identity of user, that add quantity
+       * @return Asset name to create
        */
-      virtual const types::AccountIdType &accountId() const = 0;
+      virtual const AssetNameType &assetName() const = 0;
       /**
-       * @return asset identifier
+       * @return Iroha domain of the asset
        */
-      virtual const types::AssetIdType &assetId() const = 0;
+      virtual const types::DomainIdType &domainId() const = 0;
+      /// Precision type
+      using PrecisionType = uint8_t;
       /**
-       * @return quantity of asset for adding
+       * @return precision of the asset
        */
-      virtual const types::AmountType &amount() const = 0;
+      virtual const PrecisionType &precision() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-            .init("AddAssetQuantity")
-            .append("account_id", accountId())
-            .append("asset_id", assetId())
-            .append("amount", amount().to_string())
+            .init("CreateAsset")
+            .append("asset_name", assetName())
+            .append("domain_id", domainId())
+            .append("precision", std::to_string(precision()))
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
-        auto oldModel = new iroha::model::AddAssetQuantity;
-        oldModel->amount = amount();
-        oldModel->account_id = accountId();
-        oldModel->asset_id = assetId();
+        auto oldModel = new iroha::model::CreateAsset;
+        oldModel->asset_name = assetName();
+        oldModel->domain_id = domainId();
+        oldModel->precision = precision();
         return oldModel;
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+
+#endif  // IROHA_SHARED_MODEL_CREATE_ASSET_HPP

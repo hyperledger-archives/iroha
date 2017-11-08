@@ -15,53 +15,45 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
-#define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+#ifndef IROHA_SHARED_MODEL_SET_QUORUM_HPP
+#define IROHA_SHARED_MODEL_SET_QUORUM_HPP
 
-#include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/set_quorum.hpp"
 
 namespace shared_model {
   namespace interface {
-
     /**
-     * Add amount of asset to an account
+     * Set quorum of the account
      */
-    class AddAssetQuantity
-        : public Hashable<AddAssetQuantity, iroha::model::AddAssetQuantity> {
+    class SetQuorum : public Hashable<SetQuorum, iroha::model::SetQuorum> {
      public:
       /**
-       * @return Identity of user, that add quantity
+       * @return Id of the account to set quorum
        */
       virtual const types::AccountIdType &accountId() const = 0;
       /**
-       * @return asset identifier
+       * @return value of a new quorum
        */
-      virtual const types::AssetIdType &assetId() const = 0;
-      /**
-       * @return quantity of asset for adding
-       */
-      virtual const types::AmountType &amount() const = 0;
+      virtual const types::QuorumType &newQuorum() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-            .init("AddAssetQuantity")
+            .init("SetQuorum")
             .append("account_id", accountId())
-            .append("asset_id", assetId())
-            .append("amount", amount().to_string())
+            .append("quorum", std::to_string(newQuorum()))
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
-        auto oldModel = new iroha::model::AddAssetQuantity;
-        oldModel->amount = amount();
+        auto oldModel = new iroha::model::SetQuorum;
         oldModel->account_id = accountId();
-        oldModel->asset_id = assetId();
+        oldModel->new_quorum = newQuorum();
         return oldModel;
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+
+#endif  // IROHA_SHARED_MODEL_SET_QUORUM_HPP

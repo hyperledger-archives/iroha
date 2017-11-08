@@ -15,53 +15,47 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
-#define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+#ifndef IROHA_SHARED_MODEL_ADD_SIGNATORY_HPP
+#define IROHA_SHARED_MODEL_ADD_SIGNATORY_HPP
 
-#include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/add_signatory.hpp"
 
 namespace shared_model {
   namespace interface {
 
     /**
-     * Add amount of asset to an account
+     * Add new signatory to account
      */
-    class AddAssetQuantity
-        : public Hashable<AddAssetQuantity, iroha::model::AddAssetQuantity> {
+    class AddSignatory
+        : public Hashable<AddSignatory, iroha::model::AddSignatory> {
      public:
       /**
-       * @return Identity of user, that add quantity
+       * @return New signatory is identified with public key
+       */
+      virtual const types::PubkeyType &pubkey() const = 0;
+      /**
+       * @return Account to which add new signatory
        */
       virtual const types::AccountIdType &accountId() const = 0;
-      /**
-       * @return asset identifier
-       */
-      virtual const types::AssetIdType &assetId() const = 0;
-      /**
-       * @return quantity of asset for adding
-       */
-      virtual const types::AmountType &amount() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-            .init("AddAssetQuantity")
+            .init("AddSignatory")
+            .append("pubkey", pubkey().toString())
             .append("account_id", accountId())
-            .append("asset_id", assetId())
-            .append("amount", amount().to_string())
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
-        auto oldModel = new iroha::model::AddAssetQuantity;
-        oldModel->amount = amount();
+        auto oldModel = new iroha::model::AddSignatory;
+        oldModel->pubkey = pubkey().makeOldModel<decltype(oldModel->pubkey)>();
         oldModel->account_id = accountId();
-        oldModel->asset_id = assetId();
         return oldModel;
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+
+#endif  // IROHA_SHARED_MODEL_ADD_SIGNATORY_HPP

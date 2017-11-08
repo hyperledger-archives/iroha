@@ -65,14 +65,12 @@ namespace shared_model {
        */
       virtual const CommandsType &commands() const = 0;
 
-      /// Quorum type
-      using QuorumType = uint8_t;
       /**
        * @return quorum of transaction.
        * Quorum means how much signatures of account required for performing
        * transaction.
        */
-      virtual const QuorumType &quorum() const = 0;
+      virtual const types::QuorumType &quorum() const = 0;
 
       iroha::model::Transaction *makeOldModel() const override {
         iroha::model::Transaction *oldStyleTransaction =

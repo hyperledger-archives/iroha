@@ -15,53 +15,46 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
-#define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+#ifndef IROHA_SHARED_MODEL_APPEND_ROLE_HPP
+#define IROHA_SHARED_MODEL_APPEND_ROLE_HPP
 
-#include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/append_role.hpp"
 
 namespace shared_model {
   namespace interface {
 
     /**
-     * Add amount of asset to an account
+     * Add role to account used in Iroha
      */
-    class AddAssetQuantity
-        : public Hashable<AddAssetQuantity, iroha::model::AddAssetQuantity> {
+    class AppendRole : public Hashable<AppendRole, iroha::model::AppendRole> {
      public:
       /**
-       * @return Identity of user, that add quantity
+       * @return Account to add the role
        */
       virtual const types::AccountIdType &accountId() const = 0;
       /**
-       * @return asset identifier
+       * @return Role name to add to account
        */
-      virtual const types::AssetIdType &assetId() const = 0;
-      /**
-       * @return quantity of asset for adding
-       */
-      virtual const types::AmountType &amount() const = 0;
+      virtual const types::RoleIdType &roleName() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-            .init("AddAssetQuantity")
+            .init("AppendRole")
+            .append("role_name", roleName())
             .append("account_id", accountId())
-            .append("asset_id", assetId())
-            .append("amount", amount().to_string())
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
-        auto oldModel = new iroha::model::AddAssetQuantity;
-        oldModel->amount = amount();
+        auto oldModel = new iroha::model::AppendRole;
+        oldModel->role_name = roleName();
         oldModel->account_id = accountId();
-        oldModel->asset_id = assetId();
         return oldModel;
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
+
+#endif  // IROHA_SHARED_MODEL_APPEND_ROLE_HPP
