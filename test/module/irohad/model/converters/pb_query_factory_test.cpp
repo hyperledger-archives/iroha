@@ -59,7 +59,7 @@ TEST(PbQueryFactoryTest, SerializeGetAccount){
   ASSERT_EQ(res_query->created_ts, created_time);
   ASSERT_EQ(res_query->creator_account_id, creator_account_id);
   ASSERT_EQ(res_query->query_counter, query_counter);
-  ASSERT_EQ(((iroha::model::GetAccount&)(*res_query)).account_id, account_id);
+  ASSERT_EQ(std::static_pointer_cast<GetAccount>(res_query)->account_id, account_id);
   // TODO 26/09/17 grimadas: overload operator == for queries and replace with it IR-512 #goodfirstissue
   ASSERT_EQ(iroha::hash(*res_query), iroha::hash(*query));
 }
