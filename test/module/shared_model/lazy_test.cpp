@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "utils/lazy.hpp"
+#include "utils/lazy_initializer.hpp"
 #include <gtest/gtest.h>
 #include <string>
 #include "logger/logger.hpp"
@@ -37,9 +37,7 @@ TEST(LazyTest, GetterTest) {
   SourceValue v;
   v.val = 100500;
   auto lazy = shared_model::detail::makeLazy(v, [](auto source) {
-    TargetValue target_value;
-    target_value.target = std::to_string(source.val);
-    return target_value;
+    return TargetValue{std::to_string(source.val)};
   });
   ASSERT_EQ("100500", lazy.get().target);
 }
@@ -55,9 +53,7 @@ TEST(LazyTest, CheckLaziness) {
   auto call_counter = 0;
   auto lazy = shared_model::detail::makeLazy(v, [&call_counter](auto source) {
     call_counter++;
-    TargetValue target_value;
-    target_value.target = std::to_string(source.val);
-    return target_value;
+    return TargetValue{std::to_string(source.val)};
   });
   ASSERT_EQ(0, call_counter);
   ASSERT_EQ("100500", lazy.get().target);

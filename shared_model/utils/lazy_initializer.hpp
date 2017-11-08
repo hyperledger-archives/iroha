@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_LAZY_HPP
-#define IROHA_LAZY_HPP
+#ifndef IROHA_LAZY_INITIALIZER_HPP
+#define IROHA_LAZY_INITIALIZER_HPP
 
 #include <functional>
 #include <memory>
@@ -30,13 +30,13 @@ namespace shared_model {
      * @tparam Target - output type
      */
     template <typename Source, typename Target>
-    class Lazy {
+    class LazyInitializer {
      private:
       /// Type of transformation
       using TransformType = std::function<Target(const Source &)>;
 
      public:
-      Lazy(const Source &source, const TransformType &transform)
+      LazyInitializer(const Source &source, const TransformType &transform)
           : source_(source), transform_(transform) {}
 
       /**
@@ -66,9 +66,9 @@ namespace shared_model {
     template <typename Source, typename Transform>
     auto makeLazy(Source &&source, Transform &&transform) {
       using targetType = decltype(transform(source));
-      return Lazy<Source, targetType>(std::forward<Source>(source),
+      return LazyInitializer<Source, targetType>(std::forward<Source>(source),
                                       std::forward<Transform>(transform));
     }
   }  // namespace detail
 }  // namespace shared_model
-#endif  // IROHA_LAZY_HPP
+#endif  // IROHA_LAZY_INITIALIZER_HPP
