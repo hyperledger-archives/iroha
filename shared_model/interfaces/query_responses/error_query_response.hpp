@@ -75,7 +75,7 @@ namespace shared_model {
       }
 
       bool operator==(const ModelType &rhs) const override {
-        return this->get() == rhs.get();
+        return get() == rhs.get();
       }
     };
   }  // namespace interface
