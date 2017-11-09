@@ -2,8 +2,10 @@ FROM ubuntu:16.04
 
 ENV IROHA_HOME /opt/iroha
 ENV IROHA_BUILD /opt/iroha/build
+ARG node
 
 COPY iroha.deb /tmp/iroha.deb
+COPY entrypoint.sh /entrypoint.sh
 RUN apt-get update;\
     apt-get upgrade; \
     apt-get install -y \
@@ -11,6 +13,8 @@ RUN apt-get update;\
         gdebi-core
 
 #Install iroha
-RUN gdebi /tmp/iroha.deb
+RUN gdebi --non-interactive /tmp/iroha.deb
 
-CMD ["bash"]
+WORKDIR /op/iroha
+
+ENTRYPOINT ["/entrypoint.sh"]
