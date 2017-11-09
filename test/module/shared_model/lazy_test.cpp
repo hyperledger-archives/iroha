@@ -17,7 +17,6 @@
 
 #include <gtest/gtest.h>
 #include <string>
-#include "logger/logger.hpp"
 #include "utils/lazy_initializer.hpp"
 
 struct SourceValue {
