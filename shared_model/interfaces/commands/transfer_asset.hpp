@@ -60,7 +60,7 @@ namespace shared_model {
             .append("dest_account_id", destAccountId())
             .append("asset_id", assetId())
             .append("message", message())
-            .append("amount", amount().to_string())
+            .append("amount", amount().toString())
             .finalize();
       }
 
@@ -68,7 +68,11 @@ namespace shared_model {
         auto oldModel = new iroha::model::TransferAsset;
         oldModel->src_account_id = srcAccountId();
         oldModel->dest_account_id = destAccountId();
-        oldModel->amount = amount();
+        using OldAmountType = iroha::Amount;
+        /// Use shared_ptr and placement-new to copy new model field to oldModel's field and
+        /// to return raw pointer
+        auto p = std::shared_ptr<OldAmountType>(amount().makeOldModel());
+        new (&oldModel->amount) OldAmountType(*p);
         oldModel->asset_id = assetId();
         oldModel->description = message();
         return oldModel;

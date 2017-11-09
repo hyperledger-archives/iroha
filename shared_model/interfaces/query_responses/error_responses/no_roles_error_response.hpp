@@ -15,23 +15,27 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_ACCOUNT_ASSETS_RESPONSE_HPP
-#define IROHA_SHARED_MODEL_ACCOUNT_ASSETS_RESPONSE_HPP
+#ifndef IROHA_SHARED_MODEL_NO_ROLES_ERROR_RESPONSE_HPP
+#define IROHA_SHARED_MODEL_NO_ROLES_ERROR_RESPONSE_HPP
 
-#include "interfaces/primitive.hpp"
-#include "model/account_asset.hpp"  // TODO 27/10/2017 muratovv replace with shared_model account_asset
-#include "model/queries/responses/account_assets_response.hpp"
+#include "interfaces/common_objects/types.hpp"
+#include "interfaces/query_responses/error_responses/abstract_error_response.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
-    class AccountAssetResponse
-        : public Primitive<AccountAssetResponse,
-                           iroha::model::AccountAssetResponse> {
-     public:
-      virtual const iroha::model::AccountAsset &accountAsset() = 0;
+    /**
+     * Error response of broken query, no specified roles
+     */
+    class NoRolesErrorResponse
+        : public AbstractErrorResponse<NoRolesErrorResponse> {
+     private:
+      std::string reason() const override { return "NoRolesErrorResponse"; }
 
-      // TODO 27/10/2017 muratovv implement available primitive methods
+      iroha::model::ErrorResponse::Reason oldModelReason() const override {
+        return iroha::model::ErrorResponse::Reason::NO_ROLES;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_ACCOUNT_ASSETS_RESPONSE_HPP
+#endif  // IROHA_SHARED_MODEL_NO_ROLES_ERROR_RESPONSE_HPP

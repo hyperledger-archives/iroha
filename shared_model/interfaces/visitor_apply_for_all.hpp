@@ -19,6 +19,7 @@
 #define IROHA_VISITOR_APPLY_FOR_ALL_HPP
 
 #include <boost/variant/static_visitor.hpp>
+#include <type_traits>
 
 namespace shared_model {
   namespace detail {
