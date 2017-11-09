@@ -42,7 +42,7 @@ namespace shared_model {
       /**
        * @return roles attached to the account
        */
-      virtual const types::RolesType &roles() const = 0;
+      virtual const std::vector<types::RoleIdType> &roles() const = 0;
 
       /**
        * Stringify the data.

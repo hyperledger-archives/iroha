@@ -50,13 +50,17 @@ namespace shared_model {
             .init("AddAssetQuantity")
             .append("account_id", accountId())
             .append("asset_id", assetId())
-            .append("amount", amount().to_string())
+            .append("amount", amount().toString())
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AddAssetQuantity;
-        oldModel->amount = amount();
+        using OldAmountType = iroha::Amount;
+        /// Use shared_ptr and placement-new to copy new model field to oldModel's field and
+        /// to return raw pointer
+        auto p = std::shared_ptr<OldAmountType>(amount().makeOldModel());
+        new (&oldModel->amount) OldAmountType(*p);
         oldModel->account_id = accountId();
         oldModel->asset_id = assetId();
         return oldModel;
