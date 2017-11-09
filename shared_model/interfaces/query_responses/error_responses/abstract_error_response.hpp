@@ -51,9 +51,9 @@ namespace shared_model {
       }
 
       iroha::model::ErrorResponse *makeOldModel() const override {
-        auto error_reponse = new iroha::model::ErrorResponse();
-        error_reponse->reason = oldModelReason();
-        return error_reponse;
+        auto error_response = new iroha::model::ErrorResponse();
+        error_response->reason = oldModelReason();
+        return error_response;
       }
 
       bool operator==(const Model &rhs) const override { return true; }

@@ -27,6 +27,10 @@
 
 namespace shared_model {
   namespace interface {
+
+    /**
+     * Representation of wallet in system
+     */
     class AccountAsset
         : public Hashable<AccountAsset, iroha::model::AccountAsset> {
      public:

@@ -18,14 +18,18 @@
 #ifndef IROHA_SHARED_MODEL_ACCOUNT_HPP
 #define IROHA_SHARED_MODEL_ACCOUNT_HPP
 
+#include "cryptography/hash.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "cryptography/hash.hpp"
 #include "model/account.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
+
+    /**
+     * User identity information in the system
+     */
     class Account : public Hashable<Account, iroha::model::Account> {
      public:
       /**

@@ -24,12 +24,16 @@
 #include "amount/amount.hpp"
 #include "interfaces/common_objects/amount.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
 #include "interfaces/hashable.hpp"
+#include "interfaces/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
+
+    /**
+     * Representation of fixed point number
+     */
     class Amount : public Hashable<Amount, iroha::Amount> {
      public:
       /**
@@ -82,10 +86,10 @@ namespace shared_model {
        */
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-          .init("Amount")
-          .append("intValue", intValue().str())
-          .append("precision", std::to_string(precision()))
-          .finalize();
+            .init("Amount")
+            .append("intValue", intValue().str())
+            .append("precision", std::to_string(precision()))
+            .finalize();
       }
 
       /**

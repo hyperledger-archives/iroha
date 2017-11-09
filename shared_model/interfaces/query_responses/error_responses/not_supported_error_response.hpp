@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_NO_SIGNATORIES_ERROR_RESPONSE_HPP
-#define IROHA_SHARED_MODEL_NO_SIGNATORIES_ERROR_RESPONSE_HPP
+#ifndef IROHA_SHARED_MODEL_NOT_SUPPORTED_ERROR_RESPONSE_HPP
+#define IROHA_SHARED_MODEL_NOT_SUPPORTED_ERROR_RESPONSE_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/query_responses/abstract_error_response.hpp"
+#include "interfaces/query_responses/error_responses/abstract_error_response.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
@@ -27,21 +27,17 @@ namespace shared_model {
     /**
      * Error response of broken query, no specified roles
      */
-    class NoSignatoriesErrorResponse
-        : public AbstractErrorResponse<NoSignatoriesErrorResponse> {
+    class NotSupportedErrorResponse
+        : public AbstractErrorResponse<NotSupportedErrorResponse> {
      private:
-      /**
-       * @return stateful failed error as error reason
-       */
-      std::string reason() const override { return "NoSignatoriesErrorResponse"; }
+      std::string reason() const override {
+        return "NotSupportedErrorResponse";
+      }
 
-      /**
-       * @return Old model error reason.
-       */
       iroha::model::ErrorResponse::Reason oldModelReason() const override {
-        return iroha::model::ErrorResponse::Reason::NO_SIGNATORIES;
+        return iroha::model::ErrorResponse::Reason::NOT_SUPPORTED;
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_NO_SIGNATORIES_ERROR_RESPONSE_HPP
+#endif  // IROHA_SHARED_MODEL_NOT_SUPPORTED_ERROR_RESPONSE_HPP

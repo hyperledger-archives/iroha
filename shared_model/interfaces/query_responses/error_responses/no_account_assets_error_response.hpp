@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_NO_ACCOUNT_ASSETS_ERROR_REPONSE_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/query_responses/abstract_error_response.hpp"
+#include "interfaces/query_responses/error_responses/abstract_error_response.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
@@ -30,16 +30,10 @@ namespace shared_model {
     class NoAccountAssetsErrorResponse
         : public AbstractErrorResponse<NoAccountAssetsErrorResponse> {
      private:
-      /**
-       * @return stateful failed error as error reason
-       */
       std::string reason() const override {
         return "NoAccountAssetsErrorResponse";
       }
 
-      /**
-       * @return Old model error reason.
-       */
       iroha::model::ErrorResponse::Reason oldModelReason() const override {
         return iroha::model::ErrorResponse::Reason::NO_ACCOUNT_ASSETS;
       }

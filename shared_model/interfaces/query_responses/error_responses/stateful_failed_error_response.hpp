@@ -15,33 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_NO_ACCOUNT_ERROR_RESPONSE_HPP
-#define IROHA_SHARED_MODEL_NO_ACCOUNT_ERROR_RESPONSE_HPP
+#ifndef IROHA_SHARED_MODEL_STATEFUL_FAILED_ERROR_RESPONSE_HPP
+#define IROHA_SHARED_MODEL_STATEFUL_FAILED_ERROR_RESPONSE_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/query_responses/abstract_error_response.hpp"
+#include "interfaces/query_responses/error_responses/abstract_error_response.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
     /**
-     * Error response of broken query, no specified account
+     * Error response of broken query's stateful validation
      */
-    class NoAccountErrorResponse
-        : public AbstractErrorResponse<NoAccountErrorResponse> {
+    class StatefulFailedErrorResponse
+        : public AbstractErrorResponse<StatefulFailedErrorResponse> {
      private:
-      /**
-       * @return stateful failed error as error reason
-       */
-      std::string reason() const override { return "NoAccountErrorResponse"; }
+      std::string reason() const override {
+        return "StatefulFailedErrorResponse";
+      }
 
-      /**
-       * @return Old model error reason.
-       */
       iroha::model::ErrorResponse::Reason oldModelReason() const override {
-        return iroha::model::ErrorResponse::Reason::NO_ACCOUNT;
+        return iroha::model::ErrorResponse::Reason::STATEFUL_INVALID;
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_NO_ACCOUNT_ERROR_RESPONSE_HPP
+#endif  // IROHA_SHARED_MODEL_STATEFUL_FAILED_ERROR_RESPONSE_HPP

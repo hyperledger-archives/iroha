@@ -15,33 +15,29 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_NO_ROLES_ERROR_RESPONSE_HPP
-#define IROHA_SHARED_MODEL_NO_ROLES_ERROR_RESPONSE_HPP
+#ifndef IROHA_SHARED_MODEL_STATELESS_FAILED_ERROR_RESPONSE_HPP
+#define IROHA_SHARED_MODEL_STATELESS_FAILED_ERROR_RESPONSE_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/query_responses/abstract_error_response.hpp"
+#include "interfaces/query_responses/error_responses/abstract_error_response.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
     /**
-     * Error response of broken query, no specified roles
+     * Error response of broken query's stateless validation
      */
-    class NoRolesErrorResponse
-        : public AbstractErrorResponse<NoRolesErrorResponse> {
+    class StatelessFailedErrorResponse
+        : public AbstractErrorResponse<StatelessFailedErrorResponse> {
      private:
-      /**
-       * @return stateful failed error as error reason
-       */
-      std::string reason() const override { return "NoRolesErrorResponse"; }
+      std::string reason() const override {
+        return "StatelessFailedErrorResponse";
+      }
 
-      /**
-       * @return Old model error reason.
-       */
       iroha::model::ErrorResponse::Reason oldModelReason() const override {
-        return iroha::model::ErrorResponse::Reason::NO_ROLES;
+        return iroha::model::ErrorResponse::Reason::STATELESS_INVALID;
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_NO_ROLES_ERROR_RESPONSE_HPP
+#endif  // IROHA_SHARED_MODEL_STATELESS_FAILED_ERROR_RESPONSE_HPP

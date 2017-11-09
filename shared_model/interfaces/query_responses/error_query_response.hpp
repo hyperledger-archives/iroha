@@ -20,14 +20,14 @@
 
 #include <boost/variant.hpp>
 #include "interfaces/primitive.hpp"
-#include "interfaces/query_responses/no_account_assets_error_response.hpp"
-#include "interfaces/query_responses/no_account_error_response.hpp"
-#include "interfaces/query_responses/no_asset_error_response.hpp"
-#include "interfaces/query_responses/no_roles_error_response.hpp"
-#include "interfaces/query_responses/no_signatories_error_response.hpp"
-#include "interfaces/query_responses/not_supported_error_response.hpp"
-#include "interfaces/query_responses/stateful_failed_error_response.hpp"
-#include "interfaces/query_responses/stateless_failed_error_response.hpp"
+#include "interfaces/query_responses/error_responses/no_account_assets_error_response.hpp"
+#include "interfaces/query_responses/error_responses/no_account_error_response.hpp"
+#include "interfaces/query_responses/error_responses/no_asset_error_response.hpp"
+#include "interfaces/query_responses/error_responses/no_roles_error_response.hpp"
+#include "interfaces/query_responses/error_responses/no_signatories_error_response.hpp"
+#include "interfaces/query_responses/error_responses/not_supported_error_response.hpp"
+#include "interfaces/query_responses/error_responses/stateful_failed_error_response.hpp"
+#include "interfaces/query_responses/error_responses/stateless_failed_error_response.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -44,7 +44,7 @@ namespace shared_model {
       using w = detail::PolymorphicWrapper<Value>;
 
      public:
-      /// Type of container with all concrete erorr query responses
+      /// Type of container with all concrete error query responses
       using QueryErrorResponseVariantType =
           boost::variant<w<StatelessFailedErrorResponse>,
                          w<StatefulFailedErrorResponse>,

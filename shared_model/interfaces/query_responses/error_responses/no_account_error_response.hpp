@@ -15,33 +15,27 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_NO_ASSET_ERROR_RESPONSE_HPP
-#define IROHA_SHARED_MODEL_NO_ASSET_ERROR_RESPONSE_HPP
+#ifndef IROHA_SHARED_MODEL_NO_ACCOUNT_ERROR_RESPONSE_HPP
+#define IROHA_SHARED_MODEL_NO_ACCOUNT_ERROR_RESPONSE_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/query_responses/abstract_error_response.hpp"
+#include "interfaces/query_responses/error_responses/abstract_error_response.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace interface {
     /**
-     * Error response of broken query, no specified asset
+     * Error response of broken query, no specified account
      */
-    class NoAssetErrorResponse
-        : public AbstractErrorResponse<NoAssetErrorResponse> {
+    class NoAccountErrorResponse
+        : public AbstractErrorResponse<NoAccountErrorResponse> {
      private:
-      /**
-       * @return stateful failed error as error reason
-       */
-      std::string reason() const override { return "NoAssetErrorResponse"; }
+      std::string reason() const override { return "NoAccountErrorResponse"; }
 
-      /**
-       * @return Old model error reason.
-       */
       iroha::model::ErrorResponse::Reason oldModelReason() const override {
-        return iroha::model::ErrorResponse::Reason::NO_ASSET;
+        return iroha::model::ErrorResponse::Reason::NO_ACCOUNT;
       }
     };
   }  // namespace interface
 }  // namespace shared_model
-#endif  // IROHA_SHARED_MODEL_NO_ASSET_ERROR_RESPONSE_HPP
+#endif  // IROHA_SHARED_MODEL_NO_ACCOUNT_ERROR_RESPONSE_HPP

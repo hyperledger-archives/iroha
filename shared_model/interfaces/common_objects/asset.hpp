@@ -25,6 +25,10 @@
 
 namespace shared_model {
   namespace interface {
+
+    /**
+     * Representation of valuable goods in the system
+     */
     class Asset : public Hashable<Asset, iroha::model::Asset> {
      public:
       /**
