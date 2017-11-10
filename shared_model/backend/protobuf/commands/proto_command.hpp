@@ -24,7 +24,7 @@
 #include "utils/lazy_initializer.hpp"
 #include "utils/variant_deserializer.hpp"
 
-template<typename... T>
+template <typename... T>
 auto load(const iroha::protocol::Command &ar) {
   shared_model::interface::Command::CommandVariantType result;
   int which = ar.command_case() - 1;
@@ -34,10 +34,10 @@ auto load(const iroha::protocol::Command &ar) {
 
 namespace shared_model {
   namespace proto {
-    class Command final  : public interface::Command {
+    class Command final : public interface::Command {
      private:
       /// polymorphic wrapper type shortcut
-      template<typename Value>
+      template <typename Value>
       using w = detail::PolymorphicWrapper<Value>;
       // private API
 
@@ -66,7 +66,7 @@ namespace shared_model {
         return lazy_variant_.get();
       }
 
-      ModelType *copy() const { return new Command(command_); }
+      ModelType *copy() const override { return new Command(command_); }
 
      private:
       // ------------------------------| fields |-------------------------------
