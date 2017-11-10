@@ -13,6 +13,7 @@ TEST(DnsParserTest, HandleValidDns){
     ASSERT_TRUE(DnsParser::isValid("a-hyphen"));
     ASSERT_TRUE(DnsParser::isValid("altplus.com"));
     ASSERT_TRUE(DnsParser::isValid("altplus.com.jp"));
+    ASSERT_TRUE(DnsParser::isValid("maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad"));
 }
 
 TEST(DnsParserTest, HandleInvalidDns){
@@ -20,6 +21,8 @@ TEST(DnsParserTest, HandleInvalidDns){
     ASSERT_FALSE(DnsParser::isValid("@.is.not.allowed"));
     ASSERT_FALSE(DnsParser::isValid("no space is allowed"));
     ASSERT_FALSE(DnsParser::isValid("endWith-"));
+    ASSERT_FALSE(DnsParser::isValid("label.endedWith-.is.not.allowed"));
+    ASSERT_FALSE(DnsParser::isValid("aLabelMustNotExceeds63charactersALabelMustNotExceeds63characters"));
 }
 
 

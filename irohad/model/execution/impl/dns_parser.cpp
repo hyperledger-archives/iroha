@@ -7,8 +7,6 @@
 #include <boost/spirit/include/qi_parse.hpp>
 #include <boost/spirit/include/qi_plus.hpp>
 
-#include <iostream>
-
 namespace iroha {
   namespace model {
     bool DnsParser::isValid(const std::string &str) {
@@ -19,11 +17,9 @@ namespace iroha {
       domain = subdomain | ' ';
       subdomain = label % '.';
       // I could not express the grammer [ [ <ldh-str> ] <let-dig> ] with
-      // <ldh-str> directly. So I introduced a intermediate rule
-      // end_with_let_dig instead of <ldh-str>.
-      label = letter >> -end_with_let_dig;
-      end_with_let_dig =
-          ((let_dig_hyp | let_dig) >> (end_with_let_dig | let_dig)) | let_dig;
+      // <ldh-str> directly.
+      label =
+          letter >> qi::repeat(0, 62)[let_dig_hyp - ('-' >> ('.' | qi::eoi))];
       let_dig_hyp = '-' | let_dig;
       let_dig = letter | qi::digit;
       letter = qi::lower | qi::upper;
