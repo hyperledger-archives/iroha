@@ -4,8 +4,6 @@ ENV IROHA_HOME /opt/iroha
 ENV IROHA_BUILD /opt/iroha/build
 ARG node
 
-COPY iroha.deb /tmp/iroha.deb
-COPY entrypoint.sh /entrypoint.sh
 RUN apt-get update;\
     apt-get upgrade; \
     apt-get install -y \
@@ -13,8 +11,10 @@ RUN apt-get update;\
         gdebi-core
 
 #Install iroha
+COPY iroha.deb /tmp/iroha.deb
 RUN gdebi --non-interactive /tmp/iroha.deb
 
-WORKDIR /op/iroha
+WORKDIR /opt/iroha
 
+COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
