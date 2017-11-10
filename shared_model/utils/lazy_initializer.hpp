@@ -32,41 +32,39 @@ namespace shared_model {
     template <typename Target>
     class LazyInitializer {
      private:
-      /// Type of transformation
-      using TransformType = std::function<Target()>;
+      /// Type of generator function
+      using GeneratorType = std::function<Target()>;
 
      public:
-      LazyInitializer(const TransformType &transform) : transform_(transform) {}
+      LazyInitializer(const GeneratorType &generator) : generator_(generator) {}
 
       LazyInitializer(const LazyInitializer &) = default;
 
       /**
-       * @return value after transformation
+       * @return generated value
        */
       const Target &get() const {
         if (target_value_ == nullptr) {
-          target_value_ = std::make_shared<Target>(transform_());
+          target_value_ = std::make_shared<Target>(generator_());
         }
         return *target_value_;
       }
 
      private:
-      TransformType transform_;
+      GeneratorType generator_;
       mutable std::shared_ptr<Target> target_value_;
     };
 
     /**
      * Function for creating lazy object
-     * @tparam Source - source type
-     * @tparam Transform - type of transformation
-     * @param source - source value
-     * @param transform - transformation instance
+     * @tparam Generator - type of generator
+     * @param generator - instance of Generator
      * @return initialized lazy value
      */
-    template <typename Transform>
-    auto makeLazyInitializer(Transform &&transform) {
-      using targetType = decltype(transform());
-      return LazyInitializer<targetType>(std::forward<Transform>(transform));
+    template <typename Generator>
+    auto makeLazyInitializer(Generator &&generator) {
+      using targetType = decltype(generator());
+      return LazyInitializer<targetType>(std::forward<Generator>(generator));
     }
   }  // namespace detail
 }  // namespace shared_model
