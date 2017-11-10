@@ -39,7 +39,6 @@ namespace shared_model {
       /// polymorphic wrapper type shortcut
       template <typename Value>
       using w = detail::PolymorphicWrapper<Value>;
-      // private API
 
       /// lazy variant shortcut
       using LazyVariantType = detail::LazyInitializer<CommandVariantType>;
@@ -57,13 +56,19 @@ namespace shared_model {
        */
       explicit Command(const iroha::protocol::Command &command)
           : command_(command),
-            lazy_variant_(detail::makeLazyInitializer([this] {
+            variant_(detail::makeLazyInitializer([this] {
               return CommandVariantType(
-                  load<ProtoCommandListType>(this->command_));
-            })) {}
+                  load<ProtoCommandListType>(command_));
+            })) {
+        if (command.command_case()
+            == iroha::protocol::Command::COMMAND_NOT_SET) {
+          // TODO 11/11/17 andrei create generic exception message
+          throw std::invalid_argument("Object does not contain command");
+        }
+      }
 
       const CommandVariantType &get() const override {
-        return lazy_variant_.get();
+        return variant_.get();
       }
 
       ModelType *copy() const override { return new Command(command_); }
@@ -75,7 +80,7 @@ namespace shared_model {
       const iroha::protocol::Command command_;
 
       // lazy
-      LazyVariantType lazy_variant_;
+      LazyVariantType variant_;
     };
   }  // namespace proto
 }  // namespace shared_model

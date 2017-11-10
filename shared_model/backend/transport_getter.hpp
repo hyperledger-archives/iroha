@@ -15,23 +15,21 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROTO_GETTER_HPP
-#define IROHA_PROTO_GETTER_HPP
+#ifndef IROHA_TRANSPORT_GETTER_HPP
+#define IROHA_TRANSPORT_GETTER_HPP
 
 namespace shared_model {
-  namespace proto {
+  /**
+   * Getter for top level transport implementations
+   * @tparam T transport object
+   */
+  template <typename T>
+  class TransportGetter {
+   public:
     /**
-     * Getter for top level proto implementations
-     * @tparam T proto object
+     * @return reference to const transport object
      */
-    template <typename T>
-    class ProtoGetter {
-     public:
-      /**
-       * @return reference to const proto object
-       */
-      const T &getProto() const;
-    };
-  }  // namespace proto
+    const T &getTransport() const;
+  };
 }  // namespace shared_model
-#endif  // IROHA_PROTO_GETTER_HPP
+#endif  // IROHA_TRANSPORT_GETTER_HPP

@@ -28,12 +28,18 @@ namespace shared_model {
   namespace proto {
     class AddAssetQuantity final : public interface::AddAssetQuantity {
      private:
-      template<typename Value>
+      template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
 
      public:
       explicit AddAssetQuantity(const iroha::protocol::Command &command)
-          : AddAssetQuantity(command.add_asset_quantity()) {}
+          : AddAssetQuantity(command.add_asset_quantity()) {
+        if (not command.has_add_asset_quantity()) {
+          // TODO 11/11/17 andrei create generic exception message
+          throw std::invalid_argument(
+              "Object does not contain add_asset_quantity");
+        }
+      }
 
       const interface::types::AccountIdType &accountId() const override {
         return add_asset_quantity_.account_id();
@@ -44,10 +50,10 @@ namespace shared_model {
       }
 
       const interface::types::AmountType &amount() const override {
-        return lazy_amount_.get();
+        return amount_.get();
       }
 
-      const HashType &hash() const override { return lazy_hash_.get(); }
+      const HashType &hash() const override { return hash_.get(); }
 
       ModelType *copy() const override {
         return new AddAssetQuantity(add_asset_quantity_);
@@ -58,10 +64,10 @@ namespace shared_model {
       explicit AddAssetQuantity(
           const iroha::protocol::AddAssetQuantity &add_asset_quantity)
           : add_asset_quantity_(add_asset_quantity),
-            lazy_amount_([this] {
+            amount_([this] {
               return proto::Amount(this->add_asset_quantity_.amount());
             }),
-            lazy_hash_([this] {
+            hash_([this] {
               // TODO 10/11/2017 muratovv replace with effective implementation
               return crypto::StubHash();
             }) {}
@@ -72,8 +78,8 @@ namespace shared_model {
       const iroha::protocol::AddAssetQuantity add_asset_quantity_;
 
       // lazy
-      Lazy<proto::Amount> lazy_amount_;
-      Lazy<crypto::StubHash> lazy_hash_;
+      Lazy<proto::Amount> amount_;
+      Lazy<crypto::StubHash> hash_;
     };
 
   }  // namespace proto
