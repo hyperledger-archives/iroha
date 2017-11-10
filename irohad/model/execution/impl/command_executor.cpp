@@ -32,6 +32,7 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/revoke_permission.hpp"
 #include "model/execution/common_executor.hpp"
+#include "model/execution/dns_parser.hpp"
 #include "model/permissions.hpp"
 
 using namespace iroha::ametsuchi;
@@ -372,11 +373,8 @@ namespace iroha {
       return
           // Name is within some range
           not create_account.account_name.empty()
-          and create_account.account_name.size() < 8 and
           // Account must be well-formed (no system symbols)
-          std::all_of(std::begin(create_account.account_name),
-                      std::end(create_account.account_name),
-                      [](char c) { return std::isalnum(c) and islower(c); });
+          and DnsParser::isValid(create_account.account_name);
     }
 
     // --------------------------|CreateAsset|---------------------------
