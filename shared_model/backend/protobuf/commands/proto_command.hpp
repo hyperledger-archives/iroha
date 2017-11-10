@@ -21,9 +21,10 @@
 #include "backend/protobuf/commands/proto_add_asset_quantity.hpp"
 #include "commands.pb.h"
 #include "interfaces/commands/command.hpp"
+#include "utils/lazy_initializer.hpp"
 #include "utils/variant_deserializer.hpp"
 
-template <typename... T>
+template<typename... T>
 auto load(const iroha::protocol::Command &ar) {
   shared_model::interface::Command::CommandVariantType result;
   int which = ar.command_case() - 1;
@@ -33,22 +34,48 @@ auto load(const iroha::protocol::Command &ar) {
 
 namespace shared_model {
   namespace proto {
-    class Command : public interface::Command {
+    class Command final  : public interface::Command {
      private:
-      template <typename Value>
+      /// polymorphic wrapper type shortcut
+      template<typename Value>
       using w = detail::PolymorphicWrapper<Value>;
+      // private API
+
+      /// lazy variant shortcut
+      using LazyVariantType = detail::LazyInitializer<CommandVariantType>;
 
      public:
-      explicit Command(const iroha::protocol::Command &command)
-          : variant_(load<ProtoCommandListType>(command)) {}
-
-      const CommandVariantType &get() const override { return variant_; }
-
+      /// type of proto variant
       using ProtoCommandVariantType = boost::variant<w<AddAssetQuantity>>;
+
+      /// list of types in proto variant
       using ProtoCommandListType = ProtoCommandVariantType::types;
 
+      /**
+       * Create command container from proto command
+       * @param command - proto instance
+       */
+      explicit Command(const iroha::protocol::Command &command)
+          : command_(command),
+            lazy_variant_(detail::makeLazyInitializer([this] {
+              return CommandVariantType(
+                  load<ProtoCommandListType>(this->command_));
+            })) {}
+
+      const CommandVariantType &get() const override {
+        return lazy_variant_.get();
+      }
+
+      ModelType *copy() const { return new Command(command_); }
+
      private:
-      CommandVariantType variant_;
+      // ------------------------------| fields |-------------------------------
+
+      // proto
+      const iroha::protocol::Command command_;
+
+      // lazy
+      LazyVariantType lazy_variant_;
     };
   }  // namespace proto
 }  // namespace shared_model

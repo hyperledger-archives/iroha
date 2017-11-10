@@ -53,19 +53,19 @@ namespace shared_model {
 
      public:
       /// Type of variant, that handle concrete command
-      using CommandVariantType = boost::variant<w<AddAssetQuantity>,
-                                                w<AddPeer>,
-                                                w<AddSignatory>,
-                                                w<AppendRole>,
-                                                w<CreateAccount>,
-                                                w<CreateAsset>,
-                                                w<CreateDomain>,
-                                                w<CreateRole>,
-                                                w<GrantPermission>,
-                                                w<RemoveSignatory>,
-                                                w<RevokePermission>,
-                                                w<SetQuorum>,
-                                                w<TransferAsset>>;
+      using CommandVariantType = boost::variant<w<AddAssetQuantity>>;
+//                                                w<AddPeer>,
+//                                                w<AddSignatory>,
+//                                                w<AppendRole>,
+//                                                w<CreateAccount>,
+//                                                w<CreateAsset>,
+//                                                w<CreateDomain>,
+//                                                w<CreateRole>,
+//                                                w<GrantPermission>,
+//                                                w<RemoveSignatory>,
+//                                                w<RevokePermission>,
+//                                                w<SetQuorum>,
+//                                                w<TransferAsset>>;
 
       /// Types of concrete commands, in attached variant
       using CommandListType = CommandVariantType::types;
