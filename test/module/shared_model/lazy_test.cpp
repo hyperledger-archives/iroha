@@ -35,7 +35,7 @@ struct TargetValue {
 TEST(LazyTest, GetterTest) {
   SourceValue v{100500};
   auto lazy = shared_model::detail::makeLazyInitializer(
-      v, [](auto source) { return TargetValue{std::to_string(source.val)}; });
+      [&v] { return TargetValue{std::to_string(v.val)}; });
   ASSERT_EQ("100500", lazy.get().target);
 }
 
@@ -47,11 +47,10 @@ TEST(LazyTest, GetterTest) {
 TEST(LazyTest, CheckLaziness) {
   SourceValue v{100500};
   auto call_counter = 0;
-  auto lazy = shared_model::detail::makeLazyInitializer(
-      v, [&call_counter](auto source) {
-        call_counter++;
-        return TargetValue{std::to_string(source.val)};
-      });
+  auto lazy = shared_model::detail::makeLazyInitializer([&call_counter, &v] {
+    call_counter++;
+    return TargetValue{std::to_string(v.val)};
+  });
   ASSERT_EQ(0, call_counter);
   ASSERT_EQ("100500", lazy.get().target);
   ASSERT_EQ(1, call_counter);

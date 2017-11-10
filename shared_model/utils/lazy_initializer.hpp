@@ -29,32 +29,30 @@ namespace shared_model {
      * @tparam Source - input type
      * @tparam Target - output type
      */
-    template <typename Source, typename Target>
+    template <typename Target>
     class LazyInitializer {
      private:
       /// Type of transformation
-      using TransformType = std::function<Target(const Source &)>;
+      using TransformType = std::function<Target()>;
 
      public:
-      LazyInitializer(const Source &source, const TransformType &transform)
-          : source_(source), transform_(transform) {}
+      LazyInitializer(const TransformType &transform) : transform_(transform) {}
 
       LazyInitializer(const LazyInitializer &) = default;
 
       /**
        * @return value after transformation
        */
-      const Target &get() {
+      const Target &get() const {
         if (target_value_ == nullptr) {
-          target_value_ = std::make_shared<Target>(transform_(source_));
+          target_value_ = std::make_shared<Target>(transform_());
         }
         return *target_value_;
       }
 
      private:
-      const Source &source_;
       TransformType transform_;
-      std::shared_ptr<Target> target_value_;
+      mutable std::shared_ptr<Target> target_value_;
     };
 
     /**
@@ -65,11 +63,10 @@ namespace shared_model {
      * @param transform - transformation instance
      * @return initialized lazy value
      */
-    template <typename Source, typename Transform>
-    auto makeLazyInitializer(Source &&source, Transform &&transform) {
-      using targetType = decltype(transform(source));
-      return LazyInitializer<Source, targetType>(std::forward<Source>(source),
-                                      std::forward<Transform>(transform));
+    template <typename Transform>
+    auto makeLazyInitializer(Transform &&transform) {
+      using targetType = decltype(transform());
+      return LazyInitializer<targetType>(std::forward<Transform>(transform));
     }
   }  // namespace detail
 }  // namespace shared_model
