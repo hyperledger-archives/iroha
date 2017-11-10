@@ -87,3 +87,6 @@ target_link_libraries(static_map
     logger
     )
 
+addtest(dns_parser_test execution/dns_parser_test.cpp)
+target_link_libraries(dns_parser_test
+  command_execution)
