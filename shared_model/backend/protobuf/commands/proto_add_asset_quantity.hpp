@@ -22,6 +22,7 @@
 #include "cryptography/stub_hash.hpp"
 #include "interfaces/commands/add_asset_quantity.hpp"
 #include "utils/lazy_initializer.hpp"
+#include "backend/protobuf/common_objects/amount.hpp"
 
 namespace shared_model {
   namespace proto {
@@ -46,7 +47,7 @@ namespace shared_model {
         return lazy_amount_.get();
       }
 
-      const HashType &hash() const override { return *lazy_hash_.get(); }
+      const HashType &hash() const override { return lazy_hash_.get(); }
 
       ModelType *copy() const override {
         return new AddAssetQuantity(add_asset_quantity_);
@@ -58,17 +59,11 @@ namespace shared_model {
           const iroha::protocol::AddAssetQuantity &add_asset_quantity)
           : add_asset_quantity_(add_asset_quantity),
             lazy_amount_([this] {
-              auto &value = this->add_asset_quantity_.amount().value();
-              return interface::types::AmountType(
-                  value.first(),
-                  value.second(),
-                  value.third(),
-                  value.fourth(),
-                  add_asset_quantity_.amount().precision());
+              return proto::Amount(this->add_asset_quantity_.amount());
             }),
             lazy_hash_([this] {
-              // TODO 10/11/2017 muratovv repace with effective implementation
-              return std::make_shared<crypto::StubHash>();
+              // TODO 10/11/2017 muratovv replace with effective implementation
+              return crypto::StubHash();
             }) {}
 
       // ------------------------------| fields |-------------------------------
@@ -77,8 +72,8 @@ namespace shared_model {
       const iroha::protocol::AddAssetQuantity add_asset_quantity_;
 
       // lazy
-      Lazy<interface::types::AmountType> lazy_amount_;
-      Lazy<std::shared_ptr<crypto::Hash>> lazy_hash_;
+      Lazy<proto::Amount> lazy_amount_;
+      Lazy<crypto::StubHash> lazy_hash_;
     };
 
   }  // namespace proto
