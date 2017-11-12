@@ -18,7 +18,7 @@
 #include "keys_manager_impl.hpp"
 #include "crypto/crypto.hpp"
 #include "crypto/hash.hpp"
-
+#include "logger/logger.hpp"
 #include <fstream>
 #include <utility>
 
@@ -43,21 +43,31 @@ namespace iroha {
   }
 
   KeysManagerImpl::KeysManagerImpl(std::string account_name)
-      : account_name_(std::move(account_name)) {}
+      : account_name_(std::move(account_name)),
+        log_(logger::log("KeysManagerImpl")) {}
 
   bool KeysManagerImpl::validate(const iroha::keypair_t &keypair) const {
     std::string test = "12345";
     auto sig = iroha::sign(
         iroha::sha3_256(test).to_string(), keypair.pubkey, keypair.privkey);
-    return iroha::verify(
-        iroha::sha3_256(test).to_string(), keypair.pubkey, sig);
+    if (not iroha::verify(
+        iroha::sha3_256(test).to_string(), keypair.pubkey, sig)) {
+      log_->error("key validation failed");
+      return false;
+    }
+    return true;
   }
 
   nonstd::optional<iroha::keypair_t> KeysManagerImpl::loadKeys() {
     // Try to load from local file
     std::ifstream priv_file(account_name_ + ".priv");
     std::ifstream pub_file(account_name_ + ".pub");
-    if (not priv_file || not pub_file) {
+    if (not priv_file) {
+      log_->error("Could not read '" + account_name_ + ".priv'");
+      return nonstd::nullopt;
+    }
+    if (not pub_file) {
+      log_->error("Could not read '" + account_name_ + ".pub'");
       return nonstd::nullopt;
     }
     std::string client_pub_key_;
