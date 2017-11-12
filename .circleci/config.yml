@@ -42,11 +42,15 @@ jobs:
           name: make
           command: |
             cmake --build $IROHA_BUILD -- -j4
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
       - save_cache:
           key: build-cache-debug-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/.ccache
-      - run: ccache --show-stats
       - run:
           name: unit tests, generate xunit-*.xml
           command: cmake --build $IROHA_BUILD --target test
@@ -99,6 +103,11 @@ jobs:
           name: make and package
           command: |
             cmake --build $IROHA_BUILD --target package -- -j4
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
       - save_cache:
           key: build-cache-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
@@ -113,7 +122,6 @@ jobs:
             cp iroha-*.tar.gz ./iroha.tar.gz
             # if IROHA_VERSION is not set, then CIRCLE_SHA1
             echo ${IROHA_VERSION:-$CIRCLE_SHA1} > version.txt
-            cd $IROHA_HOME
       - store_artifacts:
           path: build/iroha.deb
           destination: iroha-linux.deb
@@ -151,7 +159,7 @@ jobs:
       - run:
           name: Build and push iroha image
           command: |
-              tag=test
+              tag="$CIRCLE_TAG"
               if [ "$CIRCLE_BRANCH" == "develop" ]; then
                 tag=develop
               elif [ "$CIRCLE_BRANCH" == "master" ]; then
@@ -282,6 +290,11 @@ jobs:
           name: make
           command: |
             cmake --build build --target package -- -j$(sysctl -n hw.ncpu)
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
       - save_cache:
           key: build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
