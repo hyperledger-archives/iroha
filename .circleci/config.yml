@@ -3,42 +3,59 @@ defaults: &defaults
   environment:
     IROHA_HOME: /opt/iroha
     IROHA_BUILD: /opt/iroha/build
-    CCACHE_DIR: ~/.ccache
+
+defaults: &version
+  environment:
+    IROHA_VERSION: ${CIRCLE_TAG:-$CIRCLE_SHA1}
 
 version: 2
 
 jobs:
   build:
     <<: *defaults
+    <<: *version
     docker:
       - image: hyperledger/iroha-docker-develop
       - image: postgres:9.5
       - image: redis:3.2.8
     steps:
       - checkout
+      - run: echo $(eval echo "$IROHA_VERSION")
       - restore_cache:
           keys:
-            - build-cache-{{ arch }}-{{ .Branch }}
-            - build-cache-{{ arch }}
+            - build-cache-debug-{{ arch }}-{{ .Branch }}-
+            - build-cache-debug-{{ arch }}-
           paths:
             - ~/.ccache
       - run:
           name: ccache setup
           command: |
-            ccache --max-files=0
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
             ccache --max-size=1G
       - run:
           name: cmake
-          command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD
+          command: >
+            cmake \
+              -DCOVERAGE=ON \
+              -H$IROHA_HOME \
+              -B$IROHA_BUILD \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DIROHA_VERSION=$(eval echo "$IROHA_VERSION")
       - run:
           name: make
           command: |
             cmake --build $IROHA_BUILD -- -j4
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
       - save_cache:
-          key: build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          key: build-cache-debug-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/.ccache
-      - run: ccache --show-stats
       - run:
           name: unit tests, generate xunit-*.xml
           command: cmake --build $IROHA_BUILD --target test
@@ -56,9 +73,118 @@ jobs:
 
 
 
+  build-linux-release:
+    <<: *defaults
+    <<: *version
+    docker:
+      - image: hyperledger/iroha-docker-develop
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - build-cache-release-{{ arch }}-{{ .Branch }}-
+            - build-cache-release-{{ arch }}-
+          paths:
+            - ~/.ccache
+      - run:
+          name: ccache setup
+          command: |
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=1G
+      - run:
+          name: cmake
+          command: >
+            cmake \
+              -DCOVERAGE=OFF \
+              -DTESTING=OFF \
+              -H$IROHA_HOME \
+              -B$IROHA_BUILD \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DPACKAGE_DEB=ON \
+              -DPACKAGE_TGZ=ON \
+              -DIROHA_VERSION=$(eval echo "$IROHA_VERSION")
+      - run:
+          name: make and package
+          command: |
+            cmake --build $IROHA_BUILD --target package -- -j4
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
+      - save_cache:
+          key: build-cache-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/.ccache
+      - run:
+          name: copy deb file
+          command: |
+            IROHA_VERSION=$(eval echo "$IROHA_VERSION")
+            cd $IROHA_BUILD
+            # iroha-$IROHA_VERSION-Linux.{tar.gz, deb}, always matches 1 file
+            cp iroha-*.deb ./iroha.deb
+            cp iroha-*.tar.gz ./iroha.tar.gz
+            # if IROHA_VERSION is not set, then CIRCLE_SHA1
+            echo ${IROHA_VERSION:-$CIRCLE_SHA1} > version.txt
+      - store_artifacts:
+          path: build/iroha.deb
+          destination: iroha-linux.deb
+      - store_artifacts:
+          path: build/iroha.tar.gz
+          destination: iroha-linux.tar.gz
+      - store_artifacts:
+          path: build/version.txt
+          destination: version.txt
+      - persist_to_workspace:
+          root: build
+          paths:
+            - iroha.deb
+
+
+
+  dockerize:
+    <<: *defaults
+    <<: *version
+    docker:
+      - image: hyperledger/iroha-docker-develop
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: /opt/iroha/build
+      - run:
+          name: Copy deb
+          command: |
+            cp $IROHA_BUILD/iroha.deb $IROHA_HOME/docker/release/iroha.deb
+      - run:
+          name: Docker login
+          command: |
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+      - run:
+          name: Build and push iroha image
+          command: |
+            tag=
+            if [ -n "$CIRCLE_TAG" ]; then
+              # if CIRCLE_TAG is not empty
+              tag="$CIRCLE_TAG"
+            else
+              if [ "$CIRCLE_BRANCH" == "develop" ]; then
+                tag=develop
+              elif [ "$CIRCLE_BRANCH" == "master" ]; then
+                tag=latest
+              fi
+            fi
+            docker build -t hyperledger/iroha-docker:$tag $IROHA_HOME/docker/release
+            docker push hyperledger/iroha-docker:$tag
+
+
   # used to push info about issues to github
   sonar-pr:
     <<: *defaults
+    <<: *version
     docker:
       - image: hyperledger/iroha-docker-develop
     steps:
@@ -98,6 +224,7 @@ jobs:
   # executed only for develop, master and release branches
   sonar-release:
     <<: *defaults
+    <<: *version
     docker:
       - image: hyperledger/iroha-docker-develop
     steps:
@@ -129,7 +256,8 @@ jobs:
             - ~/.sonar
 
 
-  macos-build:
+  build-macos-release:
+    <<: *version
     macos:
       xcode: 9.0.0
     steps:
@@ -157,12 +285,31 @@ jobs:
             - external-{{ arch }}
           paths:
             - external
-      - run: ccache --show-stats
       - run:
-          name: build
+          name: ccache setup
           command: |
-            cmake -H. -Bbuild
-            cmake --build build -- -j$(sysctl -n hw.ncpu)
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=1G
+      - run:
+          name: cmake
+          command: >
+            cmake -H. -Bbuild \
+              -DCOVERAGE=OFF \
+              -DTESTING=OFF \
+              -DPACKAGE_TGZ=ON \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DIROHA_VERSION=$(eval echo "$IROHA_VERSION")
+      - run:
+          name: make
+          command: |
+            cmake --build build --target package -- -j$(sysctl -n hw.ncpu)
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
       - save_cache:
           key: build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
@@ -171,16 +318,30 @@ jobs:
           key: external-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - external
-
       - run: ccache --show-stats
+      - run:
+          name: rename artifacts
+          command: |
+            IROHA_VERSION=$(eval echo "$IROHA_VERSION")
+            # iroha-$IROHA_VERSION-Darwin.tar.gz, always matches 1 file
+            cp build/iroha-*.tar.gz build/iroha-darwin.tar.gz
+            # if IROHA_VERSION is not set, then CIRCLE_SHA1
+            echo ${IROHA_VERSION:-$CIRCLE_SHA1} > build/version.txt
+      - store_artifacts:
+          path: build/iroha-darwin.tar.gz
+          destination: iroha-darwin.tar.gz
+      - store_artifacts:
+          path: build/version.txt
+          destination: version.txt
+
      
 
 workflows:
   version: 2
   full_pipeline:
     jobs:
-      # macos-build/build -> sonar -> dockerize
-      - macos-build
+      # build-macos-release + build -> sonar(pr/release)
+      - build-macos-release
       - build
       - sonar-pr:
           requires:
@@ -198,6 +359,26 @@ workflows:
       - sonar-release:
           requires:
             - build
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+            tags:
+              only: /v[\.0-9]+.*/
+
+      # build-linux-release -> dockerize
+      - build-linux-release:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+            tags:
+              only: /v[\.0-9]+.*/
+      - dockerize:
+          requires:
+            - build-linux-release
           filters:
             branches:
               only:
