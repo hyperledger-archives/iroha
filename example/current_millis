@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# Print milliseconds since Epoch Julian Date
-
-python3 -c "import datetime; print(int(datetime.datetime.now().timestamp()*1000))"

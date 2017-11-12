@@ -1,7 +1,7 @@
 {
     "signatures": [],
     "created_ts": 0,
-    "hash": "9c944ef030a39c4d835c8c3ec81c4a7c15c0ad0efcb29e9256f1ab6af4a00ff3",
+    "hash": "de25547407e242be6e695d2d873e470bc4492773da22ffab28e38097171e8e7b",
     "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
     "height": 1,
     "txs_number": 1,
@@ -15,25 +15,25 @@
             "commands": [
                 {
                     "command_type": "AddPeer",
-                    "address": "0.0.0.0:10001",
+                    "address": "localhost:10001",
                     "peer_key": "19f5bf5dec59a7ee40e3e609b9d54a0f048633a6db42f27b1609d2d06aa9234e"
                 },
                 {
                     "command_type": "CreateRole",
                     "role_name": "admin",
                     "permissions": [
-                        "CanGetAllAccounts",
-                        "CanGetAllAccountAssets",
-                        "CanGetAllAccountTransactions",
-                        "CanGetAllSignatories",
-                        "CanGetAllAccountAssetsTransactions",
-                        "CanGetRoles",
-                        "CanReadAssets",
                         "CanAddPeer",
+                        "CanAddSignatory",
                         "CanCreateAccount",
                         "CanCreateDomain",
+                        "CanGetAllAccountAssets",
+                        "CanGetAllAccountAssetsTransactions",
+                        "CanGetAllAccountTransactions",
+                        "CanGetAllAccounts",
+                        "CanGetAllSignatories",
+                        "CanGetRoles",
+                        "CanReadAssets",
                         "CanRemoveSignatory",
-                        "CanAddSignatory",
                         "CanSetQuorum"
                     ]
                 },
@@ -41,27 +41,28 @@
                     "command_type": "CreateRole",
                     "role_name": "user",
                     "permissions": [
-                        "CanSetQuorum",
                         "CanAddSignatory",
-                        "CanReceive",
-                        "CanGetMySignatories",
-                        "CanGrantCanRemoveSignatory",
-                        "CanGetMyAccountAssetsTransactions",
-                        "CanGetMyAccountAssets",
                         "CanGetMyAccount",
+                        "CanGetMyAccountAssets",
+                        "CanGetMyAccountAssetsTransactions",
                         "CanGetMyAccountTransactions",
-                        "CanRemoveSignatory",
+                        "CanGetMySignatories",
                         "CanGrantCanAddSignatory",
-                        "CanTransfer",
-                        "CanGrantCanSetQuorum"
+                        "CanGrantCanRemoveSignatory",
+                        "CanGrantCanSetQuorum",
+                        "CanGrantCanTransfer",
+                        "CanReceive",
+                        "CanRemoveSignatory",
+                        "CanSetQuorum",
+                        "CanTransfer"
                     ]
                 },
                 {
                     "command_type": "CreateRole",
                     "role_name": "money_creator",
                     "permissions": [
-                        "CanCreateAsset",
                         "CanAddAssetQuantity",
+                        "CanCreateAsset",
                         "CanReceive",
                         "CanTransfer"
                     ]
