@@ -4,11 +4,16 @@ defaults: &defaults
     IROHA_HOME: /opt/iroha
     IROHA_BUILD: /opt/iroha/build
 
+defaults: &version
+  environment:
+    IROHA_VERSION: ${CIRCLE_TAG:-$CIRCLE_SHA1}
+
 version: 2
 
 jobs:
   build:
     <<: *defaults
+    <<: *version
     docker:
       - image: hyperledger/iroha-docker-develop
       - image: postgres:9.5
@@ -70,6 +75,7 @@ jobs:
 
   build-linux-release:
     <<: *defaults
+    <<: *version
     docker:
       - image: hyperledger/iroha-docker-develop
     steps:
@@ -140,6 +146,7 @@ jobs:
 
   dockerize:
     <<: *defaults
+    <<: *version
     docker:
       - image: hyperledger/iroha-docker-develop
       - image: docker:17.05.0-ce-git
@@ -155,23 +162,30 @@ jobs:
       - run:
           name: Docker login
           command: |
-              docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
       - run:
           name: Build and push iroha image
           command: |
+            tag=
+            if [ -z "$CIRCLE_TAG" ]; then
               tag="$CIRCLE_TAG"
+            else
               if [ "$CIRCLE_BRANCH" == "develop" ]; then
                 tag=develop
               elif [ "$CIRCLE_BRANCH" == "master" ]; then
                 tag=latest
+              else
+                exit 1 # should not get here
               fi
-              docker build -t hyperledger/iroha-docker:$tag $IROHA_HOME/docker/release
-              docker push hyperledger/iroha-docker:$tag
+            fi
+            docker build -t hyperledger/iroha-docker:$tag $IROHA_HOME/docker/release
+            docker push hyperledger/iroha-docker:$tag
 
 
   # used to push info about issues to github
   sonar-pr:
     <<: *defaults
+    <<: *version
     docker:
       - image: hyperledger/iroha-docker-develop
     steps:
@@ -211,6 +225,7 @@ jobs:
   # executed only for develop, master and release branches
   sonar-release:
     <<: *defaults
+    <<: *version
     docker:
       - image: hyperledger/iroha-docker-develop
     steps:
@@ -243,6 +258,7 @@ jobs:
 
 
   build-macos-release:
+    <<: *version
     macos:
       xcode: 9.0.0
     steps:
