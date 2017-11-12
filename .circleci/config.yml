@@ -167,15 +167,14 @@ jobs:
           name: Build and push iroha image
           command: |
             tag=
-            if [ -z "$CIRCLE_TAG" ]; then
+            if [ -n "$CIRCLE_TAG" ]; then
+              # if CIRCLE_TAG is not empty
               tag="$CIRCLE_TAG"
             else
               if [ "$CIRCLE_BRANCH" == "develop" ]; then
                 tag=develop
               elif [ "$CIRCLE_BRANCH" == "master" ]; then
                 tag=latest
-              else
-                exit 1 # should not get here
               fi
             fi
             docker build -t hyperledger/iroha-docker:$tag $IROHA_HOME/docker/release
