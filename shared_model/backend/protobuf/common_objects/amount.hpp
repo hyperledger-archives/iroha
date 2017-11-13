@@ -27,7 +27,7 @@ namespace shared_model {
   namespace proto {
     class Amount final : public interface::Amount {
      public:
-      Amount(const iroha::protocol::Amount &proto_amount)
+      explicit Amount(const iroha::protocol::Amount &proto_amount)
           : multiprecision_repr([this] {
               const auto offset = 64u;
               auto times = 3u;

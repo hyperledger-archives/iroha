@@ -48,10 +48,10 @@ namespace shared_model {
        * @param value - pointer for wrapping
        */
       template <typename Y>
-      PolymorphicWrapper(const Y *value) : ptr(std::shared_ptr<Y>(value)) {}
+      explicit PolymorphicWrapper(const Y *value) : ptr(std::shared_ptr<Y>(value)) {}
 
       template <typename... Args>
-      PolymorphicWrapper(Args &&... args)
+      explicit PolymorphicWrapper(Args &&... args)
           : ptr(std::make_shared<T>(std::forward<Args>(args)...)) {}
 
       template <typename Y>

@@ -36,7 +36,7 @@ namespace shared_model {
       using GeneratorType = std::function<Target()>;
 
      public:
-      LazyInitializer(const GeneratorType &generator) : generator_(generator) {}
+      explicit LazyInitializer(const GeneratorType &generator) : generator_(generator) {}
 
       LazyInitializer(const LazyInitializer &) = default;
 
