@@ -32,7 +32,7 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/revoke_permission.hpp"
 #include "model/execution/common_executor.hpp"
-#include "model/execution/dns_parser.hpp"
+#include "model/execution/domain_name_parser.hpp"
 #include "model/permissions.hpp"
 
 using namespace iroha::ametsuchi;
@@ -374,7 +374,7 @@ namespace iroha {
           // Name is within some range
           not create_account.account_name.empty()
           // Account must be well-formed (no system symbols)
-          and DnsParser::isValid(create_account.account_name);
+          and DomainNameParser::isValid(create_account.account_name);
     }
 
     // --------------------------|CreateAsset|---------------------------

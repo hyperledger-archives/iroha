@@ -30,7 +30,7 @@ target_link_libraries(common_execution
 add_library(command_execution
     execution/impl/command_executor.cpp
     execution/impl/command_executor_factory.cpp
-    execution/impl/dns_parser.cpp
+    execution/impl/domain_name_parser.cpp
     )
 target_link_libraries(command_execution
     common_execution

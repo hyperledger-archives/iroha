@@ -8,7 +8,7 @@ namespace iroha {
     /**
      * Parse a string as a domain name as defined in RFC 1035.
      */
-    class DnsParser {
+    class DomainNameParser {
      public:
       // clang-format off
       /**

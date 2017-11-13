@@ -1,4 +1,4 @@
-#include "model/execution/dns_parser.hpp"
+#include "model/execution/domain_name_parser.hpp"
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/qi_char_class.hpp>
@@ -9,7 +9,7 @@
 
 namespace iroha {
   namespace model {
-    bool DnsParser::isValid(const std::string &str) {
+    bool DomainNameParser::isValid(const std::string &str) {
       namespace qi = boost::spirit::qi;
 
       qi::rule<decltype(str.begin())> letter, let_dig, end_with_let_dig,
