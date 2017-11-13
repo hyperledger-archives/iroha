@@ -18,6 +18,7 @@ limitations under the License.
 #include "model/converters/pb_transaction_factory.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
+#include "module/irohad/torii/torii_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
 #include <endpoint.pb.h>
@@ -48,6 +49,7 @@ using ::testing::_;
 using namespace iroha::network;
 using namespace iroha::validation;
 using namespace iroha::ametsuchi;
+using namespace iroha::torii;
 
 using Commit = rxcpp::observable<iroha::model::Block>;
 
@@ -83,13 +85,14 @@ class ToriiServiceTest : public testing::Test {
       pcsMock = std::make_shared<CustomPeerCommunicationServiceMock>(
           prop_notifier_, commit_notifier_);
       statelessValidatorMock = std::make_shared<MockStatelessValidator>();
+      mst = std::make_shared<MockMstProcessorDummy>();
       wsv_query = std::make_shared<MockWsvQuery>();
       storageMock = std::make_shared<MockStorage>();
       block_query = std::make_shared<MockBlockQuery>();
 
       auto tx_processor =
           std::make_shared<iroha::torii::TransactionProcessorImpl>(
-              pcsMock, statelessValidatorMock);
+              pcsMock, statelessValidatorMock, mst);
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
       auto command_service = std::make_unique<torii::CommandService>(
@@ -140,6 +143,7 @@ class ToriiServiceTest : public testing::Test {
 
   std::shared_ptr<CustomPeerCommunicationServiceMock> pcsMock;
   std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
+  std::shared_ptr<MockMstProcessorDummy> mst;
 };
 
 /**
