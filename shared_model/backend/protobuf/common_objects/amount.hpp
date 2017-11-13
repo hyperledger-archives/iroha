@@ -30,20 +30,13 @@ namespace shared_model {
       Amount(const iroha::protocol::Amount &proto_amount)
           : multiprecision_repr([this] {
               const auto offset = 64u;
-              std::vector<uint64_t> result;
-              result.push_back(proto_amount_.value().first());
-              result.push_back(proto_amount_.value().second());
-              result.push_back(proto_amount_.value().third());
-              result.push_back(proto_amount_.value().fourth());
-
-              // last concat not requires shift
-              return std::accumulate(result.begin(),
-                                     result.end() - 1,
-                                     boost::multiprecision::uint256_t(),
-                                     [&offset](auto &res, auto &num) {
-                                       return (res | num) << offset;
-                                     })
-                  | *(result.end() - 1);
+              auto times = 3u;
+              boost::multiprecision::uint256_t result;
+              result |= proto_amount_.value().first()  << offset * times--;
+              result |= proto_amount_.value().second() << offset * times--;
+              result |= proto_amount_.value().third()  << offset * times--;
+              result |= proto_amount_.value().fourth() << offset * times--;
+              return result;
             }),
             precision_([this] { return proto_amount_.precision(); }),
             hash_([this] { return crypto::StubHash(); }) {}
@@ -66,7 +59,7 @@ namespace shared_model {
       using Lazy = detail::LazyInitializer<Value>;
 
       // lazy
-      Lazy<const boost::multiprecision::uint256_t> multiprecision_repr;
+      Lazy<boost::multiprecision::uint256_t> multiprecision_repr;
       Lazy<uint8_t> precision_;
       Lazy<crypto::StubHash> hash_;
     };
