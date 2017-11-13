@@ -1,5 +1,5 @@
-#ifndef IROHA_DNS_PARSER_HPP
-#define IROHA_DNS_PARSER_HPP
+#ifndef IROHA_DOMAIN_NAME_PARSER_HPP
+#define IROHA_DOMAIN_NAME_PARSER_HPP
 
 #include <string>
 
@@ -35,4 +35,4 @@ namespace iroha {
   }  // namespace model
 }  // namespace iroha
 
-#endif /* IROHA_DNS_PARSER_HPP */
+#endif /* IROHA_DOMAIN_NAME_PARSER_HPP */
