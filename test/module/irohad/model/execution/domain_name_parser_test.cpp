@@ -15,10 +15,12 @@ TEST(DomainNameParserTest, HandleValidDomainName) {
   ASSERT_TRUE(DomainNameParser::isValid("altplus.com.jp"));
   ASSERT_TRUE(DomainNameParser::isValid(
       "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad"));
+  ASSERT_TRUE(DomainNameParser::isValid("endWith0"));
 }
 
 TEST(DomainNameParserTest, HandleInvalidDomainName) {
   ASSERT_FALSE(DomainNameParser::isValid("9start.with.non.letter"));
+  ASSERT_FALSE(DomainNameParser::isValid("-startWithDash"));
   ASSERT_FALSE(DomainNameParser::isValid("@.is.not.allowed"));
   ASSERT_FALSE(DomainNameParser::isValid("no space is allowed"));
   ASSERT_FALSE(DomainNameParser::isValid("endWith-"));
