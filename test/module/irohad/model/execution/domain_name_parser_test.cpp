@@ -19,6 +19,7 @@ TEST(DomainNameParserTest, HandleValidDomainName) {
 }
 
 TEST(DomainNameParserTest, HandleInvalidDomainName) {
+  ASSERT_FALSE(DomainNameParser::isValid(" "));
   ASSERT_FALSE(DomainNameParser::isValid("9start.with.non.letter"));
   ASSERT_FALSE(DomainNameParser::isValid("-startWithDash"));
   ASSERT_FALSE(DomainNameParser::isValid("@.is.not.allowed"));

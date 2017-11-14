@@ -13,9 +13,8 @@ namespace iroha {
       namespace qi = boost::spirit::qi;
 
       qi::rule<decltype(str.begin())> letter, let_dig, end_with_let_dig,
-          let_dig_hyp, label, subdomain, domain;
-      domain = subdomain | ' ';
-      subdomain = label % '.';
+          let_dig_hyp, label, domain;
+      domain = label % '.';
       // I could not express the grammer [ [ <ldh-str> ] <let-dig> ] with
       // <ldh-str> directly.
       label =

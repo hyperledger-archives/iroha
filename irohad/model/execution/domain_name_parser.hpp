@@ -13,7 +13,7 @@ namespace iroha {
       // clang-format off
       /**
        * Check if the given string `str` is in valid domain syntax defined in
-       * the RFC 1035. Return the result of the validation.
+       * the RFC 1035 and 1123. Return the result of the validation.
        *
        * The domain syntax in RFC 1035 is given below:
        *
@@ -26,6 +26,8 @@ namespace iroha {
        *   <letter>      ::= any one of the 52 alphabetic characters A through Z in
        *                     upper case and a through z in lower case
        *   <digit>       ::= any one of the ten digits 0 through 9
+       *
+       * And the subsequent RFC 1123 disallows the root white space.
        *
        * @return true, if the validation is successful.
        */
