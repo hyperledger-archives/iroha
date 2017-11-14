@@ -133,7 +133,9 @@ int main(int argc, char *argv[]) {
               std::istream_iterator<std::string>(),
               std::back_inserter(peers_address));
     // Generate genesis block
-    auto block = generator.generateGenesisBlock(peers_address);
+    auto transaction = TransactionGenerator()
+      .generateGenesisTransaction(0, std::move(peers_address));
+    auto block = generator.generateGenesisBlock(0, {transaction});
 
     // Convert to json
     JsonBlockFactory json_factory;

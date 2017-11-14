@@ -29,9 +29,12 @@ namespace iroha {
         /**
          * Generate sample genesis for new Iroha network
          * @param peers_address
+         * @param transactions
          * @return model Block
          */
-        Block generateGenesisBlock(std::vector<std::string> peers_address);
+        iroha::model::Block generateGenesisBlock(
+          ts64_t created_ts,
+          const std::vector<iroha::model::Transaction>& transactions);
       };
 
     }  // namespace generators
