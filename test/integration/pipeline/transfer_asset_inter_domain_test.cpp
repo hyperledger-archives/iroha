@@ -119,8 +119,7 @@ class TransferAssetInterDomainTest : public TxPipelineIntegrationTestFixture {
 };
 
 /**
- * @given Admin creates domains: [usabnk, ru, khm]
- *        NBA creates domain usabnk (nba@usabnk) and asset usd,
+ * @given NBA(nba@usabnk) creates asset usd and add asset quantity 1000000$
  * @when A user ivan in domain of Russia (ivan@ru) wants to possess and
  *       transfer asset usd#usabnk to user tea in domain of Cambodia (tea@khm).
  * @then Validate transactions processed.
