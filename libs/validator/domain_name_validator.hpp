@@ -15,19 +15,18 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_DOMAIN_NAME_PARSER_HPP
-#define IROHA_DOMAIN_NAME_PARSER_HPP
+#ifndef VALIDATOR_DOMAIN_NAME_VALIDATOR_HPP
+#define VALIDATOR_DOMAIN_NAME_VALIDATOR_HPP
 
 #include <string>
 
-namespace iroha {
-  namespace model {
-    /**
-     * Parse a string as a domain name as defined in RFC 1035.
-     */
-    class DomainNameParser {
-     public:
-      // clang-format off
+namespace validator {
+  /**
+   * Parse a string as a domain name as defined in RFC 1035.
+   */
+  class DomainNameValidator {
+   public:
+    // clang-format off
       /**
        * Check if the given string `str` is in valid domain syntax defined in
        * the RFC 1035 and 1123. Return the result of the validation.
@@ -48,10 +47,9 @@ namespace iroha {
        *
        * @return true, if the validation is successful.
        */
-      // clang-format on
-      static bool isValid(const std::string &str);
-    };
-  }  // namespace model
-}  // namespace iroha
+    // clang-format on
+    static bool isValid(const std::string &str);
+  };
+}  // namespace validator
 
-#endif /* IROHA_DOMAIN_NAME_PARSER_HPP */
+#endif /* VALIDATOR_DOMAIN_NAME_VALIDATOR_HPP */

@@ -86,7 +86,3 @@ target_link_libraries(static_map
     model_registrations
     logger
     )
-
-addtest(domain_name_parser_test execution/domain_name_parser_test.cpp)
-target_link_libraries(domain_name_parser_test
-  command_execution)
