@@ -25,8 +25,9 @@ class TransferAssetInterDomainTest : public TxPipelineIntegrationTestFixture {
     // creates node and admin keys and generate default genesis transaction
     auto genesis_tx1 =
         TransactionGenerator().generateGenesisTransaction(0, {"0.0.0.0:10001"});
-    // load admin key pair note: generateGenesisTransaction() creates admin key pair
-    adminKeypair_ = iroha::KeysManagerImpl(ADMIN_ID).loadKeys().value();
+    // load admin key pair note: generateGenesisTransaction() creates admin key
+    // pair
+    adminKeypair_ = getVal(iroha::KeysManagerImpl(ADMIN_ID).loadKeys());
 
     // generate and load NBA, Ivan and Tea key pairs
     nbaKeypair_ = createNewAccountKeypair(NBA_ID);
@@ -57,7 +58,7 @@ class TransferAssetInterDomainTest : public TxPipelineIntegrationTestFixture {
 
     // load node0 key pair
     manager = std::make_shared<iroha::KeysManagerImpl>("node0");
-    auto keypair = manager->loadKeys().value();
+    auto keypair = getVal(manager->loadKeys());
 
     irohad = std::make_shared<TestIrohad>(block_store_path,
                                           redishost_,
@@ -97,6 +98,12 @@ class TransferAssetInterDomainTest : public TxPipelineIntegrationTestFixture {
     std::remove("tea@khm.priv");
   }
 
+  template <typename T>
+  T getVal(nonstd::optional<T> const &t) {
+    EXPECT_TRUE(t.has_value());
+    return t.value();
+  }
+
   const std::string DOMAIN_USABANK = "usabnk";
   const std::string DOMAIN_RU = "ru";
   const std::string DOMAIN_KHM = "khm";
@@ -132,9 +139,9 @@ TEST_F(TransferAssetInterDomainTest, TransferAssetInterDomainTest) {
       {CommandGenerator().generateCreateAsset(
            ASSET_USD_NAME, DOMAIN_USABANK, 2),
        CommandGenerator().generateAddAssetQuantity(
-           NBA_ID, // MoneyCreator, who can AddAssetQuantity to my own wallet.
+           NBA_ID,  // MoneyCreator, who can AddAssetQuantity to my own wallet.
            ASSET_USD_ID,
-           iroha::Amount().createFromString("1000000.00").value())});
+           getVal(iroha::Amount().createFromString("1000000.00")))});
   iroha::model::ModelCryptoProviderImpl(nbaKeypair_).sign(tx1);
 
   // NBA transfers asset to ivan@ru and tea@khm
@@ -145,12 +152,12 @@ TEST_F(TransferAssetInterDomainTest, TransferAssetInterDomainTest) {
            NBA_ID,
            IVAN_ID,
            ASSET_USD_ID,
-           iroha::Amount().createFromString("30.50").value()),
+           getVal(iroha::Amount().createFromString("30.50"))),
        CommandGenerator().generateTransferAsset(
            NBA_ID,
            TEA_ID,
            ASSET_USD_ID,
-           iroha::Amount().createFromString("50.00").value())});
+           getVal(iroha::Amount().createFromString("50.00")))});
   iroha::model::ModelCryptoProviderImpl(nbaKeypair_).sign(tx2);
 
   // transfer asset from ivan@ru to tea@khm (between different domains)
@@ -161,7 +168,7 @@ TEST_F(TransferAssetInterDomainTest, TransferAssetInterDomainTest) {
           IVAN_ID,
           TEA_ID,
           ASSET_USD_ID,
-          iroha::Amount().createFromString("5.50").value())});
+          getVal(iroha::Amount().createFromString("5.50")))});
   iroha::model::ModelCryptoProviderImpl(ivanKeypair_).sign(tx3);
 
   sendTransactions({tx1, tx2, tx3});
