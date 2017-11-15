@@ -18,16 +18,21 @@
 #ifndef IROHA_SHARED_MODEL_PRIVATE_KEY_HPP
 #define IROHA_SHARED_MODEL_PRIVATE_KEY_HPP
 
-#include "cryptography/blob.hpp"
+#include "cryptography/blob_impl.hpp"
 #include "utils/string_builder.hpp"
+
+#include "common/types.hpp"
 
 namespace shared_model {
   namespace crypto {
     /**
      * A special class for storing private keys.
      */
-    class PrivateKey : public Blob {
+    class PrivateKey : public BlobImpl {
      public:
+      explicit PrivateKey(const std::string &privateKey)
+          : BlobImpl(privateKey) {}
+      using OldPrivateKeyType = iroha::privkey_t;
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("PrivateKey")
@@ -35,7 +40,7 @@ namespace shared_model {
             .finalize();
       }
     };
-  }
-}
+  }  // namespace crypto
+}  // namespace shared_model
 
 #endif  // IROHA_SHARED_MODEL_PRIVATE_KEY_HPP

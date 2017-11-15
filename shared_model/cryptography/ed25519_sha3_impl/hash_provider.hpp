@@ -15,31 +15,34 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
-#define IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
+#ifndef IROHA_HASH_PROVIDER_HPP
+#define IROHA_HASH_PROVIDER_HPP
 
-#include "cryptography/blob_impl.hpp"
-#include "utils/string_builder.hpp"
-
-#include "common/types.hpp"
+#include "cryptography/blob.hpp"
+#include "cryptography/hash.hpp"
 
 namespace shared_model {
   namespace crypto {
     /**
-     * A special class for storing public keys.
+     * Wrapper class for hashing.
      */
-    class PublicKey : public BlobImpl {
+    class HashProvider {
      public:
-      explicit PublicKey(const std::string &publicKey) : BlobImpl(publicKey) {}
-      using OldPublicKeyType = iroha::pubkey_t;
-      std::string toString() const override {
-        return detail::PrettyStringBuilder()
-            .init("PublicKey")
-            .append(Blob::hex())
-            .finalize();
-      }
+      /**
+       * Hash with sha3-256
+       * @param blob - blob to hash
+       * @return Hash of provided blob
+       */
+      Hash sha3_256(const Blob &blob) const;
+
+      /**
+       * Hash with sha3-512
+       * @param blob - blob to hash
+       * @return Hash of provided blob
+       */
+      Hash sha3_512(const Blob &blob) const;
     };
   }  // namespace crypto
 }  // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
+#endif  // IROHA_HASH_PROVIDER_HPP

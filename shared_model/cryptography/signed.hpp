@@ -21,14 +21,18 @@
 #include "cryptography/blob.hpp"
 #include "utils/string_builder.hpp"
 
+#include "common/types.hpp"
+
 namespace shared_model {
   namespace crypto {
     /**
      * Class for storing signed data. It could be used not only for storing
      * signed hashes but for other signed objects too.
      */
-    class Signed : public Blob {
+    class Signed : public BlobImpl {
      public:
+      using OldSignatureType = iroha::sig_t;
+      explicit Signed(const std::string &blob) : BlobImpl(blob) {}
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("Signed")
@@ -36,7 +40,7 @@ namespace shared_model {
             .finalize();
       }
     };
-  }
-}
+  }  // namespace crypto
+}  // namespace shared_model
 
 #endif  // IROHA_SHARED_MODEL_SIGNED_HPP

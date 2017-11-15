@@ -18,7 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_HASH_HPP
 #define IROHA_SHARED_MODEL_HASH_HPP
 
-#include "cryptography/blob.hpp"
+#include "cryptography/blob_impl.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
@@ -28,8 +28,10 @@ namespace shared_model {
      * make difference between Hash which should represent a hashing result and
      * a generic Blob which should represent any binary data.
      */
-    class Hash : public Blob {
+    class Hash : public BlobImpl {
      public:
+      explicit Hash(const std::string &hash) : BlobImpl(hash) {}
+
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("Hash")

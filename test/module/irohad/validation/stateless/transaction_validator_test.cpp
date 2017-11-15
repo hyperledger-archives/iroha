@@ -21,8 +21,8 @@
 
 #include <gtest/gtest.h>
 
-#include "crypto/crypto.hpp"
-#include "crypto/hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "module/irohad/model/model_mocks.hpp"
 #include "datetime/time.hpp"
 

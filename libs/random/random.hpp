@@ -18,7 +18,7 @@ limitations under the License.
 #define __RANDOM_HPP_
 
 #include <random>
-#include "../crypto/hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 
 namespace random_service {
 

@@ -15,43 +15,48 @@
  * limitations under the License.
  */
 
-#include <ed25519.h>
 #include <string>
-#include "crypto.hpp"
-#include "hash.hpp"
+#include "ed25519_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/impl/ed25519.h"
+#include "sha3_hash.hpp"
 
 namespace iroha {
 
   /**
    * Sign the message
    */
-  sig_t sign(const uint8_t *msg, size_t msgsize, const pubkey_t &pub,
+  sig_t sign(const uint8_t *msg,
+             size_t msgsize,
+             const pubkey_t &pub,
              const privkey_t &priv) {
     sig_t sig;
     ed25519_sign(sig.data(), msg, msgsize, pub.data(), priv.data());
     return sig;
   }
 
-  sig_t sign(const std::string &msg, const pubkey_t &pub,
+  sig_t sign(const std::string &msg,
+             const pubkey_t &pub,
              const privkey_t &priv) {
     sig_t sig;
-    ed25519_sign(sig.data(), (uint8_t *)msg.data(), msg.size(), pub.data(),
-                 priv.data());
+    ed25519_sign(
+        sig.data(), (uint8_t *)msg.data(), msg.size(), pub.data(), priv.data());
     return sig;
   }
-
 
   /**
    * Verify signature
    */
-  bool verify(const uint8_t *msg, size_t msgsize, const pubkey_t &pub,
+  bool verify(const uint8_t *msg,
+              size_t msgsize,
+              const pubkey_t &pub,
               const sig_t &sig) {
     return 1 == ed25519_verify(sig.data(), msg, msgsize, pub.data());
   }
 
   bool verify(const std::string &msg, const pubkey_t &pub, const sig_t &sig) {
-    return 1 == ed25519_verify(sig.data(), (uint8_t *)msg.data(), msg.size(),
-                               pub.data());
+    return 1
+        == ed25519_verify(
+               sig.data(), (uint8_t *)msg.data(), msg.size(), pub.data());
   }
 
   /**
@@ -85,4 +90,4 @@ namespace iroha {
   }
 
   keypair_t create_keypair() { return create_keypair(create_seed()); }
-}
+}  // namespace iroha

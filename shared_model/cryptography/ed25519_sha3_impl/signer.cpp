@@ -15,31 +15,19 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
-#define IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
-
-#include "cryptography/blob_impl.hpp"
-#include "utils/string_builder.hpp"
-
-#include "common/types.hpp"
+#include "cryptography/ed25519_sha3_impl/signer.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 
 namespace shared_model {
   namespace crypto {
-    /**
-     * A special class for storing public keys.
-     */
-    class PublicKey : public BlobImpl {
-     public:
-      explicit PublicKey(const std::string &publicKey) : BlobImpl(publicKey) {}
-      using OldPublicKeyType = iroha::pubkey_t;
-      std::string toString() const override {
-        return detail::PrettyStringBuilder()
-            .init("PublicKey")
-            .append(Blob::hex())
-            .finalize();
-      }
-    };
+    Signed Signer::sign(const Blob &blob, const Keypair &keypair) const {
+      return Signed(
+          iroha::sign(
+              blob.blob(),
+              keypair.publicKey().makeOldModel<PublicKey::OldPublicKeyType>(),
+              keypair.privateKey()
+                  .makeOldModel<PrivateKey::OldPrivateKeyType>())
+              .to_string());
+    }
   }  // namespace crypto
 }  // namespace shared_model
-
-#endif  // IROHA_SHARED_MODEL_PUBLIC_KEY_HPP

@@ -19,7 +19,7 @@
 #include "model/converters/pb_common.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 
-#include "crypto/hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 
 namespace iroha {
   namespace model {

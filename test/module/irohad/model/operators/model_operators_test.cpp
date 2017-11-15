@@ -16,7 +16,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "crypto/hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/block.hpp"
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/subtract_asset_quantity.hpp"

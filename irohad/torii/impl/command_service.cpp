@@ -14,9 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "torii/command_service.hpp"
 #include <endpoint.pb.h>
-#include "crypto/hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "torii/command_service.hpp"
+#include "common/types.hpp"
 
 namespace torii {
 

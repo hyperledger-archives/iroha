@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#include "crypto/hash.hpp"
+#include "sha3_hash.hpp"
 
 extern "C" {
-#include <sha3.h>
+#include "cryptography/ed25519_sha3_impl/internal/impl/sha3.h"
 }
 
 #include "common/types.hpp"
