@@ -15,53 +15,62 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROTO_APPEND_ROLE_HPP
-#define IROHA_PROTO_APPEND_ROLE_HPP
+#include "interfaces/commands/create_asset.hpp"
 
-#include "interfaces/commands/append_role.hpp"
+#ifndef IROHA_PROTO_CREATE_ASSET_HPP
+#define IROHA_PROTO_CREATE_ASSET_HPP
 
 namespace shared_model {
   namespace proto {
 
-    class AppendRole final : public interface::AppendRole {
+    class CreateAsset final : public interface::CreateAsset {
      private:
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
 
      public:
-      explicit AppendRole(const iroha::protocol::Command &command)
-          : AppendRole(command.append_role()) {
-        if (not command.has_append_role()) {
+      explicit CreateAsset(const iroha::protocol::Command &command)
+          : CreateAsset(command.create_asset()) {
+        if (not command.has_create_asset()) {
           // TODO 11/11/17 andrei create generic exception message
-          throw std::invalid_argument("Object does not contain add_signatory");
+          throw std::invalid_argument("Object does not contain create_asset");
         }
       }
 
-      const interface::types::AccountIdType &accountId() const override {
-        return append_role_.account_id();
+      const AssetNameType &assetName() const override {
+        return create_asset_.asset_name();
       }
 
-      const interface::types::RoleIdType &roleName() const override {
-        return append_role_.role_name();
+      const interface::types::DomainIdType &domainId() const override {
+        return create_asset_.domain_id();
+      }
+
+      const PrecisionType &precision() const override {
+        return precision_.get();
       }
 
       const HashType &hash() const override { return hash_.get(); }
 
-      ModelType *copy() const override { return new AppendRole(append_role_); }
+      ModelType *copy() const override {
+        return new CreateAsset(create_asset_);
+      }
 
      private:
       // ----------------------------| private API |----------------------------
-      explicit AppendRole(const iroha::protocol::AppendRole &append_role)
-          : append_role_(append_role), hash_([this] {
+      explicit CreateAsset(const iroha::protocol::CreateAsset &create_asset)
+          : create_asset_(create_asset),
+            hash_([this] {
               // TODO 10/11/2017 muratovv replace with effective implementation
               return crypto::StubHash();
-            }) {}
+            }),
+            precision_([this] { return create_asset_.precision(); }) {}
 
-      iroha::protocol::AppendRole append_role_;
+      iroha::protocol::CreateAsset create_asset_;
       Lazy<crypto::Hash> hash_;
+      Lazy<PrecisionType> precision_;
     };
 
   }  // namespace proto
 }  // namespace shared_model
 
-#endif  // IROHA_PROTO_APPEND_ROLE_HPP
+#endif  // IROHA_PROTO_CREATE_ASSET_HPP

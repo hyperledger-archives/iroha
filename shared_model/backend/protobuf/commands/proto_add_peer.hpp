@@ -36,7 +36,7 @@ namespace shared_model {
           : AddPeer(command.add_peer()) {
         if (not command.has_add_peer()) {
           throw std::invalid_argument(
-              "Object does not contain add_asset_quantity");
+              "Object does not contain add_peer");
         }
       }
 

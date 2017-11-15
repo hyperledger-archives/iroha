@@ -33,7 +33,7 @@ namespace shared_model {
           : AddSignatory(command.add_signatory()) {
         if (not command.has_add_signatory()) {
           throw std::invalid_argument(
-              "Object does not contain add_asset_quantity");
+              "Object does not contain add_signatory");
         }
       }
 

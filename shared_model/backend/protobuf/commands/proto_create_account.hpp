@@ -34,27 +34,27 @@ class CreateAccount final : public interface::CreateAccount {
     if (not command.has_create_account()) {
       // TODO 11/11/17 andrei create generic exception message
       throw std::invalid_argument(
-          "Object does not contain add_asset_quantity");
+          "Object does not contain create_account");
     }
   }
 
-  const interface::types::PubkeyType & pubkey() const {
+  const interface::types::PubkeyType & pubkey() const override {
     return pubkey_.get();
   }
 
-  const AccountNameType& accountName() const {
+  const AccountNameType& accountName() const override {
     return create_account_.account_name();
   }
 
-  const interface::types::DomainIdType & domainId() const {
+  const interface::types::DomainIdType & domainId() const override {
     return create_account_.domain_id();
   }
 
-  const HashType& hash() const {
+  const HashType& hash() const override {
     return hash_.get();
   }
 
-  ModelType* copy() const {
+  ModelType* copy() const override {
     return new CreateAccount(create_account_);
   }
 
