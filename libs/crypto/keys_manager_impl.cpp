@@ -19,6 +19,7 @@
 #include "crypto/crypto.hpp"
 #include "crypto/hash.hpp"
 #include "logger/logger.hpp"
+
 #include <fstream>
 #include <utility>
 
@@ -60,26 +61,32 @@ namespace iroha {
 
   nonstd::optional<iroha::keypair_t> KeysManagerImpl::loadKeys() {
     // Try to load from local file
-    std::ifstream priv_file(account_name_ + ".priv");
-    std::ifstream pub_file(account_name_ + ".pub");
-    if (not priv_file) {
-      log_->error("Could not read '" + account_name_ + ".priv'");
-      return nonstd::nullopt;
-    }
-    if (not pub_file) {
-      log_->error("Could not read '" + account_name_ + ".pub'");
-      return nonstd::nullopt;
-    }
-    std::string client_pub_key_;
-    std::string client_priv_key_;
-    priv_file >> client_priv_key_;
-    pub_file >> client_pub_key_;
+    auto loadFile = [this](auto filename, auto &res) {
+      return [ that = this, &filename, &res ](auto keypair)
+          ->nonstd::optional<iroha::keypair_t> {
+        std::ifstream file(filename);
+        if (not file) {
+          that->log_->error("Cannot read '" + filename + "'");
+          return nonstd::nullopt;
+        }
+        file >> res;
+        return keypair;
+      };
+    };
 
-    return nonstd::make_optional<iroha::keypair_t>()
+    std::string client_pub_key;
+    std::string client_priv_key;
+
+    //TODO 15/11/17 motxx - better way to suppress the evaluation?
+    auto blocking = nonstd::make_optional<iroha::keypair_t>()
+        | loadFile(account_name_ + ".pub", client_pub_key)
+        | loadFile(account_name_ + ".priv", client_priv_key);
+
+    return blocking
                | deserializeKeypairField(&iroha::keypair_t::pubkey,
-                                         client_pub_key_)
+                                         client_pub_key)
                | deserializeKeypairField(&iroha::keypair_t::privkey,
-                                         client_priv_key_)
+                                         client_priv_key)
                | [this](auto keypair) -> nonstd::optional<iroha::keypair_t> {
       return this->validate(keypair) ? nonstd::make_optional(keypair)
                                      : nonstd::nullopt;
