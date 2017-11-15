@@ -170,6 +170,21 @@ namespace iroha {
           });
     }
 
+    rxcpp::observable<boost::optional<model::Transaction>>
+    RedisBlockQuery::getTransactions(
+        const std::vector<iroha::hash256_t> &tx_hashes) {
+      return rxcpp::observable<>::create<boost::optional<model::Transaction>>(
+          [this, tx_hashes](auto subscriber) {
+            std::for_each(tx_hashes.begin(),
+                          tx_hashes.end(),
+                          [ that = this, &subscriber ](auto tx_hash) {
+                            subscriber.on_next(
+                                that->getTxByHashSync(tx_hash.to_string()));
+                          });
+            subscriber.on_completed();
+          });
+    }
+
     boost::optional<model::Transaction> RedisBlockQuery::getTxByHashSync(
         const std::string &hash) {
       return getBlockId(hash) |
