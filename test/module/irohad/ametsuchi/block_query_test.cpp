@@ -37,10 +37,12 @@ class BlockQueryTest : public AmetsuchiTest {
     // First transaction in block1
     Transaction txn1_1;
     txn1_1.creator_account_id = creator1;
+    tx_hashes.push_back(iroha::hash(txn1_1));
 
     // Second transaction in block1
     Transaction txn1_2;
     txn1_2.creator_account_id = creator1;
+    tx_hashes.push_back(iroha::hash(txn1_2));
 
     Block block1;
     block1.height = 1;
@@ -51,11 +53,13 @@ class BlockQueryTest : public AmetsuchiTest {
     // First tx in block 1
     Transaction txn2_1;
     txn2_1.creator_account_id = creator1;
+    tx_hashes.push_back(iroha::hash(txn2_1));
 
     // Second tx in block 2
     Transaction txn2_2;
     // this tx has another creator
     txn2_2.creator_account_id = creator2;
+    tx_hashes.push_back(iroha::hash(txn2_2));
 
     Block block2;
     block2.height = 2;
@@ -69,6 +73,7 @@ class BlockQueryTest : public AmetsuchiTest {
     storage->commit(std::move(ms));
   }
 
+  std::vector<iroha::hash256_t> tx_hashes;
   std::shared_ptr<StorageImpl> storage;
   std::shared_ptr<BlockQuery> blocks;
   std::string creator1 = "user1@test";
@@ -119,4 +124,71 @@ TEST_F(BlockQueryTest, GetAccountTransactionsNonExistingUser) {
       blocks->getAccountTransactions("nonexisting user"), 0);
   getNonexistingTxWrapper.subscribe();
   ASSERT_TRUE(getNonexistingTxWrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test
+ * AND 1 tx created by user2@test
+ * @when query to get transactions with transactions' hashes
+ * @then queried transactions
+ */
+TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
+  //TODO 15/11/17 motxx - Use EqualList VerificationStrategy
+  {
+    auto wrapper = make_test_subscriber<CallExact>(
+      blocks->getTransactions(tx_hashes), 4);
+    wrapper.subscribe();
+    ASSERT_TRUE(wrapper.validate());
+  }
+  {
+    auto wrapper = make_test_subscriber<CallExact>(
+      blocks->getTransactions({tx_hashes[1], tx_hashes[3]}), 2);
+    wrapper.subscribe();
+    ASSERT_TRUE(wrapper.validate());
+  }
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test
+ * AND 1 tx created by user2@test
+ * @when query to get transactions with non-existing transaction hashes
+ * @then queried transactions and empty transaction
+ */
+TEST_F(BlockQueryTest, GetTransactionsIncludesNonExistingTxHashes) {
+  iroha::hash256_t invalid_tx_hash_1, invalid_tx_hash_2;
+  invalid_tx_hash_1[0] = 1;
+  invalid_tx_hash_2[0] = 2;
+  {
+    auto wrapper = make_test_subscriber<CallExact>(
+      blocks->getTransactions({invalid_tx_hash_1, invalid_tx_hash_2}), 2);
+    wrapper.subscribe([](auto transaction) {
+      iroha::model::Transaction expected{};
+      EXPECT_EQ(expected, transaction);
+    });
+    ASSERT_TRUE(wrapper.validate());
+  }
+  {
+    // transactions' hashes are empty.
+    auto wrapper = make_test_subscriber<CallExact>(
+      blocks->getTransactions({}), 0);
+    wrapper.subscribe();
+    ASSERT_TRUE(wrapper.validate());
+  }
+  {
+    //TODO 15/11/17 motxx - Use EqualList VerificationStrategy
+    auto wrapper = make_test_subscriber<CallExact>(
+      blocks->getTransactions({invalid_tx_hash_1, tx_hashes[0]}), 2);
+    auto subs_cnt = 0;
+    wrapper.subscribe([this, &subs_cnt](auto transaction) {
+      if (subs_cnt == 0) {
+        iroha::model::Transaction expected{};
+        EXPECT_EQ(expected, transaction);
+      } else {
+        EXPECT_EQ(tx_hashes[0], iroha::hash(transaction));
+      }
+    });
+    ASSERT_TRUE(wrapper.validate());
+  }
 }
