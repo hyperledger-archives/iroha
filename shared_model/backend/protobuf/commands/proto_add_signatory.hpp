@@ -23,7 +23,7 @@
 namespace shared_model {
   namespace proto {
 
-    class AddSignatory : public interface::AddSignatory {
+    class AddSignatory final : public interface::AddSignatory {
      private:
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
