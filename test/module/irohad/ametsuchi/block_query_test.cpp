@@ -131,8 +131,8 @@ TEST_F(BlockQueryTest, GetAccountTransactionsNonExistingUser) {
  * @given block store with 2 blocks totally containing 3 txs created by
  * user1@test
  * AND 1 tx created by user2@test
- * @when query to get transactions with non-existing transaction hashes
- * @then queried transactions and empty transaction
+ * @when query to get transactions with existing transaction hashes
+ * @then queried transactions
  */
 TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
   auto wrapper = make_test_subscriber<CallExact>(
@@ -156,7 +156,7 @@ TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
  * user1@test
  * AND 1 tx created by user2@test
  * @when query to get transactions with non-existing transaction hashes
- * @then queried transactions and nullopt values are retrieved
+ * @then nullopt values are retrieved
  */
 TEST_F(BlockQueryTest, GetTransactionsIncludesNonExistingTxHashes) {
   iroha::hash256_t invalid_tx_hash_1, invalid_tx_hash_2;
