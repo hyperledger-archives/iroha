@@ -49,6 +49,14 @@ namespace iroha {
        */
       virtual rxcpp::observable<model::Transaction> getAccountAssetTransactions(
           const std::string &account_id, const std::string &asset_id) = 0;
+      
+      /**
+       * Get transactions from transactions' hashes
+       * @param tx_hashes - transactions' hashes to retrieve
+       * @return observable of Model Transaction
+       */
+      virtual rxcpp::observable<model::Transaction> getTransactions(
+          const std::vector<iroha::hash256_t> &tx_hashes) = 0;
 
       /**
       * Get given number of blocks starting with given height.
