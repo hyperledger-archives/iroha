@@ -178,9 +178,8 @@ namespace iroha {
             std::for_each(tx_hashes.begin(),
                           tx_hashes.end(),
                           [ that = this, &subscriber ](auto tx_hash) {
-                            auto tx =
-                                that->getTxByHashSync(tx_hash.to_string());
-                            subscriber.on_next(tx);
+                            subscriber.on_next(
+                                that->getTxByHashSync(tx_hash.to_string()));
                           });
             subscriber.on_completed();
           });
