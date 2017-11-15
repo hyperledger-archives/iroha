@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include <nonstd/optional.hpp>
+#include <boost/optional.hpp>
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "crypto/hash.hpp"
 #include "framework/test_subscriber.hpp"
@@ -137,13 +137,15 @@ TEST_F(BlockQueryTest, GetAccountTransactionsNonExistingUser) {
 TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({tx_hashes[1], tx_hashes[3]}), 2);
-  wrapper.subscribe([](auto tx) {
+  wrapper.subscribe([this](auto tx) {
     static auto subs_cnt = 0;
     subs_cnt++;
     if (subs_cnt == 1) {
-      EXPECT_EQ(tx_hashes[1], iroha::hash(tx));
+      EXPECT_TRUE(tx);
+      EXPECT_EQ(this->tx_hashes[1], iroha::hash(*tx));
     } else {
-      EXPECT_EQ(tx_hashes[3], iroha::hash(tx));
+      EXPECT_TRUE(tx);
+      EXPECT_EQ(this->tx_hashes[3], iroha::hash(*tx));
     }
   });
   ASSERT_TRUE(wrapper.validate());
@@ -163,7 +165,7 @@ TEST_F(BlockQueryTest, GetTransactionsIncludesNonExistingTxHashes) {
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, invalid_tx_hash_2}), 2);
   wrapper.subscribe(
-      [](auto transaction) { EXPECT_EQ(nonstd::nullopt, transaction); });
+      [](auto transaction) { EXPECT_EQ(boost::none, transaction); });
   ASSERT_TRUE(wrapper.validate());
 }
 
@@ -195,13 +197,14 @@ TEST_F(BlockQueryTest, GetTransactionsWithInvalidTxAndValidTx) {
   invalid_tx_hash_1[0] = 1;
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, tx_hashes[0]}), 2);
-  wrapper.subscribe([this, &subs_cnt](auto transaction) {
+  wrapper.subscribe([this](auto tx) {
     static auto subs_cnt = 0;
     subs_cnt++;
     if (subs_cnt == 1) {
-      EXPECT_EQ(nonstd::nullopt, transaction);
+      EXPECT_EQ(boost::none, tx);
     } else {
-      EXPECT_EQ(tx_hashes[0], iroha::hash(transaction));
+      EXPECT_TRUE(tx);
+      EXPECT_EQ(this->tx_hashes[0], iroha::hash(*tx));
     }
   });
   ASSERT_TRUE(wrapper.validate());

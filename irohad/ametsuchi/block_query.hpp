@@ -49,37 +49,37 @@ namespace iroha {
        */
       virtual rxcpp::observable<model::Transaction> getAccountAssetTransactions(
           const std::string &account_id, const std::string &asset_id) = 0;
-      
+
       /**
        * Get transactions from transactions' hashes
        * @param tx_hashes - transactions' hashes to retrieve
        * @return observable of Model Transaction
        */
-      virtual rxcpp::observable<model::Transaction> getTransactions(
-          const std::vector<iroha::hash256_t> &tx_hashes) = 0;
+      virtual rxcpp::observable<boost::optional<model::Transaction>>
+      getTransactions(const std::vector<iroha::hash256_t> &tx_hashes) = 0;
 
       /**
-      * Get given number of blocks starting with given height.
-      * @param height - starting height
-      * @param count - number of blocks to retrieve
-      * @return observable of Model Block
-      */
+       * Get given number of blocks starting with given height.
+       * @param height - starting height
+       * @param count - number of blocks to retrieve
+       * @return observable of Model Block
+       */
       virtual rxcpp::observable<model::Block> getBlocks(uint32_t height,
                                                         uint32_t count) = 0;
 
       /**
-      * Get all blocks starting from given height.
-      * @param from - starting height
-      * @return observable of Model Block
-      */
+       * Get all blocks starting from given height.
+       * @param from - starting height
+       * @return observable of Model Block
+       */
       virtual rxcpp::observable<model::Block> getBlocksFrom(
           uint32_t height) = 0;
 
       /**
-      * Get given number of blocks from top.
-      * @param count - number of blocks to retrieve
-      * @return observable of Model Block
-      */
+       * Get given number of blocks from top.
+       * @param count - number of blocks to retrieve
+       * @return observable of Model Block
+       */
       virtual rxcpp::observable<model::Block> getTopBlocks(uint32_t count) = 0;
 
       /**

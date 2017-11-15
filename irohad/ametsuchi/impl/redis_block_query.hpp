@@ -41,7 +41,7 @@ namespace iroha {
       rxcpp::observable<model::Transaction> getAccountAssetTransactions(
           const std::string &account_id, const std::string &asset_id) override;
 
-      rxcpp::observable<nonstd::optional<model::Transaction>> getTransactions(
+      rxcpp::observable<boost::optional<model::Transaction>> getTransactions(
           const std::vector<iroha::hash256_t> &tx_hashes) override;
 
       boost::optional<model::Transaction> getTxByHashSync(

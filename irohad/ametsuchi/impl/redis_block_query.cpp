@@ -170,10 +170,10 @@ namespace iroha {
           });
     }
 
-    rxcpp::observable<nonstd::optional<model::Transaction>>
+    rxcpp::observable<boost::optional<model::Transaction>>
     RedisBlockQuery::getTransactions(
         const std::vector<iroha::hash256_t> &tx_hashes) {
-      return rxcpp::observable<>::create<nonstd::optional<model::Transaction>>(
+      return rxcpp::observable<>::create<boost::optional<model::Transaction>>(
           [this, tx_hashes](auto subscriber) {
             std::for_each(tx_hashes.begin(),
                           tx_hashes.end(),
