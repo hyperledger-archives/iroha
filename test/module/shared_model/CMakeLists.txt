@@ -31,6 +31,8 @@ target_link_libraries(crypto_usage_test
     logger
     )
 
+AddTest(blob_test cryptography/blob_test.cpp)
+
 AddTest(reference_holder_test
     reference_holder_test.cpp
     )
