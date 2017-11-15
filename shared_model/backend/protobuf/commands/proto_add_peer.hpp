@@ -55,8 +55,8 @@ namespace shared_model {
       const HashType &hash() const override { return hash_.get(); }
 
      private:
-      explicit AddPeer(iroha::protocol::AddPeer add_peer)
-          : add_peer_(std::move(add_peer)),
+      explicit AddPeer(const iroha::protocol::AddPeer &add_peer)
+          : add_peer_(add_peer),
             pubkey_([this] {
               return interface::types::PubkeyType(add_peer_.peer_key());
             }),

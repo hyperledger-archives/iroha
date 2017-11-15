@@ -52,7 +52,7 @@ namespace shared_model {
       const HashType &hash() const override { return hash_.get(); }
 
      private:
-      explicit AddSignatory(iroha::protocol::AddSignatory add_signatory)
+      explicit AddSignatory(const iroha::protocol::AddSignatory &add_signatory)
           : add_signatory_(add_signatory),
             pubkey_([this] {
               return interface::types::PubkeyType(add_signatory_.public_key());
