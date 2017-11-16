@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef __RANDOM_HPP_
-#define __RANDOM_HPP_
+#ifndef _IROHA_RANDOM_HPP_
+#define _IROHA_RANDOM_HPP_
 
 #include <random>
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 
 namespace random_service {
 
-std::string makeHashByMT19937();
+  std::string makeHashByMT19937();
 
 };  // namespace random_service
 
-#endif
+#endif  // _IROHA_RANDOM_HPP_
