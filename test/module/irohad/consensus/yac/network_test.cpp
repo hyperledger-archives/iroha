@@ -82,31 +82,6 @@ namespace iroha {
         std::unique_lock<std::mutex> lock(mtx);
         cv.wait_for(lock, std::chrono::milliseconds(100));
       }
-
-      /**
-       * @given initialized network
-       * @when send vote from previously unknown peer
-       * @then vote handled
-       */
-      TEST_F(YacNetworkTest, MesssageHandledWhenUnknownPeer) {
-        auto client = proto::Yac::NewStub(grpc::CreateChannel(
-            peer.address, grpc::InsecureChannelCredentials()));
-
-        EXPECT_CALL(*notifications, on_vote(_))
-            .Times(1)
-            .WillRepeatedly(
-                InvokeWithoutArgs(&cv, &std::condition_variable::notify_one));
-
-        grpc::ClientContext context;
-        auto vote = PbConverters::serializeVote(message);
-        google::protobuf::Empty response;
-
-        client->SendVote(&context, vote, &response);
-
-        // wait for response reader thread
-        std::unique_lock<std::mutex> lock(mtx);
-        cv.wait_for(lock, std::chrono::milliseconds(100));
-      }
     } // namespace yac
   } // namespace consensus
 } // namespace iroha
