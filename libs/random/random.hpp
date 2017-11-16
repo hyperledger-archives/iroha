@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef _IROHA_RANDOM_HPP_
-#define _IROHA_RANDOM_HPP_
+#ifndef IROHA_RANDOM_HPP
+#define IROHA_RANDOM_HPP
 
 #include <random>
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
@@ -26,4 +26,4 @@ namespace random_service {
 
 };  // namespace random_service
 
-#endif  // _IROHA_RANDOM_HPP_
+#endif  // IROHA_RANDOM_HPP
