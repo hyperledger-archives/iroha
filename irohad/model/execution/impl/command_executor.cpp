@@ -373,8 +373,7 @@ namespace iroha {
           // Name is within some range
           not create_account.account_name.empty()
           // Account must be well-formed (no system symbols)
-          and validator::DomainNameValidator::isValid(
-                  create_account.account_name);
+          and validator::isValidDomainName(create_account.account_name);
     }
 
     // --------------------------|CreateAsset|---------------------------

@@ -20,29 +20,29 @@
 
 using namespace validator;
 
-TEST(DomainNameParserTest, HandleValidDomainName) {
-  ASSERT_TRUE(DomainNameValidator::isValid("a"));
-  ASSERT_TRUE(DomainNameValidator::isValid("ab"));
-  ASSERT_TRUE(DomainNameValidator::isValid("abc"));
-  ASSERT_TRUE(DomainNameValidator::isValid("abc.efg"));
-  ASSERT_TRUE(DomainNameValidator::isValid("abc.efg.hij"));
-  ASSERT_TRUE(DomainNameValidator::isValid("u9EEA432F"));
-  ASSERT_TRUE(DomainNameValidator::isValid("a-hyphen"));
-  ASSERT_TRUE(DomainNameValidator::isValid("altplus.com"));
-  ASSERT_TRUE(DomainNameValidator::isValid("altplus.com.jp"));
-  ASSERT_TRUE(DomainNameValidator::isValid(
+TEST(DomainNameValidatorTest, HandleValidDomainName) {
+  ASSERT_TRUE(isValidDomainName("a"));
+  ASSERT_TRUE(isValidDomainName("ab"));
+  ASSERT_TRUE(isValidDomainName("abc"));
+  ASSERT_TRUE(isValidDomainName("abc.efg"));
+  ASSERT_TRUE(isValidDomainName("abc.efg.hij"));
+  ASSERT_TRUE(isValidDomainName("u9EEA432F"));
+  ASSERT_TRUE(isValidDomainName("a-hyphen"));
+  ASSERT_TRUE(isValidDomainName("altplus.com"));
+  ASSERT_TRUE(isValidDomainName("altplus.com.jp"));
+  ASSERT_TRUE(isValidDomainName(
       "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad"));
-  ASSERT_TRUE(DomainNameValidator::isValid("endWith0"));
+  ASSERT_TRUE(isValidDomainName("endWith0"));
 }
 
 TEST(DomainNameValidatorTest, HandleInvalidDomainName) {
-  ASSERT_FALSE(DomainNameValidator::isValid(" "));
-  ASSERT_FALSE(DomainNameValidator::isValid("9start.with.non.letter"));
-  ASSERT_FALSE(DomainNameValidator::isValid("-startWithDash"));
-  ASSERT_FALSE(DomainNameValidator::isValid("@.is.not.allowed"));
-  ASSERT_FALSE(DomainNameValidator::isValid("no space is allowed"));
-  ASSERT_FALSE(DomainNameValidator::isValid("endWith-"));
-  ASSERT_FALSE(DomainNameValidator::isValid("label.endedWith-.is.not.allowed"));
-  ASSERT_FALSE(DomainNameValidator::isValid(
+  ASSERT_FALSE(isValidDomainName(" "));
+  ASSERT_FALSE(isValidDomainName("9start.with.non.letter"));
+  ASSERT_FALSE(isValidDomainName("-startWithDash"));
+  ASSERT_FALSE(isValidDomainName("@.is.not.allowed"));
+  ASSERT_FALSE(isValidDomainName("no space is allowed"));
+  ASSERT_FALSE(isValidDomainName("endWith-"));
+  ASSERT_FALSE(isValidDomainName("label.endedWith-.is.not.allowed"));
+  ASSERT_FALSE(isValidDomainName(
       "aLabelMustNotExceeds63charactersALabelMustNotExceeds63characters"));
 }

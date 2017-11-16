@@ -25,7 +25,7 @@
 #include <boost/spirit/include/qi_plus.hpp>
 
 namespace validator {
-  bool DomainNameValidator::isValid(const std::string &str) {
+  bool isValidDomainName(const std::string &str) {
     namespace qi = boost::spirit::qi;
 
     qi::rule<decltype(str.begin())> letter, let_dig, end_with_let_dig,
