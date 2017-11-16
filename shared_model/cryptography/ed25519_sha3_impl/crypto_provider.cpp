@@ -23,13 +23,13 @@ namespace shared_model {
 
     Signed CryptoProvider::sign(const Blob &blob,
                                 const Keypair &keypair) const {
-      return Signer().sign(blob, keypair);
+      return signer_.sign(blob, keypair);
     }
 
     bool CryptoProvider::verify(const Signed &signedData,
                                 const Blob &orig,
                                 const PublicKey &publicKey) const {
-      return Verifier().verify(signedData, orig, publicKey);
+      return verifier_.verify(signedData, orig, publicKey);
     }
 
     Seed CryptoProvider::generateSeed() const {
