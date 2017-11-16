@@ -20,19 +20,19 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
+#include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
-#include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_quorum.hpp"
-#include "model/commands/transfer_asset.hpp"
-
-#include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
 #include "model/commands/grant_permission.hpp"
+#include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
+#include "model/commands/set_quorum.hpp"
+#include "model/commands/transfer_asset.hpp"
 #include "model/execution/common_executor.hpp"
 #include "model/permissions.hpp"
+#include "validator/domain_name_validator.hpp"
 
 using namespace iroha::ametsuchi;
 
@@ -372,11 +372,8 @@ namespace iroha {
       return
           // Name is within some range
           not create_account.account_name.empty()
-          and create_account.account_name.size() < 8 and
           // Account must be well-formed (no system symbols)
-          std::all_of(std::begin(create_account.account_name),
-                      std::end(create_account.account_name),
-                      [](char c) { return std::isalnum(c) and islower(c); });
+          and validator::isValidDomainName(create_account.account_name);
     }
 
     // --------------------------|CreateAsset|---------------------------

@@ -348,7 +348,7 @@ TEST_F(CreateAccountTest, InvalidWhenLongName) {
       .WillOnce(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
-  create_account->account_name = "thisisaverybigname";
+  create_account->account_name = "aAccountNameMustBeLessThan64characters00000000000000000000000000";
   ASSERT_FALSE(validateAndExecute());
 }
 
@@ -359,17 +359,6 @@ TEST_F(CreateAccountTest, InvalidWhenNameWithSystemSymbols) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
   create_account->account_name = "test@";
-
-  ASSERT_FALSE(validateAndExecute());
-}
-
-TEST_F(CreateAccountTest, InvalidWhenUpperCaseName) {
-  // Not valid name for account (system symbols)
-  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
-      .WillOnce(Return(admin_roles));
-  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
-      .WillOnce(Return(role_permissions));
-  create_account->account_name = "TEST";
 
   ASSERT_FALSE(validateAndExecute());
 }

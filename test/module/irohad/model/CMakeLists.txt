@@ -86,4 +86,3 @@ target_link_libraries(static_map
     model_registrations
     logger
     )
-
