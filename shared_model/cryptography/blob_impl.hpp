@@ -19,6 +19,7 @@
 #define IROHA_SHARED_MODEL_BLOB_IMPL_HPP
 
 #include <iomanip>
+#include <sstream>
 #include "cryptography/blob.hpp"
 #include "utils/lazy_initializer.hpp"
 
