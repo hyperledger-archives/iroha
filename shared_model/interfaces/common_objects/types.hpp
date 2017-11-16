@@ -23,7 +23,6 @@
 #include <vector>
 #include "common/types.hpp"
 #include "cryptography/public_key.hpp"
-#include "interfaces/common_objects/amount.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
 
 namespace shared_model {
@@ -49,8 +48,6 @@ namespace shared_model {
       using AssetIdType = std::string;
       /// Permission type used in permission commands
       using PermissionNameType = std::string;
-      /// Type of amount
-      using AmountType = Amount;
       /// Type of Quorum used in transaction and set quorum
       using QuorumType = uint32_t;
     }  // namespace types

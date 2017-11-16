@@ -18,15 +18,14 @@
 #ifndef IROHA_LAZY_INITIALIZER_HPP
 #define IROHA_LAZY_INITIALIZER_HPP
 
+#include <boost/optional.hpp>
 #include <functional>
-#include <memory>
 
 namespace shared_model {
   namespace detail {
 
     /**
      * Lazy class for lazy converting one type to another
-     * @tparam Source - input type
      * @tparam Target - output type
      */
     template <typename Target>
@@ -36,23 +35,27 @@ namespace shared_model {
       using GeneratorType = std::function<Target()>;
 
      public:
-      explicit LazyInitializer(const GeneratorType &generator) : generator_(generator) {}
+      explicit LazyInitializer(const GeneratorType &generator)
+          : generator_(generator) {}
 
       LazyInitializer(const LazyInitializer &) = default;
 
-      /**
-       * @return generated value
-       */
-      const Target &get() const {
-        if (target_value_ == nullptr) {
-          target_value_ = std::make_shared<Target>(generator_());
+      using PointerType = typename std::remove_reference<Target>::type;
+
+      const Target &operator*() const { return *ptr(); }
+
+      const PointerType *ptr() const {
+        if (target_value_ == boost::none) {
+          target_value_ = boost::make_optional<Target>(generator_());
         }
-        return *target_value_;
+        return target_value_.get_ptr();
       }
+
+      const PointerType *operator->() const { return ptr(); }
 
      private:
       GeneratorType generator_;
-      mutable std::shared_ptr<Target> target_value_;
+      mutable boost::optional<Target> target_value_;
     };
 
     /**

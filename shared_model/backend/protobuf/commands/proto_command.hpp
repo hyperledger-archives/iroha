@@ -43,6 +43,8 @@ namespace shared_model {
       /// lazy variant shortcut
       using LazyVariantType = detail::LazyInitializer<CommandVariantType>;
 
+      using RefCommand = detail::ReferenceHolder<iroha::protocol::Command>;
+
      public:
       /// type of proto variant
       using ProtoCommandVariantType = boost::variant<w<AddAssetQuantity>>;
@@ -50,34 +52,28 @@ namespace shared_model {
       /// list of types in proto variant
       using ProtoCommandListType = ProtoCommandVariantType::types;
 
-      /**
-       * Create command container from proto command
-       * @param command - proto instance
-       */
-      explicit Command(const iroha::protocol::Command &command)
-          : command_(command),
-            variant_(detail::makeLazyInitializer([this] {
-              return CommandVariantType(
-                  load<ProtoCommandListType>(command_));
-            })) {
-        if (command.command_case()
-            == iroha::protocol::Command::COMMAND_NOT_SET) {
-          // TODO 11/11/17 andrei create generic exception message
-          throw std::invalid_argument("Object does not contain command");
-        }
-      }
+      explicit Command(const iroha::protocol::Command *command)
+          : Command(RefCommand(command)) {}
 
-      const CommandVariantType &get() const override {
-        return variant_.get();
-      }
+      explicit Command(iroha::protocol::Command command)
+          : Command(RefCommand(std::move(command))) {}
 
-      ModelType *copy() const override { return new Command(command_); }
+      const CommandVariantType &get() const override { return *variant_; }
+
+      ModelType *copy() const override { return new Command(*command_); }
 
      private:
+      explicit Command(RefCommand &&ref)
+          : command_(std::move(ref)),
+            variant_(detail::makeLazyInitializer([this] {
+              return CommandVariantType(
+                  load<ProtoCommandListType>(*command_));
+            })) {}
+
       // ------------------------------| fields |-------------------------------
 
       // proto
-      const iroha::protocol::Command command_;
+      RefCommand command_;
 
       // lazy
       LazyVariantType variant_;

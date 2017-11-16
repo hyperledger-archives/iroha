@@ -18,54 +18,61 @@
 #ifndef IROHA_PROTO_ADD_ASSET_QUANTITY_HPP
 #define IROHA_PROTO_ADD_ASSET_QUANTITY_HPP
 
+#include "interfaces/commands/add_asset_quantity.hpp"
+
+#include "backend/protobuf/common_objects/amount.hpp"
 #include "commands.pb.h"
 #include "cryptography/stub_hash.hpp"
-#include "interfaces/commands/add_asset_quantity.hpp"
 #include "utils/lazy_initializer.hpp"
-#include "backend/protobuf/common_objects/amount.hpp"
+#include "utils/reference_holder.hpp"
 
 namespace shared_model {
   namespace proto {
     class AddAssetQuantity final : public interface::AddAssetQuantity {
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      using RefAddAssetQuantity =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::AddAssetQuantity &>;
 
      public:
-      explicit AddAssetQuantity(const iroha::protocol::Command &command)
-          : AddAssetQuantity(command.add_asset_quantity()) {
-        if (not command.has_add_asset_quantity()) {
-          // TODO 11/11/17 andrei create generic exception message
-          throw std::invalid_argument(
-              "Object does not contain add_asset_quantity");
-        }
-      }
+      explicit AddAssetQuantity(const iroha::protocol::Command *command)
+          : AddAssetQuantity(RefAddAssetQuantity(
+                command,
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::add_asset_quantity))) {}
+
+      explicit AddAssetQuantity(iroha::protocol::Command command)
+          : AddAssetQuantity(RefAddAssetQuantity(
+                std::move(command),
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::add_asset_quantity))) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return add_asset_quantity_.account_id();
+        return add_asset_quantity_->account_id();
       }
 
       const interface::types::AssetIdType &assetId() const override {
-        return add_asset_quantity_.asset_id();
+        return add_asset_quantity_->asset_id();
       }
 
-      const interface::types::AmountType &amount() const override {
-        return amount_.get();
+      const interface::Amount &amount() const override {
+        return *amount_;
       }
 
-      const HashType &hash() const override { return hash_.get(); }
+      const HashType &hash() const override { return *hash_; }
 
       ModelType *copy() const override {
-        return new AddAssetQuantity(add_asset_quantity_);
+        iroha::protocol::Command command;
+        *command.mutable_add_asset_quantity() = *add_asset_quantity_;
+        return new AddAssetQuantity(std::move(command));
       }
 
      private:
       // ----------------------------| private API |----------------------------
-      explicit AddAssetQuantity(
-          const iroha::protocol::AddAssetQuantity &add_asset_quantity)
-          : add_asset_quantity_(add_asset_quantity),
+      explicit AddAssetQuantity(RefAddAssetQuantity &&ref)
+          : add_asset_quantity_(std::move(ref)),
             amount_([this] {
-              return proto::Amount(this->add_asset_quantity_.amount());
+              return proto::Amount(this->add_asset_quantity_->amount());
             }),
             hash_([this] {
               // TODO 10/11/2017 muratovv replace with effective implementation
@@ -75,7 +82,10 @@ namespace shared_model {
       // ------------------------------| fields |-------------------------------
 
       // proto
-      const iroha::protocol::AddAssetQuantity add_asset_quantity_;
+      RefAddAssetQuantity add_asset_quantity_;
+
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
 
       // lazy
       Lazy<proto::Amount> amount_;

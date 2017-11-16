@@ -36,7 +36,7 @@ TEST(LazyTest, GetterTest) {
   SourceValue v{100500};
   auto lazy = shared_model::detail::makeLazyInitializer(
       [&v] { return TargetValue{std::to_string(v.val)}; });
-  ASSERT_EQ("100500", lazy.get().target);
+  ASSERT_EQ("100500", lazy->target);
 }
 
 /**
@@ -52,8 +52,8 @@ TEST(LazyTest, CheckLaziness) {
     return TargetValue{std::to_string(v.val)};
   });
   ASSERT_EQ(0, call_counter);
-  ASSERT_EQ("100500", lazy.get().target);
+  ASSERT_EQ("100500", lazy->target);
   ASSERT_EQ(1, call_counter);
-  ASSERT_EQ("100500", lazy.get().target);
+  ASSERT_EQ("100500", lazy->target);
   ASSERT_EQ(1, call_counter);
 }

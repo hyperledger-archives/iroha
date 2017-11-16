@@ -25,21 +25,20 @@ namespace shared_model {
 
     class StubHash : public Hash {
      public:
-      const std::string &blob() const override {
-        return string;
-      }
+      StubHash() {}
+      StubHash(const StubHash &) {}
+      StubHash(StubHash &&) {}
 
-      const std::string &hex() const override {
-        return string;
-      }
+      StubHash &operator=(const StubHash &) { return *this; }
+      StubHash &operator=(StubHash &&) { return *this; }
 
-      size_t size() const override {
-        return 0;
-      }
+      const std::string &blob() const override { return string; }
 
-      ModelType *copy() const override {
-        return new StubHash;
-      }
+      const std::string &hex() const override { return string; }
+
+      size_t size() const override { return 0; }
+
+      ModelType *copy() const override { return new StubHash; }
 
       const std::string string = "";
     };

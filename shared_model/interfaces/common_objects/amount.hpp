@@ -24,7 +24,6 @@
 #include "amount/amount.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
@@ -46,7 +45,7 @@ namespace shared_model {
        * Gets the position of precision
        * @return the position of precision
        */
-      virtual uint8_t precision() const = 0;
+      virtual types::PrecisionType precision() const = 0;
 
       /**
        * Checks equality of objects inside
