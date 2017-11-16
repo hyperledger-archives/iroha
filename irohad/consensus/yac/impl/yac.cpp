@@ -76,13 +76,13 @@ namespace iroha {
                    logger::to_string(order.getPeers(),
                                      [](auto val) { return val.address; }));
 
-        this->cluster_order_ = order;
+        cluster_order_ = order;
         auto vote = crypto_->getVote(hash);
         votingStep(vote);
       }
 
       rxcpp::observable<CommitMessage> Yac::on_commit() {
-        return this->notifier_.get_observable();
+        return notifier_.get_observable();
       }
 
       // ------|Network notifications|------
@@ -90,7 +90,7 @@ namespace iroha {
       void Yac::on_vote(VoteMessage vote) {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(vote)) {
-          this->applyVote(findPeer(vote), vote);
+          applyVote(findPeer(vote), vote);
         } else {
           log_->warn(cryptoError({vote}));
         }
@@ -100,7 +100,7 @@ namespace iroha {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(commit)) {
           // Commit does not contain data about peer which sent the message
-          this->applyCommit(nonstd::nullopt, commit);
+          applyCommit(nonstd::nullopt, commit);
         } else {
           log_->warn(cryptoError(commit.votes));
         }
@@ -110,7 +110,7 @@ namespace iroha {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(reject)) {
           // Reject does not contain data about peer which sent the message
-          this->applyReject(nonstd::nullopt, reject);
+          applyReject(nonstd::nullopt, reject);
         } else {
           log_->warn(cryptoError(reject.votes));
         }
