@@ -37,15 +37,14 @@ namespace shared_model {
        * Create blob from a string
        * @param blob - string to create blob from
        */
-      explicit Blob(const std::string &blob)
-          : blob_(blob), hex_([this]() {
-              std::stringstream ss;
-              ss << std::hex << std::setfill('0');
-              for (const auto &c : blob_) {
-                ss << std::setw(2) << static_cast<int>(c);
-              }
-              return ss.str();
-            }) {}
+      explicit Blob(const std::string &blob) : blob_(blob) {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (const auto &c : blob_) {
+          ss << std::setw(2) << static_cast<int>(c);
+        }
+        hex_ = ss.str();
+      }
 
       /**
        * @return provides raw representation of blob
@@ -55,7 +54,7 @@ namespace shared_model {
       /**
        * @return provides human-readable representation of blob
        */
-      const std::string &hex() const { return hex_.get(); }
+      const std::string &hex() const { return hex_; }
 
       /**
        * @return size of raw representation of blob
@@ -88,12 +87,9 @@ namespace shared_model {
       }
 
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
-
       // TODO: 17/11/2017 luckychess use improved Lazy with references support
       std::string blob_;
-      Lazy<std::string> hex_;
+      std::string hex_;
     };
   }  // namespace crypto
 }  // namespace shared_model
