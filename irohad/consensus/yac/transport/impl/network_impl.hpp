@@ -40,12 +40,7 @@ namespace iroha {
                           network::AsyncGrpcClient<google::protobuf::Empty> {
        public:
 
-        /**
-         * @param address - address of current peer
-         * @param peers - peers in network
-         */
-        explicit NetworkImpl(const std::string &address,
-                             const std::vector<model::Peer> &peers);
+        NetworkImpl();
         void subscribe(
             std::shared_ptr<YacNetworkNotifications> handler) override;
         void send_commit(model::Peer to, CommitMessage commit) override;
@@ -92,11 +87,6 @@ namespace iroha {
         void createPeerConnection(const model::Peer &peer);
 
         /**
-         * Address of current peer
-         */
-        std::string address_;
-
-        /**
          * Mapping of peer objects to connections
          */
         std::unordered_map<model::Peer, std::unique_ptr<proto::Yac::Stub>>
@@ -106,11 +96,6 @@ namespace iroha {
          * Subscriber of network messages
          */
         std::weak_ptr<YacNetworkNotifications> handler_;
-
-        /**
-         * Mapping of addresses to peers
-         */
-        std::unordered_map<std::string, model::Peer> peers_addresses_;
 
         /**
          * Internal logger

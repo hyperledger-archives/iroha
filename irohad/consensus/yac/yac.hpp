@@ -66,11 +66,11 @@ namespace iroha {
 
         // ------|Network notifications|------
 
-        virtual void on_commit(model::Peer from, CommitMessage commit);
+        virtual void on_commit(CommitMessage commit);
 
-        virtual void on_reject(model::Peer from, RejectMessage reject);
+        virtual void on_reject(RejectMessage reject);
 
-        virtual void on_vote(model::Peer from, VoteMessage vote);
+        virtual void on_vote(VoteMessage vote);
 
        private:
         // ------|Private interface|------
@@ -86,10 +86,26 @@ namespace iroha {
          */
         void closeRound();
 
+        /**
+         * Find corresponding peer in the ledger from vote message
+         * @param vote message containing peer information
+         * @return peer if it is present in the ledger, nullopt otherwise
+         */
+        nonstd::optional<model::Peer> findPeer(const VoteMessage &vote);
+
         // ------|Apply data|------
-        void applyCommit(model::Peer from, CommitMessage commit);
-        void applyReject(model::Peer from, RejectMessage reject);
-        void applyVote(model::Peer from, VoteMessage vote);
+
+        /**
+         * Methods take optional peer as argument since peer which sent the
+         * message could be missing from the ledger. This is the case when the
+         * top block in ledger does not correspond to consensus round number
+         */
+
+        void applyCommit(nonstd::optional<model::Peer> from,
+                         CommitMessage commit);
+        void applyReject(nonstd::optional<model::Peer> from,
+                         RejectMessage reject);
+        void applyVote(nonstd::optional<model::Peer> from, VoteMessage vote);
 
         // ------|Propagation|------
         void propagateCommit(CommitMessage msg);

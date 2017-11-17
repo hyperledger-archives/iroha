@@ -151,8 +151,7 @@ void Irohad::initBlockLoader() {
 
 void Irohad::initConsensusGate() {
   consensus_gate =
-      yac_init.initConsensusGate("0.0.0.0:" + std::to_string(internal_port_),
-                                 wsv,
+      yac_init.initConsensusGate(wsv,
                                  simulator,
                                  block_loader,
                                  keypair,

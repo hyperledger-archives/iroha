@@ -64,7 +64,7 @@ class ConsensusSunnyDayTest : public ::testing::Test {
   static const size_t port = 10001;
 
   void SetUp() override {
-    network = std::make_shared<NetworkImpl>(my_peer.address, default_peers);
+    network = std::make_shared<NetworkImpl>();
     crypto = std::make_shared<FixedCryptoProvider>(std::to_string(my_num));
     timer = std::make_shared<TimerImpl>();
     yac = Yac::create(YacVoteStorage(),
