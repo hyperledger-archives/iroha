@@ -15,7 +15,6 @@
 add_subdirectory(internal)
 
 add_library(shared_ed25519_sha3
-        proto/ed25519_proto_signature.cpp
         signer.cpp
         verifier.cpp
         crypto_provider.cpp

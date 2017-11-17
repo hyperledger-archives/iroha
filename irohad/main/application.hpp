@@ -19,7 +19,6 @@
 #define IROHA_APPLICATION_HPP
 
 #include "ametsuchi/impl/storage_impl.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 #include "logger/logger.hpp"
 #include "main/impl/block_loader_init.hpp"
 #include "main/impl/consensus_init.hpp"

@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-#include <string>
-#include "ed25519_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/impl/ed25519.h"
-#include "sha3_hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 
 namespace iroha {
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "crypto_provider.hpp"
+#include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 
 namespace shared_model {
