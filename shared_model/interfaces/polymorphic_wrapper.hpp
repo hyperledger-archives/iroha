@@ -48,33 +48,35 @@ namespace shared_model {
        * @param value - pointer for wrapping
        */
       template <typename Y>
-      explicit PolymorphicWrapper(const Y *value) : ptr(std::shared_ptr<Y>(value)) {}
+      explicit PolymorphicWrapper(const Y *value)
+          : ptr_(std::shared_ptr<Y>(value)) {}
 
       template <typename... Args>
       explicit PolymorphicWrapper(Args &&... args)
-          : ptr(std::make_shared<T>(std::forward<Args>(args)...)) {}
+          : ptr_(std::make_shared<T>(std::forward<Args>(args)...)) {}
 
       template <typename Y>
       PolymorphicWrapper(const PolymorphicWrapper<Y> &rhs)
-          : ptr(std::shared_ptr<T>(rhs.ptr->copy())) {}
+          : ptr_(std::shared_ptr<T>(rhs.ptr_->copy())) {}
 
       template <typename Y>
-      PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept : ptr(rhs.ptr) {
-        rhs.ptr = nullptr;
+      PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept
+          : ptr_(rhs.ptr_) {
+        rhs.ptr_ = nullptr;
       }
       /**
        * Copy constructor that performs deep copy
        * @param rhs - another wrapped value
        */
       PolymorphicWrapper(const PolymorphicWrapper &rhs)
-          : ptr(std::shared_ptr<T>(rhs.ptr->copy())) {}
+          : ptr_(std::shared_ptr<T>(rhs.ptr_->copy())) {}
 
       /**
        * Move constructor
        * @param rhs - wrapped temporary value
        */
-      PolymorphicWrapper(PolymorphicWrapper &&rhs) noexcept : ptr(nullptr) {
-        std::swap(this->ptr, rhs.ptr);
+      PolymorphicWrapper(PolymorphicWrapper &&rhs) noexcept : ptr_(nullptr) {
+        std::swap(this->ptr_, rhs.ptr_);
       }
 
       /**
@@ -83,7 +85,7 @@ namespace shared_model {
        * @return *this
        */
       PolymorphicWrapper &operator=(const PolymorphicWrapper &rhs) {
-        ptr = std::shared_ptr<T>(rhs.ptr->copy());
+        ptr_ = std::shared_ptr<T>(rhs.ptr_->copy());
         return *this;
       }
 
@@ -93,7 +95,7 @@ namespace shared_model {
        * @return *this
        */
       PolymorphicWrapper &operator=(PolymorphicWrapper &&rhs) noexcept {
-        std::swap(this->ptr, rhs.ptr);
+        std::swap(this->ptr_, rhs.ptr_);
         return *this;
       }
 
@@ -103,24 +105,24 @@ namespace shared_model {
        * @return true, if wrapped objects are same
        */
       bool operator==(const PolymorphicWrapper &rhs) const {
-        return *ptr == *rhs.ptr;
+        return *ptr_ == *rhs.ptr_;
       }
 
       /**
        * Mutable wrapped object pointer
        * @return pointer for wrapped object
        */
-      WrappedType *operator->() { return ptr.get(); }
+      WrappedType *operator->() { return ptr_.get(); }
 
       /**
        * Immutable wrapped object pointer
        * @return pointer for wrapped object
        */
-      const WrappedType *operator->() const { return ptr.get(); }
+      const WrappedType *operator->() const { return ptr_.get(); }
 
      private:
       /// pointer with wrapped value
-      std::shared_ptr<WrappedType> ptr;
+      std::shared_ptr<WrappedType> ptr_;
     };
 
   }  // namespace detail
