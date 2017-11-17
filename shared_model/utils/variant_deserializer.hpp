@@ -22,14 +22,41 @@
 
 namespace shared_model {
   namespace detail {
+    /**
+     * Helper for variant deserialization
+     * Iterate through type list to use type specified by type index in list
+     * @tparam S list of types
+     */
     template <class S>
     struct variant_impl {
+      /**
+       * Dummy deserializer for empty list
+       */
       struct load_null {
+        /**
+         * Dummy deserializer
+         * @tparam Archive container type
+         * @tparam V variant type for deserialization
+         */
         template <class Archive, class V>
         static void invoke(Archive &, int, V &) {}
       };
 
+      /**
+       * Deserializer implementation
+       */
       struct load_impl {
+        /**
+         * Deserialize container in variant using type in list by specified
+         * index
+         * If type selector is 0, head type is required type, and it is used
+         * Otherwise call helper without front element in type list
+         * @tparam Archive container type
+         * @tparam V variant type for deserialization
+         * @param ar container to be deserialized
+         * @param which type index in list
+         * @param v result variant
+         */
         template <class Archive, class V>
         static void invoke(Archive &ar, int which, V &v) {
           if (which == 0) {
@@ -42,6 +69,15 @@ namespace shared_model {
         }
       };
 
+      /**
+       * Deserialize container in variant using type in list by specified index
+       * Choose dummy or concrete deserializer depending on type list size
+       * @tparam Archive container type
+       * @tparam V variant type for deserialization
+       * @param ar container to be deserialized
+       * @param which type index in list
+       * @param v result variant
+       */
       template <class Archive, class V>
       static void load(Archive &ar, int which, V &v) {
         using typex =
