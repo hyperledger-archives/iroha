@@ -37,13 +37,6 @@ namespace shared_model {
       using WrappedType = T;
 
       /**
-       * Empty constructor
-       * TODO: this constructor required for building boost::variant object, but
-       * semantics may be broken
-       */
-      PolymorphicWrapper() = default;
-
-      /**
        * Value constructor
        * @param value - pointer for wrapping
        */

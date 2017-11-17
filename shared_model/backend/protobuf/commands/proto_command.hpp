@@ -26,10 +26,10 @@
 
 template <typename... T>
 auto load(const iroha::protocol::Command &ar) {
-  shared_model::interface::Command::CommandVariantType result;
   int which = ar.command_case() - 1;
-  shared_model::detail::variant_impl<T...>::load(ar, which, result);
-  return result;
+  return shared_model::detail::variant_impl<T...>::
+      template load<shared_model::interface::Command::CommandVariantType>(
+          ar, which);
 }
 
 namespace shared_model {
