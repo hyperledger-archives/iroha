@@ -18,7 +18,7 @@
 #ifndef IROHA_SEED_HPP
 #define IROHA_SEED_HPP
 
-#include "cryptography/blob_impl.hpp"
+#include "cryptography/blob.hpp"
 #include "utils/string_builder.hpp"
 
 #include "common/types.hpp"
@@ -28,9 +28,9 @@ namespace shared_model {
     /**
      * Class for seed representation.
      */
-    class Seed : public BlobImpl {
+    class Seed : public Blob {
      public:
-      explicit Seed(const std::string &seed) : BlobImpl(seed) {}
+      explicit Seed(const std::string &seed) : Blob(seed) {}
       /// Old model seed does not have a pretty-looking typedef
       using OldSeedType = iroha::blob_t<32>;
       std::string toString() const override {

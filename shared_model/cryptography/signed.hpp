@@ -29,10 +29,10 @@ namespace shared_model {
      * Class for storing signed data. It could be used not only for storing
      * signed hashes but for other signed objects too.
      */
-    class Signed : public BlobImpl {
+    class Signed : public Blob {
      public:
       using OldSignatureType = iroha::sig_t;
-      explicit Signed(const std::string &blob) : BlobImpl(blob) {}
+      explicit Signed(const std::string &blob) : Blob(blob) {}
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("Signed")

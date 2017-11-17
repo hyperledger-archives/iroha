@@ -18,7 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
 #define IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
 
-#include "cryptography/blob_impl.hpp"
+#include "cryptography/blob.hpp"
 #include "utils/string_builder.hpp"
 
 #include "common/types.hpp"
@@ -28,9 +28,9 @@ namespace shared_model {
     /**
      * A special class for storing public keys.
      */
-    class PublicKey : public BlobImpl {
+    class PublicKey : public Blob {
      public:
-      explicit PublicKey(const std::string &publicKey) : BlobImpl(publicKey) {}
+      explicit PublicKey(const std::string &publicKey) : Blob(publicKey) {}
       using OldPublicKeyType = iroha::pubkey_t;
       std::string toString() const override {
         return detail::PrettyStringBuilder()

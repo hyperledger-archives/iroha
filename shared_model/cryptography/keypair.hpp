@@ -18,7 +18,6 @@
 #ifndef IROHA_SHARED_MODEL_KEYPAIR_HPP
 #define IROHA_SHARED_MODEL_KEYPAIR_HPP
 
-#include "cryptography/blob_impl.hpp"
 #include "cryptography/private_key.hpp"
 #include "cryptography/public_key.hpp"
 #include "interfaces/primitive.hpp"
