@@ -58,7 +58,8 @@ TEST_F(YacTest, UnknownVoteBeforeCommit) {
 }
 
 /**
- * @given initialized yac, received commit
+ * @given initialized yac
+ * AND received commit
  * @when receive vote from unknown peer for committed hash
  * @then commit not emitted
  */
