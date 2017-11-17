@@ -31,11 +31,13 @@ namespace iroha {
    * @param priv
    * @return
    */
-  sig_t sign(const uint8_t *msg, size_t msgsize,
-                      const pubkey_t &pub,
-                      const privkey_t &priv);
+  sig_t sign(const uint8_t *msg,
+             size_t msgsize,
+             const pubkey_t &pub,
+             const privkey_t &priv);
 
-  sig_t sign(const std::string &msg, const pubkey_t &pub,
+  sig_t sign(const std::string &msg,
+             const pubkey_t &pub,
              const privkey_t &priv);
 
   /**
@@ -46,7 +48,9 @@ namespace iroha {
    * @param sig
    * @return true if signature is valid, false otherwise
    */
-  bool verify(const uint8_t *msg, size_t msgsize, const pubkey_t &pub,
+  bool verify(const uint8_t *msg,
+              size_t msgsize,
+              const pubkey_t &pub,
               const sig_t &sig);
 
   bool verify(const std::string &msg, const pubkey_t &pub, const sig_t &sig);
@@ -76,6 +80,5 @@ namespace iroha {
    */
   keypair_t create_keypair();
 
-
-}
+}  // namespace iroha
 #endif  // IROHA_CRYPTO_HPP

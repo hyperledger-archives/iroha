@@ -18,32 +18,48 @@
 #ifndef IROHA_SHARED_MODEL_BLOB_HPP
 #define IROHA_SHARED_MODEL_BLOB_HPP
 
+#include <iomanip>
+#include <sstream>
 #include "interfaces/model_primitive.hpp"
+#include "utils/lazy_initializer.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace crypto {
 
     /**
-     * Blob interface present user-friendly blob for working with low-level
+     * Blob class present user-friendly blob for working with low-level
      * binary stuff. Its length is not fixed in compile time.
      */
     class Blob : public interface::ModelPrimitive<Blob> {
      public:
       /**
+       * Create blob from a string
+       * @param blob - string to create blob from
+       */
+      explicit Blob(const std::string &blob) : blob_(blob) {
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0');
+        for (const auto &c : blob_) {
+          ss << std::setw(2) << static_cast<int>(c);
+        }
+        hex_ = ss.str();
+      }
+
+      /**
        * @return provides raw representation of blob
        */
-      virtual const std::string &blob() const = 0;
+      const std::string &blob() const { return blob_; }
 
       /**
        * @return provides human-readable representation of blob
        */
-      virtual const std::string &hex() const = 0;
+      const std::string &hex() const { return hex_; }
 
       /**
        * @return size of raw representation of blob
        */
-      virtual size_t size() const = 0;
+      size_t size() const { return blob_.size(); }
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
@@ -56,6 +72,8 @@ namespace shared_model {
         return blob() == rhs.blob();
       }
 
+      Blob *copy() const override { return new Blob(blob()); };
+
       /**
        * Method perform transforming object to old-fashion blob_t format
        * @tparam BlobType - type of blob
@@ -67,6 +85,11 @@ namespace shared_model {
       [[deprecated]] BlobType makeOldModel() const {
         return BlobType::from_string(blob());
       }
+
+     private:
+      // TODO: 17/11/2017 luckychess use improved Lazy with references support
+      std::string blob_;
+      std::string hex_;
     };
   }  // namespace crypto
 }  // namespace shared_model

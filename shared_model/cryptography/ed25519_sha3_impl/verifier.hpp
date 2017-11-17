@@ -15,12 +15,25 @@
  * limitations under the License.
  */
 
-#include "interfaces/common_objects/account.hpp"
-#include "interfaces/common_objects/account_asset.hpp"
-#include "interfaces/common_objects/asset.hpp"
-#include "interfaces/iroha_internal/block.hpp"
-#include "interfaces/iroha_internal/proposal.hpp"
-#include "interfaces/queries/query.hpp"
-#include "interfaces/query_responses/query_response.hpp"
-#include "interfaces/transaction.hpp"
-#include "interfaces/transaction_responses/tx_response.hpp"
+#ifndef IROHA_SHARED_MODEL_VERIFIER_HPP
+#define IROHA_SHARED_MODEL_VERIFIER_HPP
+
+#include "cryptography/public_key.hpp"
+#include "cryptography/signed.hpp"
+
+namespace shared_model {
+  namespace crypto {
+    /**
+     * Class for signature verification.
+     */
+    class Verifier {
+     public:
+      bool verify(const Signed &signedData,
+                  const Blob &orig,
+                  const PublicKey &publicKey) const;
+    };
+
+  }  // namespace crypto
+}  // namespace shared_model
+
+#endif  // IROHA_SHARED_MODEL_VERIFIER_HPP

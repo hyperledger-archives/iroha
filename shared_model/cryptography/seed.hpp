@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
-#define IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
+#ifndef IROHA_SEED_HPP
+#define IROHA_SEED_HPP
 
 #include "cryptography/blob.hpp"
 #include "utils/string_builder.hpp"
@@ -26,20 +26,21 @@
 namespace shared_model {
   namespace crypto {
     /**
-     * A special class for storing public keys.
+     * Class for seed representation.
      */
-    class PublicKey : public Blob {
+    class Seed : public Blob {
      public:
-      explicit PublicKey(const std::string &publicKey) : Blob(publicKey) {}
-      using OldPublicKeyType = iroha::pubkey_t;
+      explicit Seed(const std::string &seed) : Blob(seed) {}
+      /// Old model seed does not have a pretty-looking typedef
+      using OldSeedType = iroha::blob_t<32>;
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-            .init("PublicKey")
+            .init("Seed")
             .append(Blob::hex())
             .finalize();
       }
     };
   }  // namespace crypto
-}  // namespace shared_model
+};   // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_PUBLIC_KEY_HPP
+#endif  // IROHA_SEED_HPP

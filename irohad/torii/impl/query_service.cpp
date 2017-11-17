@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "crypto/hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "torii/query_service.hpp"
 
 namespace torii {

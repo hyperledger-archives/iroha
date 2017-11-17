@@ -21,6 +21,8 @@
 #include "cryptography/blob.hpp"
 #include "utils/string_builder.hpp"
 
+#include "common/types.hpp"
+
 namespace shared_model {
   namespace crypto {
     /**
@@ -29,6 +31,8 @@ namespace shared_model {
      */
     class Signed : public Blob {
      public:
+      using OldSignatureType = iroha::sig_t;
+      explicit Signed(const std::string &blob) : Blob(blob) {}
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("Signed")
@@ -36,7 +40,7 @@ namespace shared_model {
             .finalize();
       }
     };
-  }
-}
+  }  // namespace crypto
+}  // namespace shared_model
 
 #endif  // IROHA_SHARED_MODEL_SIGNED_HPP

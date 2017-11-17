@@ -15,12 +15,19 @@
  * limitations under the License.
  */
 
-#include "interfaces/common_objects/account.hpp"
-#include "interfaces/common_objects/account_asset.hpp"
-#include "interfaces/common_objects/asset.hpp"
-#include "interfaces/iroha_internal/block.hpp"
-#include "interfaces/iroha_internal/proposal.hpp"
-#include "interfaces/queries/query.hpp"
-#include "interfaces/query_responses/query_response.hpp"
-#include "interfaces/transaction.hpp"
-#include "interfaces/transaction_responses/tx_response.hpp"
+#include "cryptography/ed25519_sha3_impl/signer.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
+
+namespace shared_model {
+  namespace crypto {
+    Signed Signer::sign(const Blob &blob, const Keypair &keypair) const {
+      return Signed(
+          iroha::sign(
+              blob.blob(),
+              keypair.publicKey().makeOldModel<PublicKey::OldPublicKeyType>(),
+              keypair.privateKey()
+                  .makeOldModel<PrivateKey::OldPrivateKeyType>())
+              .to_string());
+    }
+  }  // namespace crypto
+}  // namespace shared_model

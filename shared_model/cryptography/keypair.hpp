@@ -20,31 +20,36 @@
 
 #include "cryptography/private_key.hpp"
 #include "cryptography/public_key.hpp"
-#include "interfaces/model_primitive.hpp"
+#include "interfaces/primitive.hpp"
 #include "utils/string_builder.hpp"
+
+#include "common/types.hpp"
 
 namespace shared_model {
   namespace crypto {
     /**
      * Class for holding a keypair: public key and private key
      */
-    class Keypair : public interface::ModelPrimitive<Keypair> {
+    class Keypair : public interface::Primitive<Keypair, iroha::keypair_t> {
      public:
       /// Type of public key
       using PublicKeyType = PublicKey;
 
+      /// Type of private key
+      using PrivateKeyType = PrivateKey;
+
+      explicit Keypair(PublicKeyType publickKey, PrivateKeyType privateKey)
+          : publicKey_(publickKey), privateKey_(privateKey) {}
+
       /**
        * @return public key
        */
-      virtual const PublicKeyType &publicKey() const = 0;
-
-      /// Type of private key
-      using PrivateKeyType = PrivateKey;
+      const PublicKeyType &publicKey() const { return publicKey_; };
 
       /**
        * @return private key
        */
-      virtual const PrivateKeyType &privateKey() const = 0;
+      const PrivateKeyType &privateKey() const { return privateKey_; };
 
       bool operator==(const Keypair &keypair) const override {
         return publicKey() == keypair.publicKey()
@@ -58,6 +63,21 @@ namespace shared_model {
             .append("privateKey", privateKey().toString())
             .finalize();
       }
+
+      OldModelType *makeOldModel() const override {
+        return new iroha::keypair_t{
+            .pubkey = publicKey().makeOldModel<PublicKey::OldPublicKeyType>(),
+            .privkey =
+                privateKey().makeOldModel<PrivateKey::OldPrivateKeyType>()};
+      }
+
+      Keypair *copy() const override {
+        return new Keypair(publicKey(), privateKey());
+      };
+
+     private:
+      PublicKey publicKey_;
+      PrivateKey privateKey_;
     };
   }
 };

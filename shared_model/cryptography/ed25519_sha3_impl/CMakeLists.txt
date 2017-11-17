@@ -12,4 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(ed25519_sha3_impl)
+add_subdirectory(internal)
+
+add_library(shared_ed25519_sha3
+        signer.cpp
+        verifier.cpp
+        crypto_provider.cpp
+        hash_provider.cpp
+        )
+
+target_link_libraries(shared_ed25519_sha3
+        optional
+        )
