@@ -40,18 +40,18 @@ namespace shared_model {
 
       LazyInitializer(const LazyInitializer &) = default;
 
-      using PointerType = typename std::remove_reference<Target>::type;
+      using PointerType = typename std::add_pointer_t<Target>;
 
       const Target &operator*() const { return *ptr(); }
 
-      const PointerType *ptr() const {
+      const PointerType ptr() const {
         if (target_value_ == boost::none) {
           target_value_ = boost::make_optional<Target>(generator_());
         }
         return target_value_.get_ptr();
       }
 
-      const PointerType *operator->() const { return ptr(); }
+      const PointerType operator->() const { return ptr(); }
 
      private:
       GeneratorType generator_;

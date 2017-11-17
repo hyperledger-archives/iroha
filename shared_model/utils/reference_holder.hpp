@@ -44,13 +44,13 @@ namespace shared_model {
       ReferenceHolder(const T *ref, const MapperType &mapper = identity)
           : ReferenceHolder(VariantType(ref), mapper) {}
 
-      using PointerType = typename std::remove_reference<V>::type;
+      using PointerType = typename std::add_pointer_t<V>;
 
       const V &operator*() const { return *ptr(); }
 
-      const PointerType *ptr() const { return value_.ptr(); }
+      const PointerType ptr() const { return value_.ptr(); }
 
-      const PointerType *operator->() const { return ptr(); }
+      const PointerType operator->() const { return ptr(); }
 
      private:
       ReferenceHolder(VariantType &&variant, const MapperType &mapper)
