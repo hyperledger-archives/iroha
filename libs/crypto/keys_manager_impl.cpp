@@ -62,7 +62,7 @@ namespace iroha {
   nonstd::optional<iroha::keypair_t> KeysManagerImpl::loadKeys() {
     // Try to load from local file
     auto loadFile = [this](auto filename, auto &res) {
-      return [ that = this, &filename, &res ](auto keypair)
+      return [that = this, &filename, &res](auto keypair)
           ->nonstd::optional<iroha::keypair_t> {
         std::ifstream file(filename);
         if (not file) {
