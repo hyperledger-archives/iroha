@@ -77,7 +77,7 @@ find_package(tbb)
 ##########################
 #         boost          #
 ##########################
-find_package(Boost REQUIRED
+find_package(Boost 1.58.0 REQUIRED
     COMPONENTS
     filesystem
     system
