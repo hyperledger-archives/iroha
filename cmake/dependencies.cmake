@@ -75,14 +75,18 @@ find_package(rxcpp)
 find_package(tbb)
 
 ##########################
-# boost multiprecision   #
+#         boost          #
 ##########################
 find_package(Boost REQUIRED
     COMPONENTS
     filesystem
     system
     )
-
+add_library(boost INTERFACE IMPORTED)
+set_target_properties(boost PROPERTIES
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS}
+    INTERFACE_LINK_LIBRARIES "${Boost_LIBRARIES}"
+    )
 
 ##########################
 #       benchmark        #
