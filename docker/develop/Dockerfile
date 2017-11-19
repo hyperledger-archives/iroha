@@ -9,8 +9,12 @@ ENV IROHA_BUILD /opt/iroha/build
 
 RUN apt-get update; \
     apt-get -y upgrade; \
-    apt-get -y --no-install-recommends install apt-utils; \
+    apt-get -y --no-install-recommends install apt-utils software-properties-common; \
     apt-get -y clean
+
+# add git repository
+RUN add-apt-repository -y ppa:git-core/ppa; \
+    apt-get update
 
 RUN apt-get -y --no-install-recommends install build-essential python-software-properties \
         automake libtool \
