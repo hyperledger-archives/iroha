@@ -21,12 +21,20 @@ RUN apt-get -y --no-install-recommends install build-essential python-software-p
         # code coverage
         lcov \
         # other
-        wget curl cmake file unzip gdb iputils-ping vim ccache \
+        wget curl file unzip gdb iputils-ping vim ccache \
         gcovr vera++ cppcheck doxygen graphviz graphviz-dev; \
     apt-get -y clean
 
 RUN pip3 install --upgrade pip; \
     pip3 install flask requests
+
+# install cmake 3.5.1
+RUN git clone https://gitlab.kitware.com/cmake/cmake.git /tmp/cmake; \
+    (cd /tmp/cmake ; git checkout 64130a7e793483e24c1d68bdd234f81d5edb2d51); \
+    (cd /tmp/cmake ; /tmp/cmake/bootstrap --parallel=${PARALLELISM} --enable-ccache); \
+    make -j${PARALLELISM} -C /tmp/cmake; \
+    make -C /tmp/cmake install; \
+    rm -rf /tmp/cmake
 
 # install protobuf
 RUN git clone https://github.com/google/protobuf /tmp/protobuf; \
