@@ -61,11 +61,7 @@ target_link_libraries(iroha-cli
     client
     cli-flags_validators
     keys_manager
-    ${Boost_SYSTEM_LIBRARY}
-    ${Boost_FILESYSTEM_LIBRARY}
-    )
-target_include_directories(iroha-cli PUBLIC
-    ${Boost_INCLUDE_DIRS}
+    boost
     )
 
 add_install_step_for_bin(iroha-cli)
