@@ -1,18 +1,41 @@
 ---
-- hosts: all
+- hosts: localhost
+  connection: local
+
+  tasks:
+    #It will generate a file for each host with its number, it is needed for iterating over hosts and running iroha
+    # with different keys
+    - name: Create Variable File for Each host
+      template: src=template.yml.j2 dest=host_vars/{{ item.1 }}
+      with_indexed_items: "{{ groups['hosts'] }}"
+
+
+- hosts: hosts
   vars:
     user: iroha #your user on the remote machine
     tmp: "{{9999999 | random | to_uuid }}"
 
     postgres_host: iroha_postgres
-    postgres_user: '{{ user }}'
-    postgres_passwd: "{{ tmp[:8] }}"
+    postgres_user: iroha
     postgres_port: 5432
 
     redis_host: iroha_redis
     redis_port: 6379
 
+    IROHA_HOME: '{{playbook_dir}}/../../'
+
+  pre_tasks:
+    - name: Load Host Specific Generated Variables
+      include_vars: host_vars/{{ inventory_hostname }}
+
+
   tasks:
+
+    - name: Set postgres password
+      set_fact:
+        postgres_passwd: '{{ tmp[:32] }}'
+
+
     - name: Test if docker is installed
       command: docker --version
       register: docker_exists
@@ -81,45 +104,68 @@
         name: iroha_postgres
         image: postgres:9.5
         state: started
+        recreate: yes
         restart: yes
         env:
-          POSTGRES_USER: '{{ user }}'
+          POSTGRES_USER: '{{ postgres_user }}'
           POSTGRES_PASSWORD: '{{ postgres_passwd }}'
         networks:
           - name: iroha_network
-        volumes:
-          - /opt/iroha/data/postgres:/var/lib/postgresql/data
 
     - name: Run redis in docker
       docker_container:
         name: iroha_redis
         image: redis:3.2.8
         state: started
+        recreate: yes
         restart: yes
         networks:
           - name: iroha_network
 
+    - name: Make data dir
+      file:
+        path: '{{ansible_env.HOME}}/iroha_data'
+        state: directory
+        mode: 0755
+        owner: '{{ user }}'
+
+      become: yes
+
+    - name: Copy peers list
+      copy:
+        src: '{{playbook_dir}}/data/peers.list'
+        dest: '{{ansible_env.HOME}}/iroha_data/peers.list'
+
+
+    - name: Copy config generator
+      copy:
+        src: '{{playbook_dir}}/generate_config.py'
+        dest: '{{ansible_env.HOME}}/iroha_data/generate_config.py'
+
+    - name: Generate config
+      command: python3 '{{ansible_env.HOME}}'/iroha_data/generate_config.py -p '{{ postgres_passwd }}' -u '{{ postgres_user }}'
 
     - name: Run iroha in docker
       docker_container:
         name: iroha
-        image: hyperledger/iroha-docker
+        image: hyperledger/iroha-docker:test
         state: started
         restart: yes
+        recreate: yes
+        pull: yes
         ports:
           - "50051:50051"
+          - "10001:10001"
         networks:
           - name: iroha_network
         volumes:
-          - ../:/opt/iroha
-          - ccache-data:/tmp/ccache
-        working_dir: /opt/iroha
+          - '{{ansible_env.HOME}}/iroha_data:/opt/iroha_data'
         env:
-          POSTGRES_HOST={{ postgres_host }}
-          POSTGRES_PORT={{ postgres_port }}
-          POSTGRES_PASSWORD={{ postgres_passwd }}
-          POSTGRES_USER={{ postgres_user }}
-          REDIS_HOST={{ redis_host }}
-          REDIS_PORT={{ redis_port }}
+          POSTGRES_HOST: '{{ postgres_host }}'
+          POSTGRES_PORT: '{{ postgres_port }}'
+          POSTGRES_PASSWORD: '{{ postgres_passwd }}'
+          POSTGRES_USER: '{{ postgres_user }}'
+          REDIS_HOST: '{{ redis_host }}'
+          REDIS_PORT: '{{ redis_port }}'
+          KEY: node{{ key }}
 
-        command: /bin/bash -c "while sleep 1; do echo 1; done"
