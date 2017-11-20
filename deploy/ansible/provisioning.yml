@@ -148,7 +148,7 @@
     - name: Run iroha in docker
       docker_container:
         name: iroha
-        image: hyperledger/iroha-docker:test
+        image: hyperledger/iroha-docker:develop
         state: started
         restart: yes
         recreate: yes
