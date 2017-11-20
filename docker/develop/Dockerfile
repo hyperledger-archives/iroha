@@ -26,7 +26,7 @@ RUN apt-get -y --no-install-recommends install build-essential python-software-p
         lcov \
         # other
         wget curl file unzip gdb iputils-ping vim ccache \
-        gcovr vera++ cppcheck doxygen graphviz graphviz-dev; \
+        gcovr cppcheck doxygen graphviz graphviz-dev; \
     apt-get -y clean
 
 RUN pip3 install --upgrade pip; \
