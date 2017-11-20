@@ -41,7 +41,7 @@ namespace shared_model {
                 detail::makeReferenceGetter(
                     &iroha::protocol::Command::add_asset_quantity))) {}
 
-      explicit AddAssetQuantity(iroha::protocol::Command command)
+      explicit AddAssetQuantity(iroha::protocol::Command &&command)
           : AddAssetQuantity(RefAddAssetQuantity(
                 std::move(command),
                 detail::makeReferenceGetter(

@@ -55,7 +55,7 @@ namespace shared_model {
       explicit Command(const iroha::protocol::Command *command)
           : Command(RefCommand(command)) {}
 
-      explicit Command(iroha::protocol::Command command)
+      explicit Command(iroha::protocol::Command &&command)
           : Command(RefCommand(std::move(command))) {}
 
       const CommandVariantType &get() const override { return *variant_; }
