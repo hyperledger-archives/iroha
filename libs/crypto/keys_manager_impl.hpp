@@ -21,6 +21,7 @@
 #include "common/byteutils.hpp"
 #include "common/types.hpp"
 #include "crypto/keys_manager.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
   class KeysManagerImpl : public KeysManager {
@@ -41,6 +42,7 @@ namespace iroha {
     bool validate(const iroha::keypair_t &keypair) const;
 
     std::string account_name_;
+    logger::Logger log_;
   };
 }  // namespace iroha_cli
 #endif  // IROHA_CLI_KEYS_MANAGER_IMPL_HPP

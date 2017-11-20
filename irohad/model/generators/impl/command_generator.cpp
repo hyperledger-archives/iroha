@@ -129,6 +129,12 @@ namespace iroha {
             src_account, dest_account, asset_id, amount);
       }
 
+      std::shared_ptr<Command> CommandGenerator::generateAppendRole(
+          const std::string &account_id,
+          const std::string &role_name) {
+        return generateCommand<AppendRole>(account_id, role_name);
+      }
+
     }  // namespace generators
   }    // namespace model
 }  // namespace iroha
