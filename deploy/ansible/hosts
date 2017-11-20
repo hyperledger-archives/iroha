@@ -1,8 +1,9 @@
-[centos7]
-35.187.116.62
+[hosts]
+104.155.94.58
+35.205.142.238
 
-[ubuntu16]
-35.195.150.11
 
 [all:vars]
 ansible_ssh_user=iroha
+#Does not check host ssh keys. If we check keys and recreate VM with the same IP, it will cause troubles.
+host_key_checking=False

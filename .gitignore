@@ -11,6 +11,7 @@ build/*
 *.o
 *.pb.cc
 *.pb.h
+*.retry
 .gradle/*
 .vscode/*
 .idea/*
