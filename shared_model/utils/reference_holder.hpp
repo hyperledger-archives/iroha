@@ -38,11 +38,11 @@ namespace shared_model {
       static const V &identity(const T &x) { return x; }
 
      public:
-      ReferenceHolder(T value, const MapperType &mapper = identity)
+      ReferenceHolder(T &&value, const MapperType &mapper = identity)
           : ReferenceHolder(VariantType(std::move(value)), mapper) {}
 
-      ReferenceHolder(const T *ref, const MapperType &mapper = identity)
-          : ReferenceHolder(VariantType(ref), mapper) {}
+      ReferenceHolder(const T &ref, const MapperType &mapper = identity)
+          : ReferenceHolder(VariantType(&ref), mapper) {}
 
       using PointerType = typename std::add_pointer_t<V>;
 

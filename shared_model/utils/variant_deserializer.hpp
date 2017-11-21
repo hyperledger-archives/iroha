@@ -39,7 +39,7 @@ namespace shared_model {
          * @tparam Archive container type
          */
         template <class V, class Archive>
-        static V invoke(Archive &, int) {
+        static V invoke(const Archive &, int) {
           BOOST_ASSERT_MSG(false, "Required type not found");
         }
       };
@@ -60,7 +60,7 @@ namespace shared_model {
          * @param v result variant
          */
         template <class V, class Archive>
-        static V invoke(Archive &ar, int which) {
+        static V invoke(const Archive &ar, int which) {
           if (which == 0) {
             using head_type = typename boost::mpl::front<S>::type;
             return V(head_type(ar));
@@ -81,7 +81,7 @@ namespace shared_model {
        * @param v result variant
        */
       template <class V, class Archive>
-      static V load(Archive &ar, int which) {
+      static V load(const Archive &ar, int which) {
         using typex =
             typename boost::mpl::eval_if<boost::mpl::empty<S>,
                                          boost::mpl::identity<load_null>,

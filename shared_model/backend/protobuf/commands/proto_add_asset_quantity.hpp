@@ -22,7 +22,6 @@
 
 #include "backend/protobuf/common_objects/amount.hpp"
 #include "commands.pb.h"
-#include "cryptography/stub_hash.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "utils/reference_holder.hpp"
 
@@ -35,7 +34,7 @@ namespace shared_model {
                                   const iroha::protocol::AddAssetQuantity &>;
 
      public:
-      explicit AddAssetQuantity(const iroha::protocol::Command *command)
+      explicit AddAssetQuantity(const iroha::protocol::Command &command)
           : AddAssetQuantity(RefAddAssetQuantity(
                 command,
                 detail::makeReferenceGetter(
@@ -76,7 +75,7 @@ namespace shared_model {
             }),
             hash_([this] {
               // TODO 10/11/2017 muratovv replace with effective implementation
-              return crypto::StubHash();
+              return crypto::Hash("");
             }) {}
 
       // ------------------------------| fields |-------------------------------
@@ -89,7 +88,7 @@ namespace shared_model {
 
       // lazy
       Lazy<proto::Amount> amount_;
-      Lazy<crypto::StubHash> hash_;
+      Lazy<crypto::Hash> hash_;
     };
 
   }  // namespace proto

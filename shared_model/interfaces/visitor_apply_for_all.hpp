@@ -30,7 +30,7 @@ namespace shared_model {
     class ToStringVisitor : public boost::static_visitor<std::string> {
      public:
       template <typename InputType>
-      std::string operator()(InputType &operand) const {
+      std::string operator()(const InputType &operand) const {
         return operand->toString();
       }
     };
@@ -43,7 +43,7 @@ namespace shared_model {
     class OldModelCreatorVisitor : public boost::static_visitor<T> {
      public:
       template <typename InputType>
-      T operator()(InputType &operand) const {
+      T operator()(const InputType &operand) const {
         return operand->makeOldModel();
       }
     };

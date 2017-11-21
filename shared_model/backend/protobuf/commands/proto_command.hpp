@@ -52,7 +52,7 @@ namespace shared_model {
       /// list of types in proto variant
       using ProtoCommandListType = ProtoCommandVariantType::types;
 
-      explicit Command(const iroha::protocol::Command *command)
+      explicit Command(const iroha::protocol::Command &command)
           : Command(RefCommand(command)) {}
 
       explicit Command(iroha::protocol::Command &&command)
@@ -60,7 +60,9 @@ namespace shared_model {
 
       const CommandVariantType &get() const override { return *variant_; }
 
-      ModelType *copy() const override { return new Command(*command_); }
+      ModelType *copy() const override {
+        return new Command(iroha::protocol::Command(*command_));
+      }
 
      private:
       explicit Command(RefCommand &&ref)

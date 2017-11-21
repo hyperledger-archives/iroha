@@ -19,7 +19,6 @@
 #define IROHA_PROTO_AMOUNT_HPP
 
 #include <numeric>
-#include "cryptography/stub_hash.hpp"
 #include "interfaces/common_objects/amount.hpp"
 #include "primitive.pb.h"
 #include "utils/lazy_initializer.hpp"
@@ -32,10 +31,10 @@ namespace shared_model {
       using RefAmount = detail::ReferenceHolder<iroha::protocol::Amount>;
 
      public:
-      explicit Amount(const iroha::protocol::Amount *amount)
+      explicit Amount(const iroha::protocol::Amount &amount)
           : Amount(RefAmount(amount)) {}
 
-      explicit Amount(iroha::protocol::Amount amount)
+      explicit Amount(iroha::protocol::Amount &&amount)
           : Amount(RefAmount(std::move(amount))) {}
 
       const boost::multiprecision::uint256_t &intValue() const override {
@@ -48,7 +47,9 @@ namespace shared_model {
 
       const HashType &hash() const override { return *hash_; }
 
-      Amount *copy() const override { return new Amount(*proto_amount_); }
+      Amount *copy() const override {
+        return new Amount(iroha::protocol::Amount(*proto_amount_));
+      }
 
      private:
       explicit Amount(RefAmount &&ref)
@@ -64,7 +65,7 @@ namespace shared_model {
               return result;
             }),
             precision_([this] { return proto_amount_->precision(); }),
-            hash_([this] { return crypto::StubHash(); }) {}
+            hash_([this] { return crypto::Hash(""); }) {}
 
       // proto
       RefAmount proto_amount_;
@@ -75,7 +76,7 @@ namespace shared_model {
       // lazy
       Lazy<boost::multiprecision::uint256_t> multiprecision_repr_;
       Lazy<interface::types::PrecisionType> precision_;
-      Lazy<crypto::StubHash> hash_;
+      Lazy<crypto::Hash> hash_;
     };
 
   }  // namespace proto
