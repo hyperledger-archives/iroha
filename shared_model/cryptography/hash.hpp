@@ -39,7 +39,7 @@ namespace shared_model {
             .finalize();
       }
     };
-  }
-}
+  }  // namespace crypto
+}  // namespace shared_model
 
 #endif  // IROHA_SHARED_MODEL_HASH_HPP

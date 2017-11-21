@@ -15,14 +15,21 @@
  * limitations under the License.
  */
 
-#include "interfaces/common_objects/account.hpp"
-#include "interfaces/common_objects/account_asset.hpp"
-#include "interfaces/common_objects/asset.hpp"
-#include "interfaces/iroha_internal/block.hpp"
-#include "interfaces/iroha_internal/proposal.hpp"
-#include "interfaces/queries/query.hpp"
-#include "interfaces/query_responses/query_response.hpp"
-#include "interfaces/transaction.hpp"
-#include "interfaces/transaction_responses/tx_response.hpp"
+#ifndef IROHA_TRANSPORT_GETTER_HPP
+#define IROHA_TRANSPORT_GETTER_HPP
 
-#include "backend/protobuf/commands/proto_command.hpp"
+namespace shared_model {
+  /**
+   * Getter for top level transport implementations
+   * @tparam T transport object
+   */
+  template <typename T>
+  class TransportGetter {
+   public:
+    /**
+     * @return reference to const transport object
+     */
+    const T &getTransport() const;
+  };
+}  // namespace shared_model
+#endif  // IROHA_TRANSPORT_GETTER_HPP

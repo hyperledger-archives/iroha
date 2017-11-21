@@ -18,10 +18,10 @@
 #ifndef IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
 #define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
 
-#include "amount/amount.hpp"  // TODO 26/10/2017 muratovv replace with amount from shared lib
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
 #include "model/commands/add_asset_quantity.hpp"
+#include "interfaces/common_objects/amount.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -43,7 +43,7 @@ namespace shared_model {
       /**
        * @return quantity of asset for adding
        */
-      virtual const types::AmountType &amount() const = 0;
+      virtual const Amount &amount() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

@@ -35,6 +35,9 @@ add_library(schema
 target_link_libraries(schema
     protobuf
     )
+target_include_directories(schema PUBLIC
+    .
+    )
 
 add_library(endpoint
     endpoint.pb.cc

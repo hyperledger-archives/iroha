@@ -24,7 +24,6 @@
 #include "amount/amount.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
@@ -35,40 +34,18 @@ namespace shared_model {
      */
     class Amount : public Hashable<Amount, iroha::Amount> {
      public:
-      /**
-       * Converts to uint64_t vector
-       * @return amount represented as vector of uint64_t
-       */
-      virtual std::vector<uint64_t> toUint64s() const = 0;
 
       /**
        * Gets integer representation value, which ignores precision
        * @return amount represented as integer value, which ignores precision
        */
-      virtual boost::multiprecision::uint256_t intValue() const = 0;
+      virtual const boost::multiprecision::uint256_t &intValue() const = 0;
 
       /**
        * Gets the position of precision
        * @return the position of precision
        */
-      virtual uint8_t precision() const = 0;
-
-      /**
-       * Takes percentage from current amount
-       * @param percents
-       * @return percentage representation of amount value
-       */
-      virtual detail::PolymorphicWrapper<Amount> percentage(
-          boost::multiprecision::uint256_t percents) const = 0;
-
-      /**
-       * Takes percentage represented as amount value
-       * The current scale and scale of percents may differ
-       * @param percents
-       * @return percentage representation of amount value
-       */
-      virtual detail::PolymorphicWrapper<Amount> percentage(
-          const Amount &percents) const = 0;
+      virtual types::PrecisionType precision() const = 0;
 
       /**
        * Checks equality of objects inside

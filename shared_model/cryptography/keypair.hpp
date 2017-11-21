@@ -79,7 +79,7 @@ namespace shared_model {
       PublicKey publicKey_;
       PrivateKey privateKey_;
     };
-  }
-};
+  }  // namespace crypto
+}  // namespace shared_model
 
 #endif  // IROHA_SHARED_MODEL_KEYPAIR_HPP

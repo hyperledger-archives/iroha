@@ -51,7 +51,7 @@ namespace shared_model {
       /**
        * @return asset amount to transfer
        */
-      virtual const types::AmountType &amount() const = 0;
+      virtual const Amount &amount() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

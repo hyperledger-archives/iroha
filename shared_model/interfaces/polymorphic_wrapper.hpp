@@ -29,36 +29,47 @@ namespace shared_model {
      */
     template <class T>
     class PolymorphicWrapper final {
+      template <typename>
+      friend class PolymorphicWrapper;
+
      public:
       /// Type of wrapped object
       using WrappedType = T;
 
       /**
-       * Empty constructor
-       * TODO: this constructor required for building boost::variant object, but
-       * semantics may be broken
-       */
-      PolymorphicWrapper() = default;
-
-      /**
        * Value constructor
        * @param value - pointer for wrapping
        */
-      PolymorphicWrapper(const T *value) : ptr(std::shared_ptr<T>(value)) {}
+      template <typename Y>
+      explicit PolymorphicWrapper(const Y *value)
+          : ptr_(std::shared_ptr<Y>(value)) {}
 
+      template <typename... Args>
+      explicit PolymorphicWrapper(Args &&... args)
+          : ptr_(std::make_shared<T>(std::forward<Args>(args)...)) {}
+
+      template <typename Y>
+      PolymorphicWrapper(const PolymorphicWrapper<Y> &rhs)
+          : ptr_(std::shared_ptr<T>(rhs.ptr_->copy())) {}
+
+      template <typename Y>
+      PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept
+          : ptr_(rhs.ptr_) {
+        rhs.ptr_ = nullptr;
+      }
       /**
        * Copy constructor that performs deep copy
        * @param rhs - another wrapped value
        */
       PolymorphicWrapper(const PolymorphicWrapper &rhs)
-          : ptr(std::shared_ptr<T>(rhs.ptr->copy())) {}
+          : ptr_(std::shared_ptr<T>(rhs.ptr_->copy())) {}
 
       /**
        * Move constructor
        * @param rhs - wrapped temporary value
        */
-      PolymorphicWrapper(PolymorphicWrapper &&rhs) noexcept : ptr(nullptr) {
-        std::swap(this->ptr, rhs.ptr);
+      PolymorphicWrapper(PolymorphicWrapper &&rhs) noexcept : ptr_(nullptr) {
+        std::swap(this->ptr_, rhs.ptr_);
       }
 
       /**
@@ -67,7 +78,7 @@ namespace shared_model {
        * @return *this
        */
       PolymorphicWrapper &operator=(const PolymorphicWrapper &rhs) {
-        ptr = std::shared_ptr<T>(rhs.ptr->copy());
+        ptr_ = std::shared_ptr<T>(rhs.ptr_->copy());
         return *this;
       }
 
@@ -77,7 +88,7 @@ namespace shared_model {
        * @return *this
        */
       PolymorphicWrapper &operator=(PolymorphicWrapper &&rhs) noexcept {
-        std::swap(this->ptr, rhs.ptr);
+        std::swap(this->ptr_, rhs.ptr_);
         return *this;
       }
 
@@ -87,24 +98,24 @@ namespace shared_model {
        * @return true, if wrapped objects are same
        */
       bool operator==(const PolymorphicWrapper &rhs) const {
-        return *ptr == *rhs.ptr;
+        return *ptr_ == *rhs.ptr_;
       }
 
       /**
        * Mutable wrapped object pointer
        * @return pointer for wrapped object
        */
-      WrappedType *operator->() { return ptr.get(); }
+      WrappedType *operator->() { return ptr_.get(); }
 
       /**
        * Immutable wrapped object pointer
        * @return pointer for wrapped object
        */
-      const WrappedType *operator->() const { return ptr.get(); }
+      const WrappedType *operator->() const { return ptr_.get(); }
 
      private:
       /// pointer with wrapped value
-      std::shared_ptr<WrappedType> ptr;
+      std::shared_ptr<WrappedType> ptr_;
     };
 
   }  // namespace detail

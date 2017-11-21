@@ -89,7 +89,7 @@ namespace shared_model {
        * @param t - transformation function
        */
       template <typename Collection, typename Transform>
-      PrettyStringBuilder &appendAll(Collection c, Transform t) {
+      PrettyStringBuilder &appendAll(Collection &&c, Transform &&t) {
         insertLevel();
         std::for_each(c.begin(), c.end(), [this, &t](auto &val) {
           this->append(t(val));

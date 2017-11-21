@@ -18,58 +18,56 @@
 #ifndef IROHA_LAZY_INITIALIZER_HPP
 #define IROHA_LAZY_INITIALIZER_HPP
 
+#include <boost/optional.hpp>
 #include <functional>
-#include <memory>
 
 namespace shared_model {
   namespace detail {
 
     /**
      * Lazy class for lazy converting one type to another
-     * @tparam Source - input type
      * @tparam Target - output type
      */
-    template <typename Source, typename Target>
+    template <typename Target>
     class LazyInitializer {
      private:
-      /// Type of transformation
-      using TransformType = std::function<Target(const Source &)>;
+      /// Type of generator function
+      using GeneratorType = std::function<Target()>;
 
      public:
-      LazyInitializer(const Source &source, const TransformType &transform)
-          : source_(source), transform_(transform) {}
+      explicit LazyInitializer(const GeneratorType &generator)
+          : generator_(generator) {}
 
       LazyInitializer(const LazyInitializer &) = default;
 
-      /**
-       * @return value after transformation
-       */
-      const Target &get() {
-        if (target_value_ == nullptr) {
-          target_value_ = std::make_shared<Target>(transform_(source_));
+      using PointerType = typename std::add_pointer_t<Target>;
+
+      const Target &operator*() const { return *ptr(); }
+
+      const PointerType ptr() const {
+        if (target_value_ == boost::none) {
+          target_value_ = boost::make_optional<Target>(generator_());
         }
-        return *target_value_;
+        return target_value_.get_ptr();
       }
 
+      const PointerType operator->() const { return ptr(); }
+
      private:
-      const Source &source_;
-      TransformType transform_;
-      std::shared_ptr<Target> target_value_;
+      GeneratorType generator_;
+      mutable boost::optional<Target> target_value_;
     };
 
     /**
      * Function for creating lazy object
-     * @tparam Source - source type
-     * @tparam Transform - type of transformation
-     * @param source - source value
-     * @param transform - transformation instance
+     * @tparam Generator - type of generator
+     * @param generator - instance of Generator
      * @return initialized lazy value
      */
-    template <typename Source, typename Transform>
-    auto makeLazyInitializer(Source &&source, Transform &&transform) {
-      using targetType = decltype(transform(source));
-      return LazyInitializer<Source, targetType>(std::forward<Source>(source),
-                                      std::forward<Transform>(transform));
+    template <typename Generator>
+    auto makeLazyInitializer(Generator &&generator) {
+      using targetType = decltype(generator());
+      return LazyInitializer<targetType>(std::forward<Generator>(generator));
     }
   }  // namespace detail
 }  // namespace shared_model
