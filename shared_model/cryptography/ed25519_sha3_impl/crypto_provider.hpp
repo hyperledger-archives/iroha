@@ -47,8 +47,9 @@ namespace shared_model {
       bool verify(const Signed &signedData,
                   const Blob &orig,
                   const PublicKey &publicKey) const;
+
       /**
-       * Generates nes seed
+       * Generates new seed
        * @return Seed generated
        */
       Seed generateSeed() const;

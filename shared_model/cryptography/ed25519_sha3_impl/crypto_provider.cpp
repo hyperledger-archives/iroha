@@ -41,9 +41,7 @@ namespace shared_model {
     }
 
     Keypair CryptoProvider::generateKeypair() const {
-      auto keypair = iroha::create_keypair();
-      return Keypair(PublicKey(keypair.pubkey.to_string()),
-                     PrivateKey(keypair.privkey.to_string()));
+      return generateKeypair(generateSeed());
     }
 
     Keypair CryptoProvider::generateKeypair(const Seed &seed) const {

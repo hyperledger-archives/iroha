@@ -82,7 +82,7 @@ namespace shared_model {
        * migration to shared model in whole project
        */
       template <typename BlobType>
-      [[deprecated]] BlobType makeOldModel() const {
+      BlobType makeOldModel() const {
         return BlobType::from_string(blob());
       }
 

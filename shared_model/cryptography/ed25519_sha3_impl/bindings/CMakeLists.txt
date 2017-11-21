@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(internal)
-add_subdirectory(bindings)
+find_package(SWIG REQUIRED)
+INCLUDE(${SWIG_USE_FILE})
 
-add_library(shared_ed25519_sha3
-        signer.cpp
-        verifier.cpp
-        crypto_provider.cpp
-        hash_provider.cpp
-        )
+FIND_PACKAGE(PythonLibs REQUIRED)
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+SET(CMAKE_SWIG_FLAGS "")
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(shared_ed25519_sha3
-        optional
-        )
+SET_SOURCE_FILES_PROPERTIES(crypto.i PROPERTIES CPLUSPLUS ON)
+SWIG_ADD_LIBRARY(crypto LANGUAGE python SOURCES crypto.i)
+
+SWIG_LINK_LIBRARIES(crypto ${PYTHON_LIBRARIES} shared_ed25519_sha3 hash cryptography ed25519_sha3)

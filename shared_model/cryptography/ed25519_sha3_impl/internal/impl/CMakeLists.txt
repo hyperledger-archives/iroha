@@ -11,4 +11,3 @@ add_library(ed25519_sha3
         sign.c
         verify.c
     )
-#target_include_directories(ed25519_sha3 INTERFACE ed25519)
