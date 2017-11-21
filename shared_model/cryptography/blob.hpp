@@ -49,17 +49,17 @@ namespace shared_model {
       /**
        * @return provides raw representation of blob
        */
-      const std::string &blob() const { return blob_; }
+      virtual const std::string &blob() const { return blob_; }
 
       /**
        * @return provides human-readable representation of blob
        */
-      const std::string &hex() const { return hex_; }
+      virtual const std::string &hex() const { return hex_; }
 
       /**
        * @return size of raw representation of blob
        */
-      size_t size() const { return blob_.size(); }
+      virtual size_t size() const { return blob_.size(); }
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
