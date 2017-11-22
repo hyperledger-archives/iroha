@@ -18,7 +18,7 @@
 #ifndef IROHA_HASH_H
 #define IROHA_HASH_H
 
-#include <common/types.hpp>
+#include "common/types.hpp"
 #include "model/block.hpp"
 #include "model/query.hpp"
 #include "model/transaction.hpp"

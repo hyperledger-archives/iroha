@@ -56,9 +56,8 @@ namespace shared_model {
       }
 
      protected:
-      detail::LazyInitializer<HashType> hash_ =
-          detail::LazyInitializer<HashType>(
-              [this]() { return HashProvider::makeHash(blob()); });
+      detail::LazyInitializer<HashType> hash_ = detail::makeLazyInitializer(
+          [this] { return HashProvider::makeHash(blob()); });
     };
   }  // namespace interface
 }  // namespace shared_model
