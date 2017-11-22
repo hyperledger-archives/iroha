@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_SET_QUORUM_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/set_quorum.hpp"
 
 namespace shared_model {
@@ -27,7 +27,7 @@ namespace shared_model {
     /**
      * Set quorum of the account
      */
-    class SetQuorum : public Hashable<SetQuorum, iroha::model::SetQuorum> {
+    class SetQuorum : public Primitive<SetQuorum, iroha::model::SetQuorum> {
      public:
       /**
        * @return Id of the account to set quorum
@@ -51,6 +51,11 @@ namespace shared_model {
         oldModel->account_id = accountId();
         oldModel->new_quorum = newQuorum();
         return oldModel;
+      }
+
+      bool operator==(const ModelType &rhs) const override {
+        return accountId() == rhs.accountId()
+            and newQuorum() == rhs.newQuorum();
       }
     };
   }  // namespace interface

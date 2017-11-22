@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_ADD_PEER_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/add_peer.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
     /**
      * Add new peer to Iroha
      */
-    class AddPeer : public Hashable<AddPeer, iroha::model::AddPeer> {
+    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
      public:
       /**
        * @return Peer key, acts like peer identifier
@@ -53,8 +53,14 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AddPeer;
         oldModel->address = peerAddress();
-        oldModel->peer_key = peerKey().makeOldModel<decltype(oldModel->peer_key)>();
+        oldModel->peer_key =
+            peerKey().makeOldModel<decltype(oldModel->peer_key)>();
         return oldModel;
+      }
+
+      bool operator==(const ModelType &rhs) const override {
+        return peerKey() == rhs.peerKey()
+            and peerAddress() == rhs.peerAddress();
       }
     };
   }  // namespace interface

@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_ADD_SIGNATORY_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/add_signatory.hpp"
 
 namespace shared_model {
@@ -29,7 +29,7 @@ namespace shared_model {
      * Add new signatory to account
      */
     class AddSignatory
-        : public Hashable<AddSignatory, iroha::model::AddSignatory> {
+        : public Primitive<AddSignatory, iroha::model::AddSignatory> {
      public:
       /**
        * @return New signatory is identified with public key
@@ -53,6 +53,10 @@ namespace shared_model {
         oldModel->pubkey = pubkey().makeOldModel<decltype(oldModel->pubkey)>();
         oldModel->account_id = accountId();
         return oldModel;
+      }
+
+      bool operator==(const ModelType &rhs) const override {
+        return pubkey() == rhs.pubkey() and accountId() == rhs.accountId();
       }
     };
   }  // namespace interface

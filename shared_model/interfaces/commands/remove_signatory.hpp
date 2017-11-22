@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_REMOVE_SIGNATORY_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/remove_signatory.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Remove signatory from the account
      */
     class RemoveSignatory
-        : public Hashable<RemoveSignatory, iroha::model::RemoveSignatory> {
+        : public Primitive<RemoveSignatory, iroha::model::RemoveSignatory> {
      public:
       /**
        * @return account from which remove signatory
@@ -52,6 +52,10 @@ namespace shared_model {
         oldModel->account_id = accountId();
         oldModel->pubkey = pubkey().makeOldModel<decltype(oldModel->pubkey)>();
         return oldModel;
+      }
+
+      bool operator==(const ModelType &rhs) const override {
+        return accountId() == rhs.accountId() and pubkey() == rhs.pubkey();
       }
     };
   }  // namespace interface

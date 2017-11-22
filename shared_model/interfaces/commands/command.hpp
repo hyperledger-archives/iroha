@@ -34,7 +34,7 @@
 #include "interfaces/commands/set_quorum.hpp"
 #include "interfaces/commands/transfer_asset.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
-#include "interfaces/primitive.hpp"
+#include "interfaces/hashable.hpp"
 #include "interfaces/visitor_apply_for_all.hpp"
 #include "model/command.hpp"
 
@@ -45,7 +45,7 @@ namespace shared_model {
      * Class provides commands container for all commands in system.
      * General note: this class is container for commands, not a base class.
      */
-    class Command : public Primitive<Command, iroha::model::Command> {
+    class Command : public Hashable<Command, iroha::model::Command> {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename Value>

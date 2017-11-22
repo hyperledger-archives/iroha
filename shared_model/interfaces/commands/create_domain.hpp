@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_CREATE_DOMAIN_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/create_domain.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Create domain in Iroha
      */
     class CreateDomain
-        : public Hashable<CreateDomain, iroha::model::CreateDomain> {
+        : public Primitive<CreateDomain, iroha::model::CreateDomain> {
      public:
       /**
        * @return Id of the domain to create
@@ -52,6 +52,11 @@ namespace shared_model {
         oldModel->domain_id = domainId();
         oldModel->user_default_role = userDefaultRole();
         return oldModel;
+      }
+
+      bool operator==(const ModelType &rhs) const override {
+        return domainId() == rhs.domainId()
+            and userDefaultRole() == rhs.userDefaultRole();
       }
     };
   }  // namespace interface

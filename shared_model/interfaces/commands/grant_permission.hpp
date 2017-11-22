@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_GRANT_PERMISSION_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/grant_permission.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Grant permission to the account
      */
     class GrantPermission
-        : public Hashable<GrantPermission, iroha::model::GrantPermission> {
+        : public Primitive<GrantPermission, iroha::model::GrantPermission> {
      public:
       /**
        * @return Id of the account to whom grant permission
@@ -52,6 +52,11 @@ namespace shared_model {
         oldModel->account_id = accountId();
         oldModel->permission_name = permissionName();
         return oldModel;
+      }
+
+      bool operator==(const ModelType &rhs) const override {
+        return accountId() == rhs.accountId()
+            and permissionName() == rhs.permissionName();
       }
     };
   }  // namespace interface

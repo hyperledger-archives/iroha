@@ -19,21 +19,32 @@
 #define IROHA_HASHABLE_HPP
 
 #include "cryptography/hash.hpp"
+#include "cryptography/hash_providers/sha3_512.hpp"
 #include "interfaces/primitive.hpp"
+#include "utils/lazy_initializer.hpp"
 
 namespace shared_model {
   namespace interface {
-    template <typename ModelType, typename OldModel>
+    template <typename ModelType,
+              typename OldModel,
+              typename HashProvider = crypto::Sha3_512>
     class Hashable : public Primitive<ModelType, OldModel> {
      public:
       /// Type of hash
       using HashType = crypto::Hash;
 
+      using BlobType = crypto::Blob;
+
       /**
        * @return hash of object.
        * Equality of hashes means equality of objects.
        */
-      virtual const HashType &hash() const = 0;
+      const HashType &hash() const { return *hash_; }
+
+      /**
+       * @return blob representation of object
+       */
+      virtual const BlobType &blob() const = 0;
 
       /**
        * Overriding operator== with equality hash semantics
@@ -43,6 +54,10 @@ namespace shared_model {
       bool operator==(const ModelType &rhs) const override {
         return this->hash() == rhs.hash();
       }
+
+     protected:
+      detail::LazyInitializer<HashType> hash_ = detail::makeLazyInitializer(
+          [this] { return HashProvider::makeHash(blob()); });
     };
   }  // namespace interface
 }  // namespace shared_model

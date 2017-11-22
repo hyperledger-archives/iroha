@@ -18,7 +18,7 @@
 #ifndef IROHA_CRYPTO_HPP
 #define IROHA_CRYPTO_HPP
 
-#include <common/types.hpp>
+#include "common/types.hpp"
 #include <string>
 
 namespace iroha {

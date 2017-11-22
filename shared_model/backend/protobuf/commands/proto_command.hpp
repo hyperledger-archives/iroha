@@ -27,9 +27,8 @@
 template <typename... T>
 auto load(const iroha::protocol::Command &ar) {
   int which = ar.command_case() - 1;
-  return shared_model::detail::variant_impl<T...>::
-      template load<shared_model::interface::Command::CommandVariantType>(
-          ar, which);
+  return shared_model::detail::variant_impl<T...>::template load<
+      shared_model::interface::Command::CommandVariantType>(ar, which);
 }
 
 namespace shared_model {
@@ -60,6 +59,8 @@ namespace shared_model {
 
       const CommandVariantType &get() const override { return *variant_; }
 
+      const BlobType &blob() const override { return *blob_; }
+
       ModelType *copy() const override {
         return new Command(iroha::protocol::Command(*command_));
       }
@@ -68,9 +69,9 @@ namespace shared_model {
       explicit Command(RefCommand &&ref)
           : command_(std::move(ref)),
             variant_(detail::makeLazyInitializer([this] {
-              return CommandVariantType(
-                  load<ProtoCommandListType>(*command_));
-            })) {}
+              return CommandVariantType(load<ProtoCommandListType>(*command_));
+            })),
+            blob_([this] { return BlobType(command_->SerializeAsString()); }) {}
 
       // ------------------------------| fields |-------------------------------
 
@@ -79,6 +80,7 @@ namespace shared_model {
 
       // lazy
       LazyVariantType variant_;
+      detail::LazyInitializer<BlobType> blob_;
     };
   }  // namespace proto
 }  // namespace shared_model
