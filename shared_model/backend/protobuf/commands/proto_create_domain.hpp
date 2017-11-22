@@ -25,43 +25,46 @@ namespace shared_model {
 
     class CreateDomain final : public interface::CreateDomain {
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      using RefCreateDomain =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::CreateDomain &>;
 
      public:
       explicit CreateDomain(const iroha::protocol::Command &command)
-          : CreateDomain(command.create_domain()) {
-        if (not command.has_create_domain()) {
-          // TODO 11/11/17 andrei create generic exception message
-          throw std::invalid_argument("Object does not contain create_asset");
-        }
-      }
+          : CreateDomain(RefCreateDomain(
+                command,
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::create_domain))) {}
+
+      explicit CreateDomain(iroha::protocol::Command &&command)
+          : CreateDomain(RefCreateDomain(
+                std::move(command),
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::create_domain))) {}
 
       const interface::types::DomainIdType &domainId() const override {
-        return create_domain_.domain_id();
+        return create_domain_->domain_id();
       }
 
-      const interface::types::RoleIdType & userDefaultRole() const override {
-        return create_domain_.default_role();
+      const interface::types::RoleIdType &userDefaultRole() const override {
+        return create_domain_->default_role();
       }
-
-      const HashType &hash() const override { return hash_.get(); }
 
       ModelType *copy() const override {
-        return new CreateDomain(create_domain_);
+        iroha::protocol::Command command;
+        *command.mutable_create_domain() = *create_domain_;
+        return new CreateDomain(std::move(command));
       }
 
      private:
       // ----------------------------| private API |----------------------------
-      explicit CreateDomain(const iroha::protocol::CreateDomain &create_domain)
-          : create_domain_(create_domain),
-            hash_([this] {
-              // TODO 10/11/2017 muratovv replace with effective implementation
-              return crypto::StubHash();
-            }) {}
+      explicit CreateDomain(RefCreateDomain &&ref)
+          : create_domain_(std::move(ref)) {}
 
-      iroha::protocol::CreateDomain create_domain_;
-      Lazy<crypto::Hash> hash_;
+      RefCreateDomain create_domain_;
+
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
     };
 
   }  // namespace proto

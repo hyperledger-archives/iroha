@@ -25,48 +25,50 @@ namespace shared_model {
 
     class CreateAsset final : public interface::CreateAsset {
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      using RefCreateAsset =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::CreateAsset &>;
 
      public:
       explicit CreateAsset(const iroha::protocol::Command &command)
-          : CreateAsset(command.create_asset()) {
-        if (not command.has_create_asset()) {
-          // TODO 11/11/17 andrei create generic exception message
-          throw std::invalid_argument("Object does not contain create_asset");
-        }
-      }
+          : CreateAsset(
+                RefCreateAsset(command,
+                               detail::makeReferenceGetter(
+                                   &iroha::protocol::Command::create_asset))) {}
+
+      explicit CreateAsset(iroha::protocol::Command &&command)
+          : CreateAsset(
+                RefCreateAsset(std::move(command),
+                               detail::makeReferenceGetter(
+                                   &iroha::protocol::Command::create_asset))) {}
 
       const AssetNameType &assetName() const override {
-        return create_asset_.asset_name();
+        return create_asset_->asset_name();
       }
 
       const interface::types::DomainIdType &domainId() const override {
-        return create_asset_.domain_id();
+        return create_asset_->domain_id();
       }
 
-      const PrecisionType &precision() const override {
-        return precision_.get();
-      }
-
-      const HashType &hash() const override { return hash_.get(); }
+      const PrecisionType &precision() const override { return *precision_; }
 
       ModelType *copy() const override {
-        return new CreateAsset(create_asset_);
+        iroha::protocol::Command command;
+        *command.mutable_create_asset() = *create_asset_;
+        return new CreateAsset(std::move(command));
       }
 
      private:
       // ----------------------------| private API |----------------------------
-      explicit CreateAsset(const iroha::protocol::CreateAsset &create_asset)
-          : create_asset_(create_asset),
-            hash_([this] {
-              // TODO 10/11/2017 muratovv replace with effective implementation
-              return crypto::StubHash();
-            }),
-            precision_([this] { return create_asset_.precision(); }) {}
+      explicit CreateAsset(RefCreateAsset &&ref)
+          : create_asset_(std::move(ref)),
+            precision_([this] { return create_asset_->precision(); }) {}
 
-      iroha::protocol::CreateAsset create_asset_;
-      Lazy<crypto::Hash> hash_;
+      RefCreateAsset create_asset_;
+
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
+
       Lazy<PrecisionType> precision_;
     };
 

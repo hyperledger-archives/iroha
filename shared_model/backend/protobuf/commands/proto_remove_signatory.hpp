@@ -25,49 +25,51 @@ namespace shared_model {
 
     class RemoveSignatory final : public interface::RemoveSignatory {
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      using RefRemoveSignatory =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::RemoveSignatory &>;
 
      public:
       explicit RemoveSignatory(const iroha::protocol::Command &command)
-          : RemoveSignatory(command.remove_sign()) {
-        if (not command.has_remove_sign()) {
-          // TODO 11/11/17 andrei create generic exception message
-          throw std::invalid_argument("Object does not contain create_asset");
-        }
+          : RemoveSignatory(RefRemoveSignatory(
+                command,
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::remove_sign))) {}
+
+      explicit RemoveSignatory(iroha::protocol::Command &&command)
+          : RemoveSignatory(RefRemoveSignatory(
+                std::move(command),
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::remove_sign))) {}
+
+      const interface::types::AccountIdType &accountId() const override {
+        return remove_signatory_->account_id();
       }
 
-      const interface::types::AccountIdType &accountId()
-          const override {
-        return remove_signatory_.account_id();
+      const interface::types::PubkeyType &pubkey() const override {
+        return *pubkey_;
       }
-
-      const interface::types::PubkeyType & pubkey() const override {
-        return pubkey_.get();
-      }
-
-      const HashType &hash() const override { return hash_.get(); }
 
       ModelType *copy() const override {
-        return new RemoveSignatory(remove_signatory_);
+        iroha::protocol::Command command;
+        *command.mutable_remove_sign() = *remove_signatory_;
+        return new RemoveSignatory(std::move(command));
       }
 
      private:
       // ----------------------------| private API |----------------------------
-      explicit RemoveSignatory(
-          const iroha::protocol::RemoveSignatory &remove_signatory)
-          : remove_signatory_(remove_signatory),
-            pubkey_([this] {
-              return interface::types::PubkeyType(remove_signatory_.public_key());
-            }),
-            hash_([this] {
-              // TODO 10/11/2017 muratovv replace with effective implementation
-              return crypto::StubHash();
+      explicit RemoveSignatory(RefRemoveSignatory &&ref)
+          : remove_signatory_(std::move(ref)), pubkey_([this] {
+              return interface::types::PubkeyType(
+                  remove_signatory_->public_key());
             }) {}
 
-      iroha::protocol::RemoveSignatory remove_signatory_;
+      RefRemoveSignatory remove_signatory_;
+
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
+
       Lazy<interface::types::PubkeyType> pubkey_;
-      Lazy<crypto::Hash> hash_;
     };
 
   }  // namespace proto

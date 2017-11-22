@@ -25,40 +25,45 @@ namespace shared_model {
 
     class AppendRole final : public interface::AppendRole {
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      using RefAppendRole =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::AppendRole &>;
 
      public:
       explicit AppendRole(const iroha::protocol::Command &command)
-          : AppendRole(command.append_role()) {
-        if (not command.has_append_role()) {
-          // TODO 11/11/17 andrei create generic exception message
-          throw std::invalid_argument("Object does not contain add_signatory");
-        }
-      }
+          : AppendRole(
+                RefAppendRole(command,
+                              detail::makeReferenceGetter(
+                                  &iroha::protocol::Command::append_role))) {}
+
+      explicit AppendRole(iroha::protocol::Command &&command)
+          : AppendRole(
+                RefAppendRole(std::move(command),
+                              detail::makeReferenceGetter(
+                                  &iroha::protocol::Command::append_role))) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return append_role_.account_id();
+        return append_role_->account_id();
       }
 
       const interface::types::RoleIdType &roleName() const override {
-        return append_role_.role_name();
+        return append_role_->role_name();
       }
 
-      const HashType &hash() const override { return hash_.get(); }
-
-      ModelType *copy() const override { return new AppendRole(append_role_); }
+      ModelType *copy() const override {
+        iroha::protocol::Command command;
+        *command.mutable_append_role() = *append_role_;
+        return new AppendRole(std::move(command));
+      }
 
      private:
       // ----------------------------| private API |----------------------------
-      explicit AppendRole(const iroha::protocol::AppendRole &append_role)
-          : append_role_(append_role), hash_([this] {
-              // TODO 10/11/2017 muratovv replace with effective implementation
-              return crypto::StubHash();
-            }) {}
+      explicit AppendRole(RefAppendRole &&ref) : append_role_(std::move(ref)) {}
 
-      iroha::protocol::AppendRole append_role_;
-      Lazy<crypto::Hash> hash_;
+      RefAppendRole append_role_;
+
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
     };
 
   }  // namespace proto

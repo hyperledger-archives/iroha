@@ -24,44 +24,46 @@ namespace shared_model {
   namespace proto {
     class CreateRole final : public interface::CreateRole {
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      using RefCreateRole =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::CreateRole &>;
 
      public:
       explicit CreateRole(const iroha::protocol::Command &command)
-          : CreateRole(command.create_role()) {
-        if (not command.has_create_role()) {
-          // TODO 11/11/17 andrei create generic exception message
-          throw std::invalid_argument("Object does not contain create_asset");
-        }
-      }
+          : CreateRole(
+                RefCreateRole(command,
+                              detail::makeReferenceGetter(
+                                  &iroha::protocol::Command::create_role))) {}
+
+      explicit CreateRole(iroha::protocol::Command &&command)
+          : CreateRole(
+                RefCreateRole(std::move(command),
+                              detail::makeReferenceGetter(
+                                  &iroha::protocol::Command::create_role))) {}
 
       const interface::types::RoleIdType &roleName() const override {
-        return create_role_.role_name();
+        return create_role_->role_name();
       }
 
       const PermissionsType &rolePermissions() const override {
-        return role_permissions_.get();
+        return *role_permissions_;
       }
 
-      const HashType &hash() const override { return hash_.get(); }
-
-      ModelType *copy() const override { return new CreateRole(create_role_); }
+      ModelType *copy() const override {
+        iroha::protocol::Command command;
+        *command.mutable_create_role() = *create_role_;
+        return new CreateRole(std::move(command));
+      }
 
      private:
       // ----------------------------| private API |----------------------------
-      explicit CreateRole(const iroha::protocol::CreateRole &create_role)
-          : create_role_(create_role),
-            hash_([this] {
-              // TODO 10/11/2017 muratovv replace with effective implementation
-              return crypto::StubHash();
-            }),
-            role_permissions_([this] {
+      explicit CreateRole(RefCreateRole &&ref)
+          : create_role_(std::move(ref)), role_permissions_([this] {
               std::set<std::string> perms;
 
               std::for_each(
-                  create_role_.permissions().begin(),
-                  create_role_.permissions().end(),
+                  create_role_->permissions().begin(),
+                  create_role_->permissions().end(),
                   [&perms, this](auto perm) {
                     perms.insert(iroha::protocol::RolePermission_Name(
                         static_cast<iroha::protocol::RolePermission>(perm)));
@@ -69,8 +71,11 @@ namespace shared_model {
               return perms;
             }) {}
 
-      iroha::protocol::CreateRole create_role_;
-      Lazy<crypto::Hash> hash_;
+      RefCreateRole create_role_;
+
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
+
       Lazy<PermissionsType> role_permissions_;
     };  // namespace proto
   }     // namespace proto

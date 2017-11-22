@@ -47,25 +47,26 @@ namespace shared_model {
      */
     class Command : public Hashable<Command, iroha::model::Command> {
      private:
-      /// Shortcut type for polymorphic wrapper
-      template <typename Value>
-      using w = detail::PolymorphicWrapper<Value>;
+      /// PolymorphicWrapper shortcut type
+      template <typename... Value>
+      using wrap = boost::variant<detail::PolymorphicWrapper<Value>...>;
 
      public:
       /// Type of variant, that handle concrete command
-      using CommandVariantType = boost::variant<w<AddAssetQuantity>>;
-//                                                w<AddPeer>,
-//                                                w<AddSignatory>,
-//                                                w<AppendRole>,
-//                                                w<CreateAccount>,
-//                                                w<CreateAsset>,
-//                                                w<CreateDomain>,
-//                                                w<CreateRole>,
-//                                                w<GrantPermission>,
-//                                                w<RemoveSignatory>,
-//                                                w<RevokePermission>,
-//                                                w<SetQuorum>,
-//                                                w<TransferAsset>>;
+      using CommandVariantType = wrap<AddAssetQuantity,
+                                      AddPeer,
+                                      AddSignatory,
+                                      AppendRole,
+                                      CreateAccount,
+                                      CreateAsset,
+                                      CreateDomain,
+                                      CreateRole,
+                                      GrantPermission,
+                                      RemoveSignatory>;
+      //                                                w<RemoveSignatory>,
+      //                                                w<RevokePermission>,
+      //                                                w<SetQuorum>,
+      //                                                w<TransferAsset>>;
 
       /// Types of concrete commands, in attached variant
       using CommandListType = CommandVariantType::types;

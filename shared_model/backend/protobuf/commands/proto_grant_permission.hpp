@@ -25,45 +25,48 @@ namespace shared_model {
 
     class GrantPermission final : public interface::GrantPermission {
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      using RefGrantPermission =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::GrantPermission &>;
 
      public:
       explicit GrantPermission(const iroha::protocol::Command &command)
-          : GrantPermission(command.grant_permission()) {
-        if (not command.has_grant_permission()) {
-          // TODO 11/11/17 andrei create generic exception message
-          throw std::invalid_argument("Object does not contain create_asset");
-        }
-      }
+          : GrantPermission(RefGrantPermission(
+                command,
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::grant_permission))) {}
+
+      explicit GrantPermission(iroha::protocol::Command &&command)
+          : GrantPermission(RefGrantPermission(
+                std::move(command),
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::grant_permission))) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return grant_permission_.account_id();
+        return grant_permission_->account_id();
       }
 
       const interface::types::PermissionNameType &permissionName()
           const override {
         return iroha::protocol::GrantablePermission_Name(
-            grant_permission_.permission());
+            grant_permission_->permission());
       }
 
-      const HashType &hash() const override { return hash_.get(); }
-
       ModelType *copy() const override {
-        return new GrantPermission(grant_permission_);
+        iroha::protocol::Command command;
+        *command.mutable_grant_permission() = *grant_permission_;
+        return new GrantPermission(std::move(command));
       }
 
      private:
       // ----------------------------| private API |----------------------------
-      explicit GrantPermission(
-          const iroha::protocol::GrantPermission &grant_permission)
-          : grant_permission_(grant_permission), hash_([this] {
-              // TODO 10/11/2017 muratovv replace with effective implementation
-              return crypto::StubHash();
-            }) {}
+      explicit GrantPermission(RefGrantPermission &&ref)
+          : grant_permission_(std::move(ref)) {}
 
-      iroha::protocol::GrantPermission grant_permission_;
-      Lazy<crypto::Hash> hash_;
+      RefGrantPermission grant_permission_;
+
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
     };
 
   }  // namespace proto

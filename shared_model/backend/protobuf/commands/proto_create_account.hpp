@@ -21,62 +21,62 @@
 #include "interfaces/commands/create_account.hpp"
 
 namespace shared_model {
-namespace proto {
+  namespace proto {
 
-class CreateAccount final : public interface::CreateAccount {
- private:
-  template <typename Value>
-  using Lazy = detail::LazyInitializer<Value>;
+    class CreateAccount final : public interface::CreateAccount {
+     private:
+      using RefCreateAccount =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::CreateAccount &>;
 
- public:
-  explicit CreateAccount(const iroha::protocol::Command &command)
-      : CreateAccount(command.create_account()) {
-    if (not command.has_create_account()) {
-      // TODO 11/11/17 andrei create generic exception message
-      throw std::invalid_argument(
-          "Object does not contain create_account");
-    }
-  }
+     public:
+      explicit CreateAccount(const iroha::protocol::Command &command)
+          : CreateAccount(RefCreateAccount(
+                command,
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::create_account))) {}
 
-  const interface::types::PubkeyType & pubkey() const override {
-    return pubkey_.get();
-  }
+      explicit CreateAccount(iroha::protocol::Command &&command)
+          : CreateAccount(RefCreateAccount(
+                std::move(command),
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::create_account))) {}
 
-  const AccountNameType& accountName() const override {
-    return create_account_.account_name();
-  }
+      const interface::types::PubkeyType &pubkey() const override {
+        return *pubkey_;
+      }
 
-  const interface::types::DomainIdType & domainId() const override {
-    return create_account_.domain_id();
-  }
+      const AccountNameType &accountName() const override {
+        return create_account_->account_name();
+      }
 
-  const HashType& hash() const override {
-    return hash_.get();
-  }
+      const interface::types::DomainIdType &domainId() const override {
+        return create_account_->domain_id();
+      }
 
-  ModelType* copy() const override {
-    return new CreateAccount(create_account_);
-  }
+      ModelType *copy() const override {
+        iroha::protocol::Command command;
+        *command.mutable_create_account() = *create_account_;
+        return new CreateAccount(std::move(command));
+      }
 
- private:
-  // ----------------------------| private API |----------------------------
-  explicit CreateAccount(
-      const iroha::protocol::CreateAccount &create_account)
-      : create_account_(create_account),
-        pubkey_([this] {
-          return interface::types::PubkeyType(create_account_.main_pubkey());
-        }),
-        hash_([this] {
-          // TODO 10/11/2017 muratovv replace with effective implementation
-          return crypto::StubHash();
-        }) {}
+     private:
+      // ----------------------------| private API |----------------------------
+      explicit CreateAccount(RefCreateAccount &&ref)
+          : create_account_(std::move(ref)), pubkey_([this] {
+              return interface::types::PubkeyType(
+                  create_account_->main_pubkey());
+            }) {}
 
-  iroha::protocol::CreateAccount create_account_;
-  Lazy<interface::types::PubkeyType> pubkey_;
-  Lazy<crypto::Hash> hash_;
-};
+      RefCreateAccount create_account_;
 
-}  // namespace proto
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
+
+      Lazy<interface::types::PubkeyType> pubkey_;
+    };
+
+  }  // namespace proto
 }  // namespace shared_model
 
-#endif //IROHA_PROTO_CREATE_ACCOUNT_HPP
+#endif  // IROHA_PROTO_CREATE_ACCOUNT_HPP

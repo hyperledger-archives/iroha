@@ -28,48 +28,49 @@ namespace shared_model {
 
     class AddPeer final : public interface::AddPeer {
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      using RefAddPeer =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::AddPeer &>;
 
      public:
       explicit AddPeer(const iroha::protocol::Command &command)
-          : AddPeer(command.add_peer()) {
-        if (not command.has_add_peer()) {
-          throw std::invalid_argument(
-              "Object does not contain add_peer");
-        }
-      }
+          : AddPeer(RefAddPeer(command,
+                               detail::makeReferenceGetter(
+                                   &iroha::protocol::Command::add_peer))) {}
+
+      explicit AddPeer(iroha::protocol::Command &&command)
+          : AddPeer(RefAddPeer(std::move(command),
+                               detail::makeReferenceGetter(
+                                   &iroha::protocol::Command::add_peer))) {}
 
       const AddressType &peerAddress() const override {
-        return add_peer_.address();
+        return add_peer_->address();
       }
 
       const interface::types::PubkeyType &peerKey() const override {
-        return pubkey_.get();
+        return *pubkey_;
       }
 
       interface::AddPeer *copy() const override {
-        return new AddPeer(add_peer_);
+        iroha::protocol::Command command;
+        *command.mutable_add_peer() = *add_peer_;
+        return new AddPeer(std::move(command));
       }
 
-      const HashType &hash() const override { return hash_.get(); }
-
      private:
-      explicit AddPeer(const iroha::protocol::AddPeer &add_peer)
-          : add_peer_(add_peer),
-            pubkey_([this] {
-              return interface::types::PubkeyType(add_peer_.peer_key());
-            }),
-            hash_([this] {
-              // TODO 14/11/2017 kamilsa replace with effective implementation
-              return crypto::StubHash();
+      explicit AddPeer(RefAddPeer &&ref)
+          : add_peer_(std::move(ref)), pubkey_([this] {
+              return interface::types::PubkeyType(add_peer_->peer_key());
             }) {}
 
-      const iroha::protocol::AddPeer add_peer_;
+      // proto
+      RefAddPeer add_peer_;
+
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
 
       // lazy
       Lazy<interface::types::PubkeyType> pubkey_;
-      Lazy<HashType> hash_;
     };
   }  // namespace proto
 }  // namespace shared_model

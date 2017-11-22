@@ -22,49 +22,51 @@
 
 namespace shared_model {
   namespace proto {
-
     class AddSignatory final : public interface::AddSignatory {
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      using RefAddSignatory =
+          detail::ReferenceHolder<iroha::protocol::Command,
+                                  const iroha::protocol::AddSignatory &>;
 
      public:
       explicit AddSignatory(const iroha::protocol::Command &command)
-          : AddSignatory(command.add_signatory()) {
-        if (not command.has_add_signatory()) {
-          throw std::invalid_argument(
-              "Object does not contain add_signatory");
-        }
-      }
+          : AddSignatory(RefAddSignatory(
+                command,
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::add_signatory))) {}
+
+      explicit AddSignatory(iroha::protocol::Command &&command)
+          : AddSignatory(RefAddSignatory(
+                std::move(command),
+                detail::makeReferenceGetter(
+                    &iroha::protocol::Command::add_signatory))) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return add_signatory_.account_id();
+        return add_signatory_->account_id();
       }
 
       const interface::types::PubkeyType &pubkey() const override {
-        return pubkey_.get();
+        return *pubkey_;
       }
 
       ModelType *copy() const override {
-        return new AddSignatory(add_signatory_);
+        iroha::protocol::Command command;
+        *command.mutable_add_signatory() = *add_signatory_;
+        return new AddSignatory(std::move(command));
       }
 
-      const HashType &hash() const override { return hash_.get(); }
-
      private:
-      explicit AddSignatory(const iroha::protocol::AddSignatory &add_signatory)
-          : add_signatory_(add_signatory),
-            pubkey_([this] {
-              return interface::types::PubkeyType(add_signatory_.public_key());
-            }),
-            hash_([this] {
-              // TODO 14/11/2017 kamilsa replace with effective implementation
-              return crypto::StubHash();
+      explicit AddSignatory(RefAddSignatory &&ref)
+          : add_signatory_(std::move(ref)), pubkey_([this] {
+              return interface::types::PubkeyType(add_signatory_->public_key());
             }) {}
 
-      iroha::protocol::AddSignatory add_signatory_{};
+      RefAddSignatory add_signatory_;
+
+      template <typename Value>
+      using Lazy = detail::LazyInitializer<Value>;
+
       Lazy<interface::types::PubkeyType> pubkey_;
-      Lazy<HashType> hash_;
     };
 
   }  // namespace proto
