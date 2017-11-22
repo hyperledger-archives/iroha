@@ -40,7 +40,8 @@ namespace shared_model {
        * Value constructor
        * @param value - pointer for wrapping
        */
-      template <typename Y>
+      template <typename Y,
+                typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
       explicit PolymorphicWrapper(const Y *value)
           : ptr_(std::shared_ptr<Y>(value)) {}
 
@@ -48,11 +49,13 @@ namespace shared_model {
       explicit PolymorphicWrapper(Args &&... args)
           : ptr_(std::make_shared<T>(std::forward<Args>(args)...)) {}
 
-      template <typename Y>
+      template <typename Y,
+                typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
       PolymorphicWrapper(const PolymorphicWrapper<Y> &rhs)
           : ptr_(std::shared_ptr<T>(rhs.ptr_->copy())) {}
 
-      template <typename Y>
+      template <typename Y,
+                typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
       PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept
           : ptr_(rhs.ptr_) {
         rhs.ptr_ = nullptr;

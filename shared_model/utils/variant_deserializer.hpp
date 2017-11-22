@@ -36,9 +36,10 @@ namespace shared_model {
         /**
          * Dummy deserializer
          * @tparam V variant type for deserialization
+         * @tparam T list of candidate types
          * @tparam Archive container type
          */
-        template <class V, class Archive>
+        template <class V, class T = typename V::types, class Archive>
         static V invoke(const Archive &, int) {
           BOOST_ASSERT_MSG(false, "Required type not found");
         }
@@ -54,19 +55,22 @@ namespace shared_model {
          * If type selector is 0, head type is required type, and it is used
          * Otherwise call helper without front element in type list
          * @tparam V variant type for deserialization
+         * @tparam T list of candidate types
          * @tparam Archive container type
          * @param ar container to be deserialized
          * @param which type index in list
          * @param v result variant
          */
-        template <class V, class Archive>
+        template <class V, class T = typename V::types, class Archive>
         static V invoke(const Archive &ar, int which) {
           if (which == 0) {
             using head_type = typename boost::mpl::front<S>::type;
             return V(head_type(ar));
           } else {
             using type = typename boost::mpl::pop_front<S>::type;
-            return variant_impl<type>::template load<V>(ar, which - 1);
+            using variant_type = typename boost::mpl::pop_front<T>::type;
+            return variant_impl<type>::template load<V, variant_type>(
+                ar, which - 1);
           }
         }
       };
@@ -75,18 +79,19 @@ namespace shared_model {
        * Deserialize container in variant using type in list by specified index
        * Choose dummy or concrete deserializer depending on type list size
        * @tparam V variant type for deserialization
+       * @tparam T list of candidate types
        * @tparam Archive container type
        * @param ar container to be deserialized
        * @param which type index in list
        * @param v result variant
        */
-      template <class V, class Archive>
+      template <class V, class T = typename V::types, class Archive>
       static V load(const Archive &ar, int which) {
         using typex =
             typename boost::mpl::eval_if<boost::mpl::empty<S>,
                                          boost::mpl::identity<load_null>,
                                          boost::mpl::identity<load_impl>>::type;
-        return typex::template invoke<V>(ar, which);
+        return typex::template invoke<V, T>(ar, which);
       }
     };
   }  // namespace detail
