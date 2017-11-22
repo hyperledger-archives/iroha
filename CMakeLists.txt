@@ -38,6 +38,7 @@ option(PACKAGE_TGZ  "Create TGZ package"     OFF)
 option(PACKAGE_RPM  "Create RPM package"     OFF)
 option(PACKAGE_DEB  "Create DEB package"     OFF)
 option(ENABLE_LIBS_PACKAGING "Enable libs packaging" ON)
+option(SWIG         "Generate Swig bindings" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug)
@@ -52,6 +53,7 @@ message(STATUS "-DPACKAGE_TGZ=${PACKAGE_TGZ}")
 message(STATUS "-DPACKAGE_RPM=${PACKAGE_RPM}")
 message(STATUS "-DPACKAGE_DEB=${PACKAGE_DEB}")
 message(STATUS "-DENABLE_LIBS_PACKAGING=${ENABLE_LIBS_PACKAGING}")
+message(STATUS "-DSWIG=${SWIG}")
 
 SET(IROHA_SCHEMA_DIR "${PROJECT_SOURCE_DIR}/schema")
 include_directories(

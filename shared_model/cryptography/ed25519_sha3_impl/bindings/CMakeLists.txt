@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+if (SWIG)
+
 find_package(SWIG REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
 
@@ -24,3 +26,5 @@ SET_SOURCE_FILES_PROPERTIES(crypto.i PROPERTIES CPLUSPLUS ON)
 SWIG_ADD_LIBRARY(crypto LANGUAGE python SOURCES crypto.i)
 
 SWIG_LINK_LIBRARIES(crypto ${PYTHON_LIBRARIES} shared_ed25519_sha3 hash cryptography ed25519_sha3)
+
+endif()
