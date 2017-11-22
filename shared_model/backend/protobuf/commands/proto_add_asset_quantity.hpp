@@ -54,11 +54,7 @@ namespace shared_model {
         return add_asset_quantity_->asset_id();
       }
 
-      const interface::Amount &amount() const override {
-        return *amount_;
-      }
-
-      const HashType &hash() const override { return *hash_; }
+      const interface::Amount &amount() const override { return *amount_; }
 
       ModelType *copy() const override {
         iroha::protocol::Command command;
@@ -69,13 +65,8 @@ namespace shared_model {
      private:
       // ----------------------------| private API |----------------------------
       explicit AddAssetQuantity(RefAddAssetQuantity &&ref)
-          : add_asset_quantity_(std::move(ref)),
-            amount_([this] {
+          : add_asset_quantity_(std::move(ref)), amount_([this] {
               return proto::Amount(this->add_asset_quantity_->amount());
-            }),
-            hash_([this] {
-              // TODO 10/11/2017 muratovv replace with effective implementation
-              return crypto::Hash("");
             }) {}
 
       // ------------------------------| fields |-------------------------------
@@ -88,7 +79,6 @@ namespace shared_model {
 
       // lazy
       Lazy<proto::Amount> amount_;
-      Lazy<crypto::Hash> hash_;
     };
 
   }  // namespace proto

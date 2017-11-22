@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_TRANSFER_ASSET_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/transfer_asset.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Grant permission to account
      */
     class TransferAsset
-        : public Hashable<TransferAsset, iroha::model::TransferAsset> {
+        : public Primitive<TransferAsset, iroha::model::TransferAsset> {
      public:
       /**
        * @return Id of the account from which transfer assets

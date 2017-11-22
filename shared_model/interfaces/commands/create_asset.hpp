@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_CREATE_ASSET_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/create_asset.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Create asset in Iroha domain
      */
     class CreateAsset
-        : public Hashable<CreateAsset, iroha::model::CreateAsset> {
+        : public Primitive<CreateAsset, iroha::model::CreateAsset> {
      public:
       /// Type returned by assetName function
       using AssetNameType = std::string;

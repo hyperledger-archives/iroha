@@ -45,7 +45,7 @@ namespace shared_model {
         return *precision_;
       }
 
-      const HashType &hash() const override { return *hash_; }
+      const BlobType &blob() const override { return *blob_; }
 
       Amount *copy() const override {
         return new Amount(iroha::protocol::Amount(*proto_amount_));
@@ -65,7 +65,9 @@ namespace shared_model {
               return result;
             }),
             precision_([this] { return proto_amount_->precision(); }),
-            hash_([this] { return crypto::Hash(""); }) {}
+            blob_([this] {
+              return BlobType(proto_amount_->SerializeAsString());
+            }) {}
 
       // proto
       RefAmount proto_amount_;
@@ -76,7 +78,7 @@ namespace shared_model {
       // lazy
       Lazy<boost::multiprecision::uint256_t> multiprecision_repr_;
       Lazy<interface::types::PrecisionType> precision_;
-      Lazy<crypto::Hash> hash_;
+      Lazy<BlobType> blob_;
     };
 
   }  // namespace proto

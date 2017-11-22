@@ -18,10 +18,10 @@
 #ifndef IROHA_SHARED_MODEL_CREATE_ROLE_HPP
 #define IROHA_SHARED_MODEL_CREATE_ROLE_HPP
 
-#include <set>
 #include <numeric>
+#include <set>
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/create_role.hpp"
 
 namespace shared_model {
@@ -29,7 +29,7 @@ namespace shared_model {
     /**
      * Create new role in Iroha
      */
-    class CreateRole : public Hashable<CreateRole, iroha::model::CreateRole> {
+    class CreateRole : public Primitive<CreateRole, iroha::model::CreateRole> {
      public:
       /**
        * @return Id of the domain to create
@@ -47,9 +47,7 @@ namespace shared_model {
         return detail::PrettyStringBuilder()
             .init("CreateRole")
             .append("role_name", roleName())
-            .appendAll(roles_set, [](auto& role){
-              return role;
-            })
+            .appendAll(roles_set, [](auto &role) { return role; })
             .finalize();
       }
 
@@ -57,7 +55,8 @@ namespace shared_model {
         auto oldModel = new iroha::model::CreateRole;
         oldModel->role_name = roleName();
         auto roles = rolePermissions();
-        oldModel->permissions = std::unordered_set<std::string>(roles.begin(), roles.end());
+        oldModel->permissions =
+            std::unordered_set<std::string>(roles.begin(), roles.end());
         return oldModel;
       }
     };

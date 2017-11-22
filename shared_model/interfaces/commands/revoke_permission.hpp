@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_REVOKE_PERMISSION_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/revoke_permission.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Revoke permission from account
      */
     class RevokePermission
-        : public Hashable<RevokePermission, iroha::model::RevokePermission> {
+        : public Primitive<RevokePermission, iroha::model::RevokePermission> {
      public:
       /**
        * @return account from which revoke permission

@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_CREATE_DOMAIN_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/commands/create_domain.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Create domain in Iroha
      */
     class CreateDomain
-        : public Hashable<CreateDomain, iroha::model::CreateDomain> {
+        : public Primitive<CreateDomain, iroha::model::CreateDomain> {
      public:
       /**
        * @return Id of the domain to create

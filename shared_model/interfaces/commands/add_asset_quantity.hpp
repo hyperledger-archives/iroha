@@ -18,10 +18,10 @@
 #ifndef IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
 #define IROHA_SHARED_MODEL_ADD_ASSET_QUANTITY_HPP
 
-#include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
-#include "model/commands/add_asset_quantity.hpp"
 #include "interfaces/common_objects/amount.hpp"
+#include "interfaces/common_objects/types.hpp"
+#include "interfaces/primitive.hpp"
+#include "model/commands/add_asset_quantity.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -30,7 +30,7 @@ namespace shared_model {
      * Add amount of asset to an account
      */
     class AddAssetQuantity
-        : public Hashable<AddAssetQuantity, iroha::model::AddAssetQuantity> {
+        : public Primitive<AddAssetQuantity, iroha::model::AddAssetQuantity> {
      public:
       /**
        * @return Identity of user, that add quantity
@@ -64,6 +64,11 @@ namespace shared_model {
         oldModel->account_id = accountId();
         oldModel->asset_id = assetId();
         return oldModel;
+      }
+
+      bool operator==(const ModelType &rhs) const override {
+        return accountId() == rhs.accountId() and assetId() == rhs.assetId()
+            and amount() == rhs.amount();
       }
     };
   }  // namespace interface
