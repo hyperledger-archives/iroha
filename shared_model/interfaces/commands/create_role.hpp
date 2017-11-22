@@ -59,6 +59,11 @@ namespace shared_model {
             std::unordered_set<std::string>(roles.begin(), roles.end());
         return oldModel;
       }
+
+      bool operator==(const ModelType &rhs) const override {
+        return roleName() == rhs.roleName()
+            and rolePermissions() == rhs.rolePermissions();
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

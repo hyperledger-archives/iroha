@@ -52,6 +52,11 @@ namespace shared_model {
         oldModel->new_quorum = newQuorum();
         return oldModel;
       }
+
+      bool operator==(const ModelType &rhs) const override {
+        return accountId() == rhs.accountId()
+            and newQuorum() == rhs.newQuorum();
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

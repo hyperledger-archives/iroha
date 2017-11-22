@@ -57,6 +57,11 @@ namespace shared_model {
             peerKey().makeOldModel<decltype(oldModel->peer_key)>();
         return oldModel;
       }
+
+      bool operator==(const ModelType &rhs) const override {
+        return peerKey() == rhs.peerKey()
+            and peerAddress() == rhs.peerAddress();
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

@@ -53,6 +53,11 @@ namespace shared_model {
         oldModel->user_default_role = userDefaultRole();
         return oldModel;
       }
+
+      bool operator==(const ModelType &rhs) const override {
+        return domainId() == rhs.domainId()
+            and userDefaultRole() == rhs.userDefaultRole();
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

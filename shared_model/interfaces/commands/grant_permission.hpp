@@ -53,6 +53,11 @@ namespace shared_model {
         oldModel->permission_name = permissionName();
         return oldModel;
       }
+
+      bool operator==(const ModelType &rhs) const override {
+        return accountId() == rhs.accountId()
+            and permissionName() == rhs.permissionName();
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

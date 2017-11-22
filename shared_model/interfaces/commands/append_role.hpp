@@ -53,6 +53,10 @@ namespace shared_model {
         oldModel->account_id = accountId();
         return oldModel;
       }
+
+      bool operator==(const ModelType &rhs) const override {
+        return accountId() == rhs.accountId() and roleName() == rhs.roleName();
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

@@ -63,6 +63,11 @@ namespace shared_model {
         oldModel->precision = precision();
         return oldModel;
       }
+
+      bool operator==(const ModelType &rhs) const override {
+        return assetName() == rhs.assetName() and domainId() == rhs.domainId()
+            and precision() == rhs.precision();
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

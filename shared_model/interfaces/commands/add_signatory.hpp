@@ -54,6 +54,10 @@ namespace shared_model {
         oldModel->account_id = accountId();
         return oldModel;
       }
+
+      bool operator==(const ModelType &rhs) const override {
+        return pubkey() == rhs.pubkey() and accountId() == rhs.accountId();
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

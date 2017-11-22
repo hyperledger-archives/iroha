@@ -53,6 +53,10 @@ namespace shared_model {
         oldModel->pubkey = pubkey().makeOldModel<decltype(oldModel->pubkey)>();
         return oldModel;
       }
+
+      bool operator==(const ModelType &rhs) const override {
+        return accountId() == rhs.accountId() and pubkey() == rhs.pubkey();
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

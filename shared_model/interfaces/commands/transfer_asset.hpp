@@ -42,16 +42,17 @@ namespace shared_model {
        * @return Id of the asset to transfer
        */
       virtual const types::AssetIdType &assetId() const = 0;
+      /**
+       * @return asset amount to transfer
+       */
+      virtual const Amount &amount() const = 0;
+
       /// Type of the transfer message
       using MessageType = std::string;
       /**
        * @return message of the transfer
        */
       virtual const MessageType &message() const = 0;
-      /**
-       * @return asset amount to transfer
-       */
-      virtual const Amount &amount() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
@@ -69,13 +70,20 @@ namespace shared_model {
         oldModel->src_account_id = srcAccountId();
         oldModel->dest_account_id = destAccountId();
         using OldAmountType = iroha::Amount;
-        /// Use shared_ptr and placement-new to copy new model field to oldModel's field and
-        /// to return raw pointer
+        /// Use shared_ptr and placement-new to copy new model field to
+        /// oldModel's field and to return raw pointer
         auto p = std::shared_ptr<OldAmountType>(amount().makeOldModel());
         new (&oldModel->amount) OldAmountType(*p);
         oldModel->asset_id = assetId();
         oldModel->description = message();
         return oldModel;
+      }
+
+      bool operator==(const ModelType &rhs) const override {
+        return srcAccountId() == rhs.srcAccountId()
+            and destAccountId() == rhs.destAccountId()
+            and assetId() == rhs.assetId() and amount() == rhs.amount()
+            and message() == rhs.message();
       }
     };
   }  // namespace interface
