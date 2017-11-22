@@ -6,7 +6,7 @@ defaults: &defaults
 
 defaults: &version
   environment:
-    IROHA_VERSION: ${CIRCLE_TAG:-$CIRCLE_SHA1}
+    IROHA_VERSION: ${CIRCLE_TAG:-0x$CIRCLE_SHA1}
 
 version: 2
 
