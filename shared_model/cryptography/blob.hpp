@@ -81,8 +81,13 @@ namespace shared_model {
        * Design note: this method is deprecated and should be removed after
        * migration to shared model in whole project
        */
+
       template <typename BlobType>
-      BlobType makeOldModel() const {
+#ifndef SWIG
+      [[deprecated]]
+#endif
+          BlobType
+          makeOldModel() const {
         return BlobType::from_string(blob());
       }
 

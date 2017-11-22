@@ -45,7 +45,11 @@ namespace shared_model {
        * model
        * @return pointer for old-style object
        */
-      virtual OldModelType *makeOldModel() const = 0;
+#ifndef SWIG
+      [[deprecated]]
+#endif
+          virtual OldModelType *
+          makeOldModel() const = 0;
     };
 
   }  // namespace interface

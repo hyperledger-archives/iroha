@@ -14,6 +14,8 @@
 
 if (SWIG)
 
+add_definitions(-DSWIG)
+
 find_package(SWIG REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
 
