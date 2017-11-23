@@ -19,14 +19,22 @@ add_definitions(-DSWIG)
 find_package(SWIG REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
 
-FIND_PACKAGE(PythonLibs REQUIRED)
-INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-SET(CMAKE_SWIG_FLAGS "")
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_PATH})
 
-SET_SOURCE_FILES_PROPERTIES(crypto.i PROPERTIES CPLUSPLUS ON)
-SWIG_ADD_LIBRARY(crypto LANGUAGE python SOURCES crypto.i)
+find_package(JNI REQUIRED)
+include_directories(${JAVA_INCLUDE_PATH})
+include_directories(${JAVA_INCLUDE_PATH2})
 
-SWIG_LINK_LIBRARIES(crypto ${PYTHON_LIBRARIES} shared_ed25519_sha3 hash cryptography ed25519_sha3)
+set(CMAKE_SWIG_FLAGS "")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+set_source_files_properties(crypto.i PROPERTIES CPLUSPLUS ON)
+
+swig_add_library(irohacrypto LANGUAGE java SOURCES crypto.i)
+swig_link_libraries(irohacrypto ${Java_LIBRARIES} shared_ed25519_sha3 hash cryptography ed25519_sha3)
+
+swig_add_library(irohacrypto LANGUAGE python SOURCES crypto.i)
+swig_link_libraries(irohacrypto ${Python_LIBRARIES} shared_ed25519_sha3 hash cryptography ed25519_sha3)
 
 endif()

@@ -15,12 +15,21 @@
  * limitations under the License.
  */
 
-%module crypto
+%module irohacrypto
+
+#pragma SWIG nowarn=401
+
 %include "std_string.i"
 
 %{
 #include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
 %}
+
+%rename(_interface) interface;
+%rename(b_equal) shared_model::crypto::Blob::operator==;
+%rename(kp_equal) shared_model::crypto::Keypair::operator==;
+%rename(mp_equal) shared_model::interface::ModelPrimitive::operator==;
+%rename(mp_nequal) shared_model::interface::ModelPrimitive::operator!=;
 
 %include "interfaces/model_primitive.hpp"
 %include "interfaces/primitive.hpp"
