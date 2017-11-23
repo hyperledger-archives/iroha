@@ -33,8 +33,8 @@
 #include "interfaces/commands/revoke_permission.hpp"
 #include "interfaces/commands/set_quorum.hpp"
 #include "interfaces/commands/transfer_asset.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
 #include "interfaces/hashable.hpp"
+#include "interfaces/polymorphic_wrapper.hpp"
 #include "interfaces/visitor_apply_for_all.hpp"
 #include "model/command.hpp"
 
@@ -62,11 +62,10 @@ namespace shared_model {
                                       CreateDomain,
                                       CreateRole,
                                       GrantPermission,
-                                      RemoveSignatory>;
-      //                                                w<RemoveSignatory>,
-      //                                                w<RevokePermission>,
-      //                                                w<SetQuorum>,
-      //                                                w<TransferAsset>>;
+                                      RemoveSignatory,
+                                      RevokePermission,
+                                      SetQuorum,
+                                      TransferAsset>;
 
       /// Types of concrete commands, in attached variant
       using CommandListType = CommandVariantType::types;
