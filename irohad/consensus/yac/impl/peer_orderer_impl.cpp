@@ -22,29 +22,20 @@ namespace iroha {
     namespace yac {
 
       PeerOrdererImpl::PeerOrdererImpl(
-          std::shared_ptr<ametsuchi::WsvQuery> query)
-          : query_(std::move(query)) {}
+          std::shared_ptr<ametsuchi::PeerQuery> peer_query)
+          : query_(std::move(peer_query)) {}
 
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getInitialOrdering() {
-        auto peers = query_->getPeers();
-        if (peers.has_value()) {
-          return ClusterOrdering(peers.value());
-        }
-
-        return nonstd::nullopt;
+        return query_->getLedgerPeers() | [](const auto &peers) {
+          return nonstd::make_optional<ClusterOrdering>(peers);
+        };
       }
 
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getOrdering(
           YacHash hash) {
-        auto peers = query_->getPeers();
-        if (peers.has_value()) {
-          // todo implement effective ordering based on hash value
-          return ClusterOrdering(peers.value());
-        }
-
-        return nonstd::nullopt;
+        // TODO 01/08/17 Muratov: implement effective ordering based on hash value IR-504
+        return getInitialOrdering();
       }
-
     }  // namespace yac
   }    // namespace consensus
 }  // namespace iroha

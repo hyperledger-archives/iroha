@@ -36,33 +36,23 @@ namespace iroha {
         return nonstd::nullopt;
       }
       return block_factory_.deserialize(document.value());
-    };
+    }
 
     void BlockInserter::applyToLedger(std::vector<model::Block> blocks) {
       auto storage = factory_->createMutableStorage();
       for (auto &&block : blocks) {
-        storage->apply(block,
-                       [](const auto &current_block, auto &executor,
-                          auto &query, const auto &top_hash) {
-                         for (const auto &tx : current_block.transactions) {
-                           for (const auto &command : tx.commands) {
-                             if (not command->execute(query, executor)) {
-                               return false;
-                             }
-                           }
-                         }
-                         return true;
-                       });
+        storage->apply(block, [](const auto &current_block, auto &query,
+                                 const auto &top_hash) { return true; });
       }
       factory_->commit(std::move(storage));
-    };
+    }
 
     nonstd::optional<std::string> BlockInserter::loadFile(std::string path) {
       std::ifstream file(path);
       std::string str((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());
       return str;
-    };
+    }
 
   } // namespace main
 } // namespace iroha

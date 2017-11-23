@@ -16,20 +16,22 @@
  */
 
 #include <gtest/gtest.h>
-#include <model/model_hash_provider_impl.hpp>
+#include "crypto/hash.hpp"
 #include "model/block.hpp"
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/transaction.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/append_role.hpp"
+#include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
 
 using namespace iroha::model;
 
@@ -55,8 +57,8 @@ TEST(ModelOperatorTest, AddPeerTest) {
 AddAssetQuantity createAddAssetQuantity() {
   AddAssetQuantity aaq;
   aaq.account_id = "123";
-  aaq.amount.int_part = 10;
-  aaq.amount.frac_part = 10;
+  iroha::Amount amount(1010, 2);
+  aaq.amount = amount;
   aaq.asset_id = "123";
   return aaq;
 }
@@ -82,24 +84,6 @@ AddSignatory createAddSignatory() {
 TEST(ModelOperatorTest, AddSignatoryTest) {
   auto first = createAddSignatory();
   auto second = createAddSignatory();
-
-  ASSERT_EQ(first, second);
-  second.account_id = "22";
-  ASSERT_NE(first, second);
-}
-
-// -----|AssignMasterKey|-----
-
-AssignMasterKey createAssignMasterKey() {
-  AssignMasterKey assignMasterKey;
-  assignMasterKey.account_id = "123";
-  std::fill(assignMasterKey.pubkey.begin(), assignMasterKey.pubkey.end(), 0x23);
-  return assignMasterKey;
-}
-
-TEST(ModelOperatorTest, AssignMasterKeyTest) {
-  auto first = createAssignMasterKey();
-  auto second = createAssignMasterKey();
 
   ASSERT_EQ(first, second);
   second.account_id = "22";
@@ -148,7 +132,8 @@ TEST(ModelOperatorTest, CreateAssetTest) {
 
 CreateDomain createCreateDomain() {
   CreateDomain createDomain;
-  createDomain.domain_name = "rus";
+  createDomain.domain_id = "rus";
+  createDomain.user_default_role = "test";
   return createDomain;
 }
 
@@ -157,7 +142,7 @@ TEST(ModelOperatorTest, CreateDomainTest) {
   auto second = createCreateDomain();
 
   ASSERT_EQ(first, second);
-  second.domain_name = "jp";
+  second.domain_id = "jp";
   ASSERT_NE(first, second);
 }
 
@@ -174,23 +159,6 @@ TEST(ModelOperatorTest, RemoveSignatoryTest) {
   auto first = createRemoveSignatory();
   auto second = createRemoveSignatory();
 
-  ASSERT_EQ(first, second);
-  second.account_id = "22";
-  ASSERT_NE(first, second);
-}
-
-// -----|SetAccountPermissions|-----
-
-SetAccountPermissions createSetAccountPermissions() {
-  SetAccountPermissions setAccountPermissions;
-  setAccountPermissions.account_id = "123";
-  setAccountPermissions.new_permissions.set_quorum = true;
-  return setAccountPermissions;
-}
-
-TEST(ModelOperatorTest, SetAccountPermissionsTest) {
-  auto first = createSetAccountPermissions();
-  auto second = createSetAccountPermissions();
   ASSERT_EQ(first, second);
   second.account_id = "22";
   ASSERT_NE(first, second);
@@ -219,10 +187,11 @@ TEST(ModelOperatorTest, SetQuorumTest) {
 TransferAsset createTransferAsset() {
   TransferAsset transferAsset;
   transferAsset.asset_id = "123";
-  transferAsset.amount.int_part = 10;
-  transferAsset.amount.frac_part = 10;
+  iroha::Amount amount(1010, 2);
+  transferAsset.amount = amount;
   transferAsset.src_account_id = "1";
   transferAsset.dest_account_id = "2";
+  transferAsset.description = "test";
   return transferAsset;
 }
 
@@ -235,20 +204,61 @@ TEST(ModelOperatorTest, TransferAssetTest) {
   ASSERT_NE(first, second);
 }
 
+
+// -----|CreateRole|-----
+
+TEST(ModelOperatorTest, CreateRoleTest) {
+  auto first = CreateRole("master", {"CanDoMagic"});
+  auto second = CreateRole("master", {"CanDoMagic"});
+
+  ASSERT_EQ(first, second);
+  second.role_name = "padawan";
+  ASSERT_NE(first, second);
+}
+
+// -----|AppendRole|-----
+
+TEST(ModelOperatorTest, AppendRoleTest) {
+  auto first = AppendRole("yoda","master");
+  auto second = AppendRole("yoda","master");
+
+  ASSERT_EQ(first, second);
+  second.account_id = "obi";
+  ASSERT_NE(first, second);
+}
+
+// -----|GrantPermission|-----
+
+TEST(ModelOperatorTest, GrantPermissionTest) {
+  auto first = GrantPermission("admin","can_read");
+  auto second = GrantPermission("admin","can_read");
+
+  ASSERT_EQ(first, second);
+  second.account_id = "non-admin";
+  ASSERT_NE(first, second);
+}
+
+// -----|RevokePermission|-----
+
+TEST(ModelOperatorTest, RevokePermissionTest) {
+  auto first = RevokePermission("admin","can_read");
+  auto second = RevokePermission("admin","can_read");
+
+  ASSERT_EQ(first, second);
+  second.account_id = "non-admin";
+  ASSERT_NE(first, second);
+}
+
 // -----|Amount|-----
 
 TEST(ModelOperatorTest, AmountTest) {
-  iroha::Amount amount1;
-  amount1.int_part = 10;
-  amount1.frac_part = 10;
+  iroha::Amount amount1(1010, 2);
 
-  iroha::Amount amount2;
-  amount2.int_part = 10;
-  amount2.frac_part = 10;
+  iroha::Amount amount2(1010, 2);
 
   ASSERT_EQ(amount1, amount2);
-  amount2.frac_part = 11;
-  ASSERT_NE(amount1, amount2);
+  iroha::Amount amount3(1011, 2);
+  ASSERT_NE(amount1, amount3);
 }
 
 // -----|Signature|-----
@@ -285,8 +295,6 @@ Transaction createTransaction() {
   transaction.commands.push_back(
       std::make_shared<AddSignatory>(createAddSignatory()));
   transaction.commands.push_back(
-      std::make_shared<AssignMasterKey>(createAssignMasterKey()));
-  transaction.commands.push_back(
       std::make_shared<CreateAccount>(createCreateAccount()));
   transaction.commands.push_back(
       std::make_shared<CreateAsset>(createCreateAsset()));
@@ -294,8 +302,6 @@ Transaction createTransaction() {
       std::make_shared<CreateDomain>(createCreateDomain()));
   transaction.commands.push_back(
       std::make_shared<RemoveSignatory>(createRemoveSignatory()));
-  transaction.commands.push_back(
-      std::make_shared<SetAccountPermissions>(createSetAccountPermissions()));
   transaction.commands.push_back(
       std::make_shared<TransferAsset>(createTransferAsset()));
   return transaction;
@@ -322,8 +328,7 @@ Block createBlock(){
   block.transactions.push_back(createTransaction());
   block.height = 123;
 
-  HashProviderImpl hashProvider;
-  block.hash = hashProvider.get_hash(block);
+  block.hash = iroha::hash(block);
   return block;
 }
 

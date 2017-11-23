@@ -16,68 +16,152 @@
  */
 
 #include "model/converters/pb_command_factory.hpp"
+#include "model/converters/pb_common.hpp"
 
-#include <string>
+#include <commands.pb.h>
+#include <model/permissions.hpp>
+#include <set>
+
+#include <boost/assign/list_inserter.hpp>
 
 namespace iroha {
   namespace model {
     namespace converters {
 
+      PbCommandFactory::PbCommandFactory() {
+        boost::assign::insert(pb_role_map_)
+            // Can Get My Account Assets
+            (protocol::RolePermission::can_get_my_acc_ast, can_get_my_acc_ast)
+            // Can Get My Signatories
+            (protocol::RolePermission::can_get_my_signatories,
+             can_get_my_signatories)
+            // Can set quorum
+            (protocol::RolePermission::can_set_quorum, can_set_quorum)
+            // Can get my account transactions
+            (protocol::RolePermission::can_get_my_acc_txs, can_get_my_acc_txs)
+            // Can get my account
+            (protocol::RolePermission::can_get_my_account, can_get_my_account)
+            // Can get all account assets
+            (protocol::RolePermission::can_get_all_acc_ast, can_get_all_acc_ast)
+            // Can get all account asset transactions
+            (protocol::RolePermission::can_get_all_acc_ast_txs,
+             can_get_all_acc_ast_txs)
+            // Can Get all account transactions
+            (protocol::RolePermission::can_get_all_acc_txs, can_get_all_acc_txs)
+            // Can get all account
+            (protocol::RolePermission::can_get_all_accounts,
+             can_get_all_accounts)
+            // Can remove signatory
+            (protocol::RolePermission::can_remove_signatory,
+             can_remove_signatory)
+            // Can add signatory
+            (protocol::RolePermission::can_add_signatory, can_add_signatory)
+            // Can create domain
+            (protocol::RolePermission::can_create_domain, can_create_domain)
+            // Can create account
+            (protocol::RolePermission::can_create_account, can_create_account)
+            // Can set quorum
+            (protocol::RolePermission::can_set_quorum, can_set_quorum)
+            // Can add peer
+            (protocol::RolePermission::can_add_peer, can_add_peer)
+            // Can add asset quantity
+            (protocol::RolePermission::can_add_asset_qty, can_add_asset_qty)
+            // Can append role
+            (protocol::RolePermission::can_append_role, can_append_role)
+            // Can create asset
+            (protocol::RolePermission::can_create_asset, can_create_asset)
+            // Can create role
+            (protocol::RolePermission::can_create_role, can_create_role)
+            // Can get all signatories
+            (protocol::RolePermission::can_get_all_signatories,
+             can_get_all_signatories)
+            // Can get my account assets transactions
+            (protocol::RolePermission::can_get_my_acc_ast_txs,
+             can_get_my_acc_ast_txs)
+            // Can transfer
+            (protocol::RolePermission::can_transfer, can_transfer)
+            // Can receive
+            (protocol::RolePermission::can_receive, can_receive)
+            // Can read assets
+            (protocol::RolePermission::can_read_assets, can_read_assets)
+            // Can grant set quorum
+            (protocol::RolePermission::can_grant_set_quorum,
+             can_grant + can_set_quorum)
+            // Can grant remove signatory
+            (protocol::RolePermission::can_grant_remove_signatory,
+             can_grant + can_remove_signatory)
+            // Can grant add signatory
+            (protocol::RolePermission::can_grant_add_signatory,
+             can_grant + can_add_signatory)
+             // Can grant + can_transfer
+             (protocol::RolePermission::can_grant_can_transfer,
+             can_grant + can_transfer)
+            // Can get roles
+            (protocol::RolePermission::can_get_roles, can_get_roles);
+
+        boost::assign::insert(pb_grant_map_)
+            // Can add my signatory
+            (protocol::GrantablePermission::can_add_my_signatory,
+             can_add_signatory)
+            // Can remove my signatory
+            (protocol::GrantablePermission::can_remove_my_signatory,
+             can_remove_signatory)
+            // Can set my quorum
+            (protocol::GrantablePermission::can_set_my_quorum, can_set_quorum);
+      }
+
       // asset quantity
-      protocol::AddAssetQuantity
-      PbCommandFactory::serializeAddAssetQuantity(
+      protocol::AddAssetQuantity PbCommandFactory::serializeAddAssetQuantity(
           const model::AddAssetQuantity &add_asset_quantity) {
         protocol::AddAssetQuantity pb_add_asset_quantity;
         pb_add_asset_quantity.set_account_id(add_asset_quantity.account_id);
         pb_add_asset_quantity.set_asset_id(add_asset_quantity.asset_id);
         auto amount = pb_add_asset_quantity.mutable_amount();
-        amount->set_integer_part(add_asset_quantity.amount.int_part);
-        amount->set_fractial_part(add_asset_quantity.amount.frac_part);
+        amount->CopyFrom(serializeAmount(add_asset_quantity.amount));
         return pb_add_asset_quantity;
       }
 
-      model::AddAssetQuantity
-      PbCommandFactory::deserializeAddAssetQuantity(
+      model::AddAssetQuantity PbCommandFactory::deserializeAddAssetQuantity(
           const protocol::AddAssetQuantity &pb_add_asset_quantity) {
         model::AddAssetQuantity add_asset_quantity;
         add_asset_quantity.account_id = pb_add_asset_quantity.account_id();
         add_asset_quantity.asset_id = pb_add_asset_quantity.asset_id();
-        Amount amount;
-        amount.int_part = pb_add_asset_quantity.amount().integer_part();
-        amount.frac_part = pb_add_asset_quantity.amount().fractial_part();
-        add_asset_quantity.amount = amount;
+        add_asset_quantity.amount =
+            deserializeAmount(pb_add_asset_quantity.amount());
 
         return add_asset_quantity;
       }
 
       // add peer
-      protocol::AddPeer
-      PbCommandFactory::serializeAddPeer(const model::AddPeer &add_peer) {
+      protocol::AddPeer PbCommandFactory::serializeAddPeer(
+          const model::AddPeer &add_peer) {
         protocol::AddPeer pb_add_peer;
         pb_add_peer.set_address(add_peer.address);
         pb_add_peer.set_peer_key(add_peer.peer_key.data(),
                                  add_peer.peer_key.size());
         return pb_add_peer;
       }
-      model::AddPeer
-      PbCommandFactory::deserializeAddPeer(const protocol::AddPeer &pb_add_peer) {
+      model::AddPeer PbCommandFactory::deserializeAddPeer(
+          const protocol::AddPeer &pb_add_peer) {
         model::AddPeer add_peer;
         add_peer.address = pb_add_peer.address();
-        std::copy(pb_add_peer.peer_key().begin(), pb_add_peer.peer_key().end(),
+        std::copy(pb_add_peer.peer_key().begin(),
+                  pb_add_peer.peer_key().end(),
                   add_peer.peer_key.begin());
         return add_peer;
       }
 
       // add signatory
-      protocol::AddSignatory
-      PbCommandFactory::serializeAddSignatory(const model::AddSignatory &add_signatory) {
+      protocol::AddSignatory PbCommandFactory::serializeAddSignatory(
+          const model::AddSignatory &add_signatory) {
         protocol::AddSignatory pb_add_signatory;
         pb_add_signatory.set_account_id(add_signatory.account_id);
         pb_add_signatory.set_public_key(add_signatory.pubkey.data(),
                                         add_signatory.pubkey.size());
         return pb_add_signatory;
       }
-      model::AddSignatory PbCommandFactory::deserializeAddSignatory(const protocol::AddSignatory &pb_add_signatory) {
+      model::AddSignatory PbCommandFactory::deserializeAddSignatory(
+          const protocol::AddSignatory &pb_add_signatory) {
         model::AddSignatory add_signatory;
         add_signatory.account_id = pb_add_signatory.account_id();
         std::copy(pb_add_signatory.public_key().begin(),
@@ -86,29 +170,9 @@ namespace iroha {
         return add_signatory;
       }
 
-      // assign master key
-      protocol::AssignMasterKey
-      PbCommandFactory::serializeAssignMasterKey(const model::AssignMasterKey &assign_master_key) {
-        protocol::AssignMasterKey pb_assign_master_key;
-        pb_assign_master_key.set_account_id(assign_master_key.account_id);
-        pb_assign_master_key.set_public_key(assign_master_key.pubkey.data(),
-                                            assign_master_key.pubkey.size());
-        return pb_assign_master_key;
-      }
-
-      model::AssignMasterKey PbCommandFactory::deserializeAssignMasterKey(
-          const protocol::AssignMasterKey &pb_assign_master_key) {
-        model::AssignMasterKey assign_master_key;
-        assign_master_key.account_id = pb_assign_master_key.account_id();
-        std::copy(pb_assign_master_key.public_key().begin(),
-                  pb_assign_master_key.public_key().end(),
-                  assign_master_key.pubkey.begin());
-        return assign_master_key;
-      }
-
       // create asset
-      protocol::CreateAsset
-      PbCommandFactory::serializeCreateAsset(const model::CreateAsset &create_asset) {
+      protocol::CreateAsset PbCommandFactory::serializeCreateAsset(
+          const model::CreateAsset &create_asset) {
         protocol::CreateAsset pb_create_asset;
         pb_create_asset.set_asset_name(create_asset.asset_name);
         pb_create_asset.set_domain_id(create_asset.domain_id);
@@ -116,8 +180,8 @@ namespace iroha {
         return pb_create_asset;
       }
 
-      model::CreateAsset
-      PbCommandFactory::deserializeCreateAsset(const protocol::CreateAsset &pb_create_asset) {
+      model::CreateAsset PbCommandFactory::deserializeCreateAsset(
+          const protocol::CreateAsset &pb_create_asset) {
         model::CreateAsset create_asset;
         create_asset.asset_name = pb_create_asset.asset_name();
         create_asset.domain_id = pb_create_asset.domain_id();
@@ -127,8 +191,8 @@ namespace iroha {
       }
 
       // create account
-      protocol::CreateAccount
-      PbCommandFactory::serializeCreateAccount(const model::CreateAccount &create_account) {
+      protocol::CreateAccount PbCommandFactory::serializeCreateAccount(
+          const model::CreateAccount &create_account) {
         protocol::CreateAccount pb_create_account;
         pb_create_account.set_account_name(create_account.account_name);
         pb_create_account.set_domain_id(create_account.domain_id);
@@ -136,7 +200,8 @@ namespace iroha {
                                           create_account.pubkey.size());
         return pb_create_account;
       }
-      model::CreateAccount PbCommandFactory::deserializeCreateAccount(const protocol::CreateAccount &pb_create_account) {
+      model::CreateAccount PbCommandFactory::deserializeCreateAccount(
+          const protocol::CreateAccount &pb_create_account) {
         model::CreateAccount create_account;
         create_account.account_name = pb_create_account.account_name();
         create_account.domain_id = pb_create_account.domain_id();
@@ -147,21 +212,25 @@ namespace iroha {
       }
 
       // create domain
-      protocol::CreateDomain PbCommandFactory::serializeCreateDomain(const model::CreateDomain &create_domain) {
+      protocol::CreateDomain PbCommandFactory::serializeCreateDomain(
+          const model::CreateDomain &create_domain) {
         protocol::CreateDomain pb_create_domain;
-        pb_create_domain.set_domain_name(create_domain.domain_name);
+        pb_create_domain.set_domain_id(create_domain.domain_id);
+        pb_create_domain.set_default_role(create_domain.user_default_role);
         return pb_create_domain;
       }
 
-      model::CreateDomain PbCommandFactory::deserializeCreateDomain(const protocol::CreateDomain &pb_create_domain) {
+      model::CreateDomain PbCommandFactory::deserializeCreateDomain(
+          const protocol::CreateDomain &pb_create_domain) {
         model::CreateDomain create_domain;
-        create_domain.domain_name = pb_create_domain.domain_name();
+        create_domain.domain_id = pb_create_domain.domain_id();
+        create_domain.user_default_role = pb_create_domain.default_role();
         return create_domain;
       }
 
       // remove signatory
-      protocol::RemoveSignatory
-      PbCommandFactory::serializeRemoveSignatory(const model::RemoveSignatory &remove_signatory) {
+      protocol::RemoveSignatory PbCommandFactory::serializeRemoveSignatory(
+          const model::RemoveSignatory &remove_signatory) {
         protocol::RemoveSignatory pb_remove_signatory;
         pb_remove_signatory.set_account_id(remove_signatory.account_id);
         pb_remove_signatory.set_public_key(remove_signatory.pubkey.data(),
@@ -178,64 +247,16 @@ namespace iroha {
                   remove_signatory.pubkey.begin());
         return remove_signatory;
       }
-
-      // set account permissions
-      protocol::SetAccountPermissions PbCommandFactory::serializeSetAccountPermissions(
-          const model::SetAccountPermissions &set_account_permissions) {
-        protocol::SetAccountPermissions pb_set_account_permissions;
-        pb_set_account_permissions.set_account_id(set_account_permissions.account_id);
-        auto permissions = pb_set_account_permissions.mutable_permissions();
-        permissions->set_issue_assets(set_account_permissions.new_permissions.issue_assets);
-        permissions->set_create_assets(set_account_permissions.new_permissions.create_assets);
-        permissions->set_create_accounts(set_account_permissions.new_permissions.create_accounts);
-        permissions->set_create_domains(set_account_permissions.new_permissions.create_domains);
-        permissions->set_read_all_accounts(set_account_permissions.new_permissions.read_all_accounts);
-        permissions->set_add_signatory(set_account_permissions.new_permissions.add_signatory);
-        permissions->set_remove_signatory(set_account_permissions.new_permissions.remove_signatory);
-        permissions->set_set_quorum(set_account_permissions.new_permissions.set_quorum);
-        permissions->set_can_transfer(set_account_permissions.new_permissions.can_transfer);
-        return pb_set_account_permissions;
-      }
-
-      model::SetAccountPermissions
-      PbCommandFactory::deserializeSetAccountPermissions(
-          const protocol::SetAccountPermissions &pb_set_account_permissions) {
-        model::SetAccountPermissions set_account_permissions;
-        set_account_permissions.account_id =
-            pb_set_account_permissions.account_id();
-        set_account_permissions.new_permissions.issue_assets =
-            pb_set_account_permissions.permissions().issue_assets();
-        set_account_permissions.new_permissions.create_assets =
-            pb_set_account_permissions.permissions().create_assets();
-        set_account_permissions.new_permissions.create_accounts =
-            pb_set_account_permissions.permissions().create_accounts();
-        set_account_permissions.new_permissions.create_domains =
-            pb_set_account_permissions.permissions().create_domains();
-        set_account_permissions.new_permissions.read_all_accounts =
-            pb_set_account_permissions.permissions().read_all_accounts();
-        set_account_permissions.new_permissions.add_signatory =
-            pb_set_account_permissions.permissions().add_signatory();
-        set_account_permissions.new_permissions.remove_signatory =
-            pb_set_account_permissions.permissions().remove_signatory();
-        set_account_permissions.new_permissions.set_permissions =
-            pb_set_account_permissions.permissions().set_permissions();
-        set_account_permissions.new_permissions.set_quorum =
-            pb_set_account_permissions.permissions().set_quorum();
-        set_account_permissions.new_permissions.can_transfer =
-            pb_set_account_permissions.permissions().can_transfer();
-        return set_account_permissions;
-      }
-
       // set account quorum
-      protocol::SetAccountQuorum
-      PbCommandFactory::serializeSetQuorum(const model::SetQuorum &set_account_quorum) {
+      protocol::SetAccountQuorum PbCommandFactory::serializeSetQuorum(
+          const model::SetQuorum &set_account_quorum) {
         protocol::SetAccountQuorum pb_set_account_quorum;
         pb_set_account_quorum.set_account_id(set_account_quorum.account_id);
         pb_set_account_quorum.set_quorum(set_account_quorum.new_quorum);
         return pb_set_account_quorum;
       }
-      model::SetQuorum
-      PbCommandFactory::deserializeSetQuorum(const protocol::SetAccountQuorum &pb_set_account_quorum) {
+      model::SetQuorum PbCommandFactory::deserializeSetQuorum(
+          const protocol::SetAccountQuorum &pb_set_account_quorum) {
         model::SetQuorum set_quorum;
         set_quorum.account_id = pb_set_account_quorum.account_id();
         set_quorum.new_quorum = pb_set_account_quorum.quorum();
@@ -243,138 +264,282 @@ namespace iroha {
       }
 
       // transfer asset
-      protocol::TransferAsset
-      PbCommandFactory::serializeTransferAsset(const model::TransferAsset &transfer_asset) {
+      protocol::TransferAsset PbCommandFactory::serializeTransferAsset(
+          const model::TransferAsset &transfer_asset) {
         protocol::TransferAsset pb_transfer_asset;
+
         pb_transfer_asset.set_src_account_id(transfer_asset.src_account_id);
         pb_transfer_asset.set_dest_account_id(transfer_asset.dest_account_id);
         pb_transfer_asset.set_asset_id(transfer_asset.asset_id);
+        pb_transfer_asset.set_description(transfer_asset.description);
         auto amount = pb_transfer_asset.mutable_amount();
-        amount->set_integer_part(transfer_asset.amount.int_part);
-        amount->set_fractial_part(transfer_asset.amount.frac_part);
+        amount->CopyFrom(serializeAmount(transfer_asset.amount));
         return pb_transfer_asset;
       }
 
-      model::TransferAsset
-      PbCommandFactory::deserializeTransferAsset(const protocol::TransferAsset &pb_subtract_asset_quantity) {
+      model::TransferAsset PbCommandFactory::deserializeTransferAsset(
+          const protocol::TransferAsset &pb_subtract_asset_quantity) {
         model::TransferAsset transfer_asset;
         transfer_asset.src_account_id =
             pb_subtract_asset_quantity.src_account_id();
         transfer_asset.dest_account_id =
             pb_subtract_asset_quantity.dest_account_id();
         transfer_asset.asset_id = pb_subtract_asset_quantity.asset_id();
-        transfer_asset.amount.int_part =
-            pb_subtract_asset_quantity.amount().integer_part();
-        transfer_asset.amount.frac_part =
-            pb_subtract_asset_quantity.amount().fractial_part();
+        transfer_asset.description = pb_subtract_asset_quantity.description();
+        transfer_asset.amount =
+            deserializeAmount(pb_subtract_asset_quantity.amount());
         return transfer_asset;
       }
 
-      protocol::Command
-      PbCommandFactory::serializeAbstractCommand(const model::Command &command) {
+      // Append Role
+      model::AppendRole PbCommandFactory::deserializeAppendRole(
+          const protocol::AppendRole &command) {
+        return AppendRole(command.account_id(), command.role_name());
+      }
+
+      protocol::AppendRole PbCommandFactory::serializeAppendRole(
+          const model::AppendRole &command) {
+        protocol::AppendRole cmd;
+        cmd.set_account_id(command.account_id);
+        cmd.set_role_name(command.role_name);
+        return cmd;
+      }
+
+      // Create Role
+      model::CreateRole PbCommandFactory::deserializeCreateRole(
+          const protocol::CreateRole &command) {
+        std::set<std::string> perms;
+
+        std::for_each(command.permissions().begin(),
+                      command.permissions().end(),
+                      [&perms, this](auto perm) {
+                        auto it = this->pb_role_map_.left.find(
+                            static_cast<protocol::RolePermission>(perm));
+                        if (it != this->pb_role_map_.left.end()) {
+                          perms.insert(it->second);
+                        }
+                      });
+        return CreateRole(command.role_name(), perms);
+      }
+
+      protocol::CreateRole PbCommandFactory::serializeCreateRole(
+          const model::CreateRole &command) {
+        protocol::CreateRole cmd;
+        cmd.set_role_name(command.role_name);
+        std::for_each(command.permissions.begin(),
+                      command.permissions.end(),
+                      [&cmd, this](auto perm) {
+                        auto perm_name = this->pb_role_map_.right.at(perm);
+                        cmd.add_permissions(perm_name);
+                      });
+        return cmd;
+      }
+
+      // Grant Permission
+      protocol::GrantPermission PbCommandFactory::serializeGrantPermission(
+          const model::GrantPermission &command) {
+        protocol::GrantPermission cmd;
+        cmd.set_account_id(command.account_id);
+        auto perm = pb_grant_map_.right.at(command.permission_name);
+        cmd.set_permission(perm);
+        return cmd;
+      }
+
+      model::GrantPermission PbCommandFactory::deserializeGrantPermission(
+          const protocol::GrantPermission &command) {
+        auto it = pb_grant_map_.left.find(command.permission());
+        if (it == pb_grant_map_.left.end()) {
+          return {};
+        }
+        return GrantPermission(command.account_id(), it->second);
+      }
+
+      protocol::RevokePermission PbCommandFactory::serializeRevokePermission(
+          const model::RevokePermission &command) {
+        protocol::RevokePermission cmd;
+        cmd.set_account_id(command.account_id);
+        auto permission = pb_grant_map_.right.at(command.permission_name);
+        cmd.set_permission(permission);
+        return cmd;
+      }
+
+      model::RevokePermission PbCommandFactory::deserializeRevokePermission(
+          const protocol::RevokePermission &command) {
+        auto it = pb_grant_map_.left.find(command.permission());
+        if (it == pb_grant_map_.left.end()) {
+          return {};
+        }
+        return RevokePermission(command.account_id(), it->second);
+      }
+
+      protocol::SetAccountDetail PbCommandFactory::serializeSetAccountDetail(
+          const model::SetAccountDetail &command) {
+        protocol::SetAccountDetail cmd;
+        cmd.set_account_id(command.account_id);
+        cmd.set_key(command.key);
+        cmd.set_value(command.value);
+        return cmd;
+      }
+
+      model::SetAccountDetail PbCommandFactory::deserializeSetAccountDetail(
+          const protocol::SetAccountDetail &command) {
+        model::SetAccountDetail setAccountDetail;
+        setAccountDetail.account_id = command.account_id();
+        setAccountDetail.key = command.key();
+        setAccountDetail.value = command.value();
+        return setAccountDetail;
+      }
+
+      protocol::Command PbCommandFactory::serializeAbstractCommand(
+          const model::Command &command) {
         PbCommandFactory commandFactory;
         auto cmd = protocol::Command();
+        // TODO 26/09/17 grimadas: refactor this #VARIANT
+
+        // -----|CreateRole|-----
+        if (instanceof <model::CreateRole>(command)) {
+          auto serialized = commandFactory.serializeCreateRole(
+              static_cast<const model::CreateRole &>(command));
+          cmd.set_allocated_create_role(new protocol::CreateRole(serialized));
+        }
+
+        // -----|AppendRole|-----
+        if (instanceof <model::AppendRole>(command)) {
+          auto serialized = commandFactory.serializeAppendRole(
+              static_cast<const model::AppendRole &>(command));
+          cmd.set_allocated_append_role(new protocol::AppendRole(serialized));
+        }
+
+        // -----|GrantPermission|-----
+        if (instanceof <model::GrantPermission>(command)) {
+          auto serialized = commandFactory.serializeGrantPermission(
+              static_cast<const model::GrantPermission &>(command));
+          cmd.set_allocated_grant_permission(
+              new protocol::GrantPermission(serialized));
+        }
+
+        // -----|RevokePermission|-----
+        if (instanceof <model::RevokePermission>(command)) {
+          auto serialized = commandFactory.serializeRevokePermission(
+              static_cast<const model::RevokePermission &>(command));
+          cmd.set_allocated_revoke_permission(
+              new protocol::RevokePermission(serialized));
+        }
 
         // -----|AddAssetQuantity|-----
-        if (instanceof<model::AddAssetQuantity>(command)) {
-          auto serialized = commandFactory
-              .serializeAddAssetQuantity(
-                  static_cast<const model::AddAssetQuantity &>(command));
-          cmd.set_allocated_add_asset_quantity(new protocol::AddAssetQuantity(
-              serialized));
+        if (instanceof <model::AddAssetQuantity>(command)) {
+          auto serialized = commandFactory.serializeAddAssetQuantity(
+              static_cast<const model::AddAssetQuantity &>(command));
+          cmd.set_allocated_add_asset_quantity(
+              new protocol::AddAssetQuantity(serialized));
         }
 
         // -----|AddPeer|-----
-        if (instanceof<model::AddPeer>(command)) {
-          auto serialized = commandFactory
-              .serializeAddPeer(
-                  static_cast<const model::AddPeer &>(command));
+        if (instanceof <model::AddPeer>(command)) {
+          auto serialized = commandFactory.serializeAddPeer(
+              static_cast<const model::AddPeer &>(command));
           cmd.set_allocated_add_peer(new protocol::AddPeer(serialized));
         }
 
         // -----|AddSignatory|-----
-        if (instanceof<model::AddSignatory>(command)) {
-          auto serialized = commandFactory
-              .serializeAddSignatory(
-                  static_cast<const model::AddSignatory &>(command));
-          cmd.set_allocated_add_signatory(new protocol::AddSignatory(serialized));
+        if (instanceof <model::AddSignatory>(command)) {
+          auto serialized = commandFactory.serializeAddSignatory(
+              static_cast<const model::AddSignatory &>(command));
+          cmd.set_allocated_add_signatory(
+              new protocol::AddSignatory(serialized));
         }
 
-        // -----|AssignMasterKey|-----
-        if (instanceof<model::AssignMasterKey>(command)) {
-          auto serialized = commandFactory
-              .serializeAssignMasterKey(
-                  static_cast<const model::AssignMasterKey &>(command));
-          cmd.set_allocated_account_assign_mk(new protocol::AssignMasterKey(
-              serialized));
-        }
-
-        // -----|AssignMasterKey|-----
-        if (instanceof<model::CreateAsset>(command)) {
-          auto serialized = commandFactory
-              .serializeCreateAsset(
-                  static_cast<const model::CreateAsset &>(command));
+        // -----|CreateAsset|-----
+        if (instanceof <model::CreateAsset>(command)) {
+          auto serialized = commandFactory.serializeCreateAsset(
+              static_cast<const model::CreateAsset &>(command));
           cmd.set_allocated_create_asset(new protocol::CreateAsset(serialized));
         }
 
         // -----|CreateAccount|-----
-        if (instanceof<model::CreateAccount>(command)) {
-          auto serialized = commandFactory
-              .serializeCreateAccount(
-                  static_cast<const model::CreateAccount &>(command));
-          cmd.set_allocated_create_account(new protocol::CreateAccount(
-              serialized));
+        if (instanceof <model::CreateAccount>(command)) {
+          auto serialized = commandFactory.serializeCreateAccount(
+              static_cast<const model::CreateAccount &>(command));
+          cmd.set_allocated_create_account(
+              new protocol::CreateAccount(serialized));
+        }
+
+        // -----|SetAccountDetail|-----
+        if (instanceof <model::SetAccountDetail>(command)) {
+          auto serialized = commandFactory.serializeSetAccountDetail(
+              static_cast<const model::SetAccountDetail &>(command));
+          cmd.set_allocated_set_account_detail(
+              new protocol::SetAccountDetail(serialized));
         }
 
         // -----|CreateDomain|-----
-        if (instanceof<model::CreateDomain>(command)) {
-          auto serialized = commandFactory
-              .serializeCreateDomain(
-                  static_cast<const model::CreateDomain &>(command));
-          cmd.set_allocated_create_domain(new protocol::CreateDomain(serialized));
+        if (instanceof <model::CreateDomain>(command)) {
+          auto serialized = commandFactory.serializeCreateDomain(
+              static_cast<const model::CreateDomain &>(command));
+          cmd.set_allocated_create_domain(
+              new protocol::CreateDomain(serialized));
         }
 
         // -----|RemoveSignatory|-----
-        if (instanceof<model::RemoveSignatory>(command)) {
-          auto serialized = commandFactory
-              .serializeRemoveSignatory(
-                  static_cast<const model::RemoveSignatory &>(command));
-          cmd.set_allocated_remove_sign(new protocol::RemoveSignatory(serialized));
-        }
-
-        // -----|SetAccountPermissions|-----
-        if (instanceof<model::SetAccountPermissions>(command)) {
-          auto serialized = commandFactory
-              .serializeSetAccountPermissions(
-                  static_cast<const model::SetAccountPermissions &>(command));
-          cmd.set_allocated_set_permission(new protocol::SetAccountPermissions(
-              serialized));
+        if (instanceof <model::RemoveSignatory>(command)) {
+          auto serialized = commandFactory.serializeRemoveSignatory(
+              static_cast<const model::RemoveSignatory &>(command));
+          cmd.set_allocated_remove_sign(
+              new protocol::RemoveSignatory(serialized));
         }
 
         // -----|SetAccountQuorum|-----
-        if (instanceof<model::SetQuorum>(command)) {
-          auto serialized = commandFactory
-              .serializeSetQuorum(
-                  static_cast<const model::SetQuorum &>(command));
-          cmd.set_allocated_set_quorum(new protocol::SetAccountQuorum(serialized));
+        if (instanceof <model::SetQuorum>(command)) {
+          auto serialized = commandFactory.serializeSetQuorum(
+              static_cast<const model::SetQuorum &>(command));
+          cmd.set_allocated_set_quorum(
+              new protocol::SetAccountQuorum(serialized));
         }
 
         // -----|TransferAsset|-----
-        if (instanceof<model::TransferAsset>(command)) {
-          auto serialized = commandFactory
-              .serializeTransferAsset(
-                  static_cast<const model::TransferAsset &>(command));
-          cmd.set_allocated_transfer_asset(new protocol::TransferAsset(
-              serialized));
+        if (instanceof <model::TransferAsset>(command)) {
+          auto serialized = commandFactory.serializeTransferAsset(
+              static_cast<const model::TransferAsset &>(command));
+          cmd.set_allocated_transfer_asset(
+              new protocol::TransferAsset(serialized));
         }
 
         return cmd;
       }
 
       std::shared_ptr<model::Command>
-      PbCommandFactory::deserializeAbstractCommand(const protocol::Command &command) {
+      PbCommandFactory::deserializeAbstractCommand(
+          const protocol::Command &command) {
         PbCommandFactory commandFactory;
         std::shared_ptr<model::Command> val;
+
+        // -----|CreateRole|-----
+        if (command.has_create_role()) {
+          auto pb_command = command.create_role();
+          auto cmd = commandFactory.deserializeCreateRole(pb_command);
+          val = std::make_shared<model::CreateRole>(cmd);
+        }
+
+        // -----|AppendRole|-----
+        if (command.has_append_role()) {
+          auto pb_command = command.append_role();
+          auto cmd = commandFactory.deserializeAppendRole(pb_command);
+          val = std::make_shared<model::AppendRole>(cmd);
+        }
+
+        // -----|GrantPermission|-----
+        if (command.has_grant_permission()) {
+          auto pb_command = command.grant_permission();
+          auto cmd = commandFactory.deserializeGrantPermission(pb_command);
+          val = std::make_shared<model::GrantPermission>(cmd);
+        }
+
+        // -----|RevokePermission|-----
+        if (command.has_revoke_permission()) {
+          auto pb_command = command.revoke_permission();
+          auto cmd = commandFactory.deserializeRevokePermission(pb_command);
+          val = std::make_shared<model::RevokePermission>(cmd);
+        }
 
         // -----|AddAssetQuantity|-----
         if (command.has_add_asset_quantity()) {
@@ -397,13 +562,6 @@ namespace iroha {
           val = std::make_shared<model::AddSignatory>(cmd);
         }
 
-        // -----|AssignMasterKey|-----
-        if (command.has_account_assign_mk()) {
-          auto pb_command = command.account_assign_mk();
-          auto cmd = commandFactory.deserializeAssignMasterKey(pb_command);
-          val = std::make_shared<model::AssignMasterKey>(cmd);
-        }
-
         // -----|CreateAsset|-----
         if (command.has_create_asset()) {
           auto pb_command = command.create_asset();
@@ -418,6 +576,13 @@ namespace iroha {
           val = std::make_shared<model::CreateAccount>(cmd);
         }
 
+        // -----|SetAccountDetail|-----
+        if (command.has_set_account_detail()) {
+          auto pb_command = command.set_account_detail();
+          auto cmd = commandFactory.deserializeSetAccountDetail(pb_command);
+          val = std::make_shared<model::SetAccountDetail>(cmd);
+        }
+
         // -----|CreateDomain|-----
         if (command.has_create_domain()) {
           auto pb_command = command.create_domain();
@@ -430,14 +595,6 @@ namespace iroha {
           auto pb_command = command.remove_sign();
           auto cmd = commandFactory.deserializeRemoveSignatory(pb_command);
           val = std::make_shared<model::RemoveSignatory>(cmd);
-        }
-
-        // -----|SetAccountPermissions|-----
-        if (command.has_set_permission()) {
-          auto pb_command = command.set_permission();
-          auto
-              cmd = commandFactory.deserializeSetAccountPermissions(pb_command);
-          val = std::make_shared<model::SetAccountPermissions>(cmd);
         }
 
         // -----|SetAccountQuorum|-----
@@ -457,6 +614,6 @@ namespace iroha {
         return val;
       }
 
-    } // namespace converters
-  }  // namespace model
+    }  // namespace converters
+  }    // namespace model
 }  // namespace iroha

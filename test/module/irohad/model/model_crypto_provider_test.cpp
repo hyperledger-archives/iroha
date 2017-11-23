@@ -16,49 +16,56 @@
  */
 
 #include <gtest/gtest.h>
-#include <crypto/crypto.hpp>
-#include <model/model_crypto_provider_impl.hpp>
-#include <model/model_hash_provider_impl.hpp>
 
-using namespace iroha::model;
+#include "crypto/crypto.hpp"
+#include "crypto/hash.hpp"
+#include "model/generators/query_generator.hpp"
+#include "model/generators/transaction_generator.hpp"
+#include "model/model_crypto_provider_impl.hpp"
 
-iroha::model::Transaction create_transaction() {
-  iroha::model::Transaction tx{};
-  tx.creator_account_id = "test";
+namespace iroha {
+  namespace model {
+    class CryptoProviderTest : public ::testing::Test {
+     public:
+      CryptoProviderTest() : provider(create_keypair()) {}
 
-  tx.tx_counter = 0;
-  tx.created_ts = 0;
-  return tx;
-}
+      ModelCryptoProviderImpl provider;
+    };
 
-Transaction sign(Transaction &tx, iroha::ed25519::privkey_t privkey,
-                 iroha::ed25519::pubkey_t pubkey) {
-  HashProviderImpl hash_provider;
-  auto tx_hash = hash_provider.get_hash(tx);
+    TEST_F(CryptoProviderTest, SignAndVerifyTransaction) {
+      auto model_tx =
+          generators::TransactionGenerator().generateTransaction("test", 0, {});
 
-  auto sign = iroha::sign(tx_hash.data(), tx_hash.size(), pubkey, privkey);
+      provider.sign(model_tx);
+      ASSERT_TRUE(provider.verify(model_tx));
 
-  Signature signature{};
-  signature.signature = sign;
-  signature.pubkey = pubkey;
+      // now modify transaction's meta, so verify should fail
+      model_tx.creator_account_id = "test1";
+      ASSERT_FALSE(provider.verify(model_tx));
+    }
 
-  tx.signatures.push_back(signature);
+    TEST_F(CryptoProviderTest, SignAndVerifyQuery) {
+      auto query =
+          generators::QueryGenerator().generateGetAccount(0, "test", 0, "test");
 
-  return tx;
-}
+      provider.sign(*query);
+      ASSERT_TRUE(provider.verify(*query));
 
-TEST(CryptoProvider, SignAndVerify) {
-  // generate privkey/pubkey keypair
-  auto seed = iroha::create_seed();
-  auto keypair = iroha::create_keypair(seed);
+      // modify account id, verification should fail
+      query->account_id = "kappa";
+      ASSERT_FALSE(provider.verify(*query));
+    }
 
-  auto model_tx = create_transaction();
+    TEST_F(CryptoProviderTest, SameQueryHashAfterSign) {
+      auto query =
+          iroha::model::generators::QueryGenerator().generateGetAccount(
+              0, "test", 0, "test");
 
-  iroha::model::ModelCryptoProviderImpl crypto_provider;
-  sign(model_tx, keypair.privkey, keypair.pubkey);
-  ASSERT_TRUE(crypto_provider.verify(model_tx));
+      auto hash = iroha::hash(*query);
+      provider.sign(*query);
 
-  // now modify transaction's meta, so verify should fail
-  model_tx.creator_account_id = "test1";
-  ASSERT_FALSE(crypto_provider.verify(model_tx));
-}
+      auto hash_signed = iroha::hash(*query);
+      ASSERT_EQ(hash_signed, hash);
+    }
+  }  // namespace model
+}  // namespace iroha

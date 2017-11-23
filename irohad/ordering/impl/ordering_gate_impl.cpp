@@ -20,48 +20,27 @@
 namespace iroha {
   namespace ordering {
 
-    OrderingGateImpl::OrderingGateImpl(const std::string &server_address)
-        : client_(proto::OrderingService::NewStub(grpc::CreateChannel(
-              server_address, grpc::InsecureChannelCredentials()))) {
-      log_ = logger::log("OrderingGate");
-    }
+    OrderingGateImpl::OrderingGateImpl(
+        std::shared_ptr<iroha::network::OrderingGateTransport> transport)
+        : transport_(transport), log_(logger::log("OrderingGate")) {}
 
     void OrderingGateImpl::propagate_transaction(
         std::shared_ptr<const model::Transaction> transaction) {
-      log_->info("propagate tx");
-      auto call = new AsyncClientCall;
+      log_->info("propagate tx, tx_counter: " +
+                 std::to_string(transaction->tx_counter) +
+                 " account_id: " + transaction->creator_account_id);
 
-      call->response_reader = client_->AsyncSendTransaction(
-          &call->context, factory_.serialize(*transaction), &cq_);
-
-      call->response_reader->Finish(&call->reply, &call->status, call);
+      transport_->propagate_transaction(transaction);
     }
 
     rxcpp::observable<model::Proposal> OrderingGateImpl::on_proposal() {
       return proposals_.get_observable();
     }
 
-    grpc::Status OrderingGateImpl::SendProposal(
-        ::grpc::ServerContext *context, const proto::Proposal *request,
-        ::google::protobuf::Empty *response) {
-      log_->info("receive proposal");
-      // auto removes const qualifier of model::Proposal.transactions
-      auto transactions =
-          decltype(std::declval<model::Proposal>().transactions)();
-      for (const auto &tx : request->transactions()) {
-        transactions.push_back(*factory_.deserialize(tx));
-      }
-      log_->info("transactions in proposal: {}", transactions.size());
-
-      model::Proposal proposal(transactions);
-      proposal.height = request->height();
-      handleProposal(std::move(proposal));
-
-      return grpc::Status::OK;
-    }
-
-    void OrderingGateImpl::handleProposal(model::Proposal &&proposal) {
+    void OrderingGateImpl::onProposal(model::Proposal proposal) {
+      log_->info("Received new proposal");
       proposals_.get_subscriber().on_next(proposal);
     }
+
   }  // namespace ordering
 }  // namespace iroha

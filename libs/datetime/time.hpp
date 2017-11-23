@@ -24,36 +24,23 @@ namespace iroha {
 
   namespace time {
 
-    using namespace std::chrono;
-
     /**
-     * Returns current UNIX timestamp represented in 4 bytes.
-     * Represents number of seconds since epoch.
+     * Returns current UNIX timestamp.
+     * Represents number of milliseconds since epoch.
      */
-    inline uint32_t now32() {
-      system_clock::time_point tp = high_resolution_clock::now();
-      system_clock::duration d = tp.time_since_epoch();
-
-      auto secs_in_period = static_cast<double>(system_clock::period::num) /
-                            system_clock::period::den;
-      // d.count()          in periods
-      // d.count() * (...)  is seconds
-      return static_cast<uint32_t>(d.count() * secs_in_period);
+    inline auto now() {
+      return std::chrono::system_clock::now().time_since_epoch()
+          / std::chrono::milliseconds(1);
     }
 
     /**
-     * Returns current UNIX timestamp represented in 8 bytes.
-     * Represents number of seconds since epoch.
+     * Return UNIX timestamp with given offset.
+     * Represents number of milliseconds since epoch.
      */
-    inline uint64_t now64() {
-      high_resolution_clock::time_point tp = high_resolution_clock::now();
-      high_resolution_clock::duration d =
-          duration_cast<microseconds>(tp.time_since_epoch());
-      auto secs_in_period = static_cast<double>(system_clock::period::num) /
-                            system_clock::period::den;
-      // d.count()          in periods
-      // d.count() * (...)  is seconds
-      return static_cast<uint64_t>(d.count() * secs_in_period);
+    template <typename T>
+    inline auto now(const T &offset) {
+      return (std::chrono::system_clock::now().time_since_epoch() + offset)
+          / std::chrono::milliseconds(1);
     }
   }
 }

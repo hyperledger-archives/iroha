@@ -32,6 +32,12 @@ namespace iroha {
        * Attached account
        */
       Account account;
+
+      /**
+       * Account's roles
+       */
+      std::vector<std::string> roles;
+
     };
   }  // namespace model
 }  // namespace iroha

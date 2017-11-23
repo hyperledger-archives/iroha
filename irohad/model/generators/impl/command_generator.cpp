@@ -1,0 +1,140 @@
+/**
+ * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * http://soramitsu.co.jp
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "model/generators/command_generator.hpp"
+#include <model/commands/set_account_detail.hpp>
+#include "model/commands/add_asset_quantity.hpp"
+#include "model/commands/add_peer.hpp"
+#include "model/commands/add_signatory.hpp"
+#include "model/commands/append_role.hpp"
+#include "model/commands/create_account.hpp"
+#include "model/commands/create_asset.hpp"
+#include "model/commands/create_domain.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/remove_signatory.hpp"
+#include "model/commands/set_quorum.hpp"
+#include "model/commands/subtract_asset_quantity.hpp"
+#include "model/commands/transfer_asset.hpp"
+#include "model/permissions.hpp"
+
+using namespace generator;
+
+namespace iroha {
+  namespace model {
+    namespace generators {
+
+      std::shared_ptr<Command> CommandGenerator::generateAddPeer(
+          const std::string &address, const pubkey_t &key) {
+        return generateCommand<AddPeer>(key, address);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateAddSignatory(
+          const std::string &account_id, const pubkey_t &key) {
+        return generateCommand<AddSignatory>(account_id, key);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateRemoveSignatory(
+          const std::string &account_id, const pubkey_t &key) {
+        return generateCommand<RemoveSignatory>(account_id, key);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateCreateAccount(
+          const std::string &account_name,
+          const std::string &domain_id,
+          const pubkey_t &key) {
+        return generateCommand<CreateAccount>(
+            account_name, domain_id, key);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateCreateDomain(
+          const std::string &domain_id, const std::string &default_role) {
+        return generateCommand<CreateDomain>(domain_id, default_role);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateCreateAsset(
+          const std::string &asset_name,
+          const std::string &domain_id,
+          uint8_t precision) {
+        return generateCommand<CreateAsset>(asset_name, domain_id, precision);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateCreateAdminRole(
+          std::string role_name) {
+        std::set<std::string> perms = {
+            can_create_domain, can_create_account, can_add_peer};
+        perms.insert(edit_self_group.begin(), edit_self_group.end());
+        perms.insert(read_all_group.begin(), read_all_group.end());
+        return std::make_shared<CreateRole>(role_name, perms);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateCreateUserRole(
+          std::string role_name) {
+        std::set<std::string> perms = {can_receive, can_transfer};
+        // User can read their account
+        perms.insert(read_self_group.begin(), read_self_group.end());
+        // User can grant permissions to others
+        perms.insert(grant_group.begin(), grant_group.end());
+        perms.insert(edit_self_group.begin(), edit_self_group.end());
+        return std::make_shared<CreateRole>(role_name, perms);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateCreateAssetCreatorRole(
+          std::string role_name) {
+        std::set<std::string> perms = {can_receive, can_transfer};
+        perms.insert(asset_creator_group.begin(), asset_creator_group.end());
+        perms.insert(read_self_group.begin(), read_self_group.begin());
+        return std::make_shared<CreateRole>(role_name, perms);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateAddAssetQuantity(
+          const std::string &account_id,
+          const std::string &asset_id,
+          const Amount &amount) {
+        return generateCommand<AddAssetQuantity>(account_id, asset_id, amount);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateSetQuorum(
+          const std::string &account_id, uint32_t quorum) {
+        return generateCommand<SetQuorum>(account_id, quorum);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateSubtractAssetQuantity(
+          const std::string &account_id,
+          const std::string &asset_id,
+          const Amount &amount) {
+        // TODO 13/09/17 grimadas: implement IR-498
+        return nullptr;
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateTransferAsset(
+          const std::string &src_account,
+          const std::string &dest_account,
+          const std::string &asset_id,
+          const Amount &amount) {
+        return generateCommand<TransferAsset>(
+            src_account, dest_account, asset_id, amount);
+      }
+
+      std::shared_ptr<Command> CommandGenerator::generateAppendRole(
+          const std::string &account_id,
+          const std::string &role_name) {
+        return generateCommand<AppendRole>(account_id, role_name);
+      }
+
+    }  // namespace generators
+  }    // namespace model
+}  // namespace iroha

@@ -1,169 +1,388 @@
+defaults: &defaults
+  working_directory: /opt/iroha
+  environment:
+    IROHA_HOME: /opt/iroha
+    IROHA_BUILD: /opt/iroha/build
+
+defaults: &version
+  environment:
+    IROHA_VERSION: ${CIRCLE_TAG:-0x$CIRCLE_SHA1}
+
 version: 2
+
 jobs:
   build:
-    # must be IROHA_HOME:
-    working_directory: /opt/iroha
+    <<: *defaults
+    <<: *version
     docker:
-      - image: lebdron/iroha-dev
-        environment:
-          IROHA_HOME: /opt/iroha
-          IROHA_BUILD: /tmp/build
+      - image: hyperledger/iroha-docker-develop
       - image: postgres:9.5
       - image: redis:3.2.8
     steps:
       - checkout
-
+      - run: echo $(eval echo "$IROHA_VERSION")
+      - restore_cache:
+          keys:
+            - build-cache-debug-{{ arch }}-{{ .Branch }}-
+            - build-cache-debug-{{ arch }}-
+          paths:
+            - ~/.ccache
       - run:
-          name: deps install
-          command:  apt update &&  apt install curl -y
-
-      - run:
-          name: ensure, required folders created
+          name: ccache setup
           command: |
-            mkdir -p $IROHA_HOME
-            mkdir -p $IROHA_BUILD
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=1G
       - run:
           name: cmake
-          command: cmake -DCOVERAGE=ON -H$IROHA_HOME -B$IROHA_BUILD
+          command: >
+            cmake \
+              -DCOVERAGE=ON \
+              -H$IROHA_HOME \
+              -B$IROHA_BUILD \
+              -DCMAKE_BUILD_TYPE=Debug \
+              -DIROHA_VERSION=$(eval echo "$IROHA_VERSION")
       - run:
           name: make
-          command: cmake --build $IROHA_BUILD -- -j4
+          command: |
+            cmake --build $IROHA_BUILD -- -j4
       - run:
-          name: run tests
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
+      - save_cache:
+          key: build-cache-debug-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/.ccache
+      - run:
+          name: unit tests, generate xunit-*.xml
           command: cmake --build $IROHA_BUILD --target test
-#      - run:
-#          name: comment coverage on the pull-request
-#          command: $IROHA_HOME/scripts/comment-coverage.sh
-#
-#      - run:
-#          name: analyze source code with cppcheck and sonarqube
-#          command: |
-#            export TEST_FOLDER=$IROHA_BUILD/test_bin
-#
-#            cd $IROHA_HOME
-#            cppcheck --enable=all --inconclusive --xml --xml-version=2 core/ peer/ smart_contract/ test/ tools/ 2>/tmp/cppcheck.xml || true
-#
-#            # run valgrind for tests
-#            VALGRIND_XML=
-#            mkdir -p valgrind_report
-#            for test in $(ls $TEST_FOLDER); do
-#              xml=valgrind_report/$test.xml
-#              bin=$TEST_FOLDER/$test
-#              valgrind --xml=yes --xml-file=$xml --trace-children=yes --demangle=yes --leak-check=full $bin || true
-#
-#              if [ -z "$VALGRIND_XML" ]; then
-#                VALGRIND_XML=$xml
-#              else
-#                VALGRIND_XML=$xml,$VALGRIND_XML
-#              fi
-#            done
-#
-#            # sonarqube is at /opt/sonar-scanner in warchantua/iroha-dev
-#            /opt/sonar-scanner/bin/sonar-scanner \
-#              -Dsonar.sourceEncoding=UTF-8 \
-#              -Dsonar.sources=benchmark,core,peer,test,tools \
-#              -Dsonar.host.url=https://sonar.innoctf.com \
-#              -Dsonar.projectKey=hyperledger:iroha \
-#              -Dsonar.projectName="Iroha" \
-#              -Dsonar.projectVersion="$CIRCLE_BUILD_NUM" \
-#              -Dsonar.login="$SONAR_TOKEN" \
-#              -Dsonar.cxx.valgrind.reportPath="$VALGRIND_XML" \
-#              -Dsonar.cxx.cppcheck.reportPath=/tmp/cppcheck.xml || true
-#
-#
-#      # integrated into circle 2.0
-#      - setup_docker_engine
-#
-#      ## At this step we have compiled and tested iroha.
-#      - run:
-#          name: setup docker
-#          command: |
-#            set -ex
-#            curl -L -o /tmp/docker.tgz https://get.docker.com/builds/Linux/x86_64/docker-17.03.0-ce.tgz
-#            tar -xz -C /tmp -f /tmp/docker.tgz
-#            mv /tmp/docker/* /usr/bin
-#
-#      - run:
-#          name: setup docker-compose
-#          command: |
-#            set -ex
-#            curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-#            chmod +x /usr/local/bin/docker-compose
-#
-#      - run:
-#          name: build and push hyperledger/iroha-docker:$CIRCLE_BRANCH image
-#          command: |
-#            # replace all invalid characters to dots
-#            TAG=$(echo $CIRCLE_BRANCH | sed "s/[^a-zA-Z0-9_\-\.]/./g")
-#            export TAG=$TAG
-#
-#            if [ "$TAG" == "master" ]; then
-#              TAG="latest"
-#            fi
-#
-#            # directory, where iroha build files will reside
-#            export RELEASE=$IROHA_HOME/docker/tiny/iroha
-#            mkdir -p $RELEASE/lib
-#
-#            # extract all libraries which use iroha:
-#            LIBS=$(ldd $IROHA_BUILD/bin/iroha-main | cut -f 2 | cut -d " " -f 3)
-#
-#            # copy libraries (-H = follow links)
-#            cp -H $LIBS $RELEASE/lib
-#
-#            # copy build artifacts
-#            rsync -avr ${IROHA_BUILD}/bin ${RELEASE}
-#            rsync -avr ${IROHA_HOME}/docker/tiny/scripts ${RELEASE}
-#            mkdir -p ${RELEASE}/config
-#            cp ${IROHA_HOME}/config/config.json ${RELEASE}/config/config.json
-#
-#            # build image
-#            cd $IROHA_HOME/docker/tiny
-#            docker build -t hyperledger/iroha-docker:$TAG .
-#
-#            # login
-#            expect -c '\
-#              set timeout 10
-#              spawn docker login
-#              expect "Username:*"
-#              send -- "$env(DOCKER_USER)\r"
-#              expect "Password:*"
-#              send -- "$env(DOCKER_PASS)\r"
-#              expect "*Login Succeeded*"'
-#
-#            # and push
-#            docker push hyperledger/iroha-docker:$TAG
-#
-#            # clean up
-#            rm -rf $RELEASE
-#
-#      ## At this step we have hyperledger/iroha-docker:$TAG image, we can test it now
-#
-#      ## you can use it by tag:
-#      ##   hyperledger/iroha-docker:$TAG
-#      ## don't forget, that call docker run hyperledger/iroha-docker:$TAG is blocking.
-#      ## to make in unblocking, run with -d
-#      ##
-#      ## put your tests here as separate run command, here is the template:
-#      #- run:
-#      #    name: test name
-#      #    command: |
-#      #      test body (bash)
-#      #      test body (bash)
-#      #      don't forget to clean up after tests (if needed)
-#
-#      - run:
-#          name: template test using docker compose
-#          command: |
-#            docker-compose up -d
-#            docker-compose scale iroha=4
-#            IP=$(docker inspect --format "{{ .NetworkSettings.Networks.iroha_private.IPAddress }}" $(docker ps -lq))
-#            TAG=$(echo $CIRCLE_BRANCH | sed "s/[^a-zA-Z0-9_\-\.]/./g")
-#
-#            #docker run --rm -it hyperledger/iroha-docker:$TAG sh -c "/iroha/bin/add_peer key $(IP) ledger"
-#
-#            docker stop $(docker ps -qln 4)
-#            docker rm $(docker ps -qln 4)
+      - run:
+          name: coverage info
+          command: cmake --build $IROHA_BUILD --target gcovr
+      - run:
+          name: cppcheck
+          command: cmake --build $IROHA_BUILD --target cppcheck
+      - persist_to_workspace:
+          root: /opt/iroha/build
+          paths:
+            - compile_commands.json
+            - reports
 
 
-        
+
+  build-linux-release:
+    <<: *defaults
+    <<: *version
+    docker:
+      - image: hyperledger/iroha-docker-develop
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - build-cache-release-{{ arch }}-{{ .Branch }}-
+            - build-cache-release-{{ arch }}-
+          paths:
+            - ~/.ccache
+      - run:
+          name: ccache setup
+          command: |
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=1G
+      - run:
+          name: cmake
+          command: >
+            cmake \
+              -DCOVERAGE=OFF \
+              -DTESTING=OFF \
+              -H$IROHA_HOME \
+              -B$IROHA_BUILD \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DPACKAGE_DEB=ON \
+              -DPACKAGE_TGZ=ON \
+              -DIROHA_VERSION=$(eval echo "$IROHA_VERSION")
+      - run:
+          name: make and package
+          command: |
+            cmake --build $IROHA_BUILD --target package -- -j4
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
+      - save_cache:
+          key: build-cache-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/.ccache
+      - run:
+          name: copy deb file
+          command: |
+            IROHA_VERSION=$(eval echo "$IROHA_VERSION")
+            cd $IROHA_BUILD
+            # iroha-$IROHA_VERSION-Linux.{tar.gz, deb}, always matches 1 file
+            cp iroha-*.deb ./iroha.deb
+            cp iroha-*.tar.gz ./iroha.tar.gz
+            # if IROHA_VERSION is not set, then CIRCLE_SHA1
+            echo ${IROHA_VERSION:-$CIRCLE_SHA1} > version.txt
+      - store_artifacts:
+          path: build/iroha.deb
+          destination: iroha-linux.deb
+      - store_artifacts:
+          path: build/iroha.tar.gz
+          destination: iroha-linux.tar.gz
+      - store_artifacts:
+          path: build/version.txt
+          destination: version.txt
+      - persist_to_workspace:
+          root: build
+          paths:
+            - iroha.deb
+
+
+
+  dockerize:
+    <<: *defaults
+    <<: *version
+    docker:
+      - image: hyperledger/iroha-docker-develop
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: /opt/iroha/build
+      - run:
+          name: Copy deb
+          command: |
+            cp $IROHA_BUILD/iroha.deb $IROHA_HOME/docker/release/iroha.deb
+      - run:
+          name: Docker login
+          command: |
+            docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
+      - run:
+          name: Build and push iroha image
+          command: |
+            tag=
+            if [ -n "$CIRCLE_TAG" ]; then
+              # if CIRCLE_TAG is not empty
+              tag="$CIRCLE_TAG"
+            else
+              if [ "$CIRCLE_BRANCH" == "develop" ]; then
+                tag=develop
+              elif [ "$CIRCLE_BRANCH" == "master" ]; then
+                tag=latest
+              fi
+            fi
+            docker build -t hyperledger/iroha-docker:$tag $IROHA_HOME/docker/release
+            docker push hyperledger/iroha-docker:$tag
+
+
+  # used to push info about issues to github
+  sonar-pr:
+    <<: *defaults
+    <<: *version
+    docker:
+      - image: hyperledger/iroha-docker-develop
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - sonar-
+      - attach_workspace:
+          at: /opt/iroha/build
+      - run:
+          name: codecov.io
+          command: bash <(curl -s https://codecov.io/bash) -f $IROHA_BUILD/reports/gcovr.xml || echo "Codecov did not collect coverage reports"
+      - run:
+          name: execute sonar-scanner to analyze PR
+          command: >
+            if [ ! -z "$SONAR_TOKEN" ] && \
+              [ ! -z "$SORABOT_TOKEN" ] && \
+              [ ! -z "$CIRCLE_BUILD_NUM" ] && \
+              [ ! -z "$CI_PULL_REQUEST" ]; then
+              sonar-scanner \
+                -Dsonar.github.disableInlineComments \
+                -Dsonar.github.repository="hyperledger/iroha" \
+                -Dsonar.analysis.mode=preview \
+                -Dsonar.login=${SONAR_TOKEN} \
+                -Dsonar.projectVersion="${CIRCLE_BUILD_NUM}" \
+                -Dsonar.github.oauth="${SORABOT_TOKEN}" \
+                -Dsonar.github.pullRequest="$(echo $CI_PULL_REQUEST | egrep -o "[0-9]+")"
+            else
+              echo "required env vars not found"
+            fi
+      - save_cache:
+          key: sonar-{{ epoch }}
+          paths:
+            - ~/.sonar
+
+
+  # executed only for develop, master and release branches
+  sonar-release:
+    <<: *defaults
+    <<: *version
+    docker:
+      - image: hyperledger/iroha-docker-develop
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - sonar-
+      - attach_workspace:
+          at: /opt/iroha/build
+      - run:
+          name: codecov.io
+          command: bash <(curl -s https://codecov.io/bash) -f $IROHA_BUILD/reports/gcovr.xml || echo "Codecov did not collect coverage reports"
+      - run:
+          name: execute sonar-scanner
+          command: >
+            if [ ! -z "$SONAR_TOKEN" ] && \
+              [ ! -z "$CIRCLE_BUILD_NUM" ] && \
+              [ ! -z "$CIRCLE_BRANCH" ]; then
+              sonar-scanner \
+                -Dsonar.login="${SONAR_TOKEN}" \
+                -Dsonar.projectVersion="${CIRCLE_BUILD_NUM}" \
+                -Dsonar.branch="${CIRCLE_BRANCH}"
+            else
+              echo "required env vars not found"
+            fi
+      - save_cache:
+          key: sonar-{{ epoch }}
+          paths:
+            - ~/.sonar
+
+
+  build-macos-release:
+    <<: *version
+    macos:
+      xcode: 9.0.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - brew-{{ arch }}
+          paths:
+            - Library/Caches/Homebrew
+      - run:
+          name: install dev dependencies
+          command: brew install cmake boost postgres grpc autoconf automake libtool ccache
+      - save_cache:
+          key: brew-{{ arch }}-{{ epoch }}
+          paths:
+            - Library/Caches/Homebrew
+      - restore_cache:
+          keys:
+            - build-cache-{{ arch }}-{{ .Branch }}
+          paths:
+            - ~/.ccache
+      - restore_cache:
+          keys:
+            - external-{{ arch }}-{{ .Branch }}
+            - external-{{ arch }}
+          paths:
+            - external
+      - run:
+          name: ccache setup
+          command: |
+            ccache --version
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=1G
+      - run:
+          name: cmake
+          command: >
+            cmake -H. -Bbuild \
+              -DCOVERAGE=OFF \
+              -DTESTING=OFF \
+              -DPACKAGE_TGZ=ON \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DIROHA_VERSION=$(eval echo "$IROHA_VERSION")
+      - run:
+          name: make
+          command: |
+            cmake --build build --target package -- -j$(sysctl -n hw.ncpu)
+      - run:
+          name: ccache teardown
+          command: |
+            ccache --cleanup
+            ccache --show-stats
+      - save_cache:
+          key: build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          paths:
+            - ~/.ccache
+      - save_cache:
+          key: external-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          paths:
+            - external
+      - run: ccache --show-stats
+      - run:
+          name: rename artifacts
+          command: |
+            IROHA_VERSION=$(eval echo "$IROHA_VERSION")
+            # iroha-$IROHA_VERSION-Darwin.tar.gz, always matches 1 file
+            cp build/iroha-*.tar.gz build/iroha-darwin.tar.gz
+            # if IROHA_VERSION is not set, then CIRCLE_SHA1
+            echo ${IROHA_VERSION:-$CIRCLE_SHA1} > build/version.txt
+      - store_artifacts:
+          path: build/iroha-darwin.tar.gz
+          destination: iroha-darwin.tar.gz
+      - store_artifacts:
+          path: build/version.txt
+          destination: version.txt
+
+     
+
+workflows:
+  version: 2
+  full_pipeline:
+    jobs:
+      # build-macos-release + build -> sonar(pr/release)
+      - build-macos-release
+      - build
+      - sonar-pr:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore:
+                - develop
+                - master
+            tags:
+              # do not invoke sonar-pr for tags
+              ignore: /.*/
+      # invoke sonar-release whenever anything to master, develop is pushed
+      # or any commit tagged with v[\.0-9]+.*
+      - sonar-release:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+            tags:
+              only: /v[\.0-9]+.*/
+
+      # build-linux-release -> dockerize
+      - build-linux-release:
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+            tags:
+              only: /v[\.0-9]+.*/
+      - dockerize:
+          requires:
+            - build-linux-release
+          filters:
+            branches:
+              only:
+                - develop
+                - master
+            tags:
+              only: /v[\.0-9]+.*/

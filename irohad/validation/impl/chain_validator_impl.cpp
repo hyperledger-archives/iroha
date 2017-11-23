@@ -17,63 +17,46 @@
 
 #include "validation/impl/chain_validator_impl.hpp"
 
+#include "consensus/consensus_common.hpp"
+
 namespace iroha {
   namespace validation {
-
-    ChainValidatorImpl::ChainValidatorImpl(
-        std::shared_ptr<model::ModelCryptoProvider> crypto_provider)
-        : crypto_provider_(crypto_provider) {
+    ChainValidatorImpl::ChainValidatorImpl() {
       log_ = logger::log("ChainValidator");
     }
 
-    bool ChainValidatorImpl::validateBlock(const model::Block& block,
-                                           ametsuchi::MutableStorage& storage) {
-      log_->info("validate block");
-      auto apply_block = [](const auto& current_block, auto& executor,
-                            auto& query, const auto& top_hash) {
-        if (current_block.prev_hash != top_hash) {
+    bool ChainValidatorImpl::validateBlock(const model::Block &block,
+                                           ametsuchi::MutableStorage &storage) {
+      log_->info("validate block: height {}, hash {}", block.height,
+                 block.hash.to_hexstring());
+      auto apply_block = [](const auto &block, auto &queries,
+                            const auto &top_hash) {
+        auto peers = queries.getPeers();
+        if (not peers.has_value()) {
           return false;
         }
-        for (const auto& tx : current_block.transactions) {
-          for (const auto& command : tx.commands) {
-            if (not command->execute(query, executor)) {
-              return false;
-            }
-          }
-        }
-        return true;
+        return block.prev_hash == top_hash and
+               consensus::hasSupermajority(block.sigs.size(),
+                                           peers.value().size()) and
+               consensus::peersSubset(block.sigs, peers.value());
       };
 
-      return
-          // Check if block has supermajority
-          checkSupermajority(storage, block.sigs.size()) &&
-          // Verify signatories of the block
-          // TODO: use stateful validation here ?
-          crypto_provider_->verify(block) &&
-          // Apply to temporary storage
-          storage.apply(block, apply_block);
+      // Apply to temporary storage
+      return storage.apply(block, apply_block);
     }
 
     bool ChainValidatorImpl::validateChain(Commit blocks,
-                                           ametsuchi::MutableStorage& storage) {
+                                           ametsuchi::MutableStorage &storage) {
       log_->info("validate chain...");
       return blocks
           .all([this, &storage](auto block) {
+            log_->info("Validating block: height {}, hash {}",
+                       block.height,
+                       block.hash.to_hexstring());
             return this->validateBlock(block, storage);
           })
           .as_blocking()
           .first();
-    }
-
-    bool ChainValidatorImpl::checkSupermajority(
-        ametsuchi::MutableStorage& storage, uint64_t signs_num) {
-      auto all_peers = storage.getPeers();
-      if (not all_peers.has_value()) {
-        return false;
-      }
-      int64_t all = all_peers.value().size();
-      auto f = (all - 1) / 3.0;
-      return signs_num >= 2 * f + 1;
     }
   }
 }

@@ -18,18 +18,25 @@
 #ifndef IROHA_PB_COMMAND_FACTORY_HPP
 #define IROHA_PB_COMMAND_FACTORY_HPP
 
+#include <primitive.pb.h>
+#include <boost/bimap.hpp>
+#include <unordered_map>
 #include "commands.pb.h"
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
+#include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
+#include "model/commands/revoke_permission.hpp"
+#include "model/commands/set_account_detail.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
+#include "model/permissions.hpp"
 
 namespace iroha {
   namespace model {
@@ -40,55 +47,101 @@ namespace iroha {
        */
       class PbCommandFactory {
        public:
+        PbCommandFactory();
         // asset quantity
-        protocol::AddAssetQuantity serializeAddAssetQuantity(const model::AddAssetQuantity &addAssetQuantity);
-        model::AddAssetQuantity deserializeAddAssetQuantity(const protocol::AddAssetQuantity &addAssetQuantity);
+        protocol::AddAssetQuantity serializeAddAssetQuantity(
+            const model::AddAssetQuantity &addAssetQuantity);
+        model::AddAssetQuantity deserializeAddAssetQuantity(
+            const protocol::AddAssetQuantity &addAssetQuantity);
 
         // add peer
         protocol::AddPeer serializeAddPeer(const model::AddPeer &addPeer);
         model::AddPeer deserializeAddPeer(const protocol::AddPeer &addPeer);
 
         // add signatory
-        protocol::AddSignatory serializeAddSignatory(const model::AddSignatory &addSignatory);
-        model::AddSignatory deserializeAddSignatory(const protocol::AddSignatory &addSignatory);
-
-        // assign master key
-        protocol::AssignMasterKey serializeAssignMasterKey(const model::AssignMasterKey &assignMasterKey);
-        model::AssignMasterKey deserializeAssignMasterKey(const protocol::AssignMasterKey &assignMasterKey);
+        protocol::AddSignatory serializeAddSignatory(
+            const model::AddSignatory &addSignatory);
+        model::AddSignatory deserializeAddSignatory(
+            const protocol::AddSignatory &addSignatory);
 
         // create asset
-        protocol::CreateAsset serializeCreateAsset(const model::CreateAsset &createAsset);
-        model::CreateAsset deserializeCreateAsset(const protocol::CreateAsset &createAsset);
+        protocol::CreateAsset serializeCreateAsset(
+            const model::CreateAsset &createAsset);
+        model::CreateAsset deserializeCreateAsset(
+            const protocol::CreateAsset &createAsset);
 
         // create account
-        protocol::CreateAccount serializeCreateAccount(const model::CreateAccount &createAccount);
-        model::CreateAccount deserializeCreateAccount(const protocol::CreateAccount &createAccount);
+        protocol::CreateAccount serializeCreateAccount(
+            const model::CreateAccount &createAccount);
+        model::CreateAccount deserializeCreateAccount(
+            const protocol::CreateAccount &createAccount);
 
         // create domain
-        protocol::CreateDomain serializeCreateDomain(const model::CreateDomain &createDomain);
-        model::CreateDomain deserializeCreateDomain(const protocol::CreateDomain &createDomain);
+        protocol::CreateDomain serializeCreateDomain(
+            const model::CreateDomain &createDomain);
+        model::CreateDomain deserializeCreateDomain(
+            const protocol::CreateDomain &createDomain);
 
         // remove signatory
-        protocol::RemoveSignatory serializeRemoveSignatory(const model::RemoveSignatory &removeSignatory);
-        model::RemoveSignatory deserializeRemoveSignatory(const protocol::RemoveSignatory &removeSignatory);
-
-        // set account permissions
-        protocol::SetAccountPermissions serializeSetAccountPermissions(const model::SetAccountPermissions &setAccountPermissions);
-        model::SetAccountPermissions deserializeSetAccountPermissions(const protocol::SetAccountPermissions &setAccountPermissions);
+        protocol::RemoveSignatory serializeRemoveSignatory(
+            const model::RemoveSignatory &removeSignatory);
+        model::RemoveSignatory deserializeRemoveSignatory(
+            const protocol::RemoveSignatory &removeSignatory);
 
         // set account quorum
-        protocol::SetAccountQuorum serializeSetQuorum(const model::SetQuorum &setAccountQuorum);
-        model::SetQuorum deserializeSetQuorum(const protocol::SetAccountQuorum &setAccountQuorum);
+        protocol::SetAccountQuorum serializeSetQuorum(
+            const model::SetQuorum &setAccountQuorum);
+        model::SetQuorum deserializeSetQuorum(
+            const protocol::SetAccountQuorum &setAccountQuorum);
 
         // transfer asset
-        protocol::TransferAsset serializeTransferAsset(const model::TransferAsset &subtractAssetQuantity);
-        model::TransferAsset deserializeTransferAsset(const protocol::TransferAsset &subtractAssetQuantity);
+        protocol::TransferAsset serializeTransferAsset(
+            const model::TransferAsset &subtractAssetQuantity);
+        model::TransferAsset deserializeTransferAsset(
+            const protocol::TransferAsset &subtractAssetQuantity);
+
+        // Append role
+        protocol::AppendRole serializeAppendRole(
+            const model::AppendRole &command);
+        model::AppendRole deserializeAppendRole(
+            const protocol::AppendRole &command);
+
+        // Create Role
+        protocol::CreateRole serializeCreateRole(
+            const model::CreateRole &command);
+        model::CreateRole deserializeCreateRole(
+            const protocol::CreateRole &command);
+
+        // Grant Permission
+        protocol::GrantPermission serializeGrantPermission(
+            const model::GrantPermission &command);
+        model::GrantPermission deserializeGrantPermission(
+            const protocol::GrantPermission &command);
+
+        // Revoke Permission
+        protocol::RevokePermission serializeRevokePermission(
+            const model::RevokePermission &command);
+        model::RevokePermission deserializeRevokePermission(
+            const protocol::RevokePermission &command);
+
+        // Set Account Detail
+        protocol::SetAccountDetail serializeSetAccountDetail(
+            const model::SetAccountDetail &command);
+        model::SetAccountDetail deserializeSetAccountDetail(
+            const protocol::SetAccountDetail &command);
 
         // abstract
-        protocol::Command serializeAbstractCommand(const model::Command &command);
-        std::shared_ptr<model::Command> deserializeAbstractCommand(const protocol::Command &command);
+        protocol::Command serializeAbstractCommand(
+            const model::Command &command);
+        std::shared_ptr<model::Command> deserializeAbstractCommand(
+            const protocol::Command &command);
+
+       protected:
+        boost::bimap<iroha::protocol::RolePermission, std::string> pb_role_map_;
+        boost::bimap<iroha::protocol::GrantablePermission, std::string>
+            pb_grant_map_;
       };
-    } // namespace converters
-  }  // namespace model
+    }  // namespace converters
+  }    // namespace model
 }  // namespace iroha
-#endif //IROHA_PB_COMMAND_FACTORY_HPP
+#endif  // IROHA_PB_COMMAND_FACTORY_HPP

@@ -15,48 +15,66 @@
  * limitations under the License.
  */
 
-#include <model/model_crypto_provider_impl.hpp>
-#include <model/model_hash_provider_impl.hpp>
+#include "model_crypto_provider_impl.hpp"
+#include "crypto/crypto.hpp"
+#include "crypto/hash.hpp"
+
+#include "model/queries/get_account.hpp"
+#include "model/queries/get_account_assets.hpp"
+#include "model/queries/get_asset_info.hpp"
+#include "model/queries/get_roles.hpp"
+#include "model/queries/get_signatories.hpp"
+#include "model/queries/get_transactions.hpp"
 
 namespace iroha {
   namespace model {
+    ModelCryptoProviderImpl::ModelCryptoProviderImpl(const keypair_t &keypair)
+        : keypair_(keypair) {}
 
     bool ModelCryptoProviderImpl::verify(const Transaction &tx) const {
-      HashProviderImpl hash_provider;
-      auto tx_hash = hash_provider.get_hash(tx);
-
-      if (tx.signatures.size() == 0) return false;
-
-      for (auto sign : tx.signatures) {
-        auto verified = iroha::verify(tx_hash.data(), tx_hash.size(),
-                                      sign.pubkey, sign.signature);
-        if (!verified) return false;
-      }
-      return true;
+      return std::all_of(tx.signatures.begin(),
+                         tx.signatures.end(),
+                         [tx](const Signature &sig) {
+                           return iroha::verify(iroha::hash(tx).to_string(),
+                                                sig.pubkey,
+                                                sig.signature);
+                         });
     }
 
-    bool ModelCryptoProviderImpl::verify(std::shared_ptr<const Query> query) const {
-      HashProviderImpl hashProvider;
-      auto query_hash = hashProvider.get_hash(query);
-      auto sign = query->signature;
-      return iroha::verify(query_hash.data(), query_hash.size(), sign.pubkey,
-                           sign.signature);
+    bool ModelCryptoProviderImpl::verify(const Query &query) const {
+      return iroha::verify(iroha::hash(query).to_string(),
+                           query.signature.pubkey,
+                           query.signature.signature);
     }
 
     bool ModelCryptoProviderImpl::verify(const Block &block) const {
-      HashProviderImpl hashProvider;
-      auto block_hash = hashProvider.get_hash(block);
+      return std::all_of(
+          block.sigs.begin(), block.sigs.end(), [block](const Signature &sig) {
+            return iroha::verify(
+                iroha::hash(block).to_string(), sig.pubkey, sig.signature);
+          });
+    }
 
-      if (block.sigs.size() == 0) {
-        return false;
-      }
+    void ModelCryptoProviderImpl::sign(Block &block) const {
+      auto signature = iroha::sign(
+          iroha::hash(block).to_string(), keypair_.pubkey, keypair_.privkey);
 
-      for (auto sign : block.sigs) {
-        auto verified = iroha::verify(block_hash.data(), block_hash.size(),
-                                      sign.pubkey, sign.signature);
-        if (!verified) return false;
-      }
-      return true;
+      block.sigs.emplace_back(signature, keypair_.pubkey);
+    }
+
+    void ModelCryptoProviderImpl::sign(Transaction &transaction) const {
+      auto signature = iroha::sign(iroha::hash(transaction).to_string(),
+                                   keypair_.pubkey,
+                                   keypair_.privkey);
+
+      transaction.signatures.emplace_back(signature, keypair_.pubkey);
+    }
+
+    void ModelCryptoProviderImpl::sign(Query &query) const {
+      auto signature = iroha::sign(
+          iroha::hash(query).to_string(), keypair_.pubkey, keypair_.privkey);
+
+      query.signature = Signature{signature, keypair_.pubkey};
     }
   }
 }

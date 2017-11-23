@@ -12,16 +12,14 @@ message Asset {
 
 message Account {
     string account_id = 1;
-    string domain_name = 2;
-    Permissions permissions = 3;
-    uint32 quorum = 4;
-    bytes master_key = 5;
+    string domain_id = 2;
+    uint32 quorum = 3;
 }
 
 message AccountAsset {
     string asset_id = 1;
     string account_id = 2;
-    uint64 balance = 3;
+    Amount balance = 3;
 }
 
 // *** Responses *** //
@@ -31,6 +29,19 @@ message AccountAssetResponse {
 
 message AccountResponse {
     Account account = 1;
+    repeated string account_roles = 2;
+}
+
+message AssetResponse {
+    Asset asset = 1;
+}
+
+message RolesResponse {
+    repeated string roles = 1;
+}
+
+message RolePermissionsResponse {
+    repeated string permissions = 1;
 }
 
 message ErrorResponse {
@@ -42,6 +53,8 @@ message ErrorResponse {
         NO_SIGNATORIES = 4; // when requested signatories does not exist
         NOT_SUPPORTED = 5; // when unidentified request was received
         WRONG_FORMAT = 6; // when json format wrong
+        NO_ASSET = 7; // when requested asset does not exist
+        NO_ROLES = 8; // when there are no roles defined in the system
     }
     Reason reason = 1;
 }
@@ -54,6 +67,8 @@ message TransactionsResponse {
     repeated Transaction transactions = 1;
 }
 
+
+
 message QueryResponse {
     oneof response {
         AccountAssetResponse account_assets_response = 1;
@@ -61,5 +76,8 @@ message QueryResponse {
         ErrorResponse error_response = 3;
         SignatoriesResponse signatories_response = 4;
         TransactionsResponse transactions_response = 5;
+        AssetResponse asset_response = 6;
+        RolesResponse roles_response = 7;
+        RolePermissionsResponse role_permissions_response = 8;
     }
 }

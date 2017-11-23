@@ -36,6 +36,10 @@ namespace iroha {
         bool operator==(const VoteMessage &rhs) const {
           return hash == rhs.hash and signature == rhs.signature;
         }
+
+        bool operator!=(const VoteMessage &rhs) const {
+          return not(*this == rhs);
+        }
       };
 
       /**

@@ -15,70 +15,101 @@
  * limitations under the License.
  */
 
-#define RAPIDJSON_HAS_STDSTRING 1
-
 #include "model/converters/json_command_factory.hpp"
+
+#include <model/commands/set_account_detail.hpp>
+#include <regex>
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
+
+#include "model/commands/append_role.hpp"
+#include "model/commands/create_role.hpp"
+#include "model/commands/grant_permission.hpp"
+#include "model/commands/revoke_permission.hpp"
 
 using namespace rapidjson;
 
 namespace iroha {
   namespace model {
     namespace converters {
+      template <>
+      struct Convert<Amount> {
+        template <typename T>
+        nonstd::optional<Amount> operator()(T &&x) {
+          auto des = makeFieldDeserializer(x);
+          auto str_int_value = des.String("value");
+
+          if (not str_int_value.has_value()) {
+            return nonstd::nullopt;
+          }
+
+          // check if value is actually number
+          std::regex e("\\d+");
+          if (not std::regex_match(str_int_value.value(), e)) {
+            return nonstd::nullopt;
+          }
+
+          uint256_t value(str_int_value.value());
+          uint8_t precision;
+          rapidjson::Document dd;
+          precision = des.document["precision"].GetUint();
+
+          return nonstd::make_optional<Amount>(
+              {value, static_cast<uint8_t>(precision)});
+        }
+      };
 
       JsonCommandFactory::JsonCommandFactory() {
-        serializers_[typeid(AddAssetQuantity)] =
-            &JsonCommandFactory::serializeAddAssetQuantity;
-        serializers_[typeid(AddPeer)] = &JsonCommandFactory::serializeAddPeer;
-        serializers_[typeid(AddSignatory)] =
-            &JsonCommandFactory::serializeAddSignatory;
-        serializers_[typeid(AssignMasterKey)] =
-            &JsonCommandFactory::serializeAssignMasterKey;
-        serializers_[typeid(CreateAccount)] =
-            &JsonCommandFactory::serializeCreateAccount;
-        serializers_[typeid(CreateAsset)] =
-            &JsonCommandFactory::serializeCreateAsset;
-        serializers_[typeid(CreateDomain)] =
-            &JsonCommandFactory::serializeCreateDomain;
-        serializers_[typeid(RemoveSignatory)] =
-            &JsonCommandFactory::serializeRemoveSignatory;
-        serializers_[typeid(SetAccountPermissions)] =
-            &JsonCommandFactory::serializeSetAccountPermissions;
-        serializers_[typeid(SetQuorum)] =
-            &JsonCommandFactory::serializeSetQuorum;
-        serializers_[typeid(TransferAsset)] =
-            &JsonCommandFactory::serializeTransferAsset;
+        serializers_ = {
+            {typeid(AddAssetQuantity),
+             &JsonCommandFactory::serializeAddAssetQuantity},
+            {typeid(AddPeer), &JsonCommandFactory::serializeAddPeer},
+            {typeid(AddSignatory), &JsonCommandFactory::serializeAddSignatory},
+            {typeid(CreateAccount),
+             &JsonCommandFactory::serializeCreateAccount},
+            {typeid(CreateAsset), &JsonCommandFactory::serializeCreateAsset},
+            {typeid(CreateDomain), &JsonCommandFactory::serializeCreateDomain},
+            {typeid(SetAccountDetail),
+             &JsonCommandFactory::serializeSetAccountDetail},
+            {typeid(RemoveSignatory),
+             &JsonCommandFactory::serializeRemoveSignatory},
+            {typeid(SetQuorum), &JsonCommandFactory::serializeSetQuorum},
+            {typeid(TransferAsset),
+             &JsonCommandFactory::serializeTransferAsset},
+            {typeid(AppendRole), &JsonCommandFactory::serializeAppendRole},
+            {typeid(CreateRole), &JsonCommandFactory::serializeCreateRole},
+            {typeid(GrantPermission),
+             &JsonCommandFactory::serializeGrantPermission},
+            {typeid(RevokePermission),
+             &JsonCommandFactory::serializeRevokePermission}};
 
-        deserializers_["AddAssetQuantity"] =
-            &JsonCommandFactory::deserializeAddAssetQuantity;
-        deserializers_["AddPeer"] = &JsonCommandFactory::deserializeAddPeer;
-        deserializers_["AddSignatory"] =
-            &JsonCommandFactory::deserializeAddSignatory;
-        deserializers_["AssignMasterKey"] =
-            &JsonCommandFactory::deserializeAssignMasterKey;
-        deserializers_["CreateAccount"] =
-            &JsonCommandFactory::deserializeCreateAccount;
-        deserializers_["CreateAsset"] =
-            &JsonCommandFactory::deserializeCreateAsset;
-        deserializers_["CreateDomain"] =
-            &JsonCommandFactory::deserializeCreateDomain;
-        deserializers_["RemoveSignatory"] =
-            &JsonCommandFactory::deserializeRemoveSignatory;
-        deserializers_["SetAccountPermissions"] =
-            &JsonCommandFactory::deserializeSetAccountPermissions;
-        deserializers_["SetQuorum"] = &JsonCommandFactory::deserializeSetQuorum;
-        deserializers_["TransferAsset"] =
-            &JsonCommandFactory::deserializeTransferAsset;
+        deserializers_ = {
+            {"AddAssetQuantity",
+             &JsonCommandFactory::deserializeAddAssetQuantity},
+            {"AddPeer", &JsonCommandFactory::deserializeAddPeer},
+            {"AddSignatory", &JsonCommandFactory::deserializeAddSignatory},
+            {"CreateAccount", &JsonCommandFactory::deserializeCreateAccount},
+            {"CreateAsset", &JsonCommandFactory::deserializeCreateAsset},
+            {"CreateDomain", &JsonCommandFactory::deserializeCreateDomain},
+            {"SetAccountDetail",
+             &JsonCommandFactory::deserializeSetAccountDetail},
+            {"RemoveSignatory",
+             &JsonCommandFactory::deserializeRemoveSignatory},
+            {"SetQuorum", &JsonCommandFactory::deserializeSetQuorum},
+            {"TransferAsset", &JsonCommandFactory::deserializeTransferAsset},
+            {"AppendRole", &JsonCommandFactory::deserializeAppendRole},
+            {"CreateRole", &JsonCommandFactory::deserializeCreateRole},
+            {"GrantPermission",
+             &JsonCommandFactory::deserializeGrantPermission},
+            {"RevokePermission",
+             &JsonCommandFactory::deserializeRevokePermission}};
       }
 
       // AddAssetQuantity
@@ -92,38 +123,29 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "AddAssetQuantity", allocator);
-        document.AddMember("account_id", add_asset_quantity->account_id,
-                           allocator);
+        document.AddMember(
+            "account_id", add_asset_quantity->account_id, allocator);
         document.AddMember("asset_id", add_asset_quantity->asset_id, allocator);
 
         Value amount;
         amount.SetObject();
-        amount.AddMember("int_part", add_asset_quantity->amount.int_part,
-                         allocator);
-        amount.AddMember("frac_part", add_asset_quantity->amount.frac_part,
-                         allocator);
+        amount.AddMember(
+            "value", add_asset_quantity->amount.getIntValue().str(), allocator);
+        amount.AddMember(
+            "precision", add_asset_quantity->amount.getPrecision(), allocator);
 
         document.AddMember("amount", amount, allocator);
 
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAddAssetQuantity(
-          const Document &command) {
-        auto add_asset_quantity = std::make_shared<AddAssetQuantity>();
-
-        // account_id
-        add_asset_quantity->account_id = command["account_id"].GetString();
-
-        // asset_id
-        add_asset_quantity->asset_id = command["asset_id"].GetString();
-
-        // amount
-        auto amount = command["amount"].GetObject();
-        add_asset_quantity->amount.int_part = amount["int_part"].GetUint64();
-        add_asset_quantity->amount.frac_part = amount["frac_part"].GetUint64();
-
-        return add_asset_quantity;
+      optional_ptr<Command> JsonCommandFactory::deserializeAddAssetQuantity(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<AddAssetQuantity>()
+            | des.String(&AddAssetQuantity::account_id, "account_id")
+            | des.String(&AddAssetQuantity::asset_id, "asset_id")
+            | des.Object(&AddAssetQuantity::amount, "amount") | toCommand;
       }
 
       // AddPeer
@@ -137,22 +159,18 @@ namespace iroha {
         document.SetObject();
         document.AddMember("command_type", "AddPeer", allocator);
         document.AddMember("address", add_peer->address, allocator);
-        document.AddMember("peer_key", add_peer->peer_key.to_hexstring(),
-                           allocator);
+        document.AddMember(
+            "peer_key", add_peer->peer_key.to_hexstring(), allocator);
 
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAddPeer(
-          const Document &command) {
-        auto add_peer = std::make_shared<AddPeer>();
-
-        // peer key
-        hexstringToArray(command["peer_key"].GetString(), add_peer->peer_key);
-
-        // address
-        add_peer->address = command["address"].GetString();
-        return add_peer;
+      optional_ptr<Command> JsonCommandFactory::deserializeAddPeer(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<AddPeer>()
+            | des.String(&AddPeer::peer_key, "peer_key")
+            | des.String(&AddPeer::address, "address") | toCommand;
       }
 
       // AddSignatory
@@ -166,55 +184,18 @@ namespace iroha {
         document.SetObject();
         document.AddMember("command_type", "AddSignatory", allocator);
         document.AddMember("account_id", add_signatory->account_id, allocator);
-        document.AddMember("pubkey", add_signatory->pubkey.to_hexstring(),
-                           allocator);
+        document.AddMember(
+            "pubkey", add_signatory->pubkey.to_hexstring(), allocator);
 
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAddSignatory(
-          const Document &command) {
-        auto add_signatory = std::make_shared<AddSignatory>();
-
-        // account_id
-        add_signatory->account_id = command["account_id"].GetString();
-
-        // pubkey
-        hexstringToArray(command["pubkey"].GetString(), add_signatory->pubkey);
-
-        return add_signatory;
-      }
-
-      // AssignMasterKey
-      Document JsonCommandFactory::serializeAssignMasterKey(
-          std::shared_ptr<Command> command) {
-        auto assign_master_key = static_cast<AssignMasterKey *>(command.get());
-
-        Document document;
-        auto &allocator = document.GetAllocator();
-
-        document.SetObject();
-        document.AddMember("command_type", "AssignMasterKey", allocator);
-        document.AddMember("account_id", assign_master_key->account_id,
-                           allocator);
-        document.AddMember("pubkey", assign_master_key->pubkey.to_hexstring(),
-                           allocator);
-
-        return document;
-      }
-
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAssignMasterKey(
-          const Document &command) {
-        auto assign_master_key = std::make_shared<AssignMasterKey>();
-
-        // account_id
-        assign_master_key->account_id = command["account_id"].GetString();
-
-        // pubkey
-        hexstringToArray(command["pubkey"].GetString(),
-                         assign_master_key->pubkey);
-
-        return assign_master_key;
+      optional_ptr<Command> JsonCommandFactory::deserializeAddSignatory(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<AddSignatory>()
+            | des.String(&AddSignatory::account_id, "account_id")
+            | des.String(&AddSignatory::pubkey, "pubkey") | toCommand;
       }
 
       // CreateAccount
@@ -227,29 +208,50 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "CreateAccount", allocator);
-        document.AddMember("account_name", create_account->account_name,
-                           allocator);
+        document.AddMember(
+            "account_name", create_account->account_name, allocator);
         document.AddMember("domain_id", create_account->domain_id, allocator);
-        document.AddMember("pubkey", create_account->pubkey.to_hexstring(),
-                           allocator);
+        document.AddMember(
+            "pubkey", create_account->pubkey.to_hexstring(), allocator);
 
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeCreateAccount(
-          const Document &command) {
-        auto create_account = std::make_shared<CreateAccount>();
+      optional_ptr<Command> JsonCommandFactory::deserializeCreateAccount(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<CreateAccount>()
+            | des.String(&CreateAccount::account_name, "account_name")
+            | des.String(&CreateAccount::domain_id, "domain_id")
+            | des.String(&CreateAccount::pubkey, "pubkey") | toCommand;
+      }
 
-        // account_name
-        create_account->account_name = command["account_name"].GetString();
+      // Set Account Detail
+      rapidjson::Document JsonCommandFactory::serializeSetAccountDetail(
+          std::shared_ptr<Command> command) {
+        auto set_account_detail =
+            static_cast<SetAccountDetail *>(command.get());
 
-        // domain_id
-        create_account->domain_id = command["domain_id"].GetString();
+        Document document;
+        auto &allocator = document.GetAllocator();
 
-        // pubkey
-        hexstringToArray(command["pubkey"].GetString(), create_account->pubkey);
+        document.SetObject();
+        document.AddMember("command_type", "SetAccountDetail", allocator);
+        document.AddMember(
+            "account_id", set_account_detail->account_id, allocator);
+        document.AddMember("key", set_account_detail->key, allocator);
+        document.AddMember("value", set_account_detail->value, allocator);
 
-        return create_account;
+        return document;
+      }
+
+      optional_ptr<Command> JsonCommandFactory::deserializeSetAccountDetail(
+          const rapidjson::Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<SetAccountDetail>()
+            | des.String(&SetAccountDetail::account_id, "account_id")
+            | des.String(&SetAccountDetail::key, "key")
+            | des.String(&SetAccountDetail::value, "value") | toCommand;
       }
 
       // CreateAsset
@@ -269,20 +271,13 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeCreateAsset(
-          const Document &command) {
-        auto create_asset = std::make_shared<CreateAsset>();
-
-        // asset_name
-        create_asset->asset_name = command["asset_name"].GetString();
-
-        // domain_id
-        create_asset->domain_id = command["domain_id"].GetString();
-
-        // precision
-        create_asset->precision = command["precision"].GetUint();
-
-        return create_asset;
+      optional_ptr<Command> JsonCommandFactory::deserializeCreateAsset(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<CreateAsset>()
+            | des.String(&CreateAsset::asset_name, "asset_name")
+            | des.String(&CreateAsset::domain_id, "domain_id")
+            | des.Uint(&CreateAsset::precision, "precision") | toCommand;
       }
 
       // CreateDomain
@@ -295,20 +290,20 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "CreateDomain", allocator);
-        document.AddMember("domain_name", create_domain->domain_name,
-                           allocator);
+        document.AddMember("domain_id", create_domain->domain_id, allocator);
+        document.AddMember(
+            "user_default_role", create_domain->user_default_role, allocator);
 
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeCreateDomain(
-          const Document &command) {
-        auto create_domain = std::make_shared<CreateDomain>();
-
-        // domain_name
-        create_domain->domain_name = command["domain_name"].GetString();
-
-        return create_domain;
+      optional_ptr<Command> JsonCommandFactory::deserializeCreateDomain(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<CreateDomain>()
+            | des.String(&CreateDomain::domain_id, "domain_id")
+            | des.String(&CreateDomain::user_default_role, "user_default_role")
+            | toCommand;
       }
 
       // RemoveSignatory
@@ -321,117 +316,20 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "RemoveSignatory", allocator);
-        document.AddMember("account_id", remove_signatory->account_id,
-                           allocator);
-        document.AddMember("pubkey", remove_signatory->pubkey.to_hexstring(),
-                           allocator);
+        document.AddMember(
+            "account_id", remove_signatory->account_id, allocator);
+        document.AddMember(
+            "pubkey", remove_signatory->pubkey.to_hexstring(), allocator);
 
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeRemoveSignatory(
-          const Document &command) {
-        auto remove_signatory = std::make_shared<RemoveSignatory>();
-
-        // account_id
-        remove_signatory->account_id = command["account_id"].GetString();
-
-        // pubkey
-        hexstringToArray(command["pubkey"].GetString(),
-                         remove_signatory->pubkey);
-
-        return remove_signatory;
-      }
-
-      // SetAccountPermissions
-      Document JsonCommandFactory::serializeSetAccountPermissions(
-          std::shared_ptr<Command> command) {
-        auto set_account_permissions =
-            static_cast<SetAccountPermissions *>(command.get());
-
-        Document document;
-        auto &allocator = document.GetAllocator();
-
-        document.SetObject();
-        document.AddMember("command_type", "SetAccountPermissions", allocator);
-        document.AddMember("account_id", set_account_permissions->account_id,
-                           allocator);
-
-        Value new_permissions;
-        new_permissions.SetObject();
-        new_permissions.AddMember(
-            "add_signatory",
-            set_account_permissions->new_permissions.add_signatory, allocator);
-        new_permissions.AddMember(
-            "can_transfer",
-            set_account_permissions->new_permissions.can_transfer, allocator);
-        new_permissions.AddMember(
-            "create_accounts",
-            set_account_permissions->new_permissions.create_accounts,
-            allocator);
-        new_permissions.AddMember(
-            "create_assets",
-            set_account_permissions->new_permissions.create_assets, allocator);
-        new_permissions.AddMember(
-            "create_domains",
-            set_account_permissions->new_permissions.create_domains, allocator);
-        new_permissions.AddMember(
-            "issue_assets",
-            set_account_permissions->new_permissions.issue_assets, allocator);
-        new_permissions.AddMember(
-            "read_all_accounts",
-            set_account_permissions->new_permissions.read_all_accounts,
-            allocator);
-        new_permissions.AddMember(
-            "remove_signatory",
-            set_account_permissions->new_permissions.remove_signatory,
-            allocator);
-        new_permissions.AddMember(
-            "set_permissions",
-            set_account_permissions->new_permissions.set_permissions,
-            allocator);
-        new_permissions.AddMember(
-            "set_quorum", set_account_permissions->new_permissions.set_quorum,
-            allocator);
-
-        document.AddMember("new_permissions", new_permissions, allocator);
-
-        return document;
-      }
-
-      std::shared_ptr<Command>
-      JsonCommandFactory::deserializeSetAccountPermissions(
-          const Document &command) {
-        auto set_account_permissions =
-            std::make_shared<SetAccountPermissions>();
-
-        // account_id
-        set_account_permissions->account_id = command["account_id"].GetString();
-
-        // permissions
-        auto new_permissions = command["new_permissions"].GetObject();
-        set_account_permissions->new_permissions.add_signatory =
-            new_permissions["add_signatory"].GetBool();
-        set_account_permissions->new_permissions.can_transfer =
-            new_permissions["can_transfer"].GetBool();
-        set_account_permissions->new_permissions.create_accounts =
-            new_permissions["create_accounts"].GetBool();
-        set_account_permissions->new_permissions.create_assets =
-            new_permissions["create_assets"].GetBool();
-        set_account_permissions->new_permissions.create_domains =
-            new_permissions["create_domains"].GetBool();
-        set_account_permissions->new_permissions.issue_assets =
-            new_permissions["issue_assets"].GetBool();
-        set_account_permissions->new_permissions.read_all_accounts =
-            new_permissions["read_all_accounts"].GetBool();
-        set_account_permissions->new_permissions.remove_signatory =
-            new_permissions["remove_signatory"].GetBool();
-        set_account_permissions->new_permissions.set_permissions =
-            new_permissions["set_permissions"].GetBool();
-        set_account_permissions->new_permissions.set_quorum =
-            new_permissions["set_quorum"].GetBool();
-
-        return set_account_permissions;
+      optional_ptr<Command> JsonCommandFactory::deserializeRemoveSignatory(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<RemoveSignatory>()
+            | des.String(&RemoveSignatory::account_id, "account_id")
+            | des.String(&RemoveSignatory::pubkey, "pubkey") | toCommand;
       }
 
       // SetAccountQuorum
@@ -450,17 +348,12 @@ namespace iroha {
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeSetQuorum(
-          const Document &command) {
-        auto set_quorum = std::make_shared<SetQuorum>();
-
-        // account_id
-        set_quorum->account_id = command["account_id"].GetString();
-
-        // new_quorum
-        set_quorum->new_quorum = command["new_quorum"].GetUint();
-
-        return set_quorum;
+      optional_ptr<Command> JsonCommandFactory::deserializeSetQuorum(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<SetQuorum>()
+            | des.String(&SetQuorum::account_id, "account_id")
+            | des.Uint(&SetQuorum::new_quorum, "new_quorum") | toCommand;
       }
 
       // TransferAsset
@@ -473,67 +366,155 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "TransferAsset", allocator);
-        document.AddMember("src_account_id", transfer_asset->src_account_id,
-                           allocator);
-        document.AddMember("dest_account_id", transfer_asset->dest_account_id,
-                           allocator);
+        document.AddMember(
+            "src_account_id", transfer_asset->src_account_id, allocator);
+        document.AddMember(
+            "dest_account_id", transfer_asset->dest_account_id, allocator);
         document.AddMember("asset_id", transfer_asset->asset_id, allocator);
+        document.AddMember(
+            "description", transfer_asset->description, allocator);
 
         Value amount;
         amount.SetObject();
-        amount.AddMember("int_part", transfer_asset->amount.int_part,
-                         allocator);
-        amount.AddMember("frac_part", transfer_asset->amount.frac_part,
-                         allocator);
+        amount.AddMember(
+            "value", transfer_asset->amount.getIntValue().str(), allocator);
+        amount.AddMember(
+            "precision", transfer_asset->amount.getPrecision(), allocator);
 
         document.AddMember("amount", amount, allocator);
 
         return document;
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeTransferAsset(
-          const Document &command) {
-        auto transfer_asset = std::make_shared<TransferAsset>();
+      optional_ptr<Command> JsonCommandFactory::deserializeTransferAsset(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<TransferAsset>()
+            | des.String(&TransferAsset::src_account_id, "src_account_id")
+            | des.String(&TransferAsset::dest_account_id, "dest_account_id")
+            | des.String(&TransferAsset::asset_id, "asset_id")
+            | des.String(&TransferAsset::description, "description")
+            | des.Object(&TransferAsset::amount, "amount") | toCommand;
+      }
 
-        // src_account_id
-        transfer_asset->src_account_id = command["src_account_id"].GetString();
+      rapidjson::Document JsonCommandFactory::serializeAppendRole(
+          std::shared_ptr<Command> command) {
+        auto cmd = static_cast<AppendRole *>(command.get());
 
-        // dest_account_id
-        transfer_asset->dest_account_id =
-            command["dest_account_id"].GetString();
+        Document document;
+        auto &allocator = document.GetAllocator();
 
-        // asset_id
-        transfer_asset->asset_id = command["asset_id"].GetString();
+        document.SetObject();
+        document.AddMember("command_type", "AppendRole", allocator);
+        document.AddMember("account_id", cmd->account_id, allocator);
+        document.AddMember("role_name", cmd->role_name, allocator);
+        return document;
+      }
 
-        // amount
-        auto json_amount = command["amount"].GetObject();
-        transfer_asset->amount.int_part = json_amount["int_part"].GetUint64();
-        transfer_asset->amount.frac_part = json_amount["frac_part"].GetUint64();
+      optional_ptr<Command> JsonCommandFactory::deserializeAppendRole(
+          const rapidjson::Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<AppendRole>()
+            | des.String(&AppendRole::account_id, "account_id")
+            | des.String(&AppendRole::role_name, "role_name") | toCommand;
+      }
 
-        return transfer_asset;
+      rapidjson::Document JsonCommandFactory::serializeCreateRole(
+          std::shared_ptr<Command> command) {
+        auto cmd = static_cast<CreateRole *>(command.get());
+
+        Document document;
+        auto &allocator = document.GetAllocator();
+
+        document.SetObject();
+        document.AddMember("command_type", "CreateRole", allocator);
+        document.AddMember("role_name", cmd->role_name, allocator);
+        Value perms;
+        perms.SetArray();
+        for (auto perm : cmd->permissions) {
+          Value perm_value;
+          perm_value.Set(perm, allocator);
+          perms.PushBack(perm_value, allocator);
+        }
+        document.AddMember("permissions", perms, allocator);
+        return document;
+      }
+
+      optional_ptr<Command> JsonCommandFactory::deserializeCreateRole(
+          const rapidjson::Value &document) {
+        if (document.HasMember("role_name") and document["role_name"].IsString()
+            and document.HasMember("permissions")
+            and document["permissions"].IsArray()) {
+          std::set<std::string> perms;
+          for (auto &v : document["permissions"].GetArray()) {
+            if (not v.IsString()) {
+              return nonstd::nullopt;
+            }
+            perms.insert(v.GetString());
+          }
+          auto role_name = document["role_name"].GetString();
+          return make_optional_ptr<CreateRole>(role_name, perms) | toCommand;
+        }
+        return nonstd::nullopt;
+      }
+
+      rapidjson::Document JsonCommandFactory::serializeGrantPermission(
+          std::shared_ptr<Command> command) {
+        auto cmd = static_cast<GrantPermission *>(command.get());
+
+        Document document;
+        auto &allocator = document.GetAllocator();
+        document.SetObject();
+        document.AddMember("command_type", "GrantPermission", allocator);
+        document.AddMember("account_id", cmd->account_id, allocator);
+        document.AddMember("permission_name", cmd->permission_name, allocator);
+        return document;
+      }
+
+      optional_ptr<Command> JsonCommandFactory::deserializeGrantPermission(
+          const rapidjson::Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<GrantPermission>()
+            | des.String(&GrantPermission::account_id, "account_id")
+            | des.String(&GrantPermission::permission_name, "permission_name")
+            | toCommand;
+      }
+
+      rapidjson::Document JsonCommandFactory::serializeRevokePermission(
+          std::shared_ptr<Command> command) {
+        auto cmd = static_cast<RevokePermission *>(command.get());
+
+        Document document;
+        auto &allocator = document.GetAllocator();
+        document.SetObject();
+        document.AddMember("command_type", "RevokePermission", allocator);
+        document.AddMember("account_id", cmd->account_id, allocator);
+        document.AddMember("permission_name", cmd->permission_name, allocator);
+        return document;
+      }
+
+      optional_ptr<Command> JsonCommandFactory::deserializeRevokePermission(
+          const rapidjson::Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<RevokePermission>()
+            | des.String(&RevokePermission::account_id, "account_id")
+            | des.String(&RevokePermission::permission_name, "permission_name")
+            | toCommand;
       }
 
       // Abstract
       Document JsonCommandFactory::serializeAbstractCommand(
           std::shared_ptr<Command> command) {
-        auto it = serializers_.find(typeid(*command));
-        if (it != serializers_.end()) {
-          return (this->*it->second)(command);
-        }
-        return Document();
+        return makeMethodInvoke(*this,
+                                command)(serializers_.at(typeid(*command)));
       }
 
-      std::shared_ptr<Command> JsonCommandFactory::deserializeAbstractCommand(
-          const Document &command) {
-        auto command_type = command["command_type"].GetString();
-
-        auto it = deserializers_.find(command_type);
-        if (it != deserializers_.end()) {
-          return (this->*it->second)(command);
-        }
-        return nullptr;
+      optional_ptr<model::Command>
+      JsonCommandFactory::deserializeAbstractCommand(const Value &document) {
+        return makeFieldDeserializer(document).String("command_type")
+            | makeOptionalGet(deserializers_)
+            | makeMethodInvoke(*this, document);
       }
-
     }  // namespace converters
   }    // namespace model
 }  // namespace iroha

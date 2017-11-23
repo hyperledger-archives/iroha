@@ -32,25 +32,27 @@ namespace iroha {
       /**
        * Asset to create in the system
        */
-      std::string asset_name;
+      std::string asset_name{};
 
       /**
        * Domain id (full name)
        */
-      std::string domain_id;
+      std::string domain_id{};
 
       /**
        * Asset precision
        */
-      uint8_t precision;
+      uint8_t precision{};
 
-      bool validate(ametsuchi::WsvQuery& queries,
-                    const Account& creator) override;
-      bool execute(ametsuchi::WsvQuery& queries,
-                   ametsuchi::WsvCommand& commands) override;
+      bool operator==(const Command &command) const override;
 
-      bool operator==(const Command& command) const override;
-      bool operator!=(const Command& command) const override;
+      CreateAsset() {}
+
+      CreateAsset(const std::string &asset_name, const std::string &domain_id,
+                  uint8_t precision)
+          : asset_name(asset_name),
+            domain_id(domain_id),
+            precision(precision) {}
     };
   }  // namespace model
 }  // namespace iroha

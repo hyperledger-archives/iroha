@@ -18,24 +18,17 @@
 #ifndef IROHA_JSON_QUERY_FACTORY_HPP
 #define IROHA_JSON_QUERY_FACTORY_HPP
 
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-
-#include <memory>
-#include <nonstd/optional.hpp>
+#include <typeindex>
 #include <unordered_map>
+#include "logger/logger.hpp"
+#include "model/common.hpp"
+#include "model/converters/json_common.hpp"
 #include "model/query.hpp"
 #include "queries.pb.h"
-
-#include "logger/logger.hpp"
 
 namespace iroha {
   namespace model {
     namespace converters {
-      using namespace rapidjson;
-
       class JsonQueryFactory {
        public:
         JsonQueryFactory();
@@ -45,36 +38,70 @@ namespace iroha {
          * @param query_json string representation of query
          * @return deserialized query
          */
-        nonstd::optional<iroha::protocol::Query> deserialize(
-            const std::string query_json);
+        optional_ptr<Query> deserialize(const std::string &query_json);
+
+        /**
+         * Convert model Query to json string
+         * @param model_query - model representation of query
+         * @return serialized Query in json format
+         */
+        std::string serialize(std::shared_ptr<const model::Query> model_query);
 
        private:
-        using Deserializer = bool (JsonQueryFactory::*)(
-            GenericValue<UTF8<char>>::Object &, iroha::protocol::Query &);
+        Convert<std::shared_ptr<model::Query>> toQuery;
+
+        optional_ptr<Query> deserialize(const rapidjson::Document &document);
+
+        using Deserializer =
+            optional_ptr<Query> (JsonQueryFactory::*)(const rapidjson::Value &);
 
         std::unordered_map<std::string, Deserializer> deserializers_;
+        // Deserialize handlers
+        optional_ptr<Query> deserializeGetAccount(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetSignatories(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetAccountTransactions(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetAccountAssetTransactions(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetAccountAssets(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetAssetInfo(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetRoles(
+            const rapidjson::Value &obj_query);
+        optional_ptr<Query> deserializeGetRolePermissions(
+            const rapidjson::Value &obj_query);
+        // Serializers:
+        using Serializer = void (JsonQueryFactory::*)(
+            rapidjson::Document &, std::shared_ptr<const model::Query>);
+        std::unordered_map<std::type_index, Serializer> serializers_;
+        // Serialization handlers
+        void serializeGetAccount(rapidjson::Document &json_doc,
+                                 std::shared_ptr<const model::Query> query);
+        void serializeGetAccountAssets(
+            rapidjson::Document &json_doc,
+            std::shared_ptr<const model::Query> query);
+        void serializeGetAccountTransactions(
+            rapidjson::Document &json_doc,
+            std::shared_ptr<const model::Query> query);
+        void serializeGetAccountAssetTransactions(
+            rapidjson::Document &json_doc,
+            std::shared_ptr<const model::Query> query);
+        void serializeGetSignatories(rapidjson::Document &json_doc,
+                                     std::shared_ptr<const model::Query> query);
 
-        bool deserializeGetAccount(GenericValue<UTF8<char>>::Object &obj_query,
-                                   iroha::protocol::Query &pb_query);
+        void serializeGetAssetInfo(rapidjson::Document &json_doc,
+                                   std::shared_ptr<const model::Query> query);
+        void serializeGetRoles(rapidjson::Document &json_doc,
+                               std::shared_ptr<const model::Query> query);
+        void serializeGetRolePermissions(
+            rapidjson::Document &json_doc,
+            std::shared_ptr<const model::Query> query);
 
-        bool deserializeGetSignatories(
-            GenericValue<UTF8<char>>::Object &obj_query,
-            iroha::protocol::Query &pb_query);
-
-        bool deserializeGetAccountTransactions(
-            GenericValue<UTF8<char>>::Object &obj_query,
-            iroha::protocol::Query &pb_query);
-
-        bool deserializeGetAccountAssetTransactions(
-            GenericValue<UTF8<char>>::Object &obj_query,
-            iroha::protocol::Query &pb_query);
-
-        bool deserializeGetAccountAssets(
-            GenericValue<UTF8<char>>::Object &obj_query,
-            iroha::protocol::Query &pb_query);
         // Logger
         std::shared_ptr<spdlog::logger> log_;
-
       };
     }  // namespace converters
   }    // namespace model

@@ -2,11 +2,6 @@ syntax = "proto3";
 package iroha.protocol;
 import "primitive.proto";
 
-message Amount {
-    uint64 integer_part = 1;
-    uint64 fractial_part = 2;
-}
-
 message AddAssetQuantity {
     string account_id = 1;
     string asset_id = 2;
@@ -23,11 +18,6 @@ message AddSignatory {
     bytes public_key = 2;
 }
 
-message AssignMasterKey {
-    string account_id = 1;
-    bytes public_key = 2;
-}
-
 message CreateAsset {
     string asset_name = 1;
     string domain_id = 2;
@@ -40,18 +30,20 @@ message CreateAccount {
     bytes main_pubkey = 3;
 }
 
+message SetAccountDetail{
+    string account_id = 1;
+    string key = 2;
+    string value = 3;
+}
+
 message CreateDomain {
-    string domain_name = 1;
+    string domain_id = 1;
+    string default_role = 2;
 }
 
 message RemoveSignatory {
     string account_id = 1;
     bytes public_key = 2;
-}
-
-message SetAccountPermissions {
-    string account_id = 1;
-    Permissions permissions = 2;
 }
 
 message SetAccountQuorum {
@@ -63,7 +55,28 @@ message TransferAsset {
     string src_account_id = 1;
     string dest_account_id = 2;
     string asset_id = 3;
-    Amount amount = 4;
+    string description = 4;
+    Amount amount = 5;
+}
+
+message AppendRole {
+    string account_id = 1;
+    string role_name = 2;
+}
+
+message CreateRole {
+    string role_name = 1;
+    repeated RolePermission permissions = 2;
+}
+
+message GrantPermission {
+    string account_id = 1;
+    GrantablePermission permission = 2;
+}
+
+message RevokePermission {
+    string account_id = 1;
+    GrantablePermission permission = 2;
 }
 
 message Command {
@@ -71,13 +84,16 @@ message Command {
         AddAssetQuantity add_asset_quantity = 1;
         AddPeer add_peer = 2;
         AddSignatory add_signatory = 3;
-        AssignMasterKey account_assign_mk = 4;
-        CreateAsset create_asset = 5;
-        CreateAccount create_account = 6;
-        CreateDomain create_domain = 7;
-        RemoveSignatory remove_sign = 8;
-        SetAccountPermissions set_permission = 9;
-        SetAccountQuorum set_quorum = 10;
-        TransferAsset transfer_asset = 11;
+        CreateAsset create_asset = 4;
+        CreateAccount create_account = 5;
+        CreateDomain create_domain = 6;
+        RemoveSignatory remove_sign = 7;
+        SetAccountQuorum set_quorum = 9;
+        TransferAsset transfer_asset = 10;
+        AppendRole append_role = 11;
+        CreateRole create_role = 12;
+        GrantPermission grant_permission = 13;
+        RevokePermission revoke_permission = 14;
+        SetAccountDetail set_account_detail = 15;
     }
 }

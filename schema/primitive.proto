@@ -1,20 +1,60 @@
 syntax = "proto3";
 package iroha.protocol;
 
-message Permissions {
-   bool issue_assets = 1;
-   bool create_assets = 2;
-   bool create_accounts = 3;
-   bool create_domains = 4;
-   bool read_all_accounts = 5;
-   bool add_signatory = 6;
-   bool remove_signatory = 7;
-   bool set_permissions = 8;
-   bool set_quorum = 9;
-   bool can_transfer = 10;
+enum RolePermission {
+   // Command Permissions
+    can_append_role = 0;
+    can_create_role = 1;
+    can_add_asset_qty = 2;
+    can_add_peer = 3;
+    can_add_signatory = 4;
+    can_create_account = 5;
+    can_create_asset = 6;
+    can_create_domain = 7;
+    can_remove_signatory = 8;
+    can_set_quorum = 9;
+    can_transfer = 10;
+    can_receive = 11;
+   // Query permissions
+    can_read_assets = 12;
+    can_get_roles = 13;
+    can_get_my_account = 14;
+    can_get_all_accounts = 15;
+    can_get_my_signatories = 16;
+    can_get_all_signatories = 17;
+    can_get_my_acc_ast = 18;
+    can_get_all_acc_ast = 19;
+    can_get_my_acc_txs = 20;
+    can_get_all_acc_txs = 21;
+    can_get_my_acc_ast_txs = 22;
+    can_get_all_acc_ast_txs = 23;
+   // Grant permissions
+    can_grant_add_signatory = 24;
+    can_grant_remove_signatory = 25;
+    can_grant_set_quorum = 26;
+    can_grant_can_transfer = 27;
 }
+
+enum GrantablePermission {
+    can_add_my_signatory = 0;
+    can_remove_my_signatory = 1;
+    can_set_my_quorum = 2;
+}
+
 
 message Signature {
    bytes pubkey    = 1;
    bytes signature = 2;
+}
+
+message uint256 {
+   uint64 first = 1;
+   uint64 second = 2;
+   uint64 third = 3;
+   uint64 fourth = 4;
+}
+
+message Amount {
+   uint256 value = 1;
+   uint32 precision = 2;
 }

@@ -16,7 +16,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <model/model_hash_provider_impl.hpp>
+#include "crypto/hash.hpp"
 #include "commands.pb.h"
 #include "model/block.hpp"
 #include "model/converters/pb_block_factory.hpp"
@@ -24,12 +24,10 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/assign_master_key.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_permissions.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -45,21 +43,15 @@ TEST(BlockTest, bl_test) {
   orig_tx.tx_counter = 1;
 
   auto c1 = iroha::model::CreateDomain();
-  c1.domain_name = "keker";
+  c1.domain_id = "keker";
   auto c2 = iroha::model::CreateAsset();
   c2.domain_id = "keker";
   c2.precision = 2;
   c2.asset_name = "fedor-coin";
 
-  auto c3 = iroha::model::SetAccountPermissions();
-  c3.account_id = "fedor";
-  c3.new_permissions.can_transfer = true;
-  c3.new_permissions.create_assets = true;
-
   orig_tx.commands = {
       std::make_shared<iroha::model::CreateDomain>(c1),
-      std::make_shared<iroha::model::CreateAsset>(c2),
-      std::make_shared<iroha::model::SetAccountPermissions>(c3)};
+      std::make_shared<iroha::model::CreateAsset>(c2)};
 
   auto orig_block = iroha::model::Block();
   orig_block.created_ts = 1;
@@ -72,8 +64,7 @@ TEST(BlockTest, bl_test) {
   orig_block.txs_number = 1;
   orig_block.transactions = {orig_tx};
 
-  iroha::model::HashProviderImpl hash_provider;
-  orig_block.hash = hash_provider.get_hash(orig_block);
+  orig_block.hash = iroha::hash(orig_block);
 
   auto factory = iroha::model::converters::PbBlockFactory();
   auto proto_block = factory.serialize(orig_block);

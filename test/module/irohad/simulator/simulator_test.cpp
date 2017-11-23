@@ -16,6 +16,7 @@
  */
 
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/model/model_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
@@ -31,6 +32,8 @@ using namespace iroha::network;
 using namespace framework::test_subscriber;
 
 using ::testing::Return;
+using ::testing::ReturnArg;
+using ::testing::A;
 using ::testing::_;
 
 class SimulatorTest : public ::testing::Test {
@@ -39,20 +42,20 @@ class SimulatorTest : public ::testing::Test {
     validator = std::make_shared<MockStatefulValidator>();
     factory = std::make_shared<MockTemporaryFactory>();
     query = std::make_shared<MockBlockQuery>();
-    provider = std::make_shared<HashProviderImpl>();
     ordering_gate = std::make_shared<MockOrderingGate>();
+    crypto_provider = std::make_shared<MockCryptoProvider>();
   }
 
   void init() {
-    simulator = std::make_shared<Simulator>(ordering_gate, validator, factory,
-                                            query, provider);
+    simulator = std::make_shared<Simulator>(
+        ordering_gate, validator, factory, query, crypto_provider);
   }
 
   std::shared_ptr<MockStatefulValidator> validator;
   std::shared_ptr<MockTemporaryFactory> factory;
   std::shared_ptr<MockBlockQuery> query;
-  std::shared_ptr<HashProviderImpl> provider;
   std::shared_ptr<MockOrderingGate> ordering_gate;
+  std::shared_ptr<MockCryptoProvider> crypto_provider;
 
   std::shared_ptr<Simulator> simulator;
 };
@@ -76,13 +79,16 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
 
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(1);
 
-  EXPECT_CALL(*query, getBlocks(proposal.height - 1, proposal.height))
+  EXPECT_CALL(*query, getTopBlocks(1))
       .WillOnce(Return(rxcpp::observable<>::just(block)));
 
   EXPECT_CALL(*validator, validate(_, _)).WillOnce(Return(proposal));
 
   EXPECT_CALL(*ordering_gate, on_proposal())
       .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
+
+  EXPECT_CALL(*crypto_provider, sign(A<Block &>()))
+      .Times(1);
 
   init();
 
@@ -93,7 +99,8 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
     ASSERT_EQ(verified_proposal.transactions, proposal.transactions);
   });
 
-  auto block_wrapper = make_test_subscriber<CallExact>(simulator->on_block(), 1);
+  auto block_wrapper =
+      make_test_subscriber<CallExact>(simulator->on_block(), 1);
   block_wrapper.subscribe([&proposal](auto block) {
     ASSERT_EQ(block.height, proposal.height);
     ASSERT_EQ(block.transactions, proposal.transactions);
@@ -113,7 +120,7 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
 
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(0);
 
-  EXPECT_CALL(*query, getBlocks(proposal.height - 1, proposal.height))
+  EXPECT_CALL(*query, getTopBlocks(1))
       .WillOnce(Return(rxcpp::observable<>::empty<model::Block>()));
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
@@ -121,13 +128,16 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
   EXPECT_CALL(*ordering_gate, on_proposal())
       .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
 
+  EXPECT_CALL(*crypto_provider, sign(A<Block &>())).Times(0);
+
   init();
 
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator->on_verified_proposal(), 0);
   proposal_wrapper.subscribe();
 
-  auto block_wrapper = make_test_subscriber<CallExact>(simulator->on_block(), 0);
+  auto block_wrapper =
+      make_test_subscriber<CallExact>(simulator->on_block(), 0);
   block_wrapper.subscribe();
 
   simulator->process_proposal(proposal);
@@ -147,7 +157,7 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
 
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(0);
 
-  EXPECT_CALL(*query, getBlocks(proposal.height - 1, proposal.height))
+  EXPECT_CALL(*query, getTopBlocks(1))
       .WillOnce(Return(rxcpp::observable<>::just(block)));
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
@@ -155,13 +165,16 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
   EXPECT_CALL(*ordering_gate, on_proposal())
       .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
 
+  EXPECT_CALL(*crypto_provider, sign(A<Block &>())).Times(0);
+
   init();
 
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator->on_verified_proposal(), 0);
   proposal_wrapper.subscribe();
 
-  auto block_wrapper = make_test_subscriber<CallExact>(simulator->on_block(), 0);
+  auto block_wrapper =
+      make_test_subscriber<CallExact>(simulator->on_block(), 0);
   block_wrapper.subscribe();
 
   simulator->process_proposal(proposal);

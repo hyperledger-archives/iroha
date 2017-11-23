@@ -32,20 +32,19 @@ namespace iroha {
       /**
        * Account to add new signatory
        */
-      std::string account_id;
+      std::string account_id{};
 
       /**
        * New signatory is identified with public key
        */
-      ed25519::pubkey_t pubkey;
+      pubkey_t pubkey{};
 
-      bool validate(ametsuchi::WsvQuery& queries,
-                    const Account& creator) override;
-      bool execute(ametsuchi::WsvQuery& queries,
-                   ametsuchi::WsvCommand& commands) override;
+      bool operator==(const Command &command) const override;
 
-      bool operator==(const Command& command) const override;
-      bool operator!=(const Command& command) const override;
+      AddSignatory() {}
+
+      AddSignatory(const std::string &account_id, const pubkey_t &pubkey)
+          : account_id(account_id), pubkey(pubkey) {}
     };
   }  // namespace model
 }  // namespace iroha

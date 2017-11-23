@@ -18,8 +18,9 @@
 #ifndef IROHA_PEER_COMMUNICATION_SERVICE_HPP
 #define IROHA_PEER_COMMUNICATION_SERVICE_HPP
 
-#include <model/block.hpp>
-#include <model/proposal.hpp>
+#include "model/block.hpp"
+#include "model/proposal.hpp"
+
 #include <rxcpp/rx.hpp>
 
 namespace iroha {
@@ -32,7 +33,6 @@ namespace iroha {
      */
     class PeerCommunicationService {
      public:
-
       /**
        * Propagate transaction in network
        * @param transaction - object for propagation
@@ -48,12 +48,12 @@ namespace iroha {
       virtual rxcpp::observable<model::Proposal> on_proposal() = 0;
 
       /**
-        * Event is triggered when commit block arrives.
-        * @return observable with sequence of committed blocks.
-        * In common case observable<Block> will contain one element.
-        * But there are scenarios when consensus provide many blocks, e.g.
-        * on peer startup - peer will get all actual blocks.
-        */
+       * Event is triggered when commit block arrives.
+       * @return observable with sequence of committed blocks.
+       * In common case observable<Block> will contain one element.
+       * But there are scenarios when consensus provide many blocks, e.g.
+       * on peer startup - peer will get all actual blocks.
+       */
       virtual rxcpp::observable<Commit> on_commit() = 0;
 
       virtual ~PeerCommunicationService() = default;

@@ -29,7 +29,6 @@ namespace iroha {
      */
     class StatefulValidatorImpl : public StatefulValidator {
      public:
-
       StatefulValidatorImpl();
 
       /**
@@ -41,10 +40,22 @@ namespace iroha {
        * all changes after removing wsv will be ignored
        * @return proposal with valid transactions
        */
-      model::Proposal validate(const model::Proposal& proposal,
-                               ametsuchi::TemporaryWsv& temporaryWsv) override;
+      model::Proposal validate(const model::Proposal &proposal,
+                               ametsuchi::TemporaryWsv &temporaryWsv) override;
+
      private:
-        logger::Logger log_;
+      /**
+       * Checks if public keys of signatures are present in vector of pubkeys
+       * @param signatures - collection of signatures
+       * @param public_keys - collection of public keys
+       * @return true, if all public keys of signatures are present in vector of
+       * pubkeys
+       */
+      bool signaturesSubset(
+          const model::Transaction::SignaturesType &signatures,
+          const std::vector<pubkey_t> &public_keys);
+
+      logger::Logger log_;
     };
   }  // namespace validation
 }  // namespace iroha

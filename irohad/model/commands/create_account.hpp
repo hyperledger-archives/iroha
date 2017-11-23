@@ -30,25 +30,26 @@ namespace iroha {
       /**
        * Account's user name
        */
-      std::string account_name;
+      std::string account_name{};
 
       /**
        * Account's domain (full name)
        */
-      std::string domain_id;
+      std::string domain_id{};
 
       /**
-       * Master key of account
+       * Signatory of account
        */
-      ed25519::pubkey_t pubkey;
+      pubkey_t pubkey{};
 
-      bool validate(ametsuchi::WsvQuery& queries,
-                    const Account& creator) override;
-      bool execute(ametsuchi::WsvQuery& queries,
-                   ametsuchi::WsvCommand& commands) override;
+      bool operator==(const Command &command) const override;
 
-      bool operator==(const Command& command) const override;
-      bool operator!=(const Command& command) const override;
+      CreateAccount() {}
+
+      CreateAccount(const std::string &account_name,
+                    const std::string &domain_id,
+                    const pubkey_t &pubkey)
+          : account_name(account_name), domain_id(domain_id), pubkey(pubkey) {}
     };
   }  // namespace model
 }  // namespace iroha

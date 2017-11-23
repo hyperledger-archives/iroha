@@ -16,6 +16,11 @@ limitations under the License.
 #ifndef __IROHA_LOGGER_LOGGER_HPP__
 #define __IROHA_LOGGER_LOGGER_HPP__
 
+#include <algorithm>
+#include <functional>
+#include <iterator>
+#include <nonstd/optional.hpp>
+#include <numeric>
 #include <sstream>
 #include <string>
 
@@ -33,7 +38,20 @@ namespace logger {
 
   std::string input(const std::string &string);
 
+  /**
+   * Provide logger object
+   * @param tag - tagging name for identifiing logger
+   * @return logger object
+   */
   Logger log(const std::string &tag);
+
+  /**
+   * Provide logger for using in test purposes;
+   * This logger write data only for console
+   * @param tag - tagging name for identifiing logger
+   * @return logger object
+   */
+  Logger testLog(const std::string &tag);
 
   /**
    * Convert bool value to human readable string repr
@@ -51,6 +69,49 @@ namespace logger {
   template <typename T>
   std::string logBool(T val) {
     return boolRepr(bool(val));
+  }
+
+  /**
+   * Function provide string representation of collection
+   * @tparam Collection - type should implement for semantic
+   * @tparam Lambda - function that transform argument to string
+   * @param collection - bunch of objects
+   * @param transform - function that convert object to string
+   * @return string repr of collection
+   */
+  template <class Collection, class Lambda>
+  std::string to_string(const Collection &collection, Lambda transform) {
+    const std::string left_bracket = "{";
+    const std::string right_bracket = "}";
+    const std::string separator = ", ";
+    auto begin = collection.size() == 0 ? collection.begin()
+                                        : std::next(collection.begin());
+    auto front =
+        collection.size() == 0 ? std::string{} : transform(*collection.begin());
+
+    auto result = std::accumulate(begin,
+                                  collection.end(),
+                                  front.insert(0, left_bracket),
+                                  [&](auto &acc, const auto &value) {
+                                    acc += separator;
+                                    acc += transform(value);
+                                    return acc;
+                                  });
+    return result.append(right_bracket);
+  }
+
+  /**
+   * Function provide string representation of optional value
+   * @tparam Optional - type of optional
+   * @tparam Lambda - function that consume value type and return std::string
+   * @param opt - value wrapped by optional
+   * @param transform - function that transforming value to std::string
+   * @return string repr of value
+   */
+  template <class Optional, class Lambda>
+  std::string opt_to_string(const Optional &opt, Lambda transform) {
+    const std::string null_value = "nullopt";
+    return opt.has_value() ? null_value : transform(*opt);
   }
 
 }  // namespace logger

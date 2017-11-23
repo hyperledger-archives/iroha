@@ -22,7 +22,9 @@
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
 #include <unordered_map>
+
 #include "ametsuchi/mutable_storage.hpp"
+#include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -30,36 +32,33 @@ namespace iroha {
       friend class StorageImpl;
 
      public:
-      MutableStorageImpl(hash256_t top_hash,
-                         std::unique_ptr<cpp_redis::redis_client> index,
-                         std::unique_ptr<pqxx::lazyconnection> connection,
-                         std::unique_ptr<pqxx::nontransaction> transaction,
-                         std::unique_ptr<WsvQuery> wsv,
-                         std::unique_ptr<WsvCommand> executor);
+      MutableStorageImpl(
+          hash256_t top_hash, std::unique_ptr<cpp_redis::redis_client> index,
+          std::unique_ptr<pqxx::lazyconnection> connection,
+          std::unique_ptr<pqxx::nontransaction> transaction,
+          std::shared_ptr<model::CommandExecutorFactory> command_executors);
+
       bool apply(const model::Block &block,
-                 std::function<bool(const model::Block &, WsvCommand &,
+                 std::function<bool(const model::Block &,
                                     WsvQuery &, const hash256_t &)>
-                     function) override;
+                 function) override;
+
       ~MutableStorageImpl() override;
-      nonstd::optional<model::Account> getAccount(
-          const std::string &account_id) override;
-      nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(
-          const std::string &account_id) override;
-      nonstd::optional<model::Asset> getAsset(
-          const std::string &asset_id) override;
-      nonstd::optional<model::AccountAsset> getAccountAsset(
-          const std::string &account_id, const std::string &asset_id) override;
-      nonstd::optional<std::vector<model::Peer>> getPeers() override;
 
      private:
+      void index_block(uint64_t height, model::Block block);
+
       hash256_t top_hash_;
-      std::unordered_map<uint32_t, model::Block> block_store_;
+      // ordered collection is used to enforce block insertion order in
+      // StorageImpl::commit
+      std::map<uint32_t, model::Block> block_store_;
       std::unique_ptr<cpp_redis::redis_client> index_;
 
       std::unique_ptr<pqxx::lazyconnection> connection_;
       std::unique_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
       std::unique_ptr<WsvCommand> executor_;
+      std::shared_ptr<model::CommandExecutorFactory> command_executors_;
 
       bool committed;
     };

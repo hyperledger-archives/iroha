@@ -20,29 +20,24 @@
 
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
+
 #include "ametsuchi/temporary_wsv.hpp"
+#include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
     class TemporaryWsvImpl : public TemporaryWsv {
      public:
-      TemporaryWsvImpl(std::unique_ptr<pqxx::lazyconnection> connection,
-                       std::unique_ptr<pqxx::nontransaction> transaction,
-                       std::unique_ptr<WsvQuery> wsv,
-                       std::unique_ptr<WsvCommand> executor);
+      TemporaryWsvImpl(
+          std::unique_ptr<pqxx::lazyconnection> connection,
+          std::unique_ptr<pqxx::nontransaction> transaction,
+          std::shared_ptr<model::CommandExecutorFactory> command_executors);
+
       bool apply(const model::Transaction &transaction,
-                 std::function<bool(const model::Transaction &, WsvCommand &,
+                 std::function<bool(const model::Transaction &,
                                     WsvQuery &)>
-                     function) override;
-      nonstd::optional<model::Account> getAccount(
-          const std::string &account_id) override;
-      nonstd::optional<std::vector<ed25519::pubkey_t>> getSignatories(
-          const std::string &account_id) override;
-      nonstd::optional<model::Asset> getAsset(
-          const std::string &asset_id) override;
-      nonstd::optional<model::AccountAsset> getAccountAsset(
-          const std::string &account_id, const std::string &asset_id) override;
-      nonstd::optional<std::vector<model::Peer>> getPeers() override;
+                 function) override;
+
       ~TemporaryWsvImpl() override;
 
      private:
@@ -50,6 +45,7 @@ namespace iroha {
       std::unique_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
       std::unique_ptr<WsvCommand> executor_;
+      std::shared_ptr<model::CommandExecutorFactory> command_executors_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

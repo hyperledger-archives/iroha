@@ -32,29 +32,39 @@ namespace iroha {
       /**
        * Source account
        */
-      std::string src_account_id;
+      std::string src_account_id{};
 
       /**
        * Destination account
        */
-      std::string dest_account_id;
+      std::string dest_account_id{};
 
       /**
        * Asset to transfer. Identifier is asset_id
        */
-      std::string asset_id;
+      std::string asset_id{};
+
+      /**
+       * Transfer description
+       */
+      std::string description{};
+
       /**
        * Amount of transferred asset
        */
-      Amount amount;
+      Amount amount{};
 
-      bool validate(ametsuchi::WsvQuery& queries,
-                    const Account& creator) override;
-      bool execute(ametsuchi::WsvQuery& queries,
-                   ametsuchi::WsvCommand& commands) override;
+      bool operator==(const Command &command) const override;
 
-      bool operator==(const Command& command) const override;
-      bool operator!=(const Command& command) const override;
+      TransferAsset() {}
+
+      TransferAsset(const std::string &src_account_id,
+                    const std::string &dest_account_id,
+                    const std::string &asset_id, const Amount &amount)
+          : src_account_id(src_account_id),
+            dest_account_id(dest_account_id),
+            asset_id(asset_id),
+            amount(amount) {}
     };
   }  // namespace model
 }  // namespace iroha

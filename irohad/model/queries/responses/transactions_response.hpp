@@ -32,7 +32,7 @@ namespace iroha {
       /**
        * Observable contains transactions
        */
-      rxcpp::observable <Transaction> transactions;
+      rxcpp::observable <Transaction> transactions{};
     };
   }  // namespace model
 }  // namespace iroha

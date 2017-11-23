@@ -17,6 +17,10 @@
 #ifndef IROHA_PB_QUERY_FACTORY_HPP
 #define IROHA_PB_QUERY_FACTORY_HPP
 
+#include <typeindex>
+#include <unordered_map>
+#include "logger/logger.hpp"
+#include "model/common.hpp"
 #include "model/query.hpp"
 #include "queries.pb.h"
 
@@ -29,15 +33,56 @@ namespace iroha {
        */
       class PbQueryFactory {
        public:
-
         /**
          * Convert proto query to model query
          * @param pb_block - reference to proto query
          * @return model Query
          */
-        std::shared_ptr<model::Query> deserialize(const protocol::Query &pb_query);
+        optional_ptr<model::Query> deserialize(
+            const protocol::Query& pb_query) const;
 
+        /**
+         * Convert model query to proto query
+         * @param query - model query to serialize
+         * @return nonstd::nullopt if no query type is found
+         */
+        nonstd::optional<protocol::Query> serialize(
+            std::shared_ptr<const model::Query> query) const;
 
+        PbQueryFactory();
+
+       private:
+        // Query serializer:
+        protocol::Query serializeGetAccount(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetAccountAssets(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetAccountTransactions(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetAccountAssetTransactions(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetSignatories(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetAssetInfo(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetRoles(
+            std::shared_ptr<const Query> query) const;
+        protocol::Query serializeGetRolePermissions(
+            std::shared_ptr<const Query> query) const;
+
+        /**
+         * Serialize and add meta data of model query to proto query
+         * @param pb_query - protocol query  object
+         * @param query - model query to serialize
+         */
+        void serializeQueryMetaData(protocol::Query& pb_query,
+                                    std::shared_ptr<const Query> query) const;
+
+        using Serializer = protocol::Query (PbQueryFactory::*)(
+            std::shared_ptr<const Query>) const;
+        std::unordered_map<std::type_index, Serializer> serializers_;
+
+        logger::Logger log_;
       };
 
     }  // namespace converters

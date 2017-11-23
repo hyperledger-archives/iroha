@@ -9,10 +9,10 @@ message Proposal {
   repeated iroha.protocol.Transaction transactions = 2;
 }
 
-service OrderingGate {
-  rpc SendProposal (Proposal) returns (google.protobuf.Empty);
+service OrderingGateTransportGrpc {
+  rpc onProposal (Proposal) returns (google.protobuf.Empty);
 }
 
-service OrderingService {
-  rpc SendTransaction (iroha.protocol.Transaction) returns (google.protobuf.Empty);
+service OrderingServiceTransportGrpc {
+  rpc onTransaction (iroha.protocol.Transaction) returns (google.protobuf.Empty);
 }

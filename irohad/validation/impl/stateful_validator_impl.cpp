@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include <algorithm>
-#include <numeric>
 #include "validation/impl/stateful_validator_impl.hpp"
+#include <numeric>
+#include <set>
 
 namespace iroha {
   namespace validation {
@@ -30,29 +30,21 @@ namespace iroha {
         const model::Proposal &proposal,
         ametsuchi::TemporaryWsv &temporaryWsv) {
       log_->info("transactions in proposal: {}", proposal.transactions.size());
-      auto checking_transaction = [&temporaryWsv](auto &tx, auto &executor,
-                                                  auto &query) {
-        auto account = temporaryWsv.getAccount(tx.creator_account_id);
-        // Check if tx creator has account and has quorum to execute transaction
-        if (!account || tx.signatures.size() < account.value().quorum)
-          return false;
-
-        // Check if signatures in transaction are account signatory
-        auto account_signs = temporaryWsv.getSignatories(tx.creator_account_id);
-        if (!account_signs)
-          // No signatories found
-          return false;
-
-        // TODO: Check if signatures in transaction are valid
-
-        // Validate and execute all commands in transaction
-        return std::all_of(
-            std::begin(tx.commands), std::end(tx.commands),
-            [&query, &account, &executor](auto &command) {
-              return command->validate(query, account.value()) &&
-                  command->execute(query, executor);
-            });
-
+      auto checking_transaction = [this](auto &tx, auto &queries) {
+        return (queries.getAccount(tx.creator_account_id)
+        | [&](const auto &account) {
+              // Check if tx creator has account and has quorum to execute
+              // transaction
+              return tx.signatures.size() >= account.quorum
+                  ? queries.getSignatories(tx.creator_account_id)
+                  : nonstd::nullopt;
+            }
+        | [&](const auto &signatories) {
+            // Check if signatures in transaction are account signatory
+            return this->signaturesSubset(tx.signatures, signatories)
+                ? nonstd::make_optional(signatories)
+                : nonstd::nullopt;
+          }).has_value();
       };
 
       // Filter only valid transactions
@@ -74,6 +66,24 @@ namespace iroha {
       log_->info("transactions in verified proposal: {}",
                  validated_proposal.transactions.size());
       return validated_proposal;
+    }
+
+    bool StatefulValidatorImpl::signaturesSubset(
+        const model::Transaction::SignaturesType &signatures,
+        const std::vector<pubkey_t> &public_keys) {
+        // TODO 09/10/17 Lebedev: simplify the subset verification IR-510 #goodfirstissue
+      std::set<pubkey_t> txPubkeys;
+      for (auto sign : signatures) {
+        txPubkeys.insert(sign.pubkey);
+      }
+      std::set<pubkey_t> accPubkeys;
+      for (auto pubkey : public_keys) {
+        accPubkeys.insert(pubkey);
+      }
+      return std::includes(accPubkeys.begin(),
+                           accPubkeys.end(),
+                           txPubkeys.begin(),
+                           txPubkeys.end());
     }
 
   }  // namespace validation

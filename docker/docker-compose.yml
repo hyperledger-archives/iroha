@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  node:
+    image: hyperledger/iroha-docker-develop
+    ports:
+      - "50051:50051"
+      - "20000:20000"
+    environment:
+      - IROHA_POSTGRES_HOST=${COMPOSE_PROJECT_NAME}_postgres_1
+      - IROHA_POSTGRES_PORT=5432
+      - IROHA_POSTGRES_USER=iroha
+      - IROHA_POSTGRES_PASSWORD=helloworld
+      - IROHA_REDIS_HOST=${COMPOSE_PROJECT_NAME}_redis_1
+      - IROHA_REDIS_PORT=6379
+      - CCACHE_DIR=/tmp/ccache
+    depends_on:
+      - redis
+      - postgres
+    tty: true
+    volumes:
+      - ../:/opt/iroha
+      - ccache-data:/tmp/ccache
+    working_dir: /opt/iroha
+    cap_add:
+      - SYS_PTRACE
+  redis:
+    image: redis:3.2.8
+
+  postgres:
+    image: postgres:9.5
+    environment:
+      - POSTGRES_USER=iroha
+      - IROHA_POSTGRES_PASSWORD=helloworld
+
+volumes:
+  ccache-data:

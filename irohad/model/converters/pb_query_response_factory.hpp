@@ -26,6 +26,8 @@
 #include "model/queries/responses/error_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
+#include "model/queries/responses/roles_response.hpp"
+#include "model/queries/responses/asset_response.hpp"
 
 namespace iroha {
   namespace model {
@@ -67,6 +69,21 @@ namespace iroha {
             const model::TransactionsResponse &transactionsResponse) const;
         model::TransactionsResponse deserializeTransactionsResponse(
             const protocol::TransactionsResponse &tx_response) const;
+
+        protocol::AssetResponse serializeAssetResponse(
+            const model::AssetResponse &response) const;
+        model::AssetResponse deserializeAssetResponse(
+            const protocol::AssetResponse &response) const;
+
+        protocol::RolesResponse serializeRolesResponse(
+            const model::RolesResponse &response) const;
+        model::RolesResponse deserializeRolesResponse(
+            const protocol::RolesResponse &response) const;
+
+        protocol::RolePermissionsResponse serializeRolePermissionsResponse(
+            const model::RolePermissionsResponse &response) const;
+        model::RolePermissionsResponse deserializeRolePermissionsResponse(
+            const protocol::RolePermissionsResponse &response) const;
 
         protocol::ErrorResponse serializeErrorResponse(
             const model::ErrorResponse &errorResponse) const;

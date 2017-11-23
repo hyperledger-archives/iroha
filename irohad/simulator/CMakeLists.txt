@@ -6,6 +6,5 @@ target_link_libraries(simulator
     model
     rxcpp
     optional
-    ametsuchi
     logger
     )

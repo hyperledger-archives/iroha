@@ -28,8 +28,8 @@ namespace iroha {
      * Query for get all account's assets and balance
      */
     struct GetAccountAssets : Query {
-      std::string account_id;
-      std::string asset_id;
+      std::string account_id{};
+      std::string asset_id{};
     };
   }  // namespace model
 }  // namespace iroha

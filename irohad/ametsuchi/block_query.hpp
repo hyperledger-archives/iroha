@@ -18,12 +18,14 @@
 #ifndef IROHA_BLOCK_QUERY_HPP
 #define IROHA_BLOCK_QUERY_HPP
 
+#include <cmath>
+
+#include <boost/optional.hpp>
 #include <model/block.hpp>
 #include <model/transaction.hpp>
 #include <rxcpp/rx-observable.hpp>
 
 namespace iroha {
-
   namespace ametsuchi {
     /**
      * Public interface for queries on blocks and transactions
@@ -33,24 +35,62 @@ namespace iroha {
       virtual ~BlockQuery() = default;
       /**
        * Get all transactions of an account.
-       * @param pub_key - account's first public key
+       * @param account_id - account_id (accountName@domainName)
        * @return observable of Model Transaction
        */
       virtual rxcpp::observable<model::Transaction> getAccountTransactions(
-          std::string account_id) = 0;
+          const std::string &account_id) = 0;
 
       /**
-      * Get all blocks with having id in range [from, to].
-      * @param from - starting id
-      * @param to - ending id
-      * @return observable of Model Block
-      */
-      virtual rxcpp::observable<model::Block> getBlocks(uint32_t from,
-                                                        uint32_t to) = 0;
+       * Get asset transactions of an account.
+       * @param account_id - account_id (accountName@domainName)
+       * @param asset_id - asset_id (assetName#domainName)
+       * @return observable of Model Transaction
+       */
+      virtual rxcpp::observable<model::Transaction> getAccountAssetTransactions(
+          const std::string &account_id, const std::string &asset_id) = 0;
+
+      /**
+       * Get transactions from transactions' hashes
+       * @param tx_hashes - transactions' hashes to retrieve
+       * @return observable of Model Transaction
+       */
+      virtual rxcpp::observable<boost::optional<model::Transaction>>
+      getTransactions(const std::vector<iroha::hash256_t> &tx_hashes) = 0;
+
+      /**
+       * Get given number of blocks starting with given height.
+       * @param height - starting height
+       * @param count - number of blocks to retrieve
+       * @return observable of Model Block
+       */
+      virtual rxcpp::observable<model::Block> getBlocks(uint32_t height,
+                                                        uint32_t count) = 0;
+
+      /**
+       * Get all blocks starting from given height.
+       * @param from - starting height
+       * @return observable of Model Block
+       */
+      virtual rxcpp::observable<model::Block> getBlocksFrom(
+          uint32_t height) = 0;
+
+      /**
+       * Get given number of blocks from top.
+       * @param count - number of blocks to retrieve
+       * @return observable of Model Block
+       */
+      virtual rxcpp::observable<model::Block> getTopBlocks(uint32_t count) = 0;
+
+      /**
+       * Synchronously gets transaction by its hash
+       * @param hash - hash to search
+       * @return transaction or boost::none
+       */
+      virtual boost::optional<model::Transaction> getTxByHashSync(
+          const std::string &hash) = 0;
     };
-
   }  // namespace ametsuchi
-
 }  // namespace iroha
 
 #endif  // IROHA_BLOCK_QUERY_HPP

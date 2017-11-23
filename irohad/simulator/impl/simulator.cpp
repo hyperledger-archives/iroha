@@ -16,6 +16,7 @@
  */
 
 #include "simulator/impl/simulator.hpp"
+#include "crypto/hash.hpp"
 
 namespace iroha {
   namespace simulator {
@@ -25,11 +26,11 @@ namespace iroha {
         std::shared_ptr<validation::StatefulValidator> statefulValidator,
         std::shared_ptr<ametsuchi::TemporaryFactory> factory,
         std::shared_ptr<ametsuchi::BlockQuery> blockQuery,
-        std::shared_ptr<model::HashProviderImpl> hash_provider)
+        std::shared_ptr<model::ModelCryptoProvider> crypto_provider)
         : validator_(std::move(statefulValidator)),
           ametsuchi_factory_(std::move(factory)),
           block_queries_(std::move(blockQuery)),
-          hash_provider_(std::move(hash_provider)) {
+          crypto_provider_(std::move(crypto_provider)) {
       log_ = logger::log("Simulator");
       ordering_gate->on_proposal().subscribe(
           [this](auto proposal) { this->process_proposal(proposal); });
@@ -45,15 +46,20 @@ namespace iroha {
 
     void Simulator::process_proposal(model::Proposal proposal) {
       log_->info("process proposal");
-      auto current_height = proposal.height;
       // Get last block from local ledger
-      last_block = model::Block();
-      block_queries_->getBlocks(current_height - 1, current_height)
+      block_queries_->getTopBlocks(1)
           .as_blocking()
           .subscribe([this](auto block) {
-            this->last_block = block;
+            last_block = block;
           });
-      if (last_block.height + 1 != proposal.height) {
+      if (not last_block.has_value()) {
+        log_->warn("Could not fetch last block");
+        return;
+      }
+      if (last_block.value().height + 1 != proposal.height) {
+        log_->warn("Last block height: {}, proposal height: {}",
+                   last_block.value().height,
+                   proposal.height);
         return;
       }
       auto temporaryStorage = ametsuchi_factory_->createTemporaryWsv();
@@ -65,13 +71,13 @@ namespace iroha {
       log_->info("process verified proposal");
       model::Block new_block;
       new_block.height = proposal.height;
-      new_block.prev_hash = last_block.hash;
+      new_block.prev_hash = last_block.value().hash;
       new_block.transactions = proposal.transactions;
       new_block.txs_number = proposal.transactions.size();
-      new_block.created_ts = 0;
-      new_block.merkle_root.fill(0);
-      new_block.hash = hash_provider_->get_hash(new_block);
-      new_block.sigs.push_back({});
+      new_block.created_ts = 0; // TODO 14/08/17 Muratov set timestamp from proposal & for new model IR-501
+      new_block.merkle_root.fill(0); // TODO 14/08/17 Muratov make effective impl IR-464
+      new_block.hash = hash(new_block);
+      crypto_provider_->sign(new_block);
 
       block_notifier_.get_subscriber().on_next(new_block);
     }

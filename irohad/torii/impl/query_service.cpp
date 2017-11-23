@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "crypto/hash.hpp"
 #include "torii/query_service.hpp"
 
 namespace torii {
@@ -43,9 +44,25 @@ namespace torii {
                                iroha::protocol::QueryResponse& response) {
     // Get iroha model query
     auto query = pb_query_factory_->deserialize(request);
+
+    if (not query.has_value()) {
+      response.mutable_error_response()->set_reason(
+          iroha::protocol::ErrorResponse::NOT_SUPPORTED);
+      return;
+    }
+
+    auto hash = iroha::hash(**query).to_string();
+
+    if (handler_map_.count(hash) > 0) {
+      // Query was already processed
+      response.mutable_error_response()->set_reason(
+          iroha::protocol::ErrorResponse::STATELESS_INVALID);
+      return;
+    }
+
     // Query - response relationship
-    handler_map_.insert({query->query_hash.to_string(), response});
+    handler_map_.emplace(hash, response);
     // Send query to iroha
-    query_processor_->queryHandle(query);
+    query_processor_->queryHandle(query.value());
   }
-}
+}  // namespace torii

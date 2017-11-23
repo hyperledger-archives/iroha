@@ -30,7 +30,7 @@ namespace iroha {
         rapidjson::Document serialize(const Transaction &transaction);
 
         nonstd::optional<Transaction> deserialize(
-            const rapidjson::Document &document);
+            const rapidjson::Value &document);
 
        private:
         JsonCommandFactory factory_;
@@ -40,4 +40,4 @@ namespace iroha {
   }    // namespace model
 }  // namespace iroha
 
-#endif //IROHA_JSON_TRANSACTION_FACTORY_HPP
+#endif  // IROHA_JSON_TRANSACTION_FACTORY_HPP

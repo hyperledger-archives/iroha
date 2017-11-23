@@ -15,97 +15,143 @@
  * limitations under the License.
  */
 
-#include "module/irohad/ordering/ordering_mocks.hpp"
-
 #include <grpc++/grpc++.h>
-#include "ordering/impl/ordering_service_impl.hpp"
+
+#include "logger/logger.hpp"
+#include "network/ordering_service.hpp"
+
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/network/network_mocks.hpp"
+
+#include "ordering/impl/ordering_gate_impl.hpp"
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
+#include "ordering/impl/ordering_service_impl.hpp"
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
 
 using namespace iroha;
 using namespace iroha::ordering;
 using namespace iroha::model;
 using namespace iroha::network;
 using namespace iroha::ametsuchi;
+using namespace std::chrono_literals;
 
 using ::testing::_;
+using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
+using ::testing::DoAll;
 using ::testing::AtLeast;
 using ::testing::Return;
 
-class OrderingServiceTest : public OrderingTest {
+static logger::Logger log_ = logger::testLog("OrderingService");
+
+class MockOrderingServiceTransport : public network::OrderingServiceTransport {
  public:
-  OrderingServiceTest() {
-    fake_gate = static_cast<ordering::MockOrderingGate *>(gate.get());
+  void publishProposal(model::Proposal &&proposal,
+                       const std::vector<std::string> &peers) override {
+    publishProposal(proposal, peers);
+  };
+
+  void subscribe(std::shared_ptr<network::OrderingServiceNotification>
+                     subscriber) override {
+    subscriber_ = subscriber;
   }
 
-  void SetUp() override { loop = uvw::Loop::create(); }
+  MOCK_METHOD2(publishProposal,
+               void(const model::Proposal &proposal,
+                    const std::vector<std::string> &peers));
 
-  void start() override {
-    OrderingTest::start();
-    loop_thread = std::thread([this] { loop->run(); });
-    client = proto::OrderingService::NewStub(
-        grpc::CreateChannel(address, grpc::InsecureChannelCredentials()));
-  }
-
-  void shutdown() override {
-    loop->stop();
-    if (loop_thread.joinable()) {
-      loop_thread.join();
-    }
-    OrderingTest::shutdown();
-  }
-
-  std::shared_ptr<uvw::Loop> loop;
-  std::thread loop_thread;
-  ordering::MockOrderingGate *fake_gate;
-  std::unique_ptr<iroha::ordering::proto::OrderingService::Stub> client;
+  std::weak_ptr<network::OrderingServiceNotification> subscriber_;
 };
 
-TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
-  // Init => proposal size 5 => 2 proposals after 10 transactions
+class OrderingServiceTest : public ::testing::Test {
+ public:
+  OrderingServiceTest() { peer.address = address; }
 
-  std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
-      peer}));
-
-  service = std::make_shared<OrderingServiceImpl>(wsv, 5, 1000, loop);
-
-  EXPECT_CALL(*fake_gate, SendProposal(_, _, _)).Times(2);
-
-  start();
-
-  for (size_t i = 0; i < 10; ++i) {
-    grpc::ClientContext context;
-
-    google::protobuf::Empty reply;
-
-    client->SendTransaction(&context, iroha::protocol::Transaction(), &reply);
+  void SetUp() override {
+    wsv = std::make_shared<MockPeerQuery>();
+    fake_transport = std::make_shared<MockOrderingServiceTransport>();
   }
 
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  std::shared_ptr<MockOrderingServiceTransport> fake_transport;
+  std::condition_variable cv;
+  std::mutex m;
+  std::string address{"0.0.0.0:50051"};
+  model::Peer peer;
+  std::shared_ptr<MockPeerQuery> wsv;
+};
+
+TEST_F(OrderingServiceTest, SimpleTest) {
+  // Direct publishProposal call, used for basic case test and for debug
+  // simplicity
+
+  const size_t max_proposal = 5;
+  const size_t commit_delay = 1000;
+
+  auto ordering_service = std::make_shared<OrderingServiceImpl>(
+      wsv, max_proposal, commit_delay, fake_transport);
+  fake_transport->subscribe(ordering_service);
+
+  EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(1);
+
+  fake_transport->publishProposal(model::Proposal({}), {});
+}
+
+TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
+  const size_t max_proposal = 5;
+  const size_t commit_delay = 1000;
+
+  auto ordering_service = std::make_shared<OrderingServiceImpl>(
+      wsv, max_proposal, commit_delay, fake_transport);
+  fake_transport->subscribe(ordering_service);
+
+  // Init => proposal size 5 => 2 proposals after 10 transactions
+  size_t call_count = 0;
+  EXPECT_CALL(*fake_transport, publishProposal(_, _))
+      .Times(2)
+      .WillRepeatedly(InvokeWithoutArgs([&] {
+        ++call_count;
+        cv.notify_one();
+      }));
+
+  EXPECT_CALL(*wsv, getLedgerPeers())
+      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+
+  for (size_t i = 0; i < 10; ++i) {
+    ordering_service->onTransaction(model::Transaction());
+  }
+
+  std::unique_lock<std::mutex> lock(m);
+  cv.wait_for(lock, 10s, [&] { return call_count == 2; });
 }
 
 TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
 
-  std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillRepeatedly(Return(std::vector<Peer>{
-      peer}));
+  EXPECT_CALL(*wsv, getLedgerPeers())
+      .WillRepeatedly(Return(std::vector<Peer>{peer}));
 
-  service = std::make_shared<OrderingServiceImpl>(wsv, 100, 400, loop);
+  const size_t max_proposal = 100;
+  const size_t commit_delay = 400;
 
-  EXPECT_CALL(*fake_gate, SendProposal(_, _, _)).Times(2);
+  auto ordering_service = std::make_shared<OrderingServiceImpl>(
+      wsv, max_proposal, commit_delay, fake_transport);
+  fake_transport->subscribe(ordering_service);
 
-  start();
+  EXPECT_CALL(*fake_transport, publishProposal(_, _))
+      .Times(2)
+      .WillRepeatedly(InvokeWithoutArgs([&] {
+        log_->info("Proposal send to grpc");
+        cv.notify_one();
+      }));
 
-  for (size_t i = 0; i < 10; ++i) {
-    grpc::ClientContext context;
-
-    google::protobuf::Empty reply;
-
-    client->SendTransaction(&context, iroha::protocol::Transaction(), &reply);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  for (size_t i = 0; i < 8; ++i) {
+    ordering_service->onTransaction(model::Transaction());
   }
 
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  std::unique_lock<std::mutex> lk(m);
+  cv.wait_for(lk, 10s);
+
+  ordering_service->onTransaction(model::Transaction());
+  ordering_service->onTransaction(model::Transaction());
+  cv.wait_for(lk, 10s);
 }

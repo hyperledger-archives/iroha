@@ -15,33 +15,40 @@
  * limitations under the License.
  */
 
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
 #include "main/impl/ordering_init.hpp"
 
 namespace iroha {
   namespace network {
-    auto OrderingInit::createGate(std::string network_address) {
-      return std::make_shared<ordering::OrderingGateImpl>(network_address);
+    auto OrderingInit::createGate(
+        std::shared_ptr<OrderingGateTransport> transport) {
+      auto gate = std::make_shared<ordering::OrderingGateImpl>(transport);
+      transport->subscribe(gate);
+      return gate;
     }
 
-    auto OrderingInit::createService(std::shared_ptr<ametsuchi::PeerQuery> wsv,
-                                     size_t max_size,
-                                     size_t delay_milliseconds,
-                                     std::shared_ptr<uvw::Loop> loop) {
-
-      return std::make_shared<ordering::OrderingServiceImpl>(wsv,
-                                                             max_size,
-                                                             delay_milliseconds,
-                                                             loop);
+    auto OrderingInit::createService(
+        std::shared_ptr<ametsuchi::PeerQuery> wsv,
+        size_t max_size,
+        std::chrono::milliseconds delay_milliseconds,
+        std::shared_ptr<network::OrderingServiceTransport> transport) {
+      return std::make_shared<ordering::OrderingServiceImpl>(
+          wsv, max_size, delay_milliseconds.count(), transport);
     }
 
     std::shared_ptr<ordering::OrderingGateImpl> OrderingInit::initOrderingGate(
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
-        std::shared_ptr<uvw::Loop> loop,
         size_t max_size,
-        size_t delay_milliseconds) {
-      ordering_service =
-          createService(wsv, max_size, delay_milliseconds, loop);
-      ordering_gate = createGate(wsv->getLedgerPeers().value().front().address);
+        std::chrono::milliseconds delay_milliseconds) {
+      auto network_address = wsv->getLedgerPeers().value().front().address;
+      ordering_gate_transport =
+          std::make_shared<iroha::ordering::OrderingGateTransportGrpc>(
+              network_address);
+
+      ordering_service_transport = std::make_shared<ordering::OrderingServiceTransportGrpc>();
+      ordering_service = createService(wsv, max_size, delay_milliseconds, ordering_service_transport);
+      ordering_service_transport->subscribe(ordering_service);
+      ordering_gate = createGate(ordering_gate_transport);
       return ordering_gate;
     }
   }  // namespace network

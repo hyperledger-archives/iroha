@@ -25,13 +25,17 @@ namespace iroha {
 
     /**
      * Domain Model
-     * //TODO: rethink in next version, currently only default domain is used
      */
     struct Domain {
       /**
        * Domain unique identifier (full name)
        */
       std::string domain_id;
+
+      /**
+       * Default role for users in this domain
+       */
+      std::string default_role;
     };
   }
 }

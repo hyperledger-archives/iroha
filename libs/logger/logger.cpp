@@ -44,12 +44,16 @@ namespace logger {
     return spdlog::stdout_color_mt(tag);
   }
 
-  std::shared_ptr<spdlog::logger> log(const std::string &tag) {
+  Logger log(const std::string &tag) {
     auto logger = spdlog::get(tag);
     if (logger == nullptr) {
       logger = createLogger(tag);
     }
     return logger;
+  }
+
+  Logger testLog(const std::string &tag){
+    return log(tag);
   }
 
   std::string boolRepr(bool value) {

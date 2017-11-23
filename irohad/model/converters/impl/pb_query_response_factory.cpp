@@ -17,6 +17,7 @@
 
 #include "model/converters/pb_query_response_factory.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
+#include "model/converters/pb_common.hpp"
 
 namespace iroha {
   namespace model {
@@ -26,6 +27,7 @@ namespace iroha {
       PbQueryResponseFactory::serialize(
           const std::shared_ptr<QueryResponse> query_response) const {
         nonstd::optional<protocol::QueryResponse> response = nonstd::nullopt;
+        // TODO 26/09/17 grimadas: refactor #VARIANT
         if (instanceof <model::ErrorResponse>(*query_response)) {
           response = nonstd::make_optional<protocol::QueryResponse>();
           auto er = static_cast<model::ErrorResponse &>(*query_response);
@@ -56,6 +58,24 @@ namespace iroha {
               serializeTransactionsResponse(
                   static_cast<model::TransactionsResponse &>(*query_response)));
         }
+        if (instanceof <model::AssetResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_asset_response()->CopyFrom(serializeAssetResponse(
+              static_cast<model::AssetResponse &>(*query_response)));
+        }
+        if (instanceof <model::RolesResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_roles_response()->CopyFrom(serializeRolesResponse(
+              static_cast<model::RolesResponse &>(*query_response)));
+        }
+        if (instanceof <model::RolePermissionsResponse>(*query_response)) {
+          response = nonstd::make_optional<protocol::QueryResponse>();
+          response->mutable_role_permissions_response()->CopyFrom(
+              serializeRolePermissionsResponse(
+                  static_cast<model::RolePermissionsResponse &>(
+                      *query_response)));
+        }
+
         return response;
       }
 
@@ -64,23 +84,7 @@ namespace iroha {
         protocol::Account pb_account;
         pb_account.set_quorum(account.quorum);
         pb_account.set_account_id(account.account_id);
-        pb_account.set_domain_name(account.domain_name);
-
-        auto permissions = pb_account.mutable_permissions();
-        permissions->set_set_quorum(account.permissions.set_quorum);
-        permissions->set_set_permissions(account.permissions.set_permissions);
-        permissions->set_remove_signatory(account.permissions.remove_signatory);
-        permissions->set_read_all_accounts(
-            account.permissions.read_all_accounts);
-        permissions->set_issue_assets(account.permissions.issue_assets);
-        permissions->set_create_domains(account.permissions.create_domains);
-        permissions->set_create_accounts(account.permissions.create_accounts);
-        permissions->set_create_assets(account.permissions.create_assets);
-        permissions->set_can_transfer(account.permissions.can_transfer);
-        permissions->set_add_signatory(account.permissions.add_signatory);
-
-        pb_account.set_master_key(account.master_key.data(),
-                                  account.master_key.size());
+        pb_account.set_domain_id(account.domain_id);
         return pb_account;
       }
 
@@ -89,28 +93,7 @@ namespace iroha {
         model::Account res;
         res.account_id = pb_account.account_id();
         res.quorum = pb_account.quorum();
-        res.domain_name = pb_account.domain_name();
-
-        res.permissions.add_signatory =
-            pb_account.permissions().add_signatory();
-        res.permissions.can_transfer = pb_account.permissions().can_transfer();
-        res.permissions.create_assets =
-            pb_account.permissions().create_assets();
-        res.permissions.create_accounts =
-            pb_account.permissions().create_accounts();
-        res.permissions.create_domains =
-            pb_account.permissions().create_domains();
-        res.permissions.issue_assets = pb_account.permissions().issue_assets();
-        res.permissions.read_all_accounts =
-            pb_account.permissions().read_all_accounts();
-        res.permissions.remove_signatory =
-            pb_account.permissions().remove_signatory();
-        res.permissions.set_permissions =
-            pb_account.permissions().set_permissions();
-        res.permissions.set_quorum = pb_account.permissions().set_quorum();
-
-        std::copy(pb_account.master_key().begin(),
-                  pb_account.master_key().end(), res.master_key.begin());
+        res.domain_id = pb_account.domain_id();
         return res;
       }
 
@@ -120,6 +103,9 @@ namespace iroha {
         protocol::AccountResponse pb_response;
         pb_response.mutable_account()->CopyFrom(
             serializeAccount(accountResponse.account));
+        for (auto role : accountResponse.roles){
+          pb_response.add_account_roles(role);
+        }
         return pb_response;
       }
 
@@ -135,7 +121,8 @@ namespace iroha {
         protocol::AccountAsset pb_account_asset;
         pb_account_asset.set_account_id(account_asset.account_id);
         pb_account_asset.set_asset_id(account_asset.asset_id);
-        pb_account_asset.set_balance(account_asset.balance);
+        auto pb_balance = pb_account_asset.mutable_balance();
+        pb_balance->CopyFrom(serializeAmount(account_asset.balance));
         return pb_account_asset;
       }
 
@@ -143,7 +130,7 @@ namespace iroha {
           const protocol::AccountAsset &account_asset) const {
         model::AccountAsset res;
         res.account_id = account_asset.account_id();
-        res.balance = account_asset.balance();
+        res.balance = deserializeAmount(account_asset.balance());
         res.asset_id = account_asset.asset_id();
         return res;
       }
@@ -157,7 +144,8 @@ namespace iroha {
             accountAssetResponse.acct_asset.asset_id);
         pb_account_asset->set_account_id(
             accountAssetResponse.acct_asset.account_id);
-        pb_account_asset->set_balance(accountAssetResponse.acct_asset.balance);
+        auto pb_amount = pb_account_asset->mutable_balance();
+        pb_amount->CopyFrom(serializeAmount(accountAssetResponse.acct_asset.balance));
         return pb_response;
       }
 
@@ -166,7 +154,7 @@ namespace iroha {
           const protocol::AccountAssetResponse &account_asset_response) const {
         model::AccountAssetResponse res;
         res.acct_asset.balance =
-            account_asset_response.account_asset().balance();
+            deserializeAmount(account_asset_response.account_asset().balance());
         res.acct_asset.account_id =
             account_asset_response.account_asset().account_id();
         res.acct_asset.asset_id =
@@ -190,10 +178,65 @@ namespace iroha {
           const protocol::SignatoriesResponse &signatoriesResponse) const {
         model::SignatoriesResponse res{};
         for (const auto &key : signatoriesResponse.keys()) {
-          ed25519::pubkey_t pubkey;
+          pubkey_t pubkey;
           std::copy(key.begin(), key.end(), pubkey.begin());
           res.keys.push_back(pubkey);
         }
+        return res;
+      }
+
+      protocol::AssetResponse PbQueryResponseFactory::serializeAssetResponse(
+          const model::AssetResponse &response) const {
+        protocol::AssetResponse res;
+        auto asset = res.mutable_asset();
+        asset->set_asset_id(response.asset.asset_id);
+        asset->set_domain_id(response.asset.domain_id);
+        asset->set_precision(response.asset.precision);
+        return res;
+      }
+
+      model::AssetResponse PbQueryResponseFactory::deserializeAssetResponse(
+          const protocol::AssetResponse &response) const {
+        model::AssetResponse res;
+        auto asset = response.asset();
+        res.asset =
+            Asset(asset.asset_id(), asset.domain_id(), asset.precision());
+        return res;
+      }
+
+      protocol::RolesResponse PbQueryResponseFactory::serializeRolesResponse(
+          const model::RolesResponse &response) const {
+        protocol::RolesResponse res;
+        for (auto role : response.roles) {
+          res.add_roles(role);
+        }
+        return res;
+      }
+
+      model::RolesResponse PbQueryResponseFactory::deserializeRolesResponse(
+          const protocol::RolesResponse &response) const {
+        model::RolesResponse res{};
+        std::copy(response.roles().begin(), response.roles().end(),
+                  res.roles.begin());
+        return res;
+      }
+
+      protocol::RolePermissionsResponse
+      PbQueryResponseFactory::serializeRolePermissionsResponse(
+          const model::RolePermissionsResponse &response) const {
+        protocol::RolePermissionsResponse res;
+        for (auto perm : response.role_permissions) {
+          res.add_permissions(perm);
+        }
+        return res;
+      }
+
+      model::RolePermissionsResponse
+      PbQueryResponseFactory::deserializeRolePermissionsResponse(
+          const protocol::RolePermissionsResponse &response) const {
+        model::RolePermissionsResponse res;
+        std::copy(response.permissions().begin(), response.permissions().end(),
+                  res.role_permissions.begin());
         return res;
       }
 
@@ -219,6 +262,9 @@ namespace iroha {
           const model::ErrorResponse &errorResponse) const {
         protocol::ErrorResponse pb_response;
         switch (errorResponse.reason) {
+          case ErrorResponse::NO_ASSET:
+            pb_response.set_reason(protocol::ErrorResponse::NO_ASSET);
+            break;
           case ErrorResponse::STATELESS_INVALID:
             pb_response.set_reason(protocol::ErrorResponse::STATELESS_INVALID);
             break;
@@ -237,9 +283,12 @@ namespace iroha {
           case ErrorResponse::NOT_SUPPORTED:
             pb_response.set_reason(protocol::ErrorResponse::NOT_SUPPORTED);
             break;
+          case ErrorResponse::NO_ROLES:
+            pb_response.set_reason(protocol::ErrorResponse::NO_ROLES);
+            break;
         }
         return pb_response;
       }
-    }
-  }
-}
+    }  // namespace converters
+  }    // namespace model
+}  // namespace iroha

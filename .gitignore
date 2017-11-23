@@ -11,12 +11,15 @@ build/*
 *.o
 *.pb.cc
 *.pb.h
+*.retry
 .gradle/*
 .vscode/*
 .idea/*
 *xcworkspace*
 *cmake-build-debug*
 CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/*
 cmake-build-debu/*
 docker/build/iroha.tar
 cmake-build-debug/*
@@ -25,3 +28,10 @@ core/infra/protobuf
 docker/tiny/iroha/
 include/generated/*
 .scannerwork/
+iroha.conf
+peers.list
+cmake-build*
+
+cmake-build*
+.gtm
+/.gtm/

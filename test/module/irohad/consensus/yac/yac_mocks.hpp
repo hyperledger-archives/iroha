@@ -36,10 +36,11 @@ namespace iroha {
         return peer;
       }
 
-      VoteMessage create_vote(YacHash hash, std::string sign) {
+      VoteMessage create_vote(YacHash hash, std::string pub_key) {
         VoteMessage vote;
         vote.hash = hash;
-        std::copy(sign.begin(), sign.end(), vote.signature.pubkey.begin());
+        std::copy(pub_key.begin(), pub_key.end(),
+                  vote.signature.pubkey.begin());
         return vote;
       }
 
@@ -138,9 +139,9 @@ namespace iroha {
 
         MockYacPeerOrderer() = default;
 
-        MockYacPeerOrderer(const MockYacPeerOrderer &rhs){};
+        MockYacPeerOrderer(const MockYacPeerOrderer &rhs) {};
 
-        MockYacPeerOrderer(MockYacPeerOrderer &&rhs){};
+        MockYacPeerOrderer(MockYacPeerOrderer &&rhs) {};
 
         MockYacPeerOrderer &operator=(const MockYacPeerOrderer &rhs) {
           return *this;
@@ -149,13 +150,16 @@ namespace iroha {
 
       class MockYacHashProvider : public YacHashProvider {
        public:
-        MOCK_METHOD1(makeHash, YacHash(model::Block &));
+        MOCK_CONST_METHOD1(makeHash, YacHash(const model::Block &));
+
+        MOCK_CONST_METHOD1(toModelHash,
+                           model::Block::HashType(const YacHash &));
 
         MockYacHashProvider() = default;
 
-        MockYacHashProvider(const MockYacHashProvider &rhs){};
+        MockYacHashProvider(const MockYacHashProvider &rhs) {};
 
-        MockYacHashProvider(MockYacHashProvider &&rhs){};
+        MockYacHashProvider(MockYacHashProvider &&rhs) {};
 
         MockYacHashProvider &operator=(const MockYacHashProvider &rhs) {
           return *this;
@@ -164,9 +168,9 @@ namespace iroha {
 
       class MockYacNetworkNotifications : public YacNetworkNotifications {
        public:
-        MOCK_METHOD2(on_commit, void(model::Peer, CommitMessage));
-        MOCK_METHOD2(on_reject, void(model::Peer, RejectMessage));
-        MOCK_METHOD2(on_vote, void(model::Peer, VoteMessage));
+        MOCK_METHOD1(on_commit, void(CommitMessage));
+        MOCK_METHOD1(on_reject, void(RejectMessage));
+        MOCK_METHOD1(on_vote, void(VoteMessage));
       };
 
       class YacTest : public ::testing::Test {
@@ -191,9 +195,8 @@ namespace iroha {
           network = std::make_shared<MockYacNetwork>();
           crypto = std::make_shared<MockYacCryptoProvider>();
           timer = std::make_shared<MockTimer>();
-          yac = Yac::create(
-              std::move(YacVoteStorage()), network, crypto,
-              timer, ClusterOrdering(default_peers), delay);
+          yac = Yac::create(YacVoteStorage(), network, crypto, timer,
+                            ClusterOrdering(default_peers), delay);
           network->subscribe(yac);
         };
 

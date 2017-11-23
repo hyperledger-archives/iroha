@@ -14,12 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <generator/generator.hpp>
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
+// to compare pb amount and iroha amount
+#include "model/converters/pb_common.hpp"
+
 #include "main/server_runner.hpp"
-#include "torii/command_service.hpp"
+#include "model/permissions.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
 #include "torii_utils/query_client.hpp"
@@ -27,8 +31,6 @@ limitations under the License.
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
-constexpr size_t TimesToriiBlocking = 5;
-constexpr size_t TimesToriiNonBlocking = 5;
 constexpr size_t TimesFind = 1;
 
 using ::testing::Return;
@@ -39,8 +41,9 @@ using ::testing::AtLeast;
 using namespace iroha::network;
 using namespace iroha::validation;
 using namespace iroha::ametsuchi;
+using namespace iroha::model;
 
-class ToriiServiceTest : public testing::Test {
+class ToriiQueriesTest : public testing::Test {
  public:
   virtual void SetUp() {
     runner = new ServerRunner(std::string(Ip) + ":" + std::to_string(Port));
@@ -50,6 +53,16 @@ class ToriiServiceTest : public testing::Test {
       statelessValidatorMock = std::make_shared<MockStatelessValidator>();
       wsv_query = std::make_shared<MockWsvQuery>();
       block_query = std::make_shared<MockBlockQuery>();
+      storageMock = std::make_shared<MockStorage>();
+
+      rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier;
+      rxcpp::subjects::subject<Commit> commit_notifier;
+
+      EXPECT_CALL(*pcsMock, on_proposal())
+          .WillRepeatedly(Return(prop_notifier.get_observable()));
+
+      EXPECT_CALL(*pcsMock, on_commit())
+          .WillRepeatedly(Return(commit_notifier.get_observable()));
 
       auto tx_processor =
           std::make_shared<iroha::torii::TransactionProcessorImpl>(
@@ -58,7 +71,7 @@ class ToriiServiceTest : public testing::Test {
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
 
       auto command_service =
-          std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor);
+          std::make_unique<torii::CommandService>(pb_tx_factory, tx_processor, storageMock);
 
       //----------- Query Service ----------
 
@@ -94,24 +107,34 @@ class ToriiServiceTest : public testing::Test {
 
   std::shared_ptr<MockPeerCommunicationService> pcsMock;
   std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
+  std::shared_ptr<MockStorage> storageMock;
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
+
+  // just random hex strings
+  const std::string pubkey_test = generator::random_blob<16>(0).to_hexstring();
+  const std::string signature_test =
+      generator::random_blob<32>(0).to_hexstring();
 };
 
 /**
  * Test for error response
  */
 
-TEST_F(ToriiServiceTest, FindWhenResponseInvalid) {
+TEST_F(ToriiQueriesTest, FindWhenResponseInvalid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(false));
 
   iroha::protocol::QueryResponse response;
   auto query = iroha::protocol::Query();
-  query.set_creator_account_id("accountA");
-  query.mutable_get_account()->set_account_id("accountB");
+
+  query.mutable_payload()->set_creator_account_id("accountA");
+  query.mutable_payload()->mutable_get_account()->set_account_id("accountB");
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
+
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
   // Must return Error Response
@@ -123,24 +146,33 @@ TEST_F(ToriiServiceTest, FindWhenResponseInvalid) {
  * Tests for account response
  */
 
-TEST_F(ToriiServiceTest, FindAccountWhenStatefulInvalid) {
+TEST_F(ToriiQueriesTest, FindAccountWhenNoGrantPermissions) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
   account.account_id = "accountB";
+  auto creator = "accountA";
+
+  // TODO: refactor this to use stateful validation mocks
+  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
+                              creator, account.account_id, can_get_my_account))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*wsv_query, getAccountRoles(creator))
+      .WillOnce(Return(nonstd::nullopt));
 
   EXPECT_CALL(*wsv_query, getAccount("accountB"))
       .Times(0);  // won't be called since stateful validation should fail
-  EXPECT_CALL(*wsv_query, getAccount("accountA"))
-      .Times(1);  // supposed to be called once when
 
   iroha::protocol::QueryResponse response;
 
   auto query = iroha::protocol::Query();
-  query.set_creator_account_id("accountA");
-  query.mutable_get_account()->set_account_id("accountB");
+
+  query.mutable_payload()->set_creator_account_id("accountA");
+  query.mutable_payload()->mutable_get_account()->set_account_id("accountB");
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
@@ -150,42 +182,49 @@ TEST_F(ToriiServiceTest, FindAccountWhenStatefulInvalid) {
             iroha::model::ErrorResponse::STATEFUL_INVALID);
 }
 
-TEST_F(ToriiServiceTest, FindAccountWhenHasReadPermissions) {
+TEST_F(ToriiQueriesTest, FindAccountWhenHasReadPermissions) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
-  iroha::model::Account accountA;
-  accountA.account_id = "accountA";
-  accountA.permissions.read_all_accounts = true;
-
-  // Should be called once, when stateful validation will be in progress
-  EXPECT_CALL(*wsv_query, getAccount(accountA.account_id))
-      .WillOnce(Return(accountA));
+  auto creator = "accountA";
 
   iroha::model::Account accountB;
   accountB.account_id = "accountB";
+
+  // TODO: refactor this to use stateful validation mocks
+  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
+      creator, accountB.account_id, can_get_my_account))
+      .WillOnce(Return(true));
 
   // Should be called once, after successful stateful validation
   EXPECT_CALL(*wsv_query, getAccount(accountB.account_id))
       .WillOnce(Return(accountB));
 
+  std::vector<std::string> roles = {"user"};
+  EXPECT_CALL(*wsv_query, getAccountRoles(_))
+      .WillRepeatedly(Return(roles));
+
   iroha::protocol::QueryResponse response;
 
   auto query = iroha::protocol::Query();
-  query.set_creator_account_id("accountA");
-  query.mutable_get_account()->set_account_id("accountB");
+
+  query.mutable_payload()->set_creator_account_id("accountA");
+  query.mutable_payload()->mutable_get_account()->set_account_id("accountB");
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
   // Should not return Error Response because tx is stateless and stateful valid
   ASSERT_FALSE(response.has_error_response());
   ASSERT_EQ(response.account_response().account().account_id(), "accountB");
+  ASSERT_EQ(response.account_response().account_roles().size(), 1);
 }
 
-TEST_F(ToriiServiceTest, FindAccountWhenValid) {
+TEST_F(ToriiQueriesTest, FindAccountWhenHasRolePermission) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -193,14 +232,24 @@ TEST_F(ToriiServiceTest, FindAccountWhenValid) {
 
   // Should be called once when stateful validation is in progress
   EXPECT_CALL(*wsv_query, getAccount("accountA"))
-      .Times(2)
-      .WillRepeatedly(Return(account));
+      .WillOnce(Return(account));
+  // TODO: refactor this to use stateful validation mocks
+  auto creator =  "accountA";
+  std::vector<std::string> roles = {"test"};
+  EXPECT_CALL(*wsv_query, getAccountRoles(creator))
+      .WillRepeatedly(Return(roles));
+  std::vector<std::string> perm = {can_get_my_account};
+  EXPECT_CALL(*wsv_query, getRolePermissions("test"))
+      .WillOnce(Return(perm));
 
   iroha::protocol::QueryResponse response;
 
   auto query = iroha::protocol::Query();
-  query.set_creator_account_id("accountA");
-  query.mutable_get_account()->set_account_id("accountA");
+
+  query.mutable_payload()->set_creator_account_id("accountA");
+  query.mutable_payload()->mutable_get_account()->set_account_id("accountA");
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
@@ -213,9 +262,9 @@ TEST_F(ToriiServiceTest, FindAccountWhenValid) {
  * Test for account asset response
  */
 
-TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
+TEST_F(ToriiQueriesTest, FindAccountAssetWhenNoGrantPermissions) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -224,23 +273,36 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
   iroha::model::AccountAsset account_asset;
   account_asset.account_id = "accountB";
   account_asset.asset_id = "usd";
-  account_asset.balance = 100;
+  iroha::Amount amount(100, 2);
+  account_asset.balance = amount;
 
   iroha::model::Asset asset;
   asset.asset_id = "usd";
   asset.domain_id = "USA";
   asset.precision = 2;
 
-  EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
+  auto creator = "accountA";
+
+  // TODO: refactor this to use stateful validation mocks
+  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
+      creator, account.account_id, can_get_my_acc_ast))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*wsv_query, getAccountRoles(creator))
+      .WillOnce(Return(nonstd::nullopt));
+
   EXPECT_CALL(*wsv_query, getAccountAsset(_, _))
       .Times(0);  // won't be called due to failed stateful validation
 
   iroha::protocol::QueryResponse response;
 
   auto query = iroha::protocol::Query();
-  query.set_creator_account_id("accountA");
-  query.mutable_get_account_assets()->set_account_id("accountB");
-  query.mutable_get_account_assets()->set_asset_id("usd");
+
+  query.mutable_payload()->set_creator_account_id("accountA");
+  query.mutable_payload()->mutable_get_account_assets()->set_account_id(
+      "accountB");
+  query.mutable_payload()->mutable_get_account_assets()->set_asset_id("usd");
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
@@ -250,9 +312,9 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenStatefulInvalid) {
             iroha::model::ErrorResponse::STATEFUL_INVALID);
 }
 
-TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
+TEST_F(ToriiQueriesTest, FindAccountAssetWhenHasRolePermissions) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
@@ -261,22 +323,34 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
   iroha::model::AccountAsset account_asset;
   account_asset.account_id = "accountA";
   account_asset.asset_id = "usd";
-  account_asset.balance = 100;
+  iroha::Amount amount(100, 2);
+  account_asset.balance = amount;
 
   iroha::model::Asset asset;
   asset.asset_id = "usd";
   asset.domain_id = "USA";
   asset.precision = 2;
 
-  EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
-  EXPECT_CALL(*wsv_query, getAccountAsset(_, _)).WillOnce(Return(account_asset));
+  // TODO: refactor this to use stateful validation mocks
+  auto creator =  "accountA";
+  std::vector<std::string> roles = {"test"};
+  EXPECT_CALL(*wsv_query, getAccountRoles(creator))
+      .WillOnce(Return(roles));
+  std::vector<std::string> perm = {can_get_my_acc_ast};
+  EXPECT_CALL(*wsv_query, getRolePermissions("test"))
+      .WillOnce(Return(perm));
+  EXPECT_CALL(*wsv_query, getAccountAsset(_, _))
+      .WillOnce(Return(account_asset));
 
   iroha::protocol::QueryResponse response;
 
   auto query = iroha::protocol::Query();
-  query.set_creator_account_id("accountA");
-  query.mutable_get_account_assets()->set_account_id("accountA");
-  query.mutable_get_account_assets()->set_asset_id("usd");
+  query.mutable_payload()->set_creator_account_id("accountA");
+  query.mutable_payload()->mutable_get_account_assets()->set_account_id(
+      "accountA");
+  query.mutable_payload()->mutable_get_account_assets()->set_asset_id("usd");
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
@@ -288,35 +362,45 @@ TEST_F(ToriiServiceTest, FindAccountAssetWhenValid) {
             account_asset.asset_id);
   ASSERT_EQ(response.account_assets_response().account_asset().account_id(),
             account_asset.account_id);
-  ASSERT_EQ(response.account_assets_response().account_asset().balance(),
-            account_asset.balance);
+  auto iroha_amount_asset = iroha::model::converters::deserializeAmount(
+      response.account_assets_response().account_asset().balance());
+  ASSERT_EQ(iroha_amount_asset, account_asset.balance);
 }
 
 /**
  * Test for signatories response
  */
 
-TEST_F(ToriiServiceTest, FindSignatoriesWhenStatefulInvalid) {
+TEST_F(ToriiQueriesTest, FindSignatoriesWhenNoGrantPermissions) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
   account.account_id = "accountB";
 
-  iroha::ed25519::pubkey_t pubkey;
+  iroha::pubkey_t pubkey;
   std::fill(pubkey.begin(), pubkey.end(), 0x1);
-  std::vector<iroha::ed25519::pubkey_t> keys;
+  std::vector<iroha::pubkey_t> keys;
   keys.push_back(pubkey);
 
-  EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
+  // TODO: refactor this to use stateful validation mocks
+  auto creator =  "accountA";
+  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
+      creator, account.account_id, can_get_my_signatories))
+      .WillOnce(Return(false));
+  EXPECT_CALL(*wsv_query, getAccountRoles(creator))
+      .WillOnce(Return(nonstd::nullopt));
   EXPECT_CALL(*wsv_query, getSignatories(_)).Times(0);
 
   iroha::protocol::QueryResponse response;
 
   auto query = iroha::protocol::Query();
-  query.set_creator_account_id("accountA");
-  query.mutable_get_account_signatories()->set_account_id("accountB");
+  query.mutable_payload()->set_creator_account_id("accountA");
+  query.mutable_payload()->mutable_get_account_signatories()->set_account_id(
+      "accountB");
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
@@ -326,27 +410,38 @@ TEST_F(ToriiServiceTest, FindSignatoriesWhenStatefulInvalid) {
             iroha::model::ErrorResponse::STATEFUL_INVALID);
 }
 
-TEST_F(ToriiServiceTest, FindSignatoriesWhenValid) {
+TEST_F(ToriiQueriesTest, FindSignatoriesHasRolePermissions) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
   account.account_id = "accountA";
 
-  iroha::ed25519::pubkey_t pubkey;
+  iroha::pubkey_t pubkey;
   std::fill(pubkey.begin(), pubkey.end(), 0x1);
-  std::vector<iroha::ed25519::pubkey_t> keys;
+  std::vector<iroha::pubkey_t> keys;
   keys.push_back(pubkey);
 
-  EXPECT_CALL(*wsv_query, getAccount("accountA")).WillOnce(Return(account));
+  // TODO: refactor this to use stateful validation mocks
+  auto creator =  "accountA";
+  std::vector<std::string> roles = {"test"};
+  EXPECT_CALL(*wsv_query, getAccountRoles(creator))
+      .WillOnce(Return(roles));
+  std::vector<std::string> perm = {can_get_my_signatories};
+  EXPECT_CALL(*wsv_query, getRolePermissions("test"))
+      .WillOnce(Return(perm));
   EXPECT_CALL(*wsv_query, getSignatories(_)).WillOnce(Return(keys));
 
   iroha::protocol::QueryResponse response;
 
   auto query = iroha::protocol::Query();
-  query.set_creator_account_id("accountA");
-  query.mutable_get_account_signatories()->set_account_id("accountA");
+
+  query.mutable_payload()->set_creator_account_id("accountA");
+  query.mutable_payload()->mutable_get_account_signatories()->set_account_id(
+      "accountA");
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
@@ -364,35 +459,45 @@ TEST_F(ToriiServiceTest, FindSignatoriesWhenValid) {
  * Test for transactions response
  */
 
-TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
+TEST_F(ToriiQueriesTest, FindTransactionsWhenValid) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(true));
 
   iroha::model::Account account;
   account.account_id = "accountA";
 
-  auto txs_observable  =
-          rxcpp::observable<>::iterate([account] {
-              std::vector<iroha::model::Transaction> result;
-              for (size_t i = 0; i < 3; ++i) {
-                iroha::model::Transaction current;
-                current.creator_account_id = account.account_id;
-                current.tx_counter = i;
-                result.push_back(current);
-              }
-              return result;
-          }());
+  auto txs_observable = rxcpp::observable<>::iterate([account] {
+    std::vector<iroha::model::Transaction> result;
+    for (size_t i = 0; i < 3; ++i) {
+      iroha::model::Transaction current;
+      current.creator_account_id = account.account_id;
+      current.tx_counter = i;
+      result.push_back(current);
+    }
+    return result;
+  }());
 
-  EXPECT_CALL(*wsv_query, getAccount(_)).WillOnce(Return(account));
+  // TODO: refactor this to use stateful validation mocks
+  auto creator =  "accountA";
+  std::vector<std::string> roles = {"test"};
+  EXPECT_CALL(*wsv_query, getAccountRoles(creator))
+      .WillOnce(Return(roles));
+  std::vector<std::string> perm = {can_get_my_acc_txs};
+  EXPECT_CALL(*wsv_query, getRolePermissions("test"))
+      .WillOnce(Return(perm));
   EXPECT_CALL(*block_query, getAccountTransactions(account.account_id))
       .WillOnce(Return(txs_observable));
 
   iroha::protocol::QueryResponse response;
 
   auto query = iroha::protocol::Query();
-  query.set_creator_account_id(account.account_id);
-  query.mutable_get_account_transactions()->set_account_id(account.account_id);
+
+  query.mutable_payload()->set_creator_account_id(account.account_id);
+  query.mutable_payload()->mutable_get_account_transactions()->set_account_id(
+      account.account_id);
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
 
   auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
   ASSERT_TRUE(stat.ok());
@@ -402,26 +507,29 @@ TEST_F(ToriiServiceTest, FindTransactionsWhenValid) {
        i++) {
     ASSERT_EQ(response.transactions_response()
                   .transactions(i)
-                  .meta()
+                  .payload()
                   .creator_account_id(),
               account.account_id);
     ASSERT_EQ(
-        response.transactions_response().transactions(i).meta().tx_counter(),
+        response.transactions_response().transactions(i).payload().tx_counter(),
         i);
   }
 }
 
-TEST_F(ToriiServiceTest, FindManyTimesWhereQueryServiceSync) {
+TEST_F(ToriiQueriesTest, FindManyTimesWhereQueryServiceSync) {
   EXPECT_CALL(*statelessValidatorMock,
-              validate(A<std::shared_ptr<const iroha::model::Query>>()))
+              validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(false));
 
   for (size_t i = 0; i < TimesFind; ++i) {
     iroha::protocol::QueryResponse response;
     auto query = iroha::protocol::Query();
-    query.set_creator_account_id("accountA");
-    query.mutable_get_account()->set_account_id("accountB");
-    query.set_query_counter(i);
+
+    query.mutable_payload()->set_creator_account_id("accountA");
+    query.mutable_payload()->mutable_get_account()->set_account_id("accountB");
+    query.mutable_payload()->set_query_counter(i);
+    query.mutable_signature()->set_pubkey(pubkey_test);
+    query.mutable_signature()->set_signature(signature_test);
 
     auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
     ASSERT_TRUE(stat.ok());

@@ -24,18 +24,14 @@ TEST(QueryResponseTest, AccountTest) {
   model::converters::PbQueryResponseFactory pb_factory;
   model::Account account;
   account.account_id = "123";
-  std::fill(account.master_key.begin(), account.master_key.end(), 0x1);
-  account.permissions.add_signatory = true;
-  account.domain_name = "domain";
+  account.domain_id = "domain";
   account.quorum = 32;
 
   auto pb_account = pb_factory.serializeAccount(account);
   auto des_account = pb_factory.deserializeAccount(pb_account);
 
   ASSERT_EQ(account.account_id, des_account.account_id);
-  ASSERT_EQ(account.master_key, des_account.master_key);
-  ASSERT_EQ(account.permissions, des_account.permissions);
-  ASSERT_EQ(account.domain_name, des_account.domain_name);
+  ASSERT_EQ(account.domain_id, des_account.domain_id);
   ASSERT_EQ(account.quorum, account.quorum);
 }
 
@@ -44,9 +40,7 @@ TEST(QueryResponseTest, AccountResponseTest) {
 
   model::Account account;
   account.account_id = "123";
-  std::fill(account.master_key.begin(), account.master_key.end(), 0x1);
-  account.permissions.add_signatory = true;
-  account.domain_name = "domain";
+  account.domain_id = "domain";
   account.quorum = 32;
 
   model::AccountResponse accountResponse;
@@ -59,12 +53,8 @@ TEST(QueryResponseTest, AccountResponseTest) {
 
   ASSERT_EQ(accountResponse.account.account_id,
             des_account_response.account.account_id);
-  ASSERT_EQ(accountResponse.account.master_key,
-            des_account_response.account.master_key);
-  ASSERT_EQ(accountResponse.account.permissions,
-            des_account_response.account.permissions);
-  ASSERT_EQ(accountResponse.account.domain_name,
-            des_account_response.account.domain_name);
+  ASSERT_EQ(accountResponse.account.domain_id,
+            des_account_response.account.domain_id);
   ASSERT_EQ(accountResponse.account.quorum, account.quorum);
 }
 
@@ -74,7 +64,8 @@ TEST(QueryResponseTest, AccountAsset) {
   model::AccountAsset account_asset;
   account_asset.account_id = "123";
   account_asset.asset_id = "123";
-  account_asset.balance = 1;
+  iroha::Amount amount(1);
+  account_asset.balance = amount;
 
   auto pb_account_asset = pb_factory.serializeAccountAsset(account_asset);
   auto des_account_asset = pb_factory.deserializeAccountAsset(pb_account_asset);
@@ -105,7 +96,7 @@ TEST(QueryResponseTest, SignatoriesTest) {
   model::converters::PbQueryResponseFactory pb_factory;
 
   model::SignatoriesResponse signatories_response{};
-  ed25519::pubkey_t pubkey;
+  pubkey_t pubkey;
   std::fill(pubkey.begin(), pubkey.end(), 0x1);
   signatories_response.keys.push_back(pubkey);
 
@@ -123,16 +114,15 @@ TEST(QueryResponseTest, TransactionsResponseTest) {
 
   model::TransactionsResponse txs_response{};
 
-  txs_response.transactions =
-          rxcpp::observable<>::iterate([] {
-              std::vector<model::Transaction> result;
-              for (size_t i = 0; i < 3; ++i) {
-                model::Transaction current;
-                current.tx_counter = i;
-                result.push_back(current);
-              }
-              return result;
-          }());
+  txs_response.transactions = rxcpp::observable<>::iterate([] {
+    std::vector<model::Transaction> result;
+    for (size_t i = 0; i < 3; ++i) {
+      model::Transaction current;
+      current.tx_counter = i;
+      result.push_back(current);
+    }
+    return result;
+  }());
 
   auto shrd_tr = std::make_shared<decltype(txs_response)>(txs_response);
   auto query_response = *pb_factory.serialize(shrd_tr);
@@ -142,8 +132,62 @@ TEST(QueryResponseTest, TransactionsResponseTest) {
     ASSERT_EQ(query_response.transactions_response()
                   .transactions()
                   .Get(i)
-                  .meta()
+                  .payload()
                   .tx_counter(),
               i);
   }
+}
+
+TEST(QueryResponseTest, roles_response) {
+  model::converters::PbQueryResponseFactory pb_factory;
+
+  model::RolesResponse response{};
+  response.roles = {"master", "padawan", "council"};
+
+  auto shrd_resp = std::make_shared<decltype(response)>(response);
+  auto query_response = *pb_factory.serialize(shrd_resp);
+
+  ASSERT_EQ(response.roles.size(),
+            query_response.roles_response().roles().size());
+  for (size_t i = 0; i < response.roles.size(); i++) {
+    ASSERT_EQ(query_response.roles_response().roles().Get(i),
+              response.roles.at(i));
+  }
+}
+
+TEST(QueryResponseTest, role_permissions) {
+  model::converters::PbQueryResponseFactory pb_factory;
+
+  model::RolePermissionsResponse response{};
+  response.role_permissions = {"can_read", "can_write"};
+
+  auto shrd_resp = std::make_shared<decltype(response)>(response);
+  auto query_response = *pb_factory.serialize(shrd_resp);
+
+  ASSERT_EQ(response.role_permissions.size(),
+            query_response.role_permissions_response().permissions().size());
+  for (size_t i = 0; i < response.role_permissions.size(); i++) {
+    ASSERT_EQ(query_response.role_permissions_response().permissions().Get(i),
+              response.role_permissions.at(i));
+  }
+}
+
+TEST(QueryResponseTest, asset_response) {
+  model::converters::PbQueryResponseFactory pb_factory;
+
+  model::AssetResponse response{};
+  response.asset.asset_id = "coin#test";
+  response.asset.domain_id = "test";
+  response.asset.precision = 2;
+
+  auto shrd_resp = std::make_shared<decltype(response)>(response);
+  auto query_response = *pb_factory.serialize(shrd_resp);
+
+  ASSERT_EQ(response.asset.asset_id,
+            query_response.asset_response().asset().asset_id());
+  ASSERT_EQ(response.asset.domain_id,
+            query_response.asset_response().asset().domain_id());
+  ASSERT_EQ(response.asset.precision,
+            query_response.asset_response().asset().precision());
+
 }

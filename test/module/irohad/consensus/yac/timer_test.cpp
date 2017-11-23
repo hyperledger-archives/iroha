@@ -24,24 +24,15 @@ using namespace iroha::consensus::yac;
 class TimerTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    loop = uvw::Loop::create();
-    timer = std::make_shared<TimerImpl>(loop);
-    thread = std::thread([this] { ASSERT_TRUE(loop->run()); });
+    timer = std::make_shared<TimerImpl>();
   }
 
   void TearDown() override {
-    loop->stop();
-    if (thread.joinable()) {
-      thread.join();
-    }
     timer.reset();
-    loop.reset();
   }
 
  public:
   std::shared_ptr<Timer> timer;
-  std::shared_ptr<uvw::Loop> loop;
-  std::thread thread;
 };
 
 TEST_F(TimerTest, NothingInvokedWhenDenied) {
