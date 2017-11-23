@@ -43,6 +43,7 @@ option(SWIG         "Generate Swig bindings" OFF)
 if (NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug)
 endif()
+
 message(STATUS "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 message(STATUS "-DTESTING=${TESTING}")
 message(STATUS "-DBENCHMARKING=${BENCHMARKING}")

@@ -17,6 +17,7 @@
 
 %module irohacrypto
 
+#define DEPRECATED
 #pragma SWIG nowarn=401
 
 %include "std_string.i"

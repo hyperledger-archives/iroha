@@ -19,6 +19,7 @@
 #define IROHA_SHARED_MODEL_PRIMITIVE_HPP
 
 #include "interfaces/model_primitive.hpp"
+#include "utils/deprecated.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -45,11 +46,7 @@ namespace shared_model {
        * model
        * @return pointer for old-style object
        */
-#ifndef SWIG
-      [[deprecated]]
-#endif
-          virtual OldModelType *
-          makeOldModel() const = 0;
+      DEPRECATED virtual OldModelType *makeOldModel() const = 0;
     };
 
   }  // namespace interface

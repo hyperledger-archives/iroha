@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <sstream>
 #include "interfaces/model_primitive.hpp"
+#include "utils/deprecated.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "utils/string_builder.hpp"
 
@@ -83,11 +84,7 @@ namespace shared_model {
        */
 
       template <typename BlobType>
-#ifndef SWIG
-      [[deprecated]]
-#endif
-          BlobType
-          makeOldModel() const {
+      DEPRECATED BlobType makeOldModel() const {
         return BlobType::from_string(blob());
       }
 

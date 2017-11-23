@@ -14,12 +14,10 @@
 
 if (SWIG)
 
-add_definitions(-DSWIG)
-
-find_package(SWIG REQUIRED)
+find_package(SWIG 3.0 REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
 
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibs 2.7 REQUIRED)
 include_directories(${PYTHON_INCLUDE_PATH})
 
 find_package(JNI REQUIRED)
