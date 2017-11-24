@@ -23,13 +23,14 @@
 namespace shared_model {
   namespace crypto {
 
-    Signed CryptoProviderEd25519Sha3::sign(const Blob &blob, const Keypair &keypair) {
+    Signed CryptoProviderEd25519Sha3::sign(const Blob &blob,
+                                           const Keypair &keypair) {
       return Signer::sign(blob, keypair);
     }
 
     bool CryptoProviderEd25519Sha3::verify(const Signed &signedData,
-                                const Blob &orig,
-                                const PublicKey &publicKey) {
+                                           const Blob &orig,
+                                           const PublicKey &publicKey) {
       return Verifier::verify(signedData, orig, publicKey);
     }
 
@@ -37,7 +38,8 @@ namespace shared_model {
       return Seed(iroha::create_seed().to_string());
     }
 
-    Seed CryptoProviderEd25519Sha3::generateSeed(const std::string &passphrase) {
+    Seed CryptoProviderEd25519Sha3::generateSeed(
+        const std::string &passphrase) {
       return Seed(iroha::create_seed(passphrase).to_string());
     }
 

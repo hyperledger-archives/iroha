@@ -25,14 +25,29 @@
 
 namespace shared_model {
   namespace crypto {
-    template<typename Algorithm = DefaultCryptoAlgorithmType>
+    /**
+     * CryptoVerifier - wrapper for generalization verification of cryptographic
+     * signatures
+     * @tparam Algorithm - cryptographic algorithm for verification
+     */
+    template <typename Algorithm = DefaultCryptoAlgorithmType>
     class CryptoVerifier {
      public:
+      /**
+       * Verify signature attached to source data
+       * @param signedData - cryptographic signature
+       * @param source - data that was signed
+       * @param pubKey - public key of signatory
+       * @return true if signature correct
+       */
       static bool verify(const Signed &signedData,
                          const Blob &source,
                          const PublicKey &pubKey) {
         return Algorithm::verify(signedData, source, pubKey);
-      };
+      }
+
+      /// close constructor for forbidding instantiation
+      CryptoVerifier() = delete;
     };
   }  // namespace crypto
 }  // namespace shared_model
