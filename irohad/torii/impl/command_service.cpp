@@ -72,6 +72,9 @@ namespace torii {
         default:
           res->set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
           break;
+        case iroha::model::TransactionResponse::MST_EXPIRED:
+          res->set_tx_status(iroha::protocol::TxStatus::MST_EXPIRED);
+          break;
       }
 
       cache_->addItem(iroha_response->tx_hash, *res);

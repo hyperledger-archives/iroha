@@ -51,9 +51,7 @@ namespace shared_model {
       }
 
       iroha::model::TransactionResponse *makeOldModel() const override {
-        auto tx_response = new iroha::model::TransactionResponse();
-        tx_response->current_status = oldModelStatus();
-        return tx_response;
+        return new iroha::model::TransactionResponse("", oldModelStatus());
       }
 
       bool operator==(const Model &rhs) const override { return true; }
