@@ -67,9 +67,8 @@ namespace shared_model {
       interface::Primitive<Keypair, iroha::keypair_t>::OldModelType *
       makeOldModel() const override {
         return new iroha::keypair_t{
-            .pubkey = publicKey().makeOldModel<PublicKey::OldPublicKeyType>(),
-            .privkey =
-                privateKey().makeOldModel<PrivateKey::OldPrivateKeyType>()};
+            publicKey().makeOldModel<PublicKey::OldPublicKeyType>(),
+            privateKey().makeOldModel<PrivateKey::OldPrivateKeyType>()};
       }
 
       Keypair *copy() const override {

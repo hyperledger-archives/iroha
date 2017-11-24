@@ -35,7 +35,7 @@ namespace shared_model {
        * @param keypair - keypair with public and private keys
        * @return Signed object with signed data
        */
-      Signed sign(const Blob &blob, const Keypair &keypair) const;
+      static Signed sign(const Blob &blob, const Keypair &keypair);
     };
   }  // namespace crypto
 }  // namespace shared_model

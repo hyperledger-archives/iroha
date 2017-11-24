@@ -15,34 +15,23 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_HASH_PROVIDER_HPP
-#define IROHA_HASH_PROVIDER_HPP
+#ifndef IROHA_CRYPTO_SIGNER_HPP
+#define IROHA_CRYPTO_SIGNER_HPP
 
 #include "cryptography/blob.hpp"
-#include "cryptography/hash.hpp"
+#include "cryptography/crypto_provider/crypto_defaults.hpp"
+#include "cryptography/keypair.hpp"
+#include "cryptography/signed.hpp"
 
 namespace shared_model {
   namespace crypto {
-    /**
-     * Wrapper class for hashing.
-     */
-    class HashProvider {
+    template<typename Algorithm = DefaultCryptoAlgorithmType>
+    class CryptoSigner {
      public:
-      /**
-       * Hash with sha3-256
-       * @param blob - blob to hash
-       * @return Hash of provided blob
-       */
-      Hash sha3_256(const Blob &blob) const;
-
-      /**
-       * Hash with sha3-512
-       * @param blob - blob to hash
-       * @return Hash of provided blob
-       */
-      Hash sha3_512(const Blob &blob) const;
+      static Signed sign(const Blob &blob, const Keypair &keypair) {
+        return Algorithm::sign(blob, keypair);
+      }
     };
   }  // namespace crypto
 }  // namespace shared_model
-
-#endif  // IROHA_HASH_PROVIDER_HPP
+#endif  // IROHA_CRYPTO_SIGNER_HPP

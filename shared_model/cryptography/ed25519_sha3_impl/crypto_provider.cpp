@@ -17,34 +17,35 @@
 
 #include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/signer.hpp"
+#include "cryptography/ed25519_sha3_impl/verifier.hpp"
 
 namespace shared_model {
   namespace crypto {
 
-    Signed CryptoProvider::sign(const Blob &blob,
-                                const Keypair &keypair) const {
-      return signer_.sign(blob, keypair);
+    Signed CryptoProviderEd25519Sha3::sign(const Blob &blob, const Keypair &keypair) {
+      return Signer::sign(blob, keypair);
     }
 
-    bool CryptoProvider::verify(const Signed &signedData,
+    bool CryptoProviderEd25519Sha3::verify(const Signed &signedData,
                                 const Blob &orig,
-                                const PublicKey &publicKey) const {
-      return verifier_.verify(signedData, orig, publicKey);
+                                const PublicKey &publicKey) {
+      return Verifier::verify(signedData, orig, publicKey);
     }
 
-    Seed CryptoProvider::generateSeed() const {
+    Seed CryptoProviderEd25519Sha3::generateSeed() {
       return Seed(iroha::create_seed().to_string());
     }
 
-    Seed CryptoProvider::generateSeed(const std::string &passphrase) const {
+    Seed CryptoProviderEd25519Sha3::generateSeed(const std::string &passphrase) {
       return Seed(iroha::create_seed(passphrase).to_string());
     }
 
-    Keypair CryptoProvider::generateKeypair() const {
+    Keypair CryptoProviderEd25519Sha3::generateKeypair() const {
       return generateKeypair(generateSeed());
     }
 
-    Keypair CryptoProvider::generateKeypair(const Seed &seed) const {
+    Keypair CryptoProviderEd25519Sha3::generateKeypair(const Seed &seed) {
       auto keypair =
           iroha::create_keypair(seed.makeOldModel<Seed::OldSeedType>());
       return Keypair(PublicKey(keypair.pubkey.to_string()),

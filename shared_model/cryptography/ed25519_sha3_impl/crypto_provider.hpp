@@ -18,16 +18,16 @@
 #ifndef IROHA_CRYPTOPROVIDER_HPP
 #define IROHA_CRYPTOPROVIDER_HPP
 
-#include "cryptography/ed25519_sha3_impl/signer.hpp"
-#include "cryptography/ed25519_sha3_impl/verifier.hpp"
+#include "cryptography/keypair.hpp"
 #include "cryptography/seed.hpp"
+#include "cryptography/signed.hpp"
 
 namespace shared_model {
   namespace crypto {
     /**
      * Wrapper class for signing-related stuff.
      */
-    class CryptoProvider {
+    class CryptoProviderEd25519Sha3 {
      public:
       /**
        * Signs the message.
@@ -35,7 +35,7 @@ namespace shared_model {
        * @param keypair - keypair
        * @return Signed object with signed data
        */
-      Signed sign(const Blob &blob, const Keypair &keypair) const;
+      static Signed sign(const Blob &blob, const Keypair &keypair);
 
       /**
        * Verifies signature.
@@ -44,39 +44,34 @@ namespace shared_model {
        * @param publicKey - public key
        * @return true if verify was OK or false otherwise
        */
-      bool verify(const Signed &signedData,
-                  const Blob &orig,
-                  const PublicKey &publicKey) const;
-
+      static bool verify(const Signed &signedData,
+                         const Blob &orig,
+                         const PublicKey &publicKey);
       /**
        * Generates new seed
        * @return Seed generated
        */
-      Seed generateSeed() const;
+      static Seed generateSeed();
 
       /**
        * Generates new seed from a provided passphrase
        * @param passphrase - passphrase to generate seed from
        * @return Seed generated
        */
-      Seed generateSeed(const std::string &passphrase) const;
+      static Seed generateSeed(const std::string &passphrase);
 
       /**
        * Generates new keypair with a default seed
        * @return Keypair generated
        */
-      Keypair generateKeypair() const;
+      static Keypair generateKeypair();
 
       /**
        * Generates new keypair from a provided seed
        * @param seed - provided seed
        * @return generated keypair
        */
-      Keypair generateKeypair(const Seed &seed) const;
-
-     private:
-      Signer signer_;
-      Verifier verifier_;
+      static Keypair generateKeypair(const Seed &seed);
     };
   }  // namespace crypto
 }  // namespace shared_model

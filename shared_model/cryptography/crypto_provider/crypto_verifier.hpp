@@ -15,16 +15,25 @@
  * limitations under the License.
  */
 
-#include "cryptography/ed25519_sha3_impl/hash_provider.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#ifndef IROHA_CRYPTO_VERIFIER_HPP
+#define IROHA_CRYPTO_VERIFIER_HPP
+
+#include "cryptography/blob.hpp"
+#include "cryptography/crypto_provider/crypto_defaults.hpp"
+#include "cryptography/keypair.hpp"
+#include "cryptography/signed.hpp"
 
 namespace shared_model {
   namespace crypto {
-    Hash HashProvider::sha3_256(const Blob &blob) const {
-      return Hash(iroha::sha3_256(blob.blob()).to_string());
-    }
-    Hash HashProvider::sha3_512(const Blob &blob) const {
-      return Hash(iroha::sha3_512(blob.blob()).to_string());
-    }
+    template<typename Algorithm = DefaultCryptoAlgorithmType>
+    class CryptoVerifier {
+     public:
+      static bool verify(const Signed &signedData,
+                         const Blob &source,
+                         const PublicKey &pubKey) {
+        return Algorithm::verify(signedData, source, pubKey);
+      };
+    };
   }  // namespace crypto
 }  // namespace shared_model
+#endif  // IROHA_CRYPTO_VERIFIER_HPP
