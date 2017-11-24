@@ -27,7 +27,7 @@ if (SWIG_PYTHON)
     include_directories(${PYTHON_INCLUDE_DIRS})
 
     swig_add_library(irohacrypto LANGUAGE python SOURCES crypto.i)
-    swig_link_libraries(irohacrypto ${Python_LIBRARIES} shared_ed25519_sha3 hash cryptography ed25519_sha3)
+    swig_link_libraries(irohacrypto ${Python_LIBRARIES} shared_ed25519_sha3)
 endif()
 
 if (SWIG_JAVA)
@@ -38,5 +38,5 @@ if (SWIG_JAVA)
     include_directories(${JAVA_INCLUDE_PATH2})
 
     swig_add_library(irohacrypto LANGUAGE java SOURCES crypto.i)
-    swig_link_libraries(irohacrypto ${Java_LIBRARIES} shared_ed25519_sha3 hash cryptography ed25519_sha3)
+    swig_link_libraries(irohacrypto ${Java_LIBRARIES} shared_ed25519_sha3)
 endif()

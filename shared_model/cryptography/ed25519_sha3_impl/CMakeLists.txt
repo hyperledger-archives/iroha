@@ -23,5 +23,5 @@ add_library(shared_ed25519_sha3
         )
 
 target_link_libraries(shared_ed25519_sha3
-        optional
+        cryptography
         )
