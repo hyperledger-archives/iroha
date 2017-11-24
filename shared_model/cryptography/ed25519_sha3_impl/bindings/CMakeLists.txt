@@ -14,7 +14,7 @@
 
 if (SWIG)
 
-find_package(SWIG 3.0 REQUIRED)
+find_package(SWIG 3.0.12 REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
 
 find_package(PythonLibs 2.7 REQUIRED)
