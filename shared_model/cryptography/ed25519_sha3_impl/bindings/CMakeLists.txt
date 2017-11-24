@@ -14,7 +14,7 @@
 
 if (SWIG_PYTHON OR SWIG_JAVA)
     find_package(SWIG 3.0.12 REQUIRED)
-    INCLUDE(${SWIG_USE_FILE})
+    include(${SWIG_USE_FILE})
 
     set(CMAKE_SWIG_FLAGS "")
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -23,7 +23,8 @@ endif()
 
 if (SWIG_PYTHON)
     find_package(PythonLibs 2.7 REQUIRED)
-    include_directories(${PYTHON_INCLUDE_PATH})
+    # path to where Python.h is found
+    include_directories(${PYTHON_INCLUDE_DIRS})
 
     swig_add_library(irohacrypto LANGUAGE python SOURCES crypto.i)
     swig_link_libraries(irohacrypto ${Python_LIBRARIES} shared_ed25519_sha3 hash cryptography ed25519_sha3)
@@ -31,7 +32,9 @@ endif()
 
 if (SWIG_JAVA)
     find_package(JNI REQUIRED)
+    # the include path to jni.h
     include_directories(${JAVA_INCLUDE_PATH})
+    # the include path to jni_md.h
     include_directories(${JAVA_INCLUDE_PATH2})
 
     swig_add_library(irohacrypto LANGUAGE java SOURCES crypto.i)
