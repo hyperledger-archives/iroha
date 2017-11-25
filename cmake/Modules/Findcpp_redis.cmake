@@ -29,6 +29,7 @@ if (NOT cpp_redis_FOUND)
       GIT_TAG        ${VERSION1}
       CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+      BUILD_BYPRODUCTS ${EP_PREFIX}/src/cylix_cpp_redis-build/lib/libcpp_redis.a
       INSTALL_COMMAND "" # remove install step
       UPDATE_COMMAND "" # remove update step
       TEST_COMMAND "" # remove test step
@@ -46,6 +47,7 @@ if (NOT cpp_redis_FOUND)
       SOURCE_DIR ${tacopie_SOURCE_DIR}
       CONFIGURE_COMMAND ""
       BUILD_COMMAND ""
+      BUILD_BYPRODUCTS ${EP_PREFIX}/src/cylix_cpp_redis-build/lib/libtacopie.a
       INSTALL_COMMAND "" # remove install step
       UPDATE_COMMAND "" # remove update step
       TEST_COMMAND "" # remove test step
