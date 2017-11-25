@@ -9,24 +9,46 @@ ENV IROHA_BUILD /opt/iroha/build
 
 RUN apt-get update; \
     apt-get -y upgrade; \
-    apt-get -y --no-install-recommends install apt-utils; \
+    apt-get -y --no-install-recommends install apt-utils software-properties-common; \
     apt-get -y clean
+
+# add git repository
+RUN add-apt-repository -y ppa:git-core/ppa; \
+    apt-get update
 
 RUN apt-get -y --no-install-recommends install build-essential python-software-properties \
         automake libtool \
         # dev dependencies
-        libssl-dev zlib1g-dev libboost-all-dev libc6-dbg golang \
+        libssl-dev zlib1g-dev libc6-dbg golang \
         # CircleCI dependencies
         git ssh tar gzip ca-certificates python3 python3-pip python3-setuptools \
         # code coverage
         lcov \
         # other
-        wget curl cmake file unzip gdb iputils-ping vim ccache \
-        gcovr vera++ cppcheck doxygen graphviz graphviz-dev; \
+        wget curl file unzip gdb iputils-ping vim ccache \
+        gcovr cppcheck doxygen graphviz graphviz-dev; \
     apt-get -y clean
 
 RUN pip3 install --upgrade pip; \
     pip3 install flask requests
+
+# install cmake 3.5.1
+RUN git clone https://gitlab.kitware.com/cmake/cmake.git /tmp/cmake; \
+    (cd /tmp/cmake ; git checkout 64130a7e793483e24c1d68bdd234f81d5edb2d51); \
+    (cd /tmp/cmake ; /tmp/cmake/bootstrap --parallel=${PARALLELISM} --enable-ccache); \
+    make -j${PARALLELISM} -C /tmp/cmake; \
+    make -C /tmp/cmake install; \
+    rm -rf /tmp/cmake
+
+# install boost 1.65.1
+RUN git clone https://github.com/boostorg/boost /tmp/boost; \
+    (cd /tmp/boost ; git checkout 436ad1dfcfc7e0246141beddd11c8a4e9c10b146); \
+    (cd /tmp/boost ; git submodule init); \
+    (cd /tmp/boost ; git submodule update --recursive -j ${PARALLELISM}); \
+    (cd /tmp/boost ; /tmp/boost/bootstrap.sh --with-libraries=system,filesystem); \
+    (cd /tmp/boost ; /tmp/boost/b2 headers); \
+    (cd /tmp/boost ; /tmp/boost/b2 cxxflags="-std=c++14" -j ${PARALLELISM} install); \
+    rm -rf /tmp/boost
 
 # install protobuf
 RUN git clone https://github.com/google/protobuf /tmp/protobuf; \
