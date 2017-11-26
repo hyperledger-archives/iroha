@@ -27,15 +27,29 @@
 namespace shared_model {
   namespace proto {
     class Amount final : public interface::Amount {
-     private:
-      using RefAmount = detail::ReferenceHolder<iroha::protocol::Amount>;
-
      public:
-      explicit Amount(const iroha::protocol::Amount &amount)
-          : Amount(RefAmount(amount)) {}
+      template <typename AmountType>
+      explicit Amount(AmountType &&amount)
+          : proto_amount_(std::forward<AmountType>(amount)),
+            multiprecision_repr_([this] {
+              const auto offset = 64u;
+              auto times = 3u;
+              boost::multiprecision::uint256_t result;
+              result |= proto_amount_->value().first() << offset * times--;
+              result |= proto_amount_->value().second() << offset * times--;
+              result |= proto_amount_->value().third() << offset * times--;
+              result |= proto_amount_->value().fourth() << offset * times--;
+              return result;
+            }),
+            precision_([this] { return proto_amount_->precision(); }),
+            blob_([this] {
+              return BlobType(proto_amount_->SerializeAsString());
+            }) {}
 
-      explicit Amount(iroha::protocol::Amount &&amount)
-          : Amount(RefAmount(std::move(amount))) {}
+      Amount(const Amount &o) : Amount(*o.proto_amount_) {}
+
+      Amount(Amount &&o) noexcept
+          : Amount(std::move(o.proto_amount_.variant())) {}
 
       const boost::multiprecision::uint256_t &intValue() const override {
         return *multiprecision_repr_;
@@ -52,33 +66,16 @@ namespace shared_model {
       }
 
      private:
-      explicit Amount(RefAmount &&ref)
-          : proto_amount_(std::move(ref)),
-            multiprecision_repr_([this] {
-              const auto offset = 64u;
-              auto times = 3u;
-              boost::multiprecision::uint256_t result;
-              result |= proto_amount_->value().first() << offset * times--;
-              result |= proto_amount_->value().second() << offset * times--;
-              result |= proto_amount_->value().third() << offset * times--;
-              result |= proto_amount_->value().fourth() << offset * times--;
-              return result;
-            }),
-            precision_([this] { return proto_amount_->precision(); }),
-            blob_([this] {
-              return BlobType(proto_amount_->SerializeAsString());
-            }) {}
-
       // proto
-      RefAmount proto_amount_;
-
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      detail::ReferenceHolder<iroha::protocol::Amount> proto_amount_;
 
       // lazy
-      Lazy<boost::multiprecision::uint256_t> multiprecision_repr_;
-      Lazy<interface::types::PrecisionType> precision_;
-      Lazy<BlobType> blob_;
+      const detail::LazyInitializer<boost::multiprecision::uint256_t>
+          multiprecision_repr_;
+
+      const detail::LazyInitializer<interface::types::PrecisionType> precision_;
+
+      const detail::LazyInitializer<BlobType> blob_;
     };
 
   }  // namespace proto

@@ -28,23 +28,21 @@
 namespace shared_model {
   namespace proto {
     class AddAssetQuantity final : public interface::AddAssetQuantity {
-     private:
-      using RefAddAssetQuantity =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::AddAssetQuantity &>;
-
      public:
-      explicit AddAssetQuantity(const iroha::protocol::Command &command)
-          : AddAssetQuantity(RefAddAssetQuantity(
-                command,
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::add_asset_quantity))) {}
+      template <typename CommandType>
+      explicit AddAssetQuantity(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            add_asset_quantity_(
+                [this] { return command_->add_asset_quantity(); }),
+            amount_([this] {
+              return proto::Amount(add_asset_quantity_->amount());
+            }) {}
 
-      explicit AddAssetQuantity(iroha::protocol::Command &&command)
-          : AddAssetQuantity(RefAddAssetQuantity(
-                std::move(command),
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::add_asset_quantity))) {}
+      AddAssetQuantity(const AddAssetQuantity &o)
+          : AddAssetQuantity(*o.command_) {}
+
+      AddAssetQuantity(AddAssetQuantity &&o) noexcept
+          : AddAssetQuantity(std::move(o.command_.variant())) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return add_asset_quantity_->account_id();
@@ -57,28 +55,20 @@ namespace shared_model {
       const interface::Amount &amount() const override { return *amount_; }
 
       ModelType *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_add_asset_quantity() = *add_asset_quantity_;
-        return new AddAssetQuantity(std::move(command));
+        return new AddAssetQuantity(iroha::protocol::Command(*command_));
       }
 
      private:
-      // ----------------------------| private API |----------------------------
-      explicit AddAssetQuantity(RefAddAssetQuantity &&ref)
-          : add_asset_quantity_(std::move(ref)), amount_([this] {
-              return proto::Amount(this->add_asset_quantity_->amount());
-            }) {}
-
       // ------------------------------| fields |-------------------------------
 
       // proto
-      RefAddAssetQuantity add_asset_quantity_;
-
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       // lazy
-      Lazy<proto::Amount> amount_;
+      const detail::LazyInitializer<iroha::protocol::AddAssetQuantity>
+          add_asset_quantity_;
+
+      const detail::LazyInitializer<proto::Amount> amount_;
     };
 
   }  // namespace proto

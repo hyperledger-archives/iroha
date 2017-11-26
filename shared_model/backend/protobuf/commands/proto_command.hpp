@@ -24,11 +24,12 @@
 #include "utils/lazy_initializer.hpp"
 #include "utils/variant_deserializer.hpp"
 
-template <typename... T>
-auto load(const iroha::protocol::Command &ar) {
+template <typename... T, typename Archive>
+auto load(Archive &&ar) {
   int which = ar.command_case() - 1;
-  return shared_model::detail::variant_impl<T...>::template load<
-      shared_model::interface::Command::CommandVariantType>(ar, which);
+  return shared_model::detail::variant_impl<T...>::
+      template load<shared_model::interface::Command::CommandVariantType>(
+          std::forward<Archive>(ar), which);
 }
 
 namespace shared_model {
@@ -42,8 +43,6 @@ namespace shared_model {
       /// lazy variant shortcut
       using LazyVariantType = detail::LazyInitializer<CommandVariantType>;
 
-      using RefCommand = detail::ReferenceHolder<iroha::protocol::Command>;
-
      public:
       /// type of proto variant
       using ProtoCommandVariantType = boost::variant<w<AddAssetQuantity>>;
@@ -51,11 +50,16 @@ namespace shared_model {
       /// list of types in proto variant
       using ProtoCommandListType = ProtoCommandVariantType::types;
 
-      explicit Command(const iroha::protocol::Command &command)
-          : Command(RefCommand(command)) {}
+      template <typename CommandType>
+      explicit Command(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            variant_([this] { return load<ProtoCommandListType>(*command_); }),
+            blob_([this] { return BlobType(command_->SerializeAsString()); }) {}
 
-      explicit Command(iroha::protocol::Command &&command)
-          : Command(RefCommand(std::move(command))) {}
+      Command(const Command &o) : Command(*o.command_) {}
+
+      Command(Command &&o) noexcept : Command(std::move(o.command_.variant())) {
+      }
 
       const CommandVariantType &get() const override { return *variant_; }
 
@@ -66,21 +70,15 @@ namespace shared_model {
       }
 
      private:
-      explicit Command(RefCommand &&ref)
-          : command_(std::move(ref)),
-            variant_(detail::makeLazyInitializer([this] {
-              return CommandVariantType(load<ProtoCommandListType>(*command_));
-            })),
-            blob_([this] { return BlobType(command_->SerializeAsString()); }) {}
-
       // ------------------------------| fields |-------------------------------
 
       // proto
-      RefCommand command_;
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       // lazy
-      LazyVariantType variant_;
-      detail::LazyInitializer<BlobType> blob_;
+      const LazyVariantType variant_;
+
+      const detail::LazyInitializer<BlobType> blob_;
     };
   }  // namespace proto
 }  // namespace shared_model
