@@ -18,39 +18,29 @@
 #include "backend/protobuf/commands/proto_command.hpp"
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
-// Quite hacky way to extract the class name
-// probably not stable and should be improved
-class ClassNameVisitor : public boost::static_visitor<const std::string> {
- public:
-  template <typename T>
-  const std::string operator()(const T &t) const {
-    auto s = t->toString();
-    // skip everything except class name
-    return std::string(s.begin(), s.begin() + s.find(':'));
-  }
-};
+using ::testing::StartsWith;
 
 class ProtoCommand : public testing::Test {
  public:
-  void SetUp() override {}
   template <typename T>
-  void SetUp(T &&command) {
+  void initializeCommand(T &&command) {
     (r.*command)();
     proto = std::make_shared<shared_model::proto::Command>(r);
   }
 
   iroha::protocol::Command r;
   std::shared_ptr<shared_model::proto::Command> proto;
-  ClassNameVisitor visitor;
 };
 
 /**
- * The following test ensures that the command is deserialized properly
+ * @given add asset quantity protobuf command object
+ * @when create shared model command object
+ * @then corresponding add asset quantity shared model object is created
  */
-
 TEST_F(ProtoCommand, AddAssetQuantityLoad) {
-  SetUp(&iroha::protocol::Command::mutable_add_asset_quantity);
-  ASSERT_STREQ("AddAssetQuantity",
-               boost::apply_visitor(visitor, proto->get()).c_str());
+  initializeCommand(&iroha::protocol::Command::mutable_add_asset_quantity);
+
+  ASSERT_THAT(proto->toString(), StartsWith("AddAssetQuantity"));
 }

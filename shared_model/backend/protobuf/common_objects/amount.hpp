@@ -70,12 +70,14 @@ namespace shared_model {
       detail::ReferenceHolder<iroha::protocol::Amount> proto_amount_;
 
       // lazy
-      const detail::LazyInitializer<boost::multiprecision::uint256_t>
-          multiprecision_repr_;
+      template <typename T>
+      using Lazy = detail::LazyInitializer<T>;
 
-      const detail::LazyInitializer<interface::types::PrecisionType> precision_;
+      const Lazy<boost::multiprecision::uint256_t> multiprecision_repr_;
 
-      const detail::LazyInitializer<BlobType> blob_;
+      const Lazy<interface::types::PrecisionType> precision_;
+
+      const Lazy<BlobType> blob_;
     };
 
   }  // namespace proto

@@ -41,7 +41,10 @@ namespace shared_model {
       using w = detail::PolymorphicWrapper<Value>;
 
       /// lazy variant shortcut
-      using LazyVariantType = detail::LazyInitializer<CommandVariantType>;
+      template <typename T>
+      using Lazy = detail::LazyInitializer<T>;
+
+      using LazyVariantType = Lazy<CommandVariantType>;
 
      public:
       /// type of proto variant
@@ -78,7 +81,7 @@ namespace shared_model {
       // lazy
       const LazyVariantType variant_;
 
-      const detail::LazyInitializer<BlobType> blob_;
+      const Lazy<BlobType> blob_;
     };
   }  // namespace proto
 }  // namespace shared_model

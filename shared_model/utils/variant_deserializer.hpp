@@ -66,6 +66,11 @@ namespace shared_model {
           if (which == 0) {
             using head_type = typename boost::mpl::front<S>::type;
             using variant_head_type = typename boost::mpl::front<T>::type;
+            // Given two variant type lists T and S, where T is list of abstract
+            // types, and S is list of implementations, ensure that there is a
+            // corresponding implementation for each abstract type
+            // Probably there is a missing type either in interfaces/.h
+            // abstract variant, or backend/type/.h implementation variant
             static_assert(
                 std::is_base_of<typename variant_head_type::WrappedType,
                                 typename head_type::WrappedType>::value,

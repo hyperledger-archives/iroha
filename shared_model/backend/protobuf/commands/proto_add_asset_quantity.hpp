@@ -65,10 +65,12 @@ namespace shared_model {
       detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       // lazy
-      const detail::LazyInitializer<iroha::protocol::AddAssetQuantity>
-          add_asset_quantity_;
+      template <typename T>
+      using Lazy = detail::LazyInitializer<T>;
 
-      const detail::LazyInitializer<proto::Amount> amount_;
+      const Lazy<iroha::protocol::AddAssetQuantity> add_asset_quantity_;
+
+      const Lazy<proto::Amount> amount_;
     };
 
   }  // namespace proto

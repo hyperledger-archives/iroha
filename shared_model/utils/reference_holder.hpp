@@ -23,8 +23,9 @@
 namespace shared_model {
   namespace detail {
     /**
-     * Structure designed to contain reference or value depending on called ctor
-     * @tparam T
+     * Structure designed to contain reference to const
+     * or value depending on called ctor
+     * @tparam T type of stored value
      */
     template <typename T>
     class ReferenceHolder {
