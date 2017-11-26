@@ -43,7 +43,7 @@ namespace shared_model {
       return Seed(iroha::create_seed(passphrase).to_string());
     }
 
-    Keypair CryptoProviderEd25519Sha3::generateKeypair() const {
+    Keypair CryptoProviderEd25519Sha3::generateKeypair() {
       return generateKeypair(generateSeed());
     }
 

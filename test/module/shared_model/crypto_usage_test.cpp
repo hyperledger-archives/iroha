@@ -24,8 +24,6 @@
 
 using namespace shared_model::crypto;
 
-logger::Logger log_ = logger::log("SharedModel=>CryptoUsage");
-
 class CryptoInitialization : public ::testing::Test {
  public:
   void SetUp() override {
