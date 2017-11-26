@@ -21,10 +21,11 @@
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
 #include "model/queries/get_account.hpp"
+#include "interfaces/primitive.hpp"
 
 namespace shared_model {
   namespace interface {
-    class GetAccount : public Hashable<GetAccount, iroha::model::GetAccount> {
+    class GetAccount : public Primitive<GetAccount, iroha::model::GetAccount> {
      public:
       /**
        * @return Identity of user, for fetching data

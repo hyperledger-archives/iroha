@@ -18,6 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_GET_SIGNATORIES_HPP
 #define IROHA_SHARED_MODEL_GET_SIGNATORIES_HPP
 
+#include "interfaces/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
 #include "model/queries/get_signatories.hpp"
@@ -29,7 +30,7 @@ namespace shared_model {
      * Query for getting all signatories attached to account
      */
     class GetSignatories
-        : public Hashable<GetSignatories, iroha::model::GetSignatories> {
+        : public Primitive<GetSignatories, iroha::model::GetSignatories> {
      public:
       /**
        * @return account_id of requested signatories

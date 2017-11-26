@@ -20,14 +20,16 @@
 
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/queries/get_roles.hpp"
+
 
 namespace shared_model {
   namespace interface {
     /**
      * Get all roles in the current system
      */
-    class GetRoles : public Hashable<GetRoles, iroha::model::GetRoles> {
+    class GetRoles : public Primitive<GetRoles, iroha::model::GetRoles> {
      public:
       OldModelType *makeOldModel() const override { return new iroha::model::GetRoles; }
 

@@ -21,6 +21,7 @@
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
 #include "model/queries/get_asset_info.hpp"
+#include "interfaces/primitive.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -28,7 +29,7 @@ namespace shared_model {
      * Get meta data of asset
      */
     class GetAssetInfo
-        : public Hashable<GetAssetInfo, iroha::model::GetAssetInfo> {
+        : public Primitive<GetAssetInfo, iroha::model::GetAssetInfo> {
      public:
       /**
        * @return asset identifier to get asset's information
