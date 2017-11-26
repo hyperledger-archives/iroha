@@ -23,6 +23,9 @@ if (NOT pqxx_FOUND)
       BUILD_IN_SOURCE 1
       BUILD_COMMAND make
       BUILD_BYPRODUCTS ${EP_PREFIX}/src/jtv_libpqxx/src/.libs/libpqxx.a
+                       ${EP_PREFIX}/src/jtv_libpqxx/src/libpqxx.la
+                       ${EP_PREFIX}/src/jtv_libpqxx/src/.libs/libpqxx.la
+                       ${EP_PREFIX}/src/jtv_libpqxx/src/.libs/libpqxx.lai
       INSTALL_COMMAND "" # remove install step
       TEST_COMMAND "" # remove test step
       UPDATE_COMMAND "" # remove update step
