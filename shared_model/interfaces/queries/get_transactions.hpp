@@ -16,7 +16,7 @@
  */
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/queries/get_transactions.hpp"
 
 #ifndef IROHA_SHARED_MODEL_GET_TRANSACTIONS_HPP
@@ -29,7 +29,7 @@ namespace shared_model {
      * Query for getting transactions of given asset of an account
      */
     class GetAccountAssetTransactions
-        : public Hashable<GetAccountAssetTransactions,
+        : public Primitive<GetAccountAssetTransactions,
                           iroha::model::GetAccountAssetTransactions> {
      public:
       /**

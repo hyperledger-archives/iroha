@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_GET_ACCOUNT_ASSETS_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
+#include "interfaces/primitive.hpp"
 #include "model/queries/get_account_assets.hpp"
 
 namespace shared_model {
@@ -28,7 +28,7 @@ namespace shared_model {
      * Query for get all account's assets and balance
      */
     class GetAccountAssets
-        : public Hashable<GetAccountAssets, iroha::model::GetAccountAssets> {
+        : public Primitive<GetAccountAssets, iroha::model::GetAccountAssets> {
      public:
       /**
        * @return account identifier
