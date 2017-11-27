@@ -20,7 +20,7 @@
 
 namespace shared_model {
   namespace crypto {
-    Signed Signer::sign(const Blob &blob, const Keypair &keypair) const {
+    Signed Signer::sign(const Blob &blob, const Keypair &keypair) {
       return Signed(
           iroha::sign(
               blob.blob(),

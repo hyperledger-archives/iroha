@@ -37,7 +37,6 @@ namespace shared_model {
 
       /**
        * @return hash of object.
-       * Equality of hashes means equality of objects.
        */
       const HashType &hash() const { return *hash_; }
 
@@ -47,7 +46,8 @@ namespace shared_model {
       virtual const BlobType &blob() const = 0;
 
       /**
-       * Overriding operator== with equality hash semantics
+       * Overriding operator== with equality hash semantics:
+       * equality of hashes <=> equality of objects.
        * @param rhs - another model object
        * @return true, if hashes are equal, false otherwise
        */

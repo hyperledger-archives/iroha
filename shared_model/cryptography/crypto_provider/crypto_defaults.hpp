@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
-#include "cryptography/ed25519_sha3_impl/hash_provider.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#ifndef IROHA_SHARED_MODEL_CRYPTO_DEFAULTS_HPP
+#define IROHA_SHARED_MODEL_CRYPTO_DEFAULTS_HPP
+
+#include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
 
 namespace shared_model {
   namespace crypto {
-    Hash HashProvider::sha3_256(const Blob &blob) const {
-      return Hash(iroha::sha3_256(blob.blob()).to_string());
-    }
-    Hash HashProvider::sha3_512(const Blob &blob) const {
-      return Hash(iroha::sha3_512(blob.blob()).to_string());
-    }
+    /// Default type of crypto algorithm
+    using DefaultCryptoAlgorithmType = CryptoProviderEd25519Sha3;
   }  // namespace crypto
 }  // namespace shared_model
+#endif  // IROHA_SHARED_MODEL_CRYPTO_DEFAULTS_HPP

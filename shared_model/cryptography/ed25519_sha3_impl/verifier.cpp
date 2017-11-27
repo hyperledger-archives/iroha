@@ -22,7 +22,7 @@ namespace shared_model {
   namespace crypto {
     bool Verifier::verify(const Signed &signedData,
                           const Blob &orig,
-                          const PublicKey &publicKey) const {
+                          const PublicKey &publicKey) {
       return iroha::verify(
           orig.blob(),
           publicKey.makeOldModel<PublicKey::OldPublicKeyType>(),

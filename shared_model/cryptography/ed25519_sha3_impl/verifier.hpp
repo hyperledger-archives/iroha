@@ -28,9 +28,9 @@ namespace shared_model {
      */
     class Verifier {
      public:
-      bool verify(const Signed &signedData,
-                  const Blob &orig,
-                  const PublicKey &publicKey) const;
+      static bool verify(const Signed &signedData,
+                         const Blob &orig,
+                         const PublicKey &publicKey);
     };
 
   }  // namespace crypto

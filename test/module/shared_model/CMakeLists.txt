@@ -16,4 +16,14 @@
 #
 
 add_subdirectory(backend_proto)
-AddTest(lazy_test lazy_test.cpp)
+AddTest(lazy_test
+    lazy_test.cpp
+    )
+
+AddTest(crypto_usage_test
+    crypto_usage_test.cpp
+    )
+target_link_libraries(crypto_usage_test
+    shared_model_ed25519_sha3
+    logger
+    )

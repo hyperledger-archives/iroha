@@ -15,29 +15,37 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_SIGNER_HPP
-#define IROHA_SHARED_MODEL_SIGNER_HPP
+#ifndef IROHA_CRYPTO_SIGNER_HPP
+#define IROHA_CRYPTO_SIGNER_HPP
 
 #include "cryptography/blob.hpp"
+#include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "cryptography/keypair.hpp"
 #include "cryptography/signed.hpp"
 
 namespace shared_model {
   namespace crypto {
     /**
-     * Class which signs provided data with a provided private key.
+     * CryptoSigner - wrapper for generalization signing for different
+     * cryptographic algorithms
+     * @tparam Algorithm - cryptographic algorithm for singing
      */
-    class Signer {
+    template <typename Algorithm = DefaultCryptoAlgorithmType>
+    class CryptoSigner {
      public:
       /**
-       * Signs provided blob.
-       * @param blob - to sign
-       * @param keypair - keypair with public and private keys
-       * @return Signed object with signed data
+       * Generate signature for target data
+       * @param blob - data for signing
+       * @param keypair - (public, private) keys for signing
+       * @return signature's blob
        */
-      static Signed sign(const Blob &blob, const Keypair &keypair);
+      static Signed sign(const Blob &blob, const Keypair &keypair) {
+        return Algorithm::sign(blob, keypair);
+      }
+
+      /// close constructor for forbidding instantiation
+      CryptoSigner() = delete;
     };
   }  // namespace crypto
 }  // namespace shared_model
-
-#endif  // IROHA_SHARED_MODEL_SIGNER_HPP
+#endif  // IROHA_CRYPTO_SIGNER_HPP

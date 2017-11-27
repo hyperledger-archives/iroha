@@ -41,6 +41,6 @@ namespace shared_model {
       }
     };
   }  // namespace crypto
-};   // namespace shared_model
+}  // namespace shared_model
 
 #endif  // IROHA_SEED_HPP
