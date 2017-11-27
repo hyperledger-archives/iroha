@@ -26,7 +26,7 @@
 
 template <typename... T, typename Archive>
 auto load(Archive &&ar) {
-  int which = ar.command_case() - 1;
+  int which = ar.GetDescriptor()->FindFieldByNumber(ar.command_case())->index();
   return shared_model::detail::variant_impl<T...>::
       template load<shared_model::interface::Command::CommandVariantType>(
           std::forward<Archive>(ar), which);

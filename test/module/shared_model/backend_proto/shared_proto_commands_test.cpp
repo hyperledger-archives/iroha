@@ -18,29 +18,27 @@
 #include "backend/protobuf/commands/proto_command.hpp"
 
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
-using ::testing::StartsWith;
-
-class ProtoCommand : public testing::Test {
- public:
-  template <typename T>
-  void initializeCommand(T &&command) {
-    (r.*command)();
-    proto = std::make_shared<shared_model::proto::Command>(r);
-  }
-
-  iroha::protocol::Command r;
-  std::shared_ptr<shared_model::proto::Command> proto;
-};
+#include <boost/range/algorithm/for_each.hpp>
+#include <boost/range/irange.hpp>
 
 /**
- * @given add asset quantity protobuf command object
+ * For each protobuf command type
+ * @given protobuf command object
  * @when create shared model command object
- * @then corresponding add asset quantity shared model object is created
+ * @then corresponding shared model object is created
  */
-TEST_F(ProtoCommand, AddAssetQuantityLoad) {
-  initializeCommand(&iroha::protocol::Command::mutable_add_asset_quantity);
-
-  ASSERT_THAT(proto->toString(), StartsWith("AddAssetQuantity"));
+TEST(ProtoCommand, CommandLoad) {
+  iroha::protocol::Command command;
+  auto refl = command.GetReflection();
+  auto desc = command.GetDescriptor();
+  boost::for_each(
+      // TODO 11/27/17 andrei PR #695 replace 1 with desc->field_count()
+      boost::irange(0, 1),
+      [&](auto i) {
+        auto field = desc->field(i);
+        refl->SetAllocatedMessage(
+            &command, refl->GetMessage(command, field).New(), field);
+        ASSERT_EQ(i, shared_model::proto::Command(command).get().which());
+      });
 }
