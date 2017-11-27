@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <endpoint.pb.h>
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "torii/command_service.hpp"
 #include "common/types.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "endpoint.pb.h"
 
 namespace torii {
 
@@ -39,6 +39,7 @@ namespace torii {
       auto res = cache_->findItem(iroha_response->tx_hash);
       if (not res) {
         iroha::protocol::ToriiResponse response;
+        response.set_tx_hash(iroha_response->tx_hash);
         response.set_tx_status(iroha::protocol::NOT_RECEIVED);
         cache_->addItem(iroha_response->tx_hash, response);
         return;
@@ -85,6 +86,7 @@ namespace torii {
     }
 
     iroha::protocol::ToriiResponse response;
+    response.set_tx_hash(tx_hash);
     response.set_tx_status(iroha::protocol::TxStatus::ON_PROCESS);
 
     cache_->addItem(tx_hash, response);
@@ -99,6 +101,7 @@ namespace torii {
     if (resp) {
       response.CopyFrom(*resp);
     } else {
+      response.set_tx_hash(request.tx_hash());
       if (storage_->getBlockQuery()->getTxByHashSync(request.tx_hash())) {
         response.set_tx_status(iroha::protocol::TxStatus::COMMITTED);
       } else {

@@ -40,10 +40,10 @@ constexpr int Port = 50051;
 constexpr size_t TimesToriiBlocking = 5;
 constexpr size_t TimesToriiNonBlocking = 5;
 
-using ::testing::Return;
 using ::testing::A;
-using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::Return;
+using ::testing::_;
 
 using namespace iroha::network;
 using namespace iroha::validation;
@@ -370,4 +370,30 @@ TEST_F(ToriiServiceTest, StatusWhenNonBlocking) {
   while (status_counter < (int)TimesToriiNonBlocking)
     ;
   ASSERT_EQ(status_counter, TimesToriiNonBlocking);
+}
+
+TEST_F(ToriiServiceTest, CheckHash) {
+  std::vector<iroha::model::Transaction> txs;
+  std::vector<std::string> tx_hashes;
+  const int tx_num = 10;
+
+  iroha::model::converters::PbTransactionFactory tx_factory;
+
+  for (size_t i = 0; i < tx_num; ++i) {
+    auto new_tx = iroha::protocol::Transaction();
+    auto payload = new_tx.mutable_payload();
+    payload->set_tx_counter(i);
+    auto tx = tx_factory.deserialize(new_tx);
+
+    tx_hashes.push_back(iroha::hash(*tx).to_string());
+  }
+
+  for (auto &hash : tx_hashes) {
+    iroha::protocol::TxStatusRequest tx_request;
+    tx_request.set_tx_hash(hash);
+    iroha::protocol::ToriiResponse toriiResponse;
+    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+
+    ASSERT_EQ(toriiResponse.tx_hash(), hash);
+  }
 }
