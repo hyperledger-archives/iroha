@@ -87,7 +87,7 @@ namespace shared_model {
             .init("Query")
             .append("creatorId", creatorAccountId())
             .append("queryCounter", std::to_string(queryCounter()))
-            .append(Hashable::toString())
+            .append(Signable::toString())
             .append(boost::apply_visitor(detail::ToStringVisitor(), get()))
             .finalize();
       }
