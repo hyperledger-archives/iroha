@@ -68,6 +68,7 @@ namespace torii {
           res->set_tx_status(iroha::protocol::TxStatus::ON_PROCESS);
           break;
         case iroha::model::TransactionResponse::NOT_RECEIVED:
+        default:
           res->set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
           break;
       }
