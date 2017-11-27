@@ -42,12 +42,9 @@ namespace iroha {
         result = transaction_.exec(
             "SELECT * FROM account_has_grantable_permissions WHERE "
             "permittee_account_id = "
-            + transaction_.quote(permitee_account_id)
-            + " AND account_id = "
-            + transaction_.quote(account_id)
-            + " AND permission_id = "
-            + transaction_.quote(permission_id)
-            + ";");
+            + transaction_.quote(permitee_account_id) + " AND account_id = "
+            + transaction_.quote(account_id) + " AND permission_id = "
+            + transaction_.quote(permission_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;
@@ -61,8 +58,7 @@ namespace iroha {
       try {
         result = transaction_.exec(
             "SELECT role_id FROM account_has_roles WHERE account_id = "
-            + transaction_.quote(account_id)
-            + ";");
+            + transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
@@ -80,8 +76,7 @@ namespace iroha {
       try {
         result = transaction_.exec(
             "SELECT permission_id FROM role_has_permissions WHERE role_id = "
-            + transaction_.quote(role_name)
-            + ";");
+            + transaction_.quote(role_name) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
@@ -112,8 +107,7 @@ namespace iroha {
       pqxx::result result;
       try {
         result = transaction_.exec("SELECT * FROM account WHERE account_id = "
-                                   + transaction_.quote(account_id)
-                                   + ";");
+                                   + transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
@@ -127,8 +121,35 @@ namespace iroha {
       row.at("account_id") >> account.account_id;
       row.at("domain_id") >> account.domain_id;
       row.at("quorum") >> account.quorum;
+      row.at("data") >> account.json_data;
       //      row.at("transaction_count") >> ?
       return account;
+    }
+
+    nonstd::optional<std::string> PostgresWsvQuery::getAccountDetail(
+        const std::string &account_id, const std::string &detail) {
+      pqxx::result result;
+      try {
+        result = transaction_.exec("SELECT data->>" + transaction_.quote(detail)
+                                   + " FROM account WHERE account_id = "
+                                   + transaction_.quote(account_id) + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return nullopt;
+      }
+      if (result.empty()) {
+        log_->info("Account {} not found", account_id);
+        return nullopt;
+      }
+      auto row = result.at(0);
+      std::string res;
+      row.at(0) >> res;
+
+      // if res is empty, then that key does not exist for this account
+      if (res.empty()) {
+        return nullopt;
+      }
+      return res;
     }
 
     nonstd::optional<std::vector<pubkey_t>> PostgresWsvQuery::getSignatories(
@@ -137,8 +158,7 @@ namespace iroha {
       try {
         result = transaction_.exec(
             "SELECT public_key FROM account_has_signatory WHERE account_id = "
-            + transaction_.quote(account_id)
-            + ";");
+            + transaction_.quote(account_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
@@ -157,8 +177,7 @@ namespace iroha {
       pqxx::result result;
       try {
         result = transaction_.exec("SELECT * FROM asset WHERE asset_id = "
-                                   + transaction_.quote(asset_id)
-                                   + ";");
+                                   + transaction_.quote(asset_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
@@ -185,9 +204,7 @@ namespace iroha {
         result = transaction_.exec(
             "SELECT * FROM account_has_asset WHERE account_id = "
             + transaction_.quote(account_id)
-            + " AND asset_id = "
-            + transaction_.quote(asset_id)
-            + ";");
+            + " AND asset_id = " + transaction_.quote(asset_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
@@ -211,8 +228,7 @@ namespace iroha {
       pqxx::result result;
       try {
         result = transaction_.exec("SELECT * FROM domain WHERE domain_id = "
-                                   + transaction_.quote(domain_id)
-                                   + ";");
+                                   + transaction_.quote(domain_id) + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return nullopt;
