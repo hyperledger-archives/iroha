@@ -35,10 +35,9 @@ namespace shared_model {
       using GeneratorType = std::function<Target()>;
 
      public:
-      explicit LazyInitializer(const GeneratorType &generator)
-          : generator_(generator) {}
-
-      LazyInitializer(const LazyInitializer &) = default;
+      template <typename T>
+      explicit LazyInitializer(T &&generator)
+          : generator_(std::forward<T>(generator)) {}
 
       using PointerType = typename std::add_pointer_t<Target>;
 
@@ -46,7 +45,9 @@ namespace shared_model {
 
       const PointerType ptr() const {
         if (target_value_ == boost::none) {
-          target_value_ = boost::make_optional<Target>(generator_());
+          // Use type move constuctor with emplace
+          // since Target copy assignment operator could be deleted
+          target_value_.emplace(generator_());
         }
         return target_value_.get_ptr();
       }

@@ -40,7 +40,7 @@ namespace shared_model {
          * @tparam Archive container type
          */
         template <class V, class T = typename V::types, class Archive>
-        static V invoke(const Archive &, int) {
+        static V invoke(Archive &&, int) {
           BOOST_ASSERT_MSG(false, "Required type not found");
         }
       };
@@ -62,15 +62,25 @@ namespace shared_model {
          * @param v result variant
          */
         template <class V, class T = typename V::types, class Archive>
-        static V invoke(const Archive &ar, int which) {
+        static V invoke(Archive &&ar, int which) {
           if (which == 0) {
             using head_type = typename boost::mpl::front<S>::type;
-            return V(head_type(ar));
+            using variant_head_type = typename boost::mpl::front<T>::type;
+            // Given two variant type lists T and S, where T is list of abstract
+            // types, and S is list of implementations, ensure that there is a
+            // corresponding implementation for each abstract type
+            // Probably there is a missing type either in interfaces/.h
+            // abstract variant, or backend/type/.h implementation variant
+            static_assert(
+                std::is_base_of<typename variant_head_type::WrappedType,
+                                typename head_type::WrappedType>::value,
+                "variant_head_type is not base of head_type");
+            return V(head_type(std::forward<Archive>(ar)));
           } else {
             using type = typename boost::mpl::pop_front<S>::type;
             using variant_type = typename boost::mpl::pop_front<T>::type;
             return variant_impl<type>::template load<V, variant_type>(
-                ar, which - 1);
+                std::forward<Archive>(ar), which - 1);
           }
         }
       };
@@ -86,12 +96,12 @@ namespace shared_model {
        * @param v result variant
        */
       template <class V, class T = typename V::types, class Archive>
-      static V load(const Archive &ar, int which) {
+      static V load(Archive &&ar, int which) {
         using typex =
             typename boost::mpl::eval_if<boost::mpl::empty<S>,
                                          boost::mpl::identity<load_null>,
                                          boost::mpl::identity<load_impl>>::type;
-        return typex::template invoke<V, T>(ar, which);
+        return typex::template invoke<V, T>(std::forward<Archive>(ar), which);
       }
     };
   }  // namespace detail

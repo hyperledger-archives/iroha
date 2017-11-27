@@ -23,50 +23,39 @@
 namespace shared_model {
   namespace detail {
     /**
-     * Structure designed to contain pointer or value depending on called ctor
-     * @tparam T
-     * @tparam V
+     * Structure designed to contain reference to const
+     * or value depending on called ctor
+     * @tparam T type of stored value
      */
-    template <typename T, typename V = const T &>
+    template <typename T>
     class ReferenceHolder {
      private:
-      using MapperType = std::function<const V &(const T &)>;
-
-      //  T_T*
-      using VariantType = boost::variant<T, const T *>;
-
-      static const V &identity(const T &x) { return x; }
+      using VariantType = boost::variant<T, const T &>;
 
      public:
-      ReferenceHolder(T &&value, const MapperType &mapper = identity)
-          : ReferenceHolder(VariantType(std::move(value)), mapper) {}
+      template <typename V>
+      explicit ReferenceHolder(V &&value) : variant_(std::forward<V>(value)) {}
 
-      ReferenceHolder(const T &ref, const MapperType &mapper = identity)
-          : ReferenceHolder(VariantType(&ref), mapper) {}
+      using ReferenceType = typename std::add_lvalue_reference_t<const T>;
+      using PointerType = typename std::add_pointer_t<const T>;
 
-      using PointerType = typename std::add_pointer_t<V>;
+      ReferenceType operator*() const { return *ptr(); }
 
-      const V &operator*() const { return *ptr(); }
+      PointerType operator->() const { return ptr(); }
 
-      const PointerType ptr() const { return value_.ptr(); }
+      PointerType ptr() const {
+        return &boost::apply_visitor(getter_visitor_, variant_);
+      }
 
-      const PointerType operator->() const { return ptr(); }
+      VariantType &variant() { return variant_; }
 
      private:
-      ReferenceHolder(VariantType &&variant, const MapperType &mapper)
-          : variant_(std::move(variant)), value_([mapper, this]() -> const V & {
-              return mapper(boost::apply_visitor(getter_visitor_, variant_));
-            }) {}
-
       class GetterVisitor : public boost::static_visitor<const T &> {
        public:
         const T &operator()(const T &value) const { return value; }
-        const T &operator()(const T *ref) const { return *ref; }
       } getter_visitor_;
 
       VariantType variant_;
-
-      LazyInitializer<const V &> value_;
     };
 
     /**
