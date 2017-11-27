@@ -22,7 +22,6 @@ add_library(hash
         )
 
 target_link_libraries(hash
-        ed25519_sha3
         common
         pb_model_converters
         )

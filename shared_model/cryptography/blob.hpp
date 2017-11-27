@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <sstream>
 #include "interfaces/model_primitive.hpp"
+#include "utils/deprecated.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "utils/string_builder.hpp"
 
@@ -81,8 +82,9 @@ namespace shared_model {
        * Design note: this method is deprecated and should be removed after
        * migration to shared model in whole project
        */
+
       template <typename BlobType>
-      [[deprecated]] BlobType makeOldModel() const {
+      DEPRECATED BlobType makeOldModel() const {
         return BlobType::from_string(blob());
       }
 
