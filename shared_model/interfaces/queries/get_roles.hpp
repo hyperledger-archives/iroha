@@ -19,10 +19,8 @@
 #define IROHA_SHARED_MODEL_GET_ROLES_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/queries/get_roles.hpp"
-
 
 namespace shared_model {
   namespace interface {

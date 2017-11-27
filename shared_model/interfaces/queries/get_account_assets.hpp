@@ -19,9 +19,8 @@
 #define IROHA_SHARED_MODEL_GET_ACCOUNT_ASSETS_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
-#include "model/queries/get_account_assets.hpp"
 #include "interfaces/primitive.hpp"
+#include "model/queries/get_account_assets.hpp"
 
 namespace shared_model {
   namespace interface {

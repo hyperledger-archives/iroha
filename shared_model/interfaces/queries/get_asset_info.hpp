@@ -19,9 +19,8 @@
 #define IROHA_SHARED_MODEL_GET_ASSET_INFO_HPP
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
-#include "model/queries/get_asset_info.hpp"
 #include "interfaces/primitive.hpp"
+#include "model/queries/get_asset_info.hpp"
 
 namespace shared_model {
   namespace interface {

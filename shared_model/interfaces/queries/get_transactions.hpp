@@ -16,9 +16,8 @@
  */
 
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
-#include "model/queries/get_transactions.hpp"
 #include "interfaces/primitive.hpp"
+#include "model/queries/get_transactions.hpp"
 
 #ifndef IROHA_SHARED_MODEL_GET_TRANSACTIONS_HPP
 #define IROHA_SHARED_MODEL_GET_TRANSACTIONS_HPP
