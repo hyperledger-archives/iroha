@@ -68,7 +68,7 @@ namespace shared_model {
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const Lazy<iroha::protocol::AddAssetQuantity> add_asset_quantity_;
+      const Lazy<const iroha::protocol::AddAssetQuantity &> add_asset_quantity_;
 
       const Lazy<proto::Amount> amount_;
     };
