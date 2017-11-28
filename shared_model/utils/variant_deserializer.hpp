@@ -75,7 +75,8 @@ namespace shared_model {
                 std::is_base_of<typename variant_head_type::WrappedType,
                                 typename head_type::WrappedType>::value,
                 "variant_head_type is not base of head_type");
-            return V(head_type(std::forward<Archive>(ar)));
+            return V(head_type(new typename head_type::WrappedType(
+                std::forward<Archive>(ar))));
           } else {
             using type = typename boost::mpl::pop_front<S>::type;
             using variant_type = typename boost::mpl::pop_front<T>::type;
