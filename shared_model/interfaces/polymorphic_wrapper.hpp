@@ -36,36 +36,14 @@ namespace shared_model {
       /// Type of wrapped object
       using WrappedType = T;
 
-      /**
-       * Value constructor
-       * @param value - pointer for wrapping
-       */
-      template <typename Y,
-                typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
-      explicit PolymorphicWrapper(const Y *value)
-          : ptr_(std::shared_ptr<Y>(value)) {}
+      PolymorphicWrapper() = delete;
 
-      template <typename... Args>
-      explicit PolymorphicWrapper(Args &&... args)
-          : ptr_(std::make_shared<T>(std::forward<Args>(args)...)) {}
-
-      template <typename Y,
-                typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
-      PolymorphicWrapper(const PolymorphicWrapper<Y> &rhs)
-          : ptr_(std::shared_ptr<T>(rhs.ptr_->copy())) {}
-
-      template <typename Y,
-                typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
-      PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept
-          : ptr_(rhs.ptr_) {
-        rhs.ptr_ = nullptr;
-      }
       /**
        * Copy constructor that performs deep copy
        * @param rhs - another wrapped value
        */
       PolymorphicWrapper(const PolymorphicWrapper &rhs)
-          : ptr_(std::shared_ptr<T>(rhs.ptr_->copy())) {}
+          : ptr_(rhs.ptr_->copy()) {}
 
       /**
        * Move constructor
@@ -76,12 +54,33 @@ namespace shared_model {
       }
 
       /**
+       * Value constructor
+       * @param value - pointer for wrapping
+       */
+      template <typename Y,
+          typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
+      explicit PolymorphicWrapper(Y *value)
+          : ptr_(value) {}
+
+      template <typename Y,
+          typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
+      PolymorphicWrapper(const PolymorphicWrapper<Y> &rhs)
+          : ptr_(rhs.ptr_->copy()) {}
+
+      template <typename Y,
+          typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
+      PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept
+          : ptr_(std::move(rhs.ptr_)) {
+        rhs.ptr_ = nullptr;
+      }
+
+      /**
        * Copy operator=
        * @param rhs - another wrapped value
        * @return *this
        */
       PolymorphicWrapper &operator=(const PolymorphicWrapper &rhs) {
-        ptr_ = std::shared_ptr<T>(rhs.ptr_->copy());
+        ptr_ = rhs.ptr_->copy();
         return *this;
       }
 
