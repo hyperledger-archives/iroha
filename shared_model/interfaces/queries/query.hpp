@@ -49,14 +49,14 @@ namespace shared_model {
 
      public:
       /// Type of variant, that handle concrete query
-      using QueryVariantType = boost::variant<w<GetAccount>,
-                                              w<GetAccountAssets>,
-                                              w<GetAssetInfo>,
-                                              w<GetRoles>,
-                                              w<GetRolePermissions>,
-                                              w<GetAccountAssetTransactions>,
-                                              w<GetAccountTransactions>,
-                                              w<GetSignatories>>;
+      using QueryVariantType = boost::variant<w<GetAccount>>;
+//                                              w<GetAccountAssets>,
+//                                              w<GetAssetInfo>,
+//                                              w<GetRoles>,
+//                                              w<GetRolePermissions>,
+//                                              w<GetAccountAssetTransactions>,
+//                                              w<GetAccountTransactions>,
+//                                              w<GetSignatories>>;
 
       /// Types of concrete commands, in attached variant
       using QueryListType = QueryVariantType::types;
