@@ -24,27 +24,23 @@ namespace shared_model {
   namespace proto {
 
     class TransferAsset final : public interface::TransferAsset {
-     private:
-      using RefTransferAsset =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::TransferAsset &>;
-
      public:
-      explicit TransferAsset(const iroha::protocol::Command &command)
-          : TransferAsset(RefTransferAsset(
-                command,
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::transfer_asset))) {}
+      template <typename CommandType>
+      explicit TransferAsset(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            transfer_asset_([this] { return command_->transfer_asset(); }),
+            amount_(
+                [this] { return proto::Amount(transfer_asset_->amount()); }) {}
 
-      explicit TransferAsset(iroha::protocol::Command &&command)
-          : TransferAsset(RefTransferAsset(
-                std::move(command),
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::transfer_asset))) {}
+      TransferAsset(const TransferAsset &o)
+          : TransferAsset(*o.command_) {}
+
+      TransferAsset(TransferAsset &&o) noexcept
+          : TransferAsset(std::move(o.command_.variant())) {}
 
       const interface::Amount &amount() const override { return *amount_; }
 
-      const interface::types::AssetIdType & assetId() const override {
+      const interface::types::AssetIdType &assetId() const override {
         return transfer_asset_->asset_id();
       }
 
@@ -56,7 +52,7 @@ namespace shared_model {
         return transfer_asset_->dest_account_id();
       }
 
-      const MessageType& message() const override {
+      const MessageType &message() const override {
         return transfer_asset_->description();
       }
 
@@ -67,16 +63,12 @@ namespace shared_model {
       }
 
      private:
-      // ----------------------------| private API |----------------------------
-      explicit TransferAsset(RefTransferAsset &&ref)
-          : transfer_asset_(std::move(ref)), amount_([this] {
-              return proto::Amount(transfer_asset_->amount());
-            }) {}
-
-      RefTransferAsset transfer_asset_;
+      // proto
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
+      const Lazy<const iroha::protocol::TransferAsset &> transfer_asset_;
       Lazy<proto::Amount> amount_;
     };
 

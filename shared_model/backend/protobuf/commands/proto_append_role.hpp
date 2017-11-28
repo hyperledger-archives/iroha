@@ -24,23 +24,16 @@ namespace shared_model {
   namespace proto {
 
     class AppendRole final : public interface::AppendRole {
-     private:
-      using RefAppendRole =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::AppendRole &>;
-
      public:
-      explicit AppendRole(const iroha::protocol::Command &command)
-          : AppendRole(
-                RefAppendRole(command,
-                              detail::makeReferenceGetter(
-                                  &iroha::protocol::Command::append_role))) {}
+      template <typename CommandType>
+      explicit AppendRole(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            append_role_([this] { return command_->append_role(); }) {}
 
-      explicit AppendRole(iroha::protocol::Command &&command)
-          : AppendRole(
-                RefAppendRole(std::move(command),
-                              detail::makeReferenceGetter(
-                                  &iroha::protocol::Command::append_role))) {}
+      AppendRole(const AppendRole &o) : AppendRole(*o.command_) {}
+
+      AppendRole(AppendRole &&o) noexcept
+          : AppendRole(std::move(o.command_.variant())) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return append_role_->account_id();
@@ -57,13 +50,12 @@ namespace shared_model {
       }
 
      private:
-      // ----------------------------| private API |----------------------------
-      explicit AppendRole(RefAppendRole &&ref) : append_role_(std::move(ref)) {}
-
-      RefAppendRole append_role_;
+      // proto
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
+      const Lazy<const iroha::protocol::AppendRole &> append_role_;
     };
 
   }  // namespace proto

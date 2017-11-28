@@ -27,21 +27,20 @@ namespace shared_model {
   namespace proto {
 
     class AddPeer final : public interface::AddPeer {
-     private:
-      using RefAddPeer =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::AddPeer &>;
-
      public:
-      explicit AddPeer(const iroha::protocol::Command &command)
-          : AddPeer(RefAddPeer(command,
-                               detail::makeReferenceGetter(
-                                   &iroha::protocol::Command::add_peer))) {}
+      template <typename CommandType>
+      explicit AddPeer(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            add_peer_([this] { return command_->add_peer(); }),
+            pubkey_([this] {
+              return interface::types::PubkeyType(add_peer_->peer_key());
+            }) {}
 
-      explicit AddPeer(iroha::protocol::Command &&command)
-          : AddPeer(RefAddPeer(std::move(command),
-                               detail::makeReferenceGetter(
-                                   &iroha::protocol::Command::add_peer))) {}
+      AddPeer(const AddPeer &o)
+          : AddPeer(*o.command_) {}
+
+      AddPeer(AddPeer &&o) noexcept
+          : AddPeer(std::move(o.command_.variant())) {}
 
       const AddressType &peerAddress() const override {
         return add_peer_->address();
@@ -58,18 +57,14 @@ namespace shared_model {
       }
 
      private:
-      explicit AddPeer(RefAddPeer &&ref)
-          : add_peer_(std::move(ref)), pubkey_([this] {
-              return interface::types::PubkeyType(add_peer_->peer_key());
-            }) {}
-
       // proto
-      RefAddPeer add_peer_;
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
 
       // lazy
+      const Lazy<const iroha::protocol::AddPeer &> add_peer_;
       Lazy<interface::types::PubkeyType> pubkey_;
     };
   }  // namespace proto

@@ -23,23 +23,19 @@
 namespace shared_model {
   namespace proto {
     class AddSignatory final : public interface::AddSignatory {
-     private:
-      using RefAddSignatory =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::AddSignatory &>;
-
      public:
-      explicit AddSignatory(const iroha::protocol::Command &command)
-          : AddSignatory(RefAddSignatory(
-                command,
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::add_signatory))) {}
+      template <typename CommandType>
+      explicit AddSignatory(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            add_signatory_([this] { return command_->add_signatory(); }),
+            pubkey_([this] {
+              return interface::types::PubkeyType(add_signatory_->public_key());
+            }) {}
 
-      explicit AddSignatory(iroha::protocol::Command &&command)
-          : AddSignatory(RefAddSignatory(
-                std::move(command),
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::add_signatory))) {}
+      AddSignatory(const AddSignatory &o) : AddSignatory(*o.command_) {}
+
+      AddSignatory(AddSignatory &&o) noexcept
+          : AddSignatory(std::move(o.command_.variant())) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return add_signatory_->account_id();
@@ -56,16 +52,12 @@ namespace shared_model {
       }
 
      private:
-      explicit AddSignatory(RefAddSignatory &&ref)
-          : add_signatory_(std::move(ref)), pubkey_([this] {
-              return interface::types::PubkeyType(add_signatory_->public_key());
-            }) {}
-
-      RefAddSignatory add_signatory_;
+      // proto
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
-
+      const Lazy<const iroha::protocol::AddSignatory &> add_signatory_;
       Lazy<interface::types::PubkeyType> pubkey_;
     };
 

@@ -24,23 +24,16 @@ namespace shared_model {
   namespace proto {
 
     class CreateDomain final : public interface::CreateDomain {
-     private:
-      using RefCreateDomain =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::CreateDomain &>;
-
      public:
-      explicit CreateDomain(const iroha::protocol::Command &command)
-          : CreateDomain(RefCreateDomain(
-                command,
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::create_domain))) {}
+      template <typename CommandType>
+      explicit CreateDomain(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            create_domain_([this] { return command_->create_domain(); }) {}
 
-      explicit CreateDomain(iroha::protocol::Command &&command)
-          : CreateDomain(RefCreateDomain(
-                std::move(command),
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::create_domain))) {}
+      CreateDomain(const CreateDomain &o) : CreateDomain(*o.command_) {}
+
+      CreateDomain(CreateDomain &&o) noexcept
+          : CreateDomain(std::move(o.command_.variant())) {}
 
       const interface::types::DomainIdType &domainId() const override {
         return create_domain_->domain_id();
@@ -57,14 +50,12 @@ namespace shared_model {
       }
 
      private:
-      // ----------------------------| private API |----------------------------
-      explicit CreateDomain(RefCreateDomain &&ref)
-          : create_domain_(std::move(ref)) {}
-
-      RefCreateDomain create_domain_;
+      // proto
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
+      const Lazy<const iroha::protocol::CreateDomain &> create_domain_;
     };
 
   }  // namespace proto

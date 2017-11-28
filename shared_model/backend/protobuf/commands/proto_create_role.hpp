@@ -23,23 +23,28 @@
 namespace shared_model {
   namespace proto {
     class CreateRole final : public interface::CreateRole {
-     private:
-      using RefCreateRole =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::CreateRole &>;
-
      public:
-      explicit CreateRole(const iroha::protocol::Command &command)
-          : CreateRole(
-                RefCreateRole(command,
-                              detail::makeReferenceGetter(
-                                  &iroha::protocol::Command::create_role))) {}
+      template <typename CommandType>
+      explicit CreateRole(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            create_role_([this] { return command_->create_role(); }),
+            role_permissions_([this] {
+              std::set<std::string> perms;
 
-      explicit CreateRole(iroha::protocol::Command &&command)
-          : CreateRole(
-                RefCreateRole(std::move(command),
-                              detail::makeReferenceGetter(
-                                  &iroha::protocol::Command::create_role))) {}
+              std::for_each(
+                  create_role_->permissions().begin(),
+                  create_role_->permissions().end(),
+                  [&perms, this](auto perm) {
+                    perms.insert(iroha::protocol::RolePermission_Name(
+                        static_cast<iroha::protocol::RolePermission>(perm)));
+                  });
+              return perms;
+            }) {}
+
+      CreateRole(const CreateRole &o) : CreateRole(*o.command_) {}
+
+      CreateRole(CreateRole &&o) noexcept
+          : CreateRole(std::move(o.command_.variant())) {}
 
       const interface::types::RoleIdType &roleName() const override {
         return create_role_->role_name();
@@ -56,26 +61,12 @@ namespace shared_model {
       }
 
      private:
-      // ----------------------------| private API |----------------------------
-      explicit CreateRole(RefCreateRole &&ref)
-          : create_role_(std::move(ref)), role_permissions_([this] {
-              std::set<std::string> perms;
-
-              std::for_each(
-                  create_role_->permissions().begin(),
-                  create_role_->permissions().end(),
-                  [&perms, this](auto perm) {
-                    perms.insert(iroha::protocol::RolePermission_Name(
-                        static_cast<iroha::protocol::RolePermission>(perm)));
-                  });
-              return perms;
-            }) {}
-
-      RefCreateRole create_role_;
+      // proto
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
-
+      const Lazy<const iroha::protocol::CreateRole &> create_role_;
       Lazy<PermissionsType> role_permissions_;
     };  // namespace proto
   }     // namespace proto

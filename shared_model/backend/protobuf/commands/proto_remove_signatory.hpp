@@ -24,23 +24,21 @@ namespace shared_model {
   namespace proto {
 
     class RemoveSignatory final : public interface::RemoveSignatory {
-     private:
-      using RefRemoveSignatory =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::RemoveSignatory &>;
-
      public:
-      explicit RemoveSignatory(const iroha::protocol::Command &command)
-          : RemoveSignatory(RefRemoveSignatory(
-                command,
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::remove_sign))) {}
+      template <typename CommandType>
+      explicit RemoveSignatory(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            remove_signatory_([this] { return command_->remove_sign(); }),
+            pubkey_([this] {
+              return interface::types::PubkeyType(
+                  remove_signatory_->public_key());
+            }) {}
 
-      explicit RemoveSignatory(iroha::protocol::Command &&command)
-          : RemoveSignatory(RefRemoveSignatory(
-                std::move(command),
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::remove_sign))) {}
+      RemoveSignatory(const RemoveSignatory &o)
+          : RemoveSignatory(*o.command_) {}
+
+      RemoveSignatory(RemoveSignatory &&o) noexcept
+          : RemoveSignatory(std::move(o.command_.variant())) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return remove_signatory_->account_id();
@@ -57,18 +55,12 @@ namespace shared_model {
       }
 
      private:
-      // ----------------------------| private API |----------------------------
-      explicit RemoveSignatory(RefRemoveSignatory &&ref)
-          : remove_signatory_(std::move(ref)), pubkey_([this] {
-              return interface::types::PubkeyType(
-                  remove_signatory_->public_key());
-            }) {}
-
-      RefRemoveSignatory remove_signatory_;
+      // proto
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
-
+      const Lazy<const iroha::protocol::RemoveSignatory &> remove_signatory_;
       Lazy<interface::types::PubkeyType> pubkey_;
     };
 

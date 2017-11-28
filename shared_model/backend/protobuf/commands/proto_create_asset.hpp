@@ -24,23 +24,17 @@ namespace shared_model {
   namespace proto {
 
     class CreateAsset final : public interface::CreateAsset {
-     private:
-      using RefCreateAsset =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::CreateAsset &>;
-
      public:
-      explicit CreateAsset(const iroha::protocol::Command &command)
-          : CreateAsset(
-                RefCreateAsset(command,
-                               detail::makeReferenceGetter(
-                                   &iroha::protocol::Command::create_asset))) {}
+      template <typename CommandType>
+      explicit CreateAsset(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            create_asset_([this] { return command_->create_asset(); }),
+            precision_([this] { return create_asset_->precision(); }) {}
 
-      explicit CreateAsset(iroha::protocol::Command &&command)
-          : CreateAsset(
-                RefCreateAsset(std::move(command),
-                               detail::makeReferenceGetter(
-                                   &iroha::protocol::Command::create_asset))) {}
+      CreateAsset(const CreateAsset &o) : CreateAsset(*o.command_) {}
+
+      CreateAsset(CreateAsset &&o) noexcept
+          : CreateAsset(std::move(o.command_.variant())) {}
 
       const AssetNameType &assetName() const override {
         return create_asset_->asset_name();
@@ -59,16 +53,12 @@ namespace shared_model {
       }
 
      private:
-      // ----------------------------| private API |----------------------------
-      explicit CreateAsset(RefCreateAsset &&ref)
-          : create_asset_(std::move(ref)),
-            precision_([this] { return create_asset_->precision(); }) {}
-
-      RefCreateAsset create_asset_;
+      // proto
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
-
+      const Lazy<const iroha::protocol::CreateAsset &> create_asset_;
       Lazy<PrecisionType> precision_;
     };
 

@@ -24,23 +24,17 @@ namespace shared_model {
   namespace proto {
 
     class GrantPermission final : public interface::GrantPermission {
-     private:
-      using RefGrantPermission =
-          detail::ReferenceHolder<iroha::protocol::Command,
-                                  const iroha::protocol::GrantPermission &>;
-
      public:
-      explicit GrantPermission(const iroha::protocol::Command &command)
-          : GrantPermission(RefGrantPermission(
-                command,
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::grant_permission))) {}
+      template <typename CommandType>
+      explicit GrantPermission(CommandType &&command)
+          : command_(std::forward<CommandType>(command)),
+            grant_permission_([this] { return command_->grant_permission(); }) {
+      }
 
-      explicit GrantPermission(iroha::protocol::Command &&command)
-          : GrantPermission(RefGrantPermission(
-                std::move(command),
-                detail::makeReferenceGetter(
-                    &iroha::protocol::Command::grant_permission))) {}
+      GrantPermission(const GrantPermission &o) : GrantPermission(*o.command_) {}
+
+      GrantPermission(GrantPermission &&o) noexcept
+          : GrantPermission(std::move(o.command_.variant())) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return grant_permission_->account_id();
@@ -59,14 +53,12 @@ namespace shared_model {
       }
 
      private:
-      // ----------------------------| private API |----------------------------
-      explicit GrantPermission(RefGrantPermission &&ref)
-          : grant_permission_(std::move(ref)) {}
-
-      RefGrantPermission grant_permission_;
+      // proto
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
 
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
+      const Lazy<const iroha::protocol::GrantPermission &> grant_permission_;
     };
 
   }  // namespace proto
