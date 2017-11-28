@@ -32,8 +32,9 @@ namespace shared_model {
       template <typename CommandType>
       explicit AddAssetQuantity(CommandType &&command)
           : command_(std::forward<CommandType>(command)),
-            add_asset_quantity_(
-                [this] { return command_->add_asset_quantity(); }),
+            add_asset_quantity_([this]() -> decltype(auto) {
+              return (command_->add_asset_quantity());
+            }),
             amount_([this] {
               return proto::Amount(add_asset_quantity_->amount());
             }) {}
