@@ -24,13 +24,16 @@
 
 #include "backend/protobuf/commands/proto_command.hpp"
 #include "backend/protobuf/common_objects/signature.hpp"
+#include "backend/transport_getter.hpp"
 #include "block.pb.h"
 #include "utils/lazy_initializer.hpp"
 #include "utils/reference_holder.hpp"
 
 namespace shared_model {
   namespace proto {
-    class Transaction final : public interface::Transaction {
+    class Transaction final
+        : public interface::Transaction,
+          public TransportGetter<iroha::protocol::Transaction> {
      public:
       template <typename TransactionType>
       explicit Transaction(TransactionType &&transaction)
@@ -39,23 +42,21 @@ namespace shared_model {
               return (transaction_->payload());
             }),
             commands_([this] {
-              return boost::accumulate(
-                  payload_->commands(),
-                  CommandsType{},
-                  [](auto &&acc, const auto &cmd) {
-                    acc.emplace_back(detail::PolymorphicWrapper<Command>(cmd));
-                    return acc;
-                  });
+              return boost::accumulate(payload_->commands(),
+                                       CommandsType{},
+                                       [](auto &&acc, const auto &cmd) {
+                                         acc.emplace_back(new Command(cmd));
+                                         return acc;
+                                       });
             }),
             blob_([this] { return BlobType(payload_->SerializeAsString()); }),
             signatures_([this] {
-              return boost::accumulate(
-                  transaction_->signature(),
-                  SignatureSetType{},
-                  [](auto &&acc, const auto &sig) {
-                    acc.emplace(detail::PolymorphicWrapper<Signature>(sig));
-                    return acc;
-                  });
+              return boost::accumulate(transaction_->signature(),
+                                       SignatureSetType{},
+                                       [](auto &&acc, const auto &sig) {
+                                         acc.emplace(new Signature(sig));
+                                         return acc;
+                                       });
             }) {}
 
       Transaction(const Transaction &o) : Transaction(*o.transaction_) {}
@@ -72,10 +73,6 @@ namespace shared_model {
       }
 
       const CommandsType &commands() const override { return *commands_; }
-
-      const interface::types::QuorumType &quorum() const override {
-        BOOST_ASSERT_MSG(false, "Not implemented");
-      }
 
       ModelType *copy() const override {
         return new Transaction(iroha::protocol::Transaction(*transaction_));
@@ -100,6 +97,10 @@ namespace shared_model {
 
       TimestampType createdTime() const override {
         return payload_->created_time();
+      }
+
+      const iroha::protocol::Transaction &getTransport() const {
+        return *transaction_;
       }
 
      private:

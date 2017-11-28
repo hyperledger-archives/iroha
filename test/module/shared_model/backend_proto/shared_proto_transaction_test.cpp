@@ -33,7 +33,7 @@ TEST(ProtoTransaction, Create) {
 }
 
 /**
- * @given transaction field values and sample command values
+ * @given transaction field values and sample command values, reference tx
  * @when create transaction with sample command using transaction builder
  * @then transaction is built correctly
  */
@@ -41,20 +41,24 @@ TEST(ProtoTransaction, Builder) {
   shared_model::interface::Transaction::TxCounterType tx_counter = 1;
   std::string account_id = "admin@test", asset_id = "coin#test",
               amount = "10.00";
+
+  iroha::protocol::Transaction proto_tx;
+  auto &payload = *proto_tx.mutable_payload();
+  auto &command = *payload.add_commands()->mutable_add_asset_quantity();
+  payload.set_tx_counter(tx_counter);
+  payload.set_creator_account_id(account_id);
+  command.set_account_id(account_id);
+  command.set_asset_id(asset_id);
+  command.mutable_amount()->mutable_value()->set_fourth(1000);
+  command.mutable_amount()->set_precision(2);
+
   auto tx = shared_model::proto::TransactionBuilder()
                 .txCounter(tx_counter)
                 .creatorAccountId(account_id)
                 .addAssetQuantity(account_id, asset_id, amount)
                 .build();
-  ASSERT_EQ(account_id, tx.creatorAccountId());
-  ASSERT_EQ(tx_counter, tx.transactionCounter());
-  ASSERT_EQ(1, tx.commands().size());
-  auto &aaq = boost::
-      get<shared_model::detail::
-              PolymorphicWrapper<shared_model::interface::AddAssetQuantity>>(
-          tx.commands().at(0)->get());
-  ASSERT_EQ(aaq->accountId(), account_id);
-  ASSERT_EQ(aaq->assetId(), asset_id);
-  ASSERT_EQ(aaq->amount().intValue(), 1000);
-  ASSERT_EQ(aaq->amount().precision(), 2);
+  auto &proto = tx.getTransport();
+
+
+  ASSERT_EQ(proto_tx.SerializeAsString(), proto.SerializeAsString());
 }

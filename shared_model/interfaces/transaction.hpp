@@ -65,13 +65,6 @@ namespace shared_model {
        */
       virtual const CommandsType &commands() const = 0;
 
-      /**
-       * @return quorum of transaction.
-       * Quorum means how much signatures of account required for performing
-       * transaction.
-       */
-      virtual const types::QuorumType &quorum() const = 0;
-
       iroha::model::Transaction *makeOldModel() const override {
         iroha::model::Transaction *oldStyleTransaction =
             new iroha::model::Transaction();
@@ -103,7 +96,6 @@ namespace shared_model {
             .append("hash", hash().hex())
             .append("txCounter", std::to_string(transactionCounter()))
             .append("creatorAccountId", creatorAccountId())
-            .append("quorum", std::to_string(quorum()))
             .append("createdTime", std::to_string(createdTime()))
             .append("commands")
             .appendAll(commands(),

@@ -24,7 +24,7 @@
 namespace shared_model {
   namespace detail {
     /**
-     * Structure designed to contain reference or value depending on called ctor
+     * Container designed to store reference or value depending on called ctor
      * @tparam T type of stored value
      */
     template <typename T>

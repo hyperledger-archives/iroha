@@ -66,16 +66,15 @@ namespace shared_model {
         auto command = payload_.add_commands()->mutable_add_asset_quantity();
         command->set_account_id(accountId);
         command->set_asset_id(assetId);
-        iroha::Amount amt;
-        iroha::Amount::createFromString(amount) | [&](auto &&amt) {
+        iroha::Amount::createFromString(amount) | [&](auto &&amount) {
           auto proto_amount = command->mutable_amount();
           auto proto_value = proto_amount->mutable_value();
-          auto uint64s = amt.to_uint64s();
+          auto uint64s = amount.to_uint64s();
           proto_value->set_first(uint64s.at(0));
           proto_value->set_second(uint64s.at(1));
           proto_value->set_third(uint64s.at(2));
           proto_value->set_fourth(uint64s.at(3));
-          proto_amount->set_precision(amt.getPrecision());
+          proto_amount->set_precision(amount.getPrecision());
         };
         return *this;
       }

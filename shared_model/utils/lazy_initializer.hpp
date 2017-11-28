@@ -54,6 +54,9 @@ namespace shared_model {
 
       const PointerType operator->() const { return ptr(); }
 
+      /**
+       * Remove generated value. Next ptr() call will generate new value
+       */
       void invalidate() const {
         target_value_ = boost::none;
       }
