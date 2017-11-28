@@ -24,53 +24,51 @@
 namespace shared_model {
   namespace detail {
     /**
-     * Structure designed to contain reference to const
-     * or value depending on called ctor
+     * Structure designed to contain reference or value depending on called ctor
      * @tparam T type of stored value
      */
     template <typename T>
     class ReferenceHolder {
      private:
-      using VariantType = boost::variant<T, const T &>;
+      using VariantType = boost::variant<T, T &>;
 
      public:
       template <typename V>
       explicit ReferenceHolder(V &&value) : variant_(std::forward<V>(value)) {}
 
-      using ReferenceType = typename std::add_lvalue_reference_t<const T>;
-      using PointerType = typename std::add_pointer_t<const T>;
+      using ReferenceType = typename std::add_lvalue_reference_t<T>;
+      using PointerType = typename std::add_pointer_t<T>;
 
-      ReferenceType operator*() const { return *ptr(); }
+      using ConstReferenceType = typename std::add_lvalue_reference_t<const T>;
+      using ConstPointerType = typename std::add_pointer_t<const T>;
 
-      PointerType operator->() const { return ptr(); }
+      ReferenceType operator*() { return *ptr(); }
 
-      PointerType ptr() const {
-        return &boost::apply_visitor(getter_visitor_, variant_);
+      PointerType operator->() { return ptr(); }
+
+      PointerType ptr() {
+        return &boost::apply_visitor(
+            [](auto &value) -> decltype(auto) { return (value); },
+            variant_);
+      }
+
+      ConstReferenceType operator*() const { return *ptr(); }
+
+      ConstPointerType operator->() const { return ptr(); }
+
+      ConstPointerType ptr() const {
+        return &boost::apply_visitor(
+            [](const auto &value) -> decltype(auto) {
+              return (value);
+            },
+            variant_);
       }
 
       VariantType &variant() { return variant_; }
 
      private:
-      class GetterVisitor : public boost::static_visitor<const T &> {
-       public:
-        const T &operator()(const T &value) const { return value; }
-      } getter_visitor_;
-
       VariantType variant_;
     };
-
-    /**
-     * Create function which will return ref-to-const member by calling
-     * corresponding member function
-     * @tparam T - member function type
-     * @param member pointer-to-member function
-     * @return ref-to-const member
-     */
-    template <typename T>
-    inline auto makeReferenceGetter(T member) {
-      // capture by value since member temporary will be destroyed after return
-      return [=](const auto &i) -> const auto & { return (i.*member)(); };
-    }
   }  // namespace detail
 }  // namespace shared_model
 

@@ -45,7 +45,7 @@ namespace shared_model {
 
       const PointerType ptr() const {
         if (target_value_ == boost::none) {
-          // Use type move constuctor with emplace
+          // Use type move constructor with emplace
           // since Target copy assignment operator could be deleted
           target_value_.emplace(generator_());
         }
@@ -53,6 +53,10 @@ namespace shared_model {
       }
 
       const PointerType operator->() const { return ptr(); }
+
+      void invalidate() const {
+        target_value_ = boost::none;
+      }
 
      private:
       GeneratorType generator_;
