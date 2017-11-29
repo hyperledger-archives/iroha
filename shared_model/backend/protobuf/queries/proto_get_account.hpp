@@ -5,7 +5,7 @@
 #ifndef IROHA_PROTO_GET_ACCOUNT_H
 #define IROHA_PROTO_GET_ACCOUNT_H
 
-#include "interfaces/queries/get_account.hpp.hpp"
+#include "interfaces/queries/get_account.hpp"
 
 #include "backend/protobuf/common_objects/amount.hpp"
 #include "queries.pb.h"
@@ -20,7 +20,10 @@ namespace shared_model {
       explicit GetAccount(QueryType &&query)
               : query_(std::forward<QueryType>(query)),
                 get_account_(
-                        [this] { return query->account_id(); })
+                        [this] {
+                          std::string s = query_->account_id();
+                          return s;
+                        })
                  {}
 
       GetAccount(const GetAccount &o)
@@ -29,25 +32,22 @@ namespace shared_model {
       GetAccount(GetAccount &&o) noexcept
               : GetAccount(std::move(o.query_.variant())) {}
 
-      types::AccountIdType &accountId() const override {
+      const interface::types::AccountIdType &accountId() const override {
         return get_account_->account_id();
       }
 
       ModelType *copy() const override {
-        return new GetAccount(iroha::protocol::Query(*query_));
+        return new GetAccount(iroha::protocol::GetAccount(*query_));
       }
 
     private:
       // ------------------------------| fields |-------------------------------
 
       // proto
-      detail::ReferenceHolder<iroha::protocol::Query> query_;
+      detail::ReferenceHolder<iroha::protocol::GetAccount> query_;
 
-      // lazy
-      template <typename T>
-      using Lazy = detail::LazyInitializer<T>;
 
-      const Lazy<const iroha::protocol::GetAccount &> get_account_;
+      const detail::LazyInitializer<const iroha::protocol::GetAccount &> get_account_;
 
     };
 

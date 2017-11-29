@@ -16,11 +16,20 @@
 #
 
 addtest(shared_proto_commands_test
-    shared_proto_commands_test.cpp
-    )
+        shared_proto_commands_test.cpp
+        )
+
+addtest(shared_proto_queries_test
+        shared_proto_queries_test.cpp
+        )
+
 target_link_libraries(shared_proto_commands_test
-    shared_model_proto_backend
-    )
+        shared_model_proto_backend
+        )
+
+target_link_libraries(shared_proto_queries_test
+        shared_model_proto_backend
+        )
 
 addtest(shared_proto_tx_response_test
     shared_proto_tx_response_test.cpp
