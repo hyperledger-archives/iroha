@@ -58,7 +58,16 @@ namespace shared_model {
 
       const interface::Amount &amount() const override { return *amount_; }
 
+      ModelType *copy() const override {
+        return new AddAssetQuantity(iroha::protocol::Command(*command_));
+      }
+
      private:
+      // ------------------------------| fields |-------------------------------
+
+      // proto
+      detail::ReferenceHolder<iroha::protocol::Command> command_;
+
       // lazy
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
