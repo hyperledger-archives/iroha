@@ -140,7 +140,7 @@ TEST_F(ToriiQueriesTest, FindWhenResponseInvalid) {
   // Must return Error Response
   ASSERT_EQ(response.error_response().reason(),
             iroha::model::ErrorResponse::STATELESS_INVALID);
-  ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+  ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
 }
 
 /**
@@ -181,7 +181,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenNoGrantPermissions) {
   // to read account
   ASSERT_EQ(response.error_response().reason(),
             iroha::model::ErrorResponse::STATEFUL_INVALID);
-  ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+  ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
 }
 
 TEST_F(ToriiQueriesTest, FindAccountWhenHasReadPermissions) {
@@ -222,7 +222,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasReadPermissions) {
   ASSERT_FALSE(response.has_error_response());
   ASSERT_EQ(response.account_response().account().account_id(), "accountB");
   ASSERT_EQ(response.account_response().account_roles().size(), 1);
-  ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+  ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
 }
 
 TEST_F(ToriiQueriesTest, FindAccountWhenHasRolePermission) {
@@ -257,7 +257,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasRolePermission) {
   // Should not return Error Response because tx is stateless and stateful valid
   ASSERT_FALSE(response.has_error_response());
   ASSERT_EQ(response.account_response().account().account_id(), "accountA");
-  ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+  ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
 }
 
 /**
@@ -313,7 +313,7 @@ TEST_F(ToriiQueriesTest, FindAccountAssetWhenNoGrantPermissions) {
   // to read account asset
   ASSERT_EQ(response.error_response().reason(),
             iroha::model::ErrorResponse::STATEFUL_INVALID);
-  ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+  ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
 }
 
 TEST_F(ToriiQueriesTest, FindAccountAssetWhenHasRolePermissions) {
@@ -367,7 +367,7 @@ TEST_F(ToriiQueriesTest, FindAccountAssetWhenHasRolePermissions) {
   auto iroha_amount_asset = iroha::model::converters::deserializeAmount(
       response.account_assets_response().account_asset().balance());
   ASSERT_EQ(iroha_amount_asset, account_asset.balance);
-  ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+  ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
 }
 
 /**
@@ -412,7 +412,7 @@ TEST_F(ToriiQueriesTest, FindSignatoriesWhenNoGrantPermissions) {
   // to read account
   ASSERT_EQ(response.error_response().reason(),
             iroha::model::ErrorResponse::STATEFUL_INVALID);
-  ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+  ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
 }
 
 TEST_F(ToriiQueriesTest, FindSignatoriesHasRolePermissions) {
@@ -456,7 +456,7 @@ TEST_F(ToriiQueriesTest, FindSignatoriesHasRolePermissions) {
   decltype(pubkey) response_pubkey;
   std::copy(signatory.begin(), signatory.end(), response_pubkey.begin());
   ASSERT_EQ(response_pubkey, pubkey);
-  ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+  ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
 }
 
 /**
@@ -516,7 +516,7 @@ TEST_F(ToriiQueriesTest, FindTransactionsWhenValid) {
         response.transactions_response().transactions(i).payload().tx_counter(),
         i);
   }
-  ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+  ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
 }
 
 TEST_F(ToriiQueriesTest, FindManyTimesWhereQueryServiceSync) {
@@ -539,6 +539,6 @@ TEST_F(ToriiQueriesTest, FindManyTimesWhereQueryServiceSync) {
     // Must return Error Response
     ASSERT_EQ(response.error_response().reason(),
               iroha::model::ErrorResponse::STATELESS_INVALID);
-    ASSERT_EQ(iroha::hash(query).to_string(), response.hash());
+    ASSERT_EQ(iroha::hash(query).to_string(), response.query_hash());
   }
 }
