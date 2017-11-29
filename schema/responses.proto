@@ -81,4 +81,5 @@ message QueryResponse {
         RolesResponse roles_response = 7;
         RolePermissionsResponse role_permissions_response = 8;
     }
+    bytes query_hash = 9;
 }
