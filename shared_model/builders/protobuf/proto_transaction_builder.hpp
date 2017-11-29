@@ -39,6 +39,12 @@ namespace shared_model {
       iroha::protocol::Transaction transaction_;
       iroha::protocol::Transaction::Payload &payload_;
 
+      /**
+       * Cast for returning reference to another template type when a field
+       * is set without redundant call of copy or move constructors.
+       * @tparam Sp new field set
+       * @return reference to object with new field set
+       */
       template <int Sp>
       operator TemplateTransactionBuilder<Sp>&() {
         return reinterpret_cast<TemplateTransactionBuilder<Sp>&>(*this);

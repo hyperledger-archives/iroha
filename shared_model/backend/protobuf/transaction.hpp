@@ -38,25 +38,26 @@ namespace shared_model {
       template <typename TransactionType>
       explicit Transaction(TransactionType &&transaction)
           : transaction_(std::forward<TransactionType>(transaction)),
-            payload_([this]() -> decltype(auto) {
-              return (transaction_->payload());
-            }),
+            payload_(detail::makeReferenceGenerator(
+                transaction_, &iroha::protocol::Transaction::payload)),
             commands_([this] {
-              return boost::accumulate(payload_->commands(),
-                                       CommandsType{},
-                                       [](auto &&acc, const auto &cmd) {
-                                         acc.emplace_back(new Command(cmd));
-                                         return acc;
-                                       });
+              return boost::accumulate(
+                  payload_->commands(),
+                  CommandsType{},
+                  [](auto &&acc, const auto &cmd) {
+                    acc.emplace_back(new Command(cmd));
+                    return std::forward<decltype(acc)>(acc);
+                  });
             }),
             blob_([this] { return BlobType(payload_->SerializeAsString()); }),
             signatures_([this] {
-              return boost::accumulate(transaction_->signature(),
-                                       SignatureSetType{},
-                                       [](auto &&acc, const auto &sig) {
-                                         acc.emplace(new Signature(sig));
-                                         return acc;
-                                       });
+              return boost::accumulate(
+                  transaction_->signature(),
+                  SignatureSetType{},
+                  [](auto &&acc, const auto &sig) {
+                    acc.emplace(new Signature(sig));
+                    return std::forward<decltype(acc)>(acc);
+                  });
             }) {}
 
       Transaction(const Transaction &o) : Transaction(*o.transaction_) {}

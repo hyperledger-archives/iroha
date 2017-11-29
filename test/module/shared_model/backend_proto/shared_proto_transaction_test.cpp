@@ -59,6 +59,5 @@ TEST(ProtoTransaction, Builder) {
                 .build();
   auto &proto = tx.getTransport();
 
-
   ASSERT_EQ(proto_tx.SerializeAsString(), proto.SerializeAsString());
 }
