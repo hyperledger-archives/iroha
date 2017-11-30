@@ -88,7 +88,7 @@ namespace shared_model {
       /**
        * @return time of creation
        */
-      virtual const TimestampType &createdTime() const = 0;
+      virtual TimestampType createdTime() const = 0;
 
       /**
        * Provides comparison based on equality of objects and signatures.

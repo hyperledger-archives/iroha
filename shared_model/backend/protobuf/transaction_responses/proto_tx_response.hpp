@@ -26,10 +26,10 @@
 template <typename... T, typename Archive>
 auto load(Archive &&ar) {
   unsigned which = ar.GetDescriptor()
-                   ->FindFieldByName("tx_status")
-                   ->enum_type()
-                   ->FindValueByNumber(ar.tx_status())
-                   ->index();
+                       ->FindFieldByName("tx_status")
+                       ->enum_type()
+                       ->FindValueByNumber(ar.tx_status())
+                       ->index();
   constexpr unsigned last = boost::mpl::size<T...>::type::value - 1;
 
   return shared_model::detail::variant_impl<T...>::
@@ -43,7 +43,10 @@ namespace shared_model {
     /**
      * TransactionResponse is a status of transaction in system
      */
-    class TransactionResponse final : public interface::TransactionResponse {
+    class TransactionResponse final
+        : public CopyableProto<interface::TransactionResponse,
+                               iroha::protocol::ToriiResponse,
+                               TransactionResponse> {
      private:
       /// PolymorphicWrapper shortcut type
       template <typename... Value>
@@ -63,16 +66,16 @@ namespace shared_model {
 
       template <typename TxResponse>
       explicit TransactionResponse(TxResponse &&ref)
-          : response_(std::forward<TxResponse>(ref)),
+          : CopyableProto(std::forward<TxResponse>(ref)),
             variant_(detail::makeLazyInitializer(
-                [this] { return load<ProtoResponseListType>(*response_); })),
-            hash_([this] { return crypto::Hash(this->response_->tx_hash()); }) {
-      }
+                [this] { return load<ProtoResponseListType>(*proto_); })),
+            hash_([this] { return crypto::Hash(this->proto_->tx_hash()); }) {}
 
-      TransactionResponse(TransactionResponse &&r)
-          : TransactionResponse(std::move(r.response_)) {}
       TransactionResponse(const TransactionResponse &r)
-          : TransactionResponse(r.response_) {}
+          : TransactionResponse(r.proto_) {}
+
+      TransactionResponse(TransactionResponse &&r) noexcept
+          : TransactionResponse(std::move(r.proto_)) {}
 
       /**
        * @return hash of corresponding transaction
@@ -84,21 +87,9 @@ namespace shared_model {
       /**
        * @return attached concrete tx response
        */
-      const ResponseVariantType &get() const override {
-        return *variant_;
-      }
-
-      ModelType *copy() const override {
-        return new TransactionResponse(
-            iroha::protocol::ToriiResponse(*response_));
-      }
+      const ResponseVariantType &get() const override { return *variant_; }
 
      private:
-      // ------------------------------| fields |-------------------------------
-
-      // proto
-      detail::ReferenceHolder<iroha::protocol::ToriiResponse> response_;
-
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 

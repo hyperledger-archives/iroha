@@ -45,7 +45,7 @@ namespace shared_model {
 
       const PointerType ptr() const {
         if (target_value_ == boost::none) {
-          // Use type move constuctor with emplace
+          // Use type move constructor with emplace
           // since Target copy assignment operator could be deleted
           target_value_.emplace(generator_());
         }
@@ -53,6 +53,13 @@ namespace shared_model {
       }
 
       const PointerType operator->() const { return ptr(); }
+
+      /**
+       * Remove generated value. Next ptr() call will generate new value
+       */
+      void invalidate() const {
+        target_value_ = boost::none;
+      }
 
      private:
       GeneratorType generator_;
@@ -69,6 +76,21 @@ namespace shared_model {
     auto makeLazyInitializer(Generator &&generator) {
       using targetType = decltype(generator());
       return LazyInitializer<targetType>(std::forward<Generator>(generator));
+    }
+
+    /**
+     * Create lambda which will return reference to value returned by function f
+     * @tparam T object type
+     * @tparam F pointer to member function type
+     * @param t object to invoke method on
+     * @param f method to be invoked
+     * @return specified lambda
+     */
+    template <typename T, typename F>
+    auto makeReferenceGenerator(T &&t, F &&f) {
+      return [&t, f]() -> decltype(auto) {
+        return ((*t.*f)());
+      };
     }
   }  // namespace detail
 }  // namespace shared_model

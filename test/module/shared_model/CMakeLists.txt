@@ -19,6 +19,9 @@ add_subdirectory(backend_proto)
 AddTest(lazy_test
     lazy_test.cpp
     )
+target_include_directories(lazy_test PUBLIC
+    ${Boost_INCLUDE_DIRS}
+    )
 
 AddTest(crypto_usage_test
     crypto_usage_test.cpp
@@ -26,4 +29,11 @@ AddTest(crypto_usage_test
 target_link_libraries(crypto_usage_test
     shared_model_ed25519_sha3
     logger
+    )
+
+AddTest(reference_holder_test
+    reference_holder_test.cpp
+    )
+target_include_directories(reference_holder_test PUBLIC
+    ${Boost_INCLUDE_DIRS}
     )

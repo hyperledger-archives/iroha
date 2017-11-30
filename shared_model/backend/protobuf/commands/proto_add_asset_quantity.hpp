@@ -21,28 +21,32 @@
 #include "interfaces/commands/add_asset_quantity.hpp"
 
 #include "backend/protobuf/common_objects/amount.hpp"
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "commands.pb.h"
 #include "utils/lazy_initializer.hpp"
 #include "utils/reference_holder.hpp"
 
 namespace shared_model {
   namespace proto {
-    class AddAssetQuantity final : public interface::AddAssetQuantity {
+    class AddAssetQuantity final
+        : public CopyableProto<interface::AddAssetQuantity,
+                               iroha::protocol::Command,
+                               AddAssetQuantity> {
      public:
       template <typename CommandType>
       explicit AddAssetQuantity(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            add_asset_quantity_(
-                [this] { return command_->add_asset_quantity(); }),
+          : CopyableProto(std::forward<CommandType>(command)),
+            add_asset_quantity_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::add_asset_quantity)),
             amount_([this] {
               return proto::Amount(add_asset_quantity_->amount());
             }) {}
 
       AddAssetQuantity(const AddAssetQuantity &o)
-          : AddAssetQuantity(*o.command_) {}
+          : AddAssetQuantity(o.proto_) {}
 
       AddAssetQuantity(AddAssetQuantity &&o) noexcept
-          : AddAssetQuantity(std::move(o.command_.variant())) {}
+          : AddAssetQuantity(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return add_asset_quantity_->account_id();
@@ -54,16 +58,7 @@ namespace shared_model {
 
       const interface::Amount &amount() const override { return *amount_; }
 
-      ModelType *copy() const override {
-        return new AddAssetQuantity(iroha::protocol::Command(*command_));
-      }
-
      private:
-      // ------------------------------| fields |-------------------------------
-
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
       // lazy
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
