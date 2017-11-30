@@ -32,8 +32,8 @@ namespace shared_model {
       explicit AccountAsset(AccountAssetType &&accountAssetType)
           : protoAccountAsset_(
                 std::forward<AccountAssetType>(accountAssetType)),
-            accountId_([this] { return protoAccountAsset_->account_id(); }),
-            assetId_([this] { return protoAccountAsset_->asset_id(); }),
+            accountId_(protoAccountAsset_->account_id()),
+            assetId_(protoAccountAsset_->asset_id()),
             balance_([this] { return Amount(protoAccountAsset_->balance()); }),
             blob_([this] {
               return BlobType(protoAccountAsset_->SerializeAsString());
@@ -46,11 +46,11 @@ namespace shared_model {
           : AccountAsset(std::move(o.protoAccountAsset_.variant())) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return *accountId_;
+        return accountId_;
       }
 
       const interface::types::AssetIdType &assetId() const override {
-        return *assetId_;
+        return assetId_;
       }
 
       const interface::Amount &balance() const override { return *balance_; }
@@ -68,9 +68,9 @@ namespace shared_model {
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const Lazy<interface::types::AccountIdType> accountId_;
+      interface::types::AccountIdType accountId_;
 
-      const Lazy<interface::types::AssetIdType> assetId_;
+      interface::types::AssetIdType assetId_;
 
       const Lazy<Amount> balance_;
 
