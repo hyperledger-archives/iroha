@@ -148,7 +148,7 @@ namespace iroha {
       creator_ = creator;
       auto cmd_value = static_cast<const GrantPermission &>(command);
       return checkAccountRolePermission(
-          creator.account_id, queries, "CanGrant" + cmd_value.permission_name);
+          creator.account_id, queries, can_grant + cmd_value.permission_name);
     }
 
     bool GrantPermissionExecutor::isValid(const Command &command,
@@ -515,7 +515,7 @@ namespace iroha {
       return newSignatoriesSize >= account.value().quorum;
     }
 
-  // -----------------------|SetAccountDetail|-------------------------
+    // -----------------------|SetAccountDetail|-------------------------
 
     SetAccountDetailExecutor::SetAccountDetailExecutor() {
       log_ = logger::log("SetAccountDetailExecutor");
@@ -525,17 +525,28 @@ namespace iroha {
                                            ametsuchi::WsvQuery &queries,
                                            ametsuchi::WsvCommand &commands) {
       auto cmd = static_cast<const SetAccountDetail &>(command);
-      return commands.setAccountKV(cmd.account_id, cmd.key, cmd.value);
+      if (creator_.account_id.empty()){
+        // 30/11 grimadas TODO: check if this statement always hold
+        // If creator is empty, it means this is genesis insert
+        creator_.account_id = "genesis";
+      }
+      return commands.setAccountKV(
+          cmd.account_id, creator_.account_id, cmd.key, cmd.value);
     }
 
     bool SetAccountDetailExecutor::hasPermissions(const Command &command,
                                                   ametsuchi::WsvQuery &queries,
                                                   const Account &creator) {
       auto cmd = static_cast<const SetAccountDetail &>(command);
+      creator_ = creator;
 
       return
-          // Creator set details for his account
-          creator.account_id == cmd.account_id;
+          // Case 1. Creator set details for his account
+          creator.account_id == cmd.account_id
+          or
+          // Case 2. Creator has grantable permission to set account key/value
+          queries.hasAccountGrantablePermission(
+              creator.account_id, cmd.account_id, can_set_detail);
     }
 
     bool SetAccountDetailExecutor::isValid(const Command &command,
