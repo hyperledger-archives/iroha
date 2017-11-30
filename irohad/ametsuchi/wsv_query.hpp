@@ -92,7 +92,9 @@ namespace iroha {
        * @return
        */
       virtual nonstd::optional<std::string> getAccountDetail(
-          const std::string &account_id, const std::string &detail) = 0;
+          const std::string &account_id,
+          const std::string &creator_id,
+          const std::string &detail) = 0;
 
       /**
        * Get signatories of account by user account_id

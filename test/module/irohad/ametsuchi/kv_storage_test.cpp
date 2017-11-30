@@ -46,7 +46,7 @@ class KVTest : public AmetsuchiTest {
 
     // First transaction in block1
     Transaction txn1_1;
-    txn1_1.creator_account_id = "user1@test";
+    txn1_1.creator_account_id = "user1@ru";
 
     CreateRole createRole;
     createRole.role_name = "user";
@@ -105,7 +105,7 @@ class KVTest : public AmetsuchiTest {
 
   std::string domain_id = "ru";
   std::string account_name1 = "user1";
-  std::string account_data1 = R"({"age": "30"})";
+  std::string account_data1 = R"({"user1": {"age": "30"}})";
   std::string account_name2 = "user2";
 };
 
@@ -122,7 +122,7 @@ TEST_F(KVTest, GetAccountDetail) {
   ASSERT_EQ(account->domain_id, domain_id);
   ASSERT_EQ(account->json_data, account_data1);
 
-  auto age = wsv_query->getAccountDetail(account_id1, "age");
+  auto age = wsv_query->getAccountDetail(account_id1, "user1", "age");
   ASSERT_TRUE(age);
   ASSERT_EQ(age.value(), "30");
 }
@@ -136,7 +136,8 @@ TEST_F(KVTest, GetNonexistingDetail) {
   auto account_id1 = account_name1 + "@" + domain_id;
   auto account = wsv_query->getAccount(account_id1);
 
-  auto age = wsv_query->getAccountDetail(account_id1, "nonexisting-field");
+  auto age =
+      wsv_query->getAccountDetail(account_id1, "genesis", "nonexisting-field");
   ASSERT_FALSE(age);
 }
 
@@ -147,7 +148,7 @@ TEST_F(KVTest, GetNonexistingDetail) {
  */
 TEST_F(KVTest, SetAccountDetail) {
   auto account_id2 = account_name2 + "@" + domain_id;
-  auto age = wsv_query->getAccountDetail(account_id2, "age");
+  auto age = wsv_query->getAccountDetail(account_id2, "genesis", "age");
 
   ASSERT_TRUE(age);
   ASSERT_EQ(age.value(), "24");
