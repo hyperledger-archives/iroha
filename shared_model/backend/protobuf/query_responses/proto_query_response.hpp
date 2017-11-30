@@ -38,8 +38,8 @@ namespace shared_model {
   namespace proto {
     class QueryResponse final : public interface::QueryResponse {
      private:
-      template <typename Value>
-      using w = detail::PolymorphicWrapper<Value>;
+      template <typename... Value>
+      using w = boost::variant<detail::PolymorphicWrapper<Value>...>;
 
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
@@ -48,8 +48,7 @@ namespace shared_model {
 
      public:
       /// type of proto variant
-      using ProtoQueryResponseVariantType =
-          boost::variant<w<AccountAssetResponse>>;
+      using ProtoQueryResponseVariantType = w<AccountAssetResponse>;
 
       /// list of types in variant
       using ProtoQueryResponseListType = ProtoQueryResponseVariantType::types;
