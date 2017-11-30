@@ -26,7 +26,7 @@
 
 template <typename... T, typename Archive>
 auto load_query(Archive &&ar) {
-  int which = ar.GetDescriptor()->FindFieldByNumber(ar.command_case())->index();
+  int which = ar.GetDescriptor()->FindFieldByNumber(ar.payload().query_case())->index();
   return shared_model::detail::variant_impl<T...>::
   template load<shared_model::interface::Query::QueryVariantType>(
           std::forward<Archive>(ar), which);
@@ -46,6 +46,8 @@ namespace shared_model {
 
       using LazyVariantType = Lazy<QueryVariantType>;
 
+
+
     public:
       /// type of proto variant
       using ProtoQueryVariantType = boost::variant<w<GetAccount>>;
@@ -53,10 +55,10 @@ namespace shared_model {
       /// list of types in proto variant
       using ProtoQueryListType = ProtoQueryVariantType::types;
 
-      template <typename CommandType>
+      template <typename QueryType>
       explicit Query(QueryType &&query)
               : query_(std::forward<QueryType>(query)),
-                variant_([this] { return load<ProtoQueryListType>(*query_); }),
+                variant_([this] { return load_query<ProtoQueryListType>(*query_); }),
                 blob_([this] { return BlobType(query_->SerializeAsString()); }) {}
 
       Query(const Query &o) : Query(*o.query_) {}
@@ -66,12 +68,39 @@ namespace shared_model {
 
       const QueryVariantType &get() const override { return *variant_; }
 
+      const interface::types::AccountIdType &creatorAccountId() const override {
+        return query_->payload().creator_account_id();
+      }
+
+
+      const QueryCounterType &queryCounter() const override {
+        return query_->payload().query_counter();
+      }
+
+
       const BlobType &blob() const override { return *blob_; }
 
       ModelType *copy() const override {
         return new Query(iroha::protocol::Query(*query_));
       }
 
+      // ------------------------| Signable override  |-------------------------
+      const SignatureSetType &signatures() const override {
+        SignatureSetType set;
+        set.insert(query_->signature());
+        return set;
+      }
+
+      bool addSignature(const SignatureType &signature) override {
+        //query_->clear_signature();
+        auto sig = new SignatureType(signature);
+        query_->set_allocated_signature(sig);
+        return true;
+      }
+
+      const TimestampType &createdTime() const override {
+        return query_->payload().created_time();
+      }
     private:
       // ------------------------------| fields |-------------------------------
 

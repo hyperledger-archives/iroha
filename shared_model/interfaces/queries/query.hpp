@@ -48,6 +48,7 @@ namespace shared_model {
       using w = detail::PolymorphicWrapper<Value>;
 
      public:
+
       /// Type of variant, that handle concrete query
       using QueryVariantType = boost::variant<w<GetAccount>>;
 //                                              w<GetAccountAssets>,
@@ -79,6 +80,7 @@ namespace shared_model {
        * @return attached query counter
        */
       virtual const QueryCounterType &queryCounter() const = 0;
+
 
       // ------------------------| Primitive override |-------------------------
 

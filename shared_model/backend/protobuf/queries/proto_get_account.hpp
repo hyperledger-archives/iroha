@@ -19,10 +19,9 @@ namespace shared_model {
       template <typename QueryType>
       explicit GetAccount(QueryType &&query)
               : query_(std::forward<QueryType>(query)),
-                get_account_(
+                account_id_(
                         [this] {
-                          std::string s = query_->account_id();
-                          return s;
+                          return query_->payload().get_account().account_id();
                         })
                  {}
 
@@ -33,21 +32,22 @@ namespace shared_model {
               : GetAccount(std::move(o.query_.variant())) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return get_account_->account_id();
+        return *account_id_;
       }
 
       ModelType *copy() const override {
-        return new GetAccount(iroha::protocol::GetAccount(*query_));
+        auto tmp = iroha::protocol::Query(*query_);
+        return new GetAccount(tmp);
       }
 
     private:
       // ------------------------------| fields |-------------------------------
 
       // proto
-      detail::ReferenceHolder<iroha::protocol::GetAccount> query_;
+      detail::ReferenceHolder<iroha::protocol::Query> query_;
 
 
-      const detail::LazyInitializer<const iroha::protocol::GetAccount &> get_account_;
+      const detail::LazyInitializer<const std::string&> account_id_;
 
     };
 
