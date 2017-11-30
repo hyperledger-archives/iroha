@@ -23,6 +23,7 @@
 #include <set>
 
 #include <boost/assign/list_inserter.hpp>
+#include <primitive.pb.h>
 
 namespace iroha {
   namespace model {
@@ -60,8 +61,6 @@ namespace iroha {
             (protocol::RolePermission::can_create_domain, can_create_domain)
             // Can create account
             (protocol::RolePermission::can_create_account, can_create_account)
-            // Can set quorum
-            (protocol::RolePermission::can_set_quorum, can_set_quorum)
             // Can add peer
             (protocol::RolePermission::can_add_peer, can_add_peer)
             // Can add asset quantity
@@ -97,7 +96,10 @@ namespace iroha {
              (protocol::RolePermission::can_grant_can_transfer,
              can_grant + can_transfer)
             // Can get roles
-            (protocol::RolePermission::can_get_roles, can_get_roles);
+            (protocol::RolePermission::can_get_roles, can_get_roles)
+            // Can write details to other accounts
+            (protocol::RolePermission::can_grant_can_set_detail, can_grant+can_set_detail)
+            ;
 
         boost::assign::insert(pb_grant_map_)
             // Can add my signatory
@@ -107,7 +109,9 @@ namespace iroha {
             (protocol::GrantablePermission::can_remove_my_signatory,
              can_remove_signatory)
             // Can set my quorum
-            (protocol::GrantablePermission::can_set_my_quorum, can_set_quorum);
+            (protocol::GrantablePermission::can_set_my_quorum, can_set_quorum)
+            // Can write details to other accounts
+            (protocol::GrantablePermission::can_set_my_account_detail, can_set_detail);
       }
 
       // asset quantity

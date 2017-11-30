@@ -33,12 +33,14 @@ enum RolePermission {
     can_grant_remove_signatory = 25;
     can_grant_set_quorum = 26;
     can_grant_can_transfer = 27;
+    can_grant_can_set_detail = 28;
 }
 
 enum GrantablePermission {
     can_add_my_signatory = 0;
     can_remove_my_signatory = 1;
     can_set_my_quorum = 2;
+    can_set_my_account_detail = 3;
 }
 
 
