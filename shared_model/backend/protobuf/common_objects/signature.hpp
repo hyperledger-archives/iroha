@@ -19,35 +19,31 @@
 #define IROHA_PROTO_SIGNATURE_HPP
 
 #include "interfaces/common_objects/signature.hpp"
+
 #include "primitive.pb.h"
 
 namespace shared_model {
   namespace proto {
-    class Signature final : public interface::Signature {
+    class Signature final : public CopyableProto<interface::Signature,
+                                                 iroha::protocol::Signature,
+                                                 Signature> {
      public:
       template <typename SignatureType>
       explicit Signature(SignatureType &&signature)
-          : signature_(std::forward<SignatureType>(signature)),
-            public_key_([this] { return PublicKeyType(signature_->pubkey()); }),
-            signed_([this] { return SignedType(signature_->signature()); }) {}
+          : CopyableProto(std::forward<SignatureType>(signature)),
+            public_key_([this] { return PublicKeyType(proto_->pubkey()); }),
+            signed_([this] { return SignedType(proto_->signature()); }) {}
 
-      Signature(const Signature &o) : Signature(*o.signature_) {}
+      Signature(const Signature &o) : Signature(o.proto_) {}
 
       Signature(Signature &&o) noexcept
-          : Signature(std::move(o.signature_.variant())) {}
+          : Signature(std::move(o.proto_)) {}
 
       const PublicKeyType &publicKey() const override { return *public_key_; }
 
       const SignedType &signedData() const override { return *signed_; }
 
-      ModelType *copy() const override {
-        return new Signature(iroha::protocol::Signature(*signature_));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Signature> signature_;
-
       // lazy
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;

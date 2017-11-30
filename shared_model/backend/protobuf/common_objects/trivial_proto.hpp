@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+#ifndef IROHA_SHARED_MODEL_TRIVIAL_PROTO_HPP
+#define IROHA_SHARED_MODEL_TRIVIAL_PROTO_HPP
+
+#include "backend/transport_getter.hpp"
 #include "utils/reference_holder.hpp"
 
 namespace shared_model {
@@ -22,13 +26,13 @@ namespace shared_model {
     /**
      * Simple generic class for handling proto objects
      * @tparam Iface is interface to inherit from
-     * @tparam Proto is protobuf containter
+     * @tparam Proto is protobuf container
      */
     template <typename Iface, typename Proto>
     class TrivialProto final : public Iface {
      public:
       /**
-       * @tparm ProtoLoader generic param so it can be hanled
+       * @tparm ProtoLoader generic param so it can be handled
        *                    in the load for the boost::variant
        */
       template <typename ProtoLoader>
@@ -42,5 +46,35 @@ namespace shared_model {
      private:
       detail::ReferenceHolder<Proto> proto_;
     };
+
+    /**
+     * Simple generic class for handling proto objects
+     * @tparam Iface is interface to inherit from
+     * @tparam Proto is protobuf container
+     */
+    template <typename Iface, typename Proto, typename Impl>
+    class CopyableProto : public Iface, public TransportGetter<Proto> {
+     public:
+      /**
+       * @tparm ProtoLoader generic param so it can be handled
+       *                    in the load for the boost::variant
+       */
+      template <typename ProtoLoader>
+      explicit CopyableProto(ProtoLoader &&ref)
+          : proto_(std::forward<ProtoLoader>(ref)) {}
+
+      typename Iface::ModelType *copy() const override {
+        return new Impl(Proto(*proto_));
+      }
+
+      const Proto &getTransport() const {
+        return *proto_;
+      }
+
+     protected:
+      detail::ReferenceHolder<Proto> proto_;
+    };
   }  // namespace proto
 }  // namespace shared_model
+
+#endif  // IROHA_SHARED_MODEL_TRIVIAL_PROTO_HPP

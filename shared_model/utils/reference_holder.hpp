@@ -64,8 +64,6 @@ namespace shared_model {
             variant_);
       }
 
-      VariantType &variant() { return variant_; }
-
      private:
       VariantType variant_;
     };

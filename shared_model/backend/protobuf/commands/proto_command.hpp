@@ -18,9 +18,11 @@
 #ifndef IROHA_SHARED_MODEL_PROTO_COMMAND_HPP
 #define IROHA_SHARED_MODEL_PROTO_COMMAND_HPP
 
-#include "backend/protobuf/commands/proto_add_asset_quantity.hpp"
-#include "commands.pb.h"
 #include "interfaces/commands/command.hpp"
+
+#include "backend/protobuf/commands/proto_add_asset_quantity.hpp"
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
+#include "commands.pb.h"
 #include "utils/lazy_initializer.hpp"
 #include "utils/variant_deserializer.hpp"
 
@@ -34,7 +36,9 @@ auto load(Archive &&ar) {
 
 namespace shared_model {
   namespace proto {
-    class Command final : public interface::Command {
+    class Command final : public CopyableProto<interface::Command,
+                                               iroha::protocol::Command,
+                                               Command> {
      private:
       /// polymorphic wrapper type shortcut
       template <typename Value>
@@ -55,29 +59,19 @@ namespace shared_model {
 
       template <typename CommandType>
       explicit Command(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            variant_([this] { return load<ProtoCommandListType>(*command_); }),
-            blob_([this] { return BlobType(command_->SerializeAsString()); }) {}
+          : CopyableProto(std::forward<CommandType>(command)),
+            variant_([this] { return load<ProtoCommandListType>(*proto_); }),
+            blob_([this] { return BlobType(proto_->SerializeAsString()); }) {}
 
-      Command(const Command &o) : Command(*o.command_) {}
+      Command(const Command &o) : Command(o.proto_) {}
 
-      Command(Command &&o) noexcept : Command(std::move(o.command_.variant())) {
-      }
+      Command(Command &&o) noexcept : Command(std::move(o.proto_)) {}
 
       const CommandVariantType &get() const override { return *variant_; }
 
       const BlobType &blob() const override { return *blob_; }
 
-      ModelType *copy() const override {
-        return new Command(iroha::protocol::Command(*command_));
-      }
-
      private:
-      // ------------------------------| fields |-------------------------------
-
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
       // lazy
       const LazyVariantType variant_;
 

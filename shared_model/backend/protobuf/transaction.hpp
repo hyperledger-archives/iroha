@@ -24,22 +24,21 @@
 
 #include "backend/protobuf/commands/proto_command.hpp"
 #include "backend/protobuf/common_objects/signature.hpp"
-#include "backend/transport_getter.hpp"
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "block.pb.h"
 #include "utils/lazy_initializer.hpp"
-#include "utils/reference_holder.hpp"
 
 namespace shared_model {
   namespace proto {
-    class Transaction final
-        : public interface::Transaction,
-          public TransportGetter<iroha::protocol::Transaction> {
+    class Transaction final : public CopyableProto<interface::Transaction,
+                                                   iroha::protocol::Transaction,
+                                                   Transaction> {
      public:
       template <typename TransactionType>
       explicit Transaction(TransactionType &&transaction)
-          : transaction_(std::forward<TransactionType>(transaction)),
+          : CopyableProto(std::forward<TransactionType>(transaction)),
             payload_(detail::makeReferenceGenerator(
-                transaction_, &iroha::protocol::Transaction::payload)),
+                proto_, &iroha::protocol::Transaction::payload)),
             commands_([this] {
               return boost::accumulate(
                   payload_->commands(),
@@ -49,10 +48,10 @@ namespace shared_model {
                     return std::forward<decltype(acc)>(acc);
                   });
             }),
-            blob_([this] { return BlobType(payload_->SerializeAsString()); }),
+            blob_([this] { return BlobType(proto_->SerializeAsString()); }),
             signatures_([this] {
               return boost::accumulate(
-                  transaction_->signature(),
+                  proto_->signature(),
                   SignatureSetType{},
                   [](auto &&acc, const auto &sig) {
                     acc.emplace(new Signature(sig));
@@ -60,10 +59,10 @@ namespace shared_model {
                   });
             }) {}
 
-      Transaction(const Transaction &o) : Transaction(*o.transaction_) {}
+      Transaction(const Transaction &o) : Transaction(o.proto_) {}
 
-      Transaction(Transaction &&o) noexcept
-          : Transaction(std::move(o.transaction_.variant())) {}
+      Transaction(Transaction &&o) noexcept : Transaction(std::move(o.proto_)) {
+      }
 
       const interface::types::AccountIdType &creatorAccountId() const override {
         return payload_->creator_account_id();
@@ -75,10 +74,6 @@ namespace shared_model {
 
       const CommandsType &commands() const override { return *commands_; }
 
-      ModelType *copy() const override {
-        return new Transaction(iroha::protocol::Transaction(*transaction_));
-      }
-
       const BlobType &blob() const override { return *blob_; }
 
       const SignatureSetType &signatures() const override {
@@ -89,7 +84,7 @@ namespace shared_model {
         if (signatures_->count(signature) > 0) {
           return false;
         }
-        auto sig = transaction_->add_signature();
+        auto sig = proto_->add_signature();
         sig->set_pubkey(signature->publicKey().blob());
         sig->set_signature(signature->signedData().blob());
         signatures_.invalidate();
@@ -100,14 +95,7 @@ namespace shared_model {
         return payload_->created_time();
       }
 
-      const iroha::protocol::Transaction &getTransport() const {
-        return *transaction_;
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Transaction> transaction_;
-
       // lazy
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;

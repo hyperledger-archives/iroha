@@ -18,10 +18,10 @@
 #ifndef IROHA_PROTO_TRANSACTION_BUILDER_HPP
 #define IROHA_PROTO_TRANSACTION_BUILDER_HPP
 
-#include "block.pb.h"
-#include "backend/protobuf/transaction.hpp"
-#include "interfaces/common_objects/types.hpp"
 #include "amount/amount.hpp"
+#include "backend/protobuf/transaction.hpp"
+#include "block.pb.h"
+#include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {
   namespace proto {
@@ -37,41 +37,35 @@ namespace shared_model {
       using NextBuilder = TemplateTransactionBuilder<S | (1 << s)>;
 
       iroha::protocol::Transaction transaction_;
-      iroha::protocol::Transaction::Payload &payload_;
 
-      /**
-       * Cast for returning reference to another template type when a field
-       * is set without redundant call of copy or move constructors.
-       * @tparam Sp new field set
-       * @return reference to object with new field set
-       */
       template <int Sp>
-      operator TemplateTransactionBuilder<Sp>&() {
-        return reinterpret_cast<TemplateTransactionBuilder<Sp>&>(*this);
-      }
+      TemplateTransactionBuilder(
+          const TemplateTransactionBuilder<Sp> &o) noexcept
+          : transaction_(o.transaction_) {}
 
      public:
-      TemplateTransactionBuilder()
-          : payload_(*transaction_.mutable_payload()) {}
+      TemplateTransactionBuilder() = default;
 
-      NextBuilder<CreatorAccountId> &creatorAccountId(
-          const interface::types::AccountIdType &accountId) {
-        payload_.set_creator_account_id(accountId);
+      NextBuilder<CreatorAccountId> creatorAccountId(
+          const interface::types::AccountIdType &account_id) {
+        transaction_.mutable_payload()->set_creator_account_id(account_id);
         return *this;
       }
 
-      NextBuilder<TxCounter> &txCounter(Transaction::TxCounterType txCounter) {
-        payload_.set_tx_counter(txCounter);
+      NextBuilder<TxCounter> txCounter(Transaction::TxCounterType tx_counter) {
+        transaction_.mutable_payload()->set_tx_counter(tx_counter);
         return *this;
       }
 
-      NextBuilder<Command> &addAssetQuantity(
-          const interface::types::AccountIdType &accountId,
-          const interface::types::AssetIdType &assetId,
+      NextBuilder<Command> addAssetQuantity(
+          const interface::types::AccountIdType &account_id,
+          const interface::types::AssetIdType &asset_id,
           const std::string &amount) {
-        auto command = payload_.add_commands()->mutable_add_asset_quantity();
-        command->set_account_id(accountId);
-        command->set_asset_id(assetId);
+        auto command = transaction_.mutable_payload()
+                           ->add_commands()
+                           ->mutable_add_asset_quantity();
+        command->set_account_id(account_id);
+        command->set_asset_id(asset_id);
         iroha::Amount::createFromString(amount) | [&](auto &&amount) {
           auto proto_amount = command->mutable_amount();
           auto proto_value = proto_amount->mutable_value();
@@ -96,4 +90,4 @@ namespace shared_model {
   }  // namespace proto
 }  // namespace shared_model
 
-#endif //IROHA_PROTO_TRANSACTION_BUILDER_HPP
+#endif  // IROHA_PROTO_TRANSACTION_BUILDER_HPP
