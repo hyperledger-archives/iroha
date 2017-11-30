@@ -39,8 +39,7 @@ namespace shared_model {
       iroha::protocol::Transaction transaction_;
 
       template <int Sp>
-      TemplateTransactionBuilder(
-          const TemplateTransactionBuilder<Sp> &o) noexcept
+      TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp> &o)
           : transaction_(o.transaction_) {}
 
      public:
