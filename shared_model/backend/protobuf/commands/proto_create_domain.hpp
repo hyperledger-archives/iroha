@@ -23,17 +23,20 @@
 namespace shared_model {
   namespace proto {
 
-    class CreateDomain final : public interface::CreateDomain {
+    class CreateDomain final : public CopyableProto<interface::CreateDomain,
+                                             iroha::protocol::Command,
+                                             CreateDomain> {
      public:
       template <typename CommandType>
       explicit CreateDomain(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            create_domain_([this] { return command_->create_domain(); }) {}
+          : CopyableProto(std::forward<CommandType>(command)),
+            create_domain_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::create_domain)) {}
 
-      CreateDomain(const CreateDomain &o) : CreateDomain(*o.command_) {}
+      CreateDomain(const CreateDomain &o) : CreateDomain(o.proto_) {}
 
       CreateDomain(CreateDomain &&o) noexcept
-          : CreateDomain(std::move(o.command_.variant())) {}
+          : CreateDomain(std::move(o.proto_)) {}
 
       const interface::types::DomainIdType &domainId() const override {
         return create_domain_->domain_id();
@@ -43,18 +46,11 @@ namespace shared_model {
         return create_domain_->default_role();
       }
 
-      ModelType *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_create_domain() = *create_domain_;
-        return new CreateDomain(std::move(command));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
+      // lazy
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
+
       const Lazy<const iroha::protocol::CreateDomain &> create_domain_;
     };
 

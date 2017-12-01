@@ -23,22 +23,25 @@
 namespace shared_model {
   namespace proto {
 
-    class RemoveSignatory final : public interface::RemoveSignatory {
+    class RemoveSignatory final : public CopyableProto<interface::RemoveSignatory,
+                                                       iroha::protocol::Command,
+                                                       RemoveSignatory> {
      public:
       template <typename CommandType>
       explicit RemoveSignatory(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            remove_signatory_([this] { return command_->remove_sign(); }),
+          : CopyableProto(std::forward<CommandType>(command)),
+            remove_signatory_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::remove_sign)),
             pubkey_([this] {
               return interface::types::PubkeyType(
                   remove_signatory_->public_key());
             }) {}
 
       RemoveSignatory(const RemoveSignatory &o)
-          : RemoveSignatory(*o.command_) {}
+          : RemoveSignatory(o.proto_) {}
 
       RemoveSignatory(RemoveSignatory &&o) noexcept
-          : RemoveSignatory(std::move(o.command_.variant())) {}
+          : RemoveSignatory(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return remove_signatory_->account_id();
@@ -48,20 +51,14 @@ namespace shared_model {
         return *pubkey_;
       }
 
-      ModelType *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_remove_sign() = *remove_signatory_;
-        return new RemoveSignatory(std::move(command));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
+      // lazy
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
+
       const Lazy<const iroha::protocol::RemoveSignatory &> remove_signatory_;
-      Lazy<interface::types::PubkeyType> pubkey_;
+
+      const Lazy<interface::types::PubkeyType> pubkey_;
     };
 
   }  // namespace proto

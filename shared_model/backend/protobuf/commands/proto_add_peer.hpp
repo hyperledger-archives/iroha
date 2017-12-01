@@ -18,29 +18,28 @@
 #ifndef IROHA_PROTO_ADD_PEER_HPP
 #define IROHA_PROTO_ADD_PEER_HPP
 
-#include <utility>
-
-#include "commands.pb.h"
 #include "interfaces/commands/add_peer.hpp"
 
 namespace shared_model {
   namespace proto {
 
-    class AddPeer final : public interface::AddPeer {
+    class AddPeer final : public CopyableProto<interface::AddPeer,
+                                               iroha::protocol::Command,
+                                               AddPeer> {
      public:
       template <typename CommandType>
       explicit AddPeer(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            add_peer_([this] { return command_->add_peer(); }),
+          : CopyableProto(std::forward<CommandType>(command)),
+            add_peer_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::add_peer)),
             pubkey_([this] {
               return interface::types::PubkeyType(add_peer_->peer_key());
             }) {}
 
-      AddPeer(const AddPeer &o)
-          : AddPeer(*o.command_) {}
+      AddPeer(const AddPeer &o) : AddPeer(o.proto_) {}
 
       AddPeer(AddPeer &&o) noexcept
-          : AddPeer(std::move(o.command_.variant())) {}
+          : AddPeer(std::move(o.proto_)) {}
 
       const AddressType &peerAddress() const override {
         return add_peer_->address();
@@ -50,22 +49,13 @@ namespace shared_model {
         return *pubkey_;
       }
 
-      interface::AddPeer *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_add_peer() = *add_peer_;
-        return new AddPeer(std::move(command));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
+      // lazy
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
 
-      // lazy
       const Lazy<const iroha::protocol::AddPeer &> add_peer_;
-      Lazy<interface::types::PubkeyType> pubkey_;
+      const Lazy<interface::types::PubkeyType> pubkey_;
     };
   }  // namespace proto
 }  // namespace shared_model

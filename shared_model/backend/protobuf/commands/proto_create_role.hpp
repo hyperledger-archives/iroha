@@ -22,12 +22,15 @@
 
 namespace shared_model {
   namespace proto {
-    class CreateRole final : public interface::CreateRole {
+    class CreateRole final : public CopyableProto<interface::CreateRole,
+                                                  iroha::protocol::Command,
+                                                  CreateRole> {
      public:
       template <typename CommandType>
       explicit CreateRole(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            create_role_([this] { return command_->create_role(); }),
+          : CopyableProto(std::forward<CommandType>(command)),
+            create_role_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::create_role)),
             role_permissions_([this] {
               std::set<std::string> perms;
 
@@ -41,10 +44,10 @@ namespace shared_model {
               return perms;
             }) {}
 
-      CreateRole(const CreateRole &o) : CreateRole(*o.command_) {}
+      CreateRole(const CreateRole &o) : CreateRole(o.proto_) {}
 
       CreateRole(CreateRole &&o) noexcept
-          : CreateRole(std::move(o.command_.variant())) {}
+          : CreateRole(std::move(o.proto_)) {}
 
       const interface::types::RoleIdType &roleName() const override {
         return create_role_->role_name();
@@ -54,21 +57,13 @@ namespace shared_model {
         return *role_permissions_;
       }
 
-      ModelType *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_create_role() = *create_role_;
-        return new CreateRole(std::move(command));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
+      // lazy
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
       const Lazy<const iroha::protocol::CreateRole &> create_role_;
-      Lazy<PermissionsType> role_permissions_;
-    };  // namespace proto
+      const Lazy<PermissionsType> role_permissions_;
+    };
   }     // namespace proto
 }  // namespace shared_model
 

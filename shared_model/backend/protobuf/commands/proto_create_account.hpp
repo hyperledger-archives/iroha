@@ -23,21 +23,24 @@
 namespace shared_model {
   namespace proto {
 
-    class CreateAccount final : public interface::CreateAccount {
+    class CreateAccount final : public CopyableProto<interface::CreateAccount,
+                                                     iroha::protocol::Command,
+                                                     CreateAccount>{
      public:
       template <typename CommandType>
       explicit CreateAccount(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-      create_account_([this] { return command_->create_account(); }),
+          : CopyableProto(std::forward<CommandType>(command)),
+      create_account_(detail::makeReferenceGenerator(
+          proto_, &iroha::protocol::Command::create_account)),
             pubkey_([this] {
               return interface::types::PubkeyType(
                   create_account_->main_pubkey());
             }) {}
 
-      CreateAccount(const CreateAccount &o) : CreateAccount(*o.command_) {}
+      CreateAccount(const CreateAccount &o) : CreateAccount(o.proto_) {}
 
       CreateAccount(CreateAccount &&o) noexcept
-          : CreateAccount(std::move(o.command_.variant())) {}
+          : CreateAccount(std::move(o.proto_)) {}
 
       const interface::types::PubkeyType &pubkey() const override {
         return *pubkey_;
@@ -51,21 +54,13 @@ namespace shared_model {
         return create_account_->domain_id();
       }
 
-      ModelType *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_create_account() = *create_account_;
-        return new CreateAccount(std::move(command));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
+      // lazy
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
 
       const Lazy<const iroha::protocol::CreateAccount &> create_account_;
-      Lazy<interface::types::PubkeyType> pubkey_;
+      const Lazy<interface::types::PubkeyType> pubkey_;
     };
 
   }  // namespace proto

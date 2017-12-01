@@ -63,7 +63,7 @@ namespace shared_model {
       explicit CopyableProto(ProtoLoader &&ref)
           : proto_(std::forward<ProtoLoader>(ref)) {}
 
-      typename Iface::ModelType *copy() const override {
+      typename Iface::ModelType *copy() const override final {
         return new Impl(Proto(*proto_));
       }
 

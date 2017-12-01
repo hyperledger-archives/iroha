@@ -23,20 +23,23 @@
 namespace shared_model {
   namespace proto {
 
-    class TransferAsset final : public interface::TransferAsset {
+    class TransferAsset final : public CopyableProto<interface::TransferAsset,
+                                                     iroha::protocol::Command,
+                                                     TransferAsset>{
      public:
       template <typename CommandType>
       explicit TransferAsset(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            transfer_asset_([this] { return command_->transfer_asset(); }),
+          : CopyableProto(std::forward<CommandType>(command)),
+            transfer_asset_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::transfer_asset)),
             amount_(
                 [this] { return proto::Amount(transfer_asset_->amount()); }) {}
 
       TransferAsset(const TransferAsset &o)
-          : TransferAsset(*o.command_) {}
+          : TransferAsset(o.proto_) {}
 
       TransferAsset(TransferAsset &&o) noexcept
-          : TransferAsset(std::move(o.command_.variant())) {}
+          : TransferAsset(std::move(o.proto_)) {}
 
       const interface::Amount &amount() const override { return *amount_; }
 
@@ -56,20 +59,13 @@ namespace shared_model {
         return transfer_asset_->description();
       }
 
-      ModelType *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_transfer_asset() = *transfer_asset_;
-        return new TransferAsset(std::move(command));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
+      // lazy
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
+
       const Lazy<const iroha::protocol::TransferAsset &> transfer_asset_;
-      Lazy<proto::Amount> amount_;
+      const Lazy<proto::Amount> amount_;
     };
 
   }  // namespace proto

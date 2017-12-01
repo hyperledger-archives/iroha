@@ -15,48 +15,47 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROTO_GRANT_PERMISSION_HPP
-#define IROHA_PROTO_GRANT_PERMISSION_HPP
-
-#include "interfaces/commands/grant_permission.hpp"
+#ifndef IROHA_PROTO_REVOKE_PERMISSION_HPP
+#define IROHA_PROTO_REVOKE_PERMISSION_HPP
 
 namespace shared_model {
   namespace proto {
-
-    class GrantPermission final : public CopyableProto<interface::GrantPermission,
-                                                       iroha::protocol::Command,
-                                                       GrantPermission>  {
+    class RevokePermission final
+        : public CopyableProto<interface::RevokePermission,
+                               iroha::protocol::Command,
+                               RevokePermission> {
      public:
       template <typename CommandType>
-      explicit GrantPermission(CommandType &&command)
+      explicit RevokePermission(CommandType &&command)
           : CopyableProto(std::forward<CommandType>(command)),
-            grant_permission_(detail::makeReferenceGenerator(
-                proto_, &iroha::protocol::Command::grant_permission)) {
-      }
+            revoke_permission_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::revoke_permission)) {}
 
-      GrantPermission(const GrantPermission &o) : GrantPermission(o.proto_) {}
+      RevokePermission(const RevokePermission &o)
+          : RevokePermission(o.proto_) {}
 
-      GrantPermission(GrantPermission &&o) noexcept
-          : GrantPermission(std::move(o.proto_)) {}
+      RevokePermission(RevokePermission &&o) noexcept
+          : RevokePermission(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return grant_permission_->account_id();
+        return revoke_permission_->account_id();
       }
 
       const interface::types::PermissionNameType &permissionName()
           const override {
         return iroha::protocol::GrantablePermission_Name(
-            grant_permission_->permission());
+            revoke_permission_->permission());
       }
 
      private:
       // lazy
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
-      const Lazy<const iroha::protocol::GrantPermission &> grant_permission_;
+      template <typename T>
+      using Lazy = detail::LazyInitializer<T>;
+
+      const Lazy<const iroha::protocol::RevokePermission &> revoke_permission_;
     };
 
   }  // namespace proto
 }  // namespace shared_model
 
-#endif  // IROHA_PROTO_GRANT_PERMISSION_HPP
+#endif  // IROHA_PROTO_REVOKE_PERMISSION_HPP

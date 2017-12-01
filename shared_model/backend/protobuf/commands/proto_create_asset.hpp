@@ -23,18 +23,21 @@
 namespace shared_model {
   namespace proto {
 
-    class CreateAsset final : public interface::CreateAsset {
+    class CreateAsset final : public CopyableProto<interface::CreateAsset,
+                                                   iroha::protocol::Command,
+                                                   CreateAsset> {
      public:
       template <typename CommandType>
       explicit CreateAsset(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            create_asset_([this] { return command_->create_asset(); }),
+          : CopyableProto(std::forward<CommandType>(command)),
+            create_asset_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::create_asset)),
             precision_([this] { return create_asset_->precision(); }) {}
 
-      CreateAsset(const CreateAsset &o) : CreateAsset(*o.command_) {}
+      CreateAsset(const CreateAsset &o) : CreateAsset(o.proto_) {}
 
       CreateAsset(CreateAsset &&o) noexcept
-          : CreateAsset(std::move(o.command_.variant())) {}
+          : CreateAsset(std::move(o.proto_)) {}
 
       const AssetNameType &assetName() const override {
         return create_asset_->asset_name();
@@ -46,20 +49,12 @@ namespace shared_model {
 
       const PrecisionType &precision() const override { return *precision_; }
 
-      ModelType *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_create_asset() = *create_asset_;
-        return new CreateAsset(std::move(command));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
+      // lazy
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
       const Lazy<const iroha::protocol::CreateAsset &> create_asset_;
-      Lazy<PrecisionType> precision_;
+      const Lazy<PrecisionType> precision_;
     };
 
   }  // namespace proto

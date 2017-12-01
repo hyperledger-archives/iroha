@@ -22,20 +22,23 @@
 
 namespace shared_model {
   namespace proto {
-    class AddSignatory final : public interface::AddSignatory {
+    class AddSignatory final : public CopyableProto<interface::AddSignatory,
+                                                    iroha::protocol::Command,
+                                                    AddSignatory>  {
      public:
       template <typename CommandType>
       explicit AddSignatory(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            add_signatory_([this] { return command_->add_signatory(); }),
+          : CopyableProto(std::forward<CommandType>(command)),
+            add_signatory_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::add_signatory)),
             pubkey_([this] {
               return interface::types::PubkeyType(add_signatory_->public_key());
             }) {}
 
-      AddSignatory(const AddSignatory &o) : AddSignatory(*o.command_) {}
+      AddSignatory(const AddSignatory &o) : AddSignatory(o.proto_) {}
 
       AddSignatory(AddSignatory &&o) noexcept
-          : AddSignatory(std::move(o.command_.variant())) {}
+          : AddSignatory(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return add_signatory_->account_id();
@@ -45,20 +48,14 @@ namespace shared_model {
         return *pubkey_;
       }
 
-      ModelType *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_add_signatory() = *add_signatory_;
-        return new AddSignatory(std::move(command));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
+      // lazy
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
+
       const Lazy<const iroha::protocol::AddSignatory &> add_signatory_;
-      Lazy<interface::types::PubkeyType> pubkey_;
+
+      const Lazy<interface::types::PubkeyType> pubkey_;
     };
 
   }  // namespace proto

@@ -23,17 +23,20 @@
 namespace shared_model {
   namespace proto {
 
-    class AppendRole final : public interface::AppendRole {
+    class AppendRole final : public CopyableProto<interface::AppendRole,
+                                                  iroha::protocol::Command,
+                                                  AppendRole> {
      public:
       template <typename CommandType>
       explicit AppendRole(CommandType &&command)
-          : command_(std::forward<CommandType>(command)),
-            append_role_([this] { return command_->append_role(); }) {}
+          : CopyableProto(std::forward<CommandType>(command)),
+            append_role_(detail::makeReferenceGenerator(
+                proto_, &iroha::protocol::Command::append_role)) {}
 
-      AppendRole(const AppendRole &o) : AppendRole(*o.command_) {}
+      AppendRole(const AppendRole &o) : AppendRole(o.proto_) {}
 
       AppendRole(AppendRole &&o) noexcept
-          : AppendRole(std::move(o.command_.variant())) {}
+          : AppendRole(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return append_role_->account_id();
@@ -43,16 +46,7 @@ namespace shared_model {
         return append_role_->role_name();
       }
 
-      ModelType *copy() const override {
-        iroha::protocol::Command command;
-        *command.mutable_append_role() = *append_role_;
-        return new AppendRole(std::move(command));
-      }
-
      private:
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Command> command_;
-
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
       const Lazy<const iroha::protocol::AppendRole &> append_role_;
