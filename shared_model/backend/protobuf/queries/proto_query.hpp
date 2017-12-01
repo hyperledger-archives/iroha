@@ -19,23 +19,26 @@
 #define IROHA_SHARED_MODEL_PROTO_QUERY_HPP
 
 #include "backend/protobuf/queries/proto_get_account.hpp"
-#include "queries.pb.h"
 #include "interfaces/queries/query.hpp"
+#include "queries.pb.h"
 #include "utils/lazy_initializer.hpp"
 #include "utils/variant_deserializer.hpp"
 
 template <typename... T, typename Archive>
 auto load_query(Archive &&ar) {
-  int which = ar.GetDescriptor()->FindFieldByNumber(ar.payload().query_case())->index();
-  return shared_model::detail::variant_impl<T...>::
-  template load<shared_model::interface::Query::QueryVariantType>(
-          std::forward<Archive>(ar), which);
+  int which =
+      ar.GetDescriptor()->FindFieldByNumber(ar.payload().query_case())->index();
+  return shared_model::detail::variant_impl<T...>::template load<
+      shared_model::interface::Query::QueryVariantType>(
+      std::forward<Archive>(ar), which);
 }
 
 namespace shared_model {
   namespace proto {
-    class Query final : public interface::Query {
-    private:
+    class Query final : public CopyableProto<interface::Query,
+                                             iroha::protocol::Query,
+                                             Query> {
+     private:
       /// polymorphic wrapper type shortcut
       template <typename Value>
       using w = detail::PolymorphicWrapper<Value>;
@@ -46,9 +49,7 @@ namespace shared_model {
 
       using LazyVariantType = Lazy<QueryVariantType>;
 
-
-
-    public:
+     public:
       /// type of proto variant
       using ProtoQueryVariantType = boost::variant<w<GetAccount>>;
 
@@ -57,14 +58,14 @@ namespace shared_model {
 
       template <typename QueryType>
       explicit Query(QueryType &&query)
-              : query_(std::forward<QueryType>(query)),
-                variant_([this] { return load_query<ProtoQueryListType>(*query_); }),
-                blob_([this] { return BlobType(query_->SerializeAsString()); }) {}
+          : CopyableProto(std::forward<QueryType>(query)),
+            variant_(
+                [this] { return load_query<ProtoQueryListType>(*query_); }),
+            blob_([this] { return BlobType(query_->SerializeAsString()); }) {}
 
       Query(const Query &o) : Query(*o.query_) {}
 
-      Query(Query &&o) noexcept : Query(std::move(o.query_.variant())) {
-      }
+      Query(Query &&o) noexcept : Query(std::move(o.query_.variant())) {}
 
       const QueryVariantType &get() const override { return *variant_; }
 
@@ -72,11 +73,9 @@ namespace shared_model {
         return query_->payload().creator_account_id();
       }
 
-
       const QueryCounterType &queryCounter() const override {
         return query_->payload().query_counter();
       }
-
 
       const BlobType &blob() const override { return *blob_; }
 
@@ -92,7 +91,7 @@ namespace shared_model {
       }
 
       bool addSignature(const SignatureType &signature) override {
-        //query_->clear_signature();
+        // query_->clear_signature();
         auto sig = new SignatureType(signature);
         query_->set_allocated_signature(sig);
         return true;
@@ -101,7 +100,8 @@ namespace shared_model {
       const TimestampType &createdTime() const override {
         return query_->payload().created_time();
       }
-    private:
+
+     private:
       // ------------------------------| fields |-------------------------------
 
       // proto
