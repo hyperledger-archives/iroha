@@ -16,7 +16,7 @@
  */
 
 #include "backend/protobuf/transaction.hpp"
-#include "builders/protobuf/proto_transaction_builder.hpp"
+#include "builders/protobuf/transaction.hpp"
 
 #include <gtest/gtest.h>
 

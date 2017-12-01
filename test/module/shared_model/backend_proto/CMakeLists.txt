@@ -18,16 +18,7 @@
 addtest(shared_proto_commands_test
         shared_proto_commands_test.cpp
         )
-
 target_link_libraries(shared_proto_commands_test
-        shared_model_proto_backend
-        )
-
-addtest(shared_proto_queries_test
-        shared_proto_queries_test.cpp
-        )
-
-target_link_libraries(shared_proto_queries_test
         shared_model_proto_backend
         )
 
@@ -42,5 +33,12 @@ addtest(shared_proto_transaction_test
     shared_proto_transaction_test.cpp
     )
 target_link_libraries(shared_proto_transaction_test
+    shared_model_proto_backend
+    )
+
+addtest(shared_proto_queries_test
+    shared_proto_queries_test.cpp
+    )
+target_link_libraries(shared_proto_queries_test
     shared_model_proto_backend
     )
