@@ -37,7 +37,7 @@ namespace shared_model {
               std::for_each(
                   create_role_->permissions().begin(),
                   create_role_->permissions().end(),
-                  [&perms, this](auto perm) {
+                  [&perms](auto perm) {
                     perms.insert(iroha::protocol::RolePermission_Name(
                         static_cast<iroha::protocol::RolePermission>(perm)));
                   });
