@@ -311,17 +311,6 @@ namespace iroha {
                                           const std::string &creator_account_id,
                                           const std::string &key,
                                           const std::string &val) {
-      std::string prefix;
-      std::string account_prefix;
-
-      if (account_id != creator_account_id) {
-        prefix = "others, ";
-        account_prefix = creator_account_id + ", ";
-      } else {
-        prefix = "own, ";
-        account_prefix = "";
-      }
-
       try {
         transaction_.exec(
             "UPDATE account SET data = jsonb_set(CASE WHEN data ?"
