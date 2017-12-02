@@ -13,7 +13,7 @@
 # limitations under the License.
 
 add_subdirectory(internal)
-add_subdirectory(bindings)
+#add_subdirectory(bindings)
 
 add_library(shared_model_ed25519_sha3
     signer.cpp

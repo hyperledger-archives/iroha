@@ -30,9 +30,9 @@
 
 namespace shared_model {
   namespace proto {
-    class Transaction final : public CopyableProto<interface::Transaction,
-                                                   iroha::protocol::Transaction,
-                                                   Transaction> {
+    class Transaction : public CopyableProto<interface::Transaction,
+                                             iroha::protocol::Transaction,
+                                             Transaction> {
      public:
       template <typename TransactionType>
       explicit Transaction(TransactionType &&transaction)
@@ -61,26 +61,41 @@ namespace shared_model {
 
       Transaction(const Transaction &o) : Transaction(o.proto_) {}
 
-      Transaction(Transaction &&o) noexcept : Transaction(std::move(o.proto_)) {
-      }
+      Transaction(Transaction &&o) noexcept
+          : Transaction(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &creatorAccountId() const override {
         return payload_->creator_account_id();
       }
 
-      TxCounterType transactionCounter() const override {
+      shared_model::interface::Transaction::TxCounterType transactionCounter()
+          const override {
         return payload_->tx_counter();
       }
 
-      const CommandsType &commands() const override { return *commands_; }
+      const shared_model::interface::Transaction::CommandsType &commands()
+          const override {
+        return *commands_;
+      }
 
-      const BlobType &blob() const override { return *blob_; }
+      const shared_model::interface::Hashable<
+          shared_model::interface::Transaction,
+          iroha::model::Transaction>::BlobType &
+      blob() const override {
+        return *blob_;
+      }
 
-      const SignatureSetType &signatures() const override {
+      const shared_model::interface::Signable<
+          shared_model::interface::Transaction,
+          iroha::model::Transaction>::SignatureSetType &
+      signatures() const override {
         return *signatures_;
       }
 
-      bool addSignature(const SignatureType &signature) override {
+      bool addSignature(
+          const shared_model::interface::Signable<
+              shared_model::interface::Transaction,
+              iroha::model::Transaction>::SignatureType &signature) override {
         if (signatures_->count(signature) > 0) {
           return false;
         }
@@ -91,7 +106,9 @@ namespace shared_model {
         return true;
       }
 
-      TimestampType createdTime() const override {
+      shared_model::interface::Signable<
+              shared_model::interface::Transaction,
+              iroha::model::Transaction>::TimestampType createdTime() const override {
         return payload_->created_time();
       }
 

@@ -27,7 +27,7 @@ namespace shared_model {
   namespace interface {
     template <typename ModelType,
               typename OldModel,
-              typename HashProvider = crypto::Sha3_512>
+              typename HashProvider = shared_model::crypto::Sha3_512>
     class Hashable : public Primitive<ModelType, OldModel> {
      public:
       /// Type of hash
