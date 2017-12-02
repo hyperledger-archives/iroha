@@ -18,11 +18,15 @@
 %module irohalib
 
 #define DEPRECATED
+#pragma SWIG nowarn=401, 509, 516
 
 %include "std_string.i"
 %include "stdint.i"
 
 %rename(prototx) shared_model::proto::Transaction;
+%rename(_interface) interface;
+%rename(b_equal) shared_model::crypto::Blob::operator==;
+%rename(kp_equal) shared_model::crypto::Keypair::operator==;
 
 %{
 #include "builders/protobuf/proto_transaction_builder.hpp"
