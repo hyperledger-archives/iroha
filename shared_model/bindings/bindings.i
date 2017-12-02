@@ -46,7 +46,7 @@
 
 namespace shared_model {
   namespace proto {
-    %template(tb7) shared_model::proto::TemplateTransactionBuilder<7>;
+    class TransactionBuilder;
   }
   namespace crypto {
     %template(cs) shared_model::crypto::CryptoSigner<shared_model::crypto::DefaultCryptoAlgorithmType>;
