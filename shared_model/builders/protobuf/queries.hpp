@@ -18,6 +18,7 @@
 #ifndef IROHA_PROTO_QUERY_BUILDER_HPP
 #define IROHA_PROTO_QUERY_BUILDER_HPP
 
+// TODO @l4l IR-648
 // #include "backend/protobuf/queries.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "queries.pb.h"
@@ -61,14 +62,14 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<QueryField> setGetAccount(
+      NextBuilder<QueryField> getAccount(
           const interface::types::AccountIdType &accound_id) {
         auto query = query_.mutable_payload()->mutable_get_account();
         query->set_account_id(accound_id);
         return *this;
       }
 
-      NextBuilder<QueryField> setGetSignatories(
+      NextBuilder<QueryField> getSignatories(
           const interface::types::AccountIdType &accound_id) {
         auto query =
             query_.mutable_payload()->mutable_get_account_signatories();
@@ -76,7 +77,7 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<QueryField> setGetAccountTransactions(
+      NextBuilder<QueryField> getAccountTransactions(
           const interface::types::AccountIdType &accound_id) {
         auto query =
             query_.mutable_payload()->mutable_get_account_transactions();
@@ -84,7 +85,7 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<QueryField> setGetAccountAssetTransactions(
+      NextBuilder<QueryField> getAccountAssetTransactions(
           const interface::types::AccountIdType &accound_id,
           const interface::types::AssetIdType &asset_id) {
         auto query =
@@ -94,7 +95,7 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<QueryField> setGetAccountAssets(
+      NextBuilder<QueryField> getAccountAssets(
           const interface::types::AccountIdType &accound_id,
           const interface::types::AssetIdType &asset_id) {
         auto query = query_.mutable_payload()->mutable_get_account_assets();
@@ -103,21 +104,19 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<QueryField> setGetRoles(
-          const interface::types::AccountIdType &accound_id,
-          const interface::types::AssetIdType &asset_id) {
+      NextBuilder<QueryField> getRoles() {
         query_.mutable_payload()->mutable_get_roles();
         return *this;
       }
 
-      NextBuilder<QueryField> setGetAssetInfo(
+      NextBuilder<QueryField> getAssetInfo(
           const interface::types::AssetIdType &asset_id) {
         auto query = query_.mutable_payload()->mutable_get_asset_info();
         query->set_asset_id(asset_id);
         return *this;
       }
 
-      NextBuilder<QueryField> setGetRolePermissions(
+      NextBuilder<QueryField> getRolePermissions(
           const interface::types::RoleIdType &role_id) {
         auto query = query_.mutable_payload()->mutable_get_role_permissions();
         query->set_role_id(role_id);
@@ -129,14 +128,14 @@ namespace shared_model {
         return *this;
       }
 
-      // Uncomment on completing proto::Query
-      void /*Query*/ build() {
+      // TODO IR-648 @l4l: Uncomment on completing proto::Query
+      iroha::protocol::Query /*Query*/ build() {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
-        return;  // Query(std::move(query_));
+        return query_;  // Query(iroha::protocol::Query(query_));
       }
     };
 
     using QueryBuilder = TemplateQueryBuilder<>;
-  };  // namespace proto
+  }  // namespace proto
 }  // namespace shared_model
 #endif  // IROHA_PROTO_QUERY_BUILDER_HPP

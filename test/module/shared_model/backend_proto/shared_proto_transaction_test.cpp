@@ -38,6 +38,7 @@ TEST(ProtoTransaction, Create) {
  * @then transaction is built correctly
  */
 TEST(ProtoTransaction, Builder) {
+  uint64_t created_time = 10000000000ull;
   shared_model::interface::Transaction::TxCounterType tx_counter = 1;
   std::string account_id = "admin@test", asset_id = "coin#test",
               amount = "10.00";
@@ -47,6 +48,7 @@ TEST(ProtoTransaction, Builder) {
   auto &command = *payload.add_commands()->mutable_add_asset_quantity();
   payload.set_tx_counter(tx_counter);
   payload.set_creator_account_id(account_id);
+  payload.set_created_time(created_time);
   command.set_account_id(account_id);
   command.set_asset_id(asset_id);
   command.mutable_amount()->mutable_value()->set_fourth(1000);
@@ -55,7 +57,8 @@ TEST(ProtoTransaction, Builder) {
   auto tx = shared_model::proto::TransactionBuilder()
                 .txCounter(tx_counter)
                 .creatorAccountId(account_id)
-                .addAssetQuantity(account_id, asset_id, amount)
+                .assetQuantity(account_id, asset_id, amount)
+                .createdTime(created_time)
                 .build();
   auto &proto = tx.getTransport();
 

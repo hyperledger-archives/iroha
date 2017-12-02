@@ -21,22 +21,26 @@
 #include "amount/amount.hpp"
 #include "primitive.pb.h"
 
-/**
- * Initialize protobuf Amout by text number representation
- * @param proto is Amount that is being set
- * @param name is string representation of Amount
- */
-static inline void addAmount(iroha::protocol::Amount *proto,
-                             const std::string &name) {
-  iroha::Amount::createFromString(name) | [proto](auto &&amount) {
-    auto proto_value = proto->mutable_value();
-    auto uint64s = amount.to_uint64s();
-    proto_value->set_first(uint64s.at(0));
-    proto_value->set_second(uint64s.at(1));
-    proto_value->set_third(uint64s.at(2));
-    proto_value->set_fourth(uint64s.at(3));
-    proto->set_precision(amount.getPrecision());
-  };
-}
+namespace shared_model {
+  namespace proto {
+    /**
+     * Initialize protobuf Amout by text number representation
+     * @param proto is Amount that is being set
+     * @param name is string representation of Amount
+     */
+    static inline void addAmount(iroha::protocol::Amount *proto,
+                                 const std::string &name) {
+      iroha::Amount::createFromString(name) | [proto](auto &&amount) {
+        auto proto_value = proto->mutable_value();
+        auto uint64s = amount.to_uint64s();
+        proto_value->set_first(uint64s.at(0));
+        proto_value->set_second(uint64s.at(1));
+        proto_value->set_third(uint64s.at(2));
+        proto_value->set_fourth(uint64s.at(3));
+        proto->set_precision(amount.getPrecision());
+      };
+    }
+  }  // namespace proto
+}  // namespace shared_model
 
 #endif  // IROHA_PROTO_BUILDER_HELPER_HPP
