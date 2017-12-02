@@ -30,13 +30,13 @@ if (SWIG_PYTHON)
     swig_link_libraries(irohalib ${Python_LIBRARIES} shared_model_proto_backend shared_model_ed25519_sha3 "-flat_namespace -undefined suppress")
 endif()
 
-#if (SWIG_JAVA)
-#    find_package(JNI REQUIRED)
-#    # the include path to jni.h
-#    include_directories(${JAVA_INCLUDE_PATH})
-#    # the include path to jni_md.h
-#    include_directories(${JAVA_INCLUDE_PATH2})
-#
-#    swig_add_library(irohalib LANGUAGE java SOURCES bindings.i)
-#    swig_link_libraries(irohalib ${Java_LIBRARIES} shared_model_proto_backend schema model_interfaces)
-#endif()
+if (SWIG_JAVA)
+    find_package(JNI REQUIRED)
+    # the include path to jni.h
+    include_directories(${JAVA_INCLUDE_PATH})
+    # the include path to jni_md.h
+    include_directories(${JAVA_INCLUDE_PATH2})
+
+    swig_add_library(irohalib LANGUAGE java SOURCES bindings.i)
+    swig_link_libraries(irohalib ${Java_LIBRARIES} shared_model_proto_backend shared_model_ed25519_sha3)
+endif()
