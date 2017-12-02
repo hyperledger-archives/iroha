@@ -17,6 +17,8 @@
 
 %module irohalib
 
+#define DEPRECATED
+
 %include "std_string.i"
 %include "stdint.i"
 
@@ -24,17 +26,30 @@
 
 %{
 #include "builders/protobuf/proto_transaction_builder.hpp"
+#include "cryptography/crypto_provider/crypto_signer.hpp"
+#include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
 %}
 
 %include "interfaces/common_objects/types.hpp"
+%include "cryptography/blob.hpp"
+%include "cryptography/seed.hpp"
+%include "cryptography/signed.hpp"
+%include "cryptography/public_key.hpp"
+%include "cryptography/private_key.hpp"
+%include "cryptography/keypair.hpp"
 %include "interfaces/transaction.hpp"
 %include "interfaces/hashable.hpp"
 %include "backend/protobuf/transaction.hpp"
 %include "builders/protobuf/proto_transaction_builder.hpp"
-
+%include "cryptography/crypto_provider/crypto_signer.hpp"
+%include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
 
 namespace shared_model {
   namespace proto {
     %template(tb7) shared_model::proto::TemplateTransactionBuilder<7>;
+  }
+  namespace crypto {
+    %template(cs) shared_model::crypto::CryptoSigner<shared_model::crypto::DefaultCryptoAlgorithmType>;
+    class CryptoProviderEd25519Sha3;
   }
 }

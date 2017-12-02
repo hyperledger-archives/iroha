@@ -78,9 +78,7 @@ namespace shared_model {
         return *commands_;
       }
 
-      const shared_model::interface::Hashable<
-          shared_model::interface::Transaction,
-          iroha::model::Transaction>::BlobType &
+      const crypto::Blob &
       blob() const override {
         return *blob_;
       }
