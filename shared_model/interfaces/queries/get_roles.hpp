@@ -21,6 +21,7 @@
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/primitive.hpp"
 #include "model/queries/get_roles.hpp"
+#include "interfaces/hashable.hpp"
 
 namespace shared_model {
   namespace interface {

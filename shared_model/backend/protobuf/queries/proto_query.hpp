@@ -18,19 +18,23 @@
 #ifndef IROHA_SHARED_MODEL_PROTO_QUERY_HPP
 #define IROHA_SHARED_MODEL_PROTO_QUERY_HPP
 
-#include "backend/protobuf/queries/proto_get_account.hpp"
+#include <boost/range/numeric.hpp>
+
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "backend/protobuf/common_objects/signature.hpp"
+#include "backend/protobuf/queries/proto_get_account.hpp"
 #include "interfaces/queries/query.hpp"
 #include "queries.pb.h"
 #include "utils/lazy_initializer.hpp"
 #include "utils/variant_deserializer.hpp"
-#include <boost/range/numeric.hpp>
-
 
 template <typename... T, typename Archive>
 auto load_query(Archive &&ar) {
-  int which =
-      ar.payload().GetDescriptor()->FindOneofByName("query")->field(ar.payload().query_case())->index_in_oneof();
+  int which = ar.payload()
+                  .GetDescriptor()
+                  ->FindOneofByName("query")
+                  ->field(ar.payload().query_case())
+                  ->index_in_oneof();
   return shared_model::detail::variant_impl<T...>::template load<
       shared_model::interface::Query::QueryVariantType>(
       std::forward<Archive>(ar), which);
@@ -63,16 +67,14 @@ namespace shared_model {
       explicit Query(QueryType &&query)
           : CopyableProto(std::forward<QueryType>(query)),
             variant_(
-                [this] {
-                  return load_query<ProtoQueryListType>(*proto_);
-                }),
+                [this] { return load_query<ProtoQueryListType>(*proto_); }),
             blob_([this] { return BlobType(proto_->SerializeAsString()); }),
-            signatures_([this]{
+            signatures_([this] {
               SignatureSetType set;
               SignatureType sig(new Signature(proto_->signature()));
               set.emplace(sig);
               return set;
-            }){}
+            }) {}
 
       Query(const Query &o) : Query(o.proto_) {}
 
@@ -90,9 +92,8 @@ namespace shared_model {
 
       const BlobType &blob() const override { return *blob_; }
 
-
       // ------------------------| Signable override  |-------------------------
-      const SignatureSetType& signatures() const override {
+      const SignatureSetType &signatures() const override {
         return *signatures_;
       }
 
@@ -101,7 +102,7 @@ namespace shared_model {
         sig->set_pubkey(signature->publicKey().blob());
         sig->set_signature(signature->signedData().blob());
         return true;
-        }
+      }
 
       TimestampType createdTime() const override {
         return proto_->payload().created_time();

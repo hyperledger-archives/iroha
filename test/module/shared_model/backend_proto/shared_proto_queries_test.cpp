@@ -34,12 +34,12 @@ TEST(ProtoQuery, QueryLoad) {
   auto refl = query.GetReflection();
   auto desc = query.GetDescriptor();
   boost::for_each(
-          // TODO 11/27/17 andrei PR #695 replace 1 with desc->field_count()
-          boost::irange(0, 1),
-          [&](auto i) {
-            auto field = desc->field(i);
-            refl->SetAllocatedMessage(
-                    &query, refl->GetMessage(query, field).New(), field);
-            ASSERT_EQ(i, shared_model::proto::Query(query).get().which());
-          });
+      // TODO 11/27/17 andrei PR #695 replace 1 with desc->field_count()
+      boost::irange(0, 1),
+      [&](auto i) {
+        auto field = desc->field(i);
+        refl->SetAllocatedMessage(
+            &query, refl->GetMessage(query, field).New(), field);
+        ASSERT_EQ(i, shared_model::proto::Query(query).get().which());
+      });
 }
