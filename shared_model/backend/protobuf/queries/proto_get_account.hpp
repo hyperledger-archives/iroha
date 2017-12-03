@@ -14,40 +14,34 @@
 
 namespace shared_model {
   namespace proto {
-    class GetAccount final : public interface::GetAccount {
+    class GetAccount final
+            : public CopyableProto<interface::GetAccount,
+                    iroha::protocol::Query,
+                    GetAccount> {
     public:
       template <typename QueryType>
       explicit GetAccount(QueryType &&query)
-              : query_(std::forward<QueryType>(query)),
-                account_id_(
-                        [this] {
-                          return query_->payload().get_account().account_id();
-                        })
+              : CopyableProto(std::forward<QueryType>(query)),
+
+                account_id_(detail::makeReferenceGenerator(
+                        &proto_->payload(), &iroha::protocol::Query::Payload::get_account))
                  {}
 
       GetAccount(const GetAccount &o)
-              : GetAccount(*o.query_) {}
+              : GetAccount(o.proto_) {}
 
       GetAccount(GetAccount &&o) noexcept
-              : GetAccount(std::move(o.query_.variant())) {}
+              : GetAccount(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return *account_id_;
+        return account_id_->account_id();
       }
 
-      ModelType *copy() const override {
-        auto tmp = iroha::protocol::Query(*query_);
-        return new GetAccount(tmp);
-      }
 
     private:
       // ------------------------------| fields |-------------------------------
 
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Query> query_;
-
-
-      const detail::LazyInitializer<const std::string&> account_id_;
+      const detail::LazyInitializer<const iroha::protocol::GetAccount&> account_id_;
 
     };
 

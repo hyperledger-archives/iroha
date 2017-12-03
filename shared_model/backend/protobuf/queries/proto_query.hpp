@@ -19,15 +19,18 @@
 #define IROHA_SHARED_MODEL_PROTO_QUERY_HPP
 
 #include "backend/protobuf/queries/proto_get_account.hpp"
+#include "backend/protobuf/common_objects/signature.hpp"
 #include "interfaces/queries/query.hpp"
 #include "queries.pb.h"
 #include "utils/lazy_initializer.hpp"
 #include "utils/variant_deserializer.hpp"
+#include <boost/range/numeric.hpp>
+
 
 template <typename... T, typename Archive>
 auto load_query(Archive &&ar) {
   int which =
-      ar.GetDescriptor()->FindFieldByNumber(ar.payload().query_case())->index();
+      ar.payload().GetDescriptor()->FindOneofByName("query")->field(ar.payload().query_case())->index_in_oneof();
   return shared_model::detail::variant_impl<T...>::template load<
       shared_model::interface::Query::QueryVariantType>(
       std::forward<Archive>(ar), which);
@@ -60,57 +63,57 @@ namespace shared_model {
       explicit Query(QueryType &&query)
           : CopyableProto(std::forward<QueryType>(query)),
             variant_(
-                [this] { return load_query<ProtoQueryListType>(*query_); }),
-            blob_([this] { return BlobType(query_->SerializeAsString()); }) {}
+                [this] {
+                  return load_query<ProtoQueryListType>(*proto_);
+                }),
+            blob_([this] { return BlobType(proto_->SerializeAsString()); }),
+            signatures_([this]{
+              SignatureSetType set;
+              SignatureType sig(new Signature(proto_->signature()));
+              set.emplace(sig);
+              return set;
+            }){}
 
-      Query(const Query &o) : Query(*o.query_) {}
+      Query(const Query &o) : Query(o.proto_) {}
 
-      Query(Query &&o) noexcept : Query(std::move(o.query_.variant())) {}
+      Query(Query &&o) noexcept : Query(std::move(o.proto_)) {}
 
       const QueryVariantType &get() const override { return *variant_; }
 
       const interface::types::AccountIdType &creatorAccountId() const override {
-        return query_->payload().creator_account_id();
+        return proto_->payload().creator_account_id();
       }
 
-      const QueryCounterType &queryCounter() const override {
-        return query_->payload().query_counter();
+      QueryCounterType queryCounter() const override {
+        return proto_->payload().query_counter();
       }
 
       const BlobType &blob() const override { return *blob_; }
 
-      ModelType *copy() const override {
-        return new Query(iroha::protocol::Query(*query_));
-      }
 
       // ------------------------| Signable override  |-------------------------
-      const SignatureSetType &signatures() const override {
-        SignatureSetType set;
-        set.insert(query_->signature());
-        return set;
+      const SignatureSetType& signatures() const override {
+        return *signatures_;
       }
 
       bool addSignature(const SignatureType &signature) override {
-        // query_->clear_signature();
-        auto sig = new SignatureType(signature);
-        query_->set_allocated_signature(sig);
+        auto sig = proto_->mutable_signature();
+        sig->set_pubkey(signature->publicKey().blob());
+        sig->set_signature(signature->signedData().blob());
         return true;
-      }
+        }
 
-      const TimestampType &createdTime() const override {
-        return query_->payload().created_time();
+      TimestampType createdTime() const override {
+        return proto_->payload().created_time();
       }
 
      private:
       // ------------------------------| fields |-------------------------------
-
-      // proto
-      detail::ReferenceHolder<iroha::protocol::Query> query_;
-
       // lazy
       const LazyVariantType variant_;
 
       const Lazy<BlobType> blob_;
+      const Lazy<SignatureSetType> signatures_;
     };
   }  // namespace proto
 }  // namespace shared_model

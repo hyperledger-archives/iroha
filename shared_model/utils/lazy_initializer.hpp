@@ -47,6 +47,7 @@ namespace shared_model {
         if (target_value_ == boost::none) {
           // Use type move constructor with emplace
           // since Target copy assignment operator could be deleted
+
           target_value_.emplace(generator_());
         }
         return target_value_.get_ptr();
