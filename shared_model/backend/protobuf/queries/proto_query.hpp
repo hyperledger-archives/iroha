@@ -72,7 +72,6 @@ namespace shared_model {
             blob_([this] { return BlobType(proto_->SerializeAsString()); }),
             signatures_([this] {
               SignatureSetType set;
-              set.insert(Signature(proto_->signature()));
               SignatureType sig(new Signature(proto_->signature()));
               set.emplace(sig);
               return set;
