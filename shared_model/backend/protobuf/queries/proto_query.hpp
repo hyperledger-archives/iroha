@@ -47,8 +47,9 @@ namespace shared_model {
                                              Query> {
      private:
       /// polymorphic wrapper type shortcut
-      template <typename Value>
-      using w = detail::PolymorphicWrapper<Value>;
+      template <typename... Value>
+      using wrap = boost::variant<detail::PolymorphicWrapper<Value>...>;
+
 
       /// lazy variant shortcut
       template <typename T>
@@ -58,7 +59,7 @@ namespace shared_model {
 
      public:
       /// type of proto variant
-      using ProtoQueryVariantType = boost::variant<w<GetAccount>>;
+      using ProtoQueryVariantType = wrap<GetAccount>;
 
       /// list of types in proto variant
       using ProtoQueryListType = ProtoQueryVariantType::types;
@@ -71,6 +72,7 @@ namespace shared_model {
             blob_([this] { return BlobType(proto_->SerializeAsString()); }),
             signatures_([this] {
               SignatureSetType set;
+              set.insert(Signature(proto_->signature()));
               SignatureType sig(new Signature(proto_->signature()));
               set.emplace(sig);
               return set;

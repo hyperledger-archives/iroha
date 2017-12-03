@@ -45,12 +45,12 @@ namespace shared_model {
     class Query : public Signable<Query, iroha::model::Query> {
      private:
       /// Shortcut type for polymorphic wrapper
-      template <typename Value>
-      using w = detail::PolymorphicWrapper<Value>;
+      template <typename... Value>
+      using wrap = boost::variant<detail::PolymorphicWrapper<Value>...>;
 
      public:
       /// Type of variant, that handle concrete query
-      using QueryVariantType = boost::variant<w<GetAccount>>;
+      using QueryVariantType = wrap<GetAccount>;
       //                                              w<GetAccountAssets>,
       //                                              w<GetAssetInfo>,
       //                                              w<GetRoles>,
