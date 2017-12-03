@@ -18,42 +18,46 @@
 %module irohalib
 
 #define DEPRECATED
-#pragma SWIG nowarn=401, 509, 516
+#pragma SWIG nowarn=325, 401, 509
 
 %include "std_string.i"
 %include "stdint.i"
 
 %rename(prototx) shared_model::proto::Transaction;
-%rename(_interface) interface;
-%rename(b_equal) shared_model::crypto::Blob::operator==;
-%rename(kp_equal) shared_model::crypto::Keypair::operator==;
 
 %{
-#include "builders/protobuf/proto_transaction_builder.hpp"
-#include "cryptography/crypto_provider/crypto_signer.hpp"
-#include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
+#include "bindings/simple_builder.hpp"
+#include "bindings/simple_signer.hpp"
+#include "bindings/simple_transaction_proto.hpp"
 %}
 
 %include "interfaces/common_objects/types.hpp"
+%include "interfaces/signable.hpp"
 %include "cryptography/blob.hpp"
-%include "cryptography/seed.hpp"
-%include "cryptography/signed.hpp"
 %include "cryptography/public_key.hpp"
 %include "cryptography/private_key.hpp"
 %include "cryptography/keypair.hpp"
-%include "interfaces/transaction.hpp"
-%include "interfaces/hashable.hpp"
+%include "cryptography/signed.hpp"
 %include "backend/protobuf/transaction.hpp"
 %include "builders/protobuf/proto_transaction_builder.hpp"
-%include "cryptography/crypto_provider/crypto_signer.hpp"
-%include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
+%include "bindings/simple_builder.hpp"
+%include "bindings/simple_signer.hpp"
+%include "bindings/simple_transaction_proto.hpp"
+
 
 namespace shared_model {
   namespace proto {
-    class TransactionBuilder;
+    class SimpleBuilder;
+    class SimpleSigner;
+    class SimpleTransactionProto;
   }
-  namespace crypto {
-    %template(cs) shared_model::crypto::CryptoSigner<shared_model::crypto::DefaultCryptoAlgorithmType>;
-    class CryptoProviderEd25519Sha3;
+}
+
+namespace iroha {
+  namespace protocol {
+    class Transaction {
+    public:
+        size_t ByteSizeLong();
+    };
   }
 }

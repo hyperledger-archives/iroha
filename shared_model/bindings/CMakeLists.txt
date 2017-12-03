@@ -12,6 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+add_library(bindings
+        simple_builder.cpp
+        simple_signer.cpp
+        simple_transaction_proto.cpp
+        )
+
+target_link_libraries(bindings
+        shared_model_proto_backend
+        shared_model_ed25519_sha3
+        )
+
+
+
 if (SWIG_PYTHON OR SWIG_JAVA)
     find_package(SWIG 3.0.12 REQUIRED)
     include(${SWIG_USE_FILE})
@@ -27,7 +41,7 @@ if (SWIG_PYTHON)
     include_directories(${PYTHON_INCLUDE_DIRS})
 
     swig_add_library(irohalib LANGUAGE python SOURCES bindings.i)
-    swig_link_libraries(irohalib ${Python_LIBRARIES} shared_model_proto_backend shared_model_ed25519_sha3 "-flat_namespace -undefined suppress")
+    swig_link_libraries(irohalib ${Python_LIBRARIES} bindings)
 endif()
 
 if (SWIG_JAVA)
