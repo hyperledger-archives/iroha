@@ -78,10 +78,7 @@ namespace shared_model {
         return *commands_;
       }
 
-      const crypto::Blob &
-      blob() const override {
-        return *blob_;
-      }
+      crypto::Blob blob() const override { return *blob_; }
 
       const shared_model::interface::Signable<
           shared_model::interface::Transaction,
@@ -105,8 +102,9 @@ namespace shared_model {
       }
 
       shared_model::interface::Signable<
-              shared_model::interface::Transaction,
-              iroha::model::Transaction>::TimestampType createdTime() const override {
+          shared_model::interface::Transaction,
+          iroha::model::Transaction>::TimestampType
+      createdTime() const override {
         return payload_->created_time();
       }
 

@@ -93,7 +93,7 @@ namespace shared_model {
 
       const CommandVariantType &get() const override { return *variant_; }
 
-      const BlobType &blob() const override { return *blob_; }
+      BlobType blob() const override { return *blob_; }
 
      private:
       // lazy

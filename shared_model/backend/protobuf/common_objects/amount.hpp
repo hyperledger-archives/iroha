@@ -61,7 +61,7 @@ namespace shared_model {
         return *precision_;
       }
 
-      const BlobType &blob() const override { return *blob_; }
+      BlobType blob() const override { return *blob_; }
 
      private:
       // lazy

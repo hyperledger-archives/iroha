@@ -43,7 +43,7 @@ namespace shared_model {
       /**
        * @return blob representation of object
        */
-      virtual const BlobType &blob() const = 0;
+      virtual BlobType blob() const = 0;
 
       /**
        * Overriding operator== with equality hash semantics:
