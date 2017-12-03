@@ -52,5 +52,5 @@ if (SWIG_JAVA)
     include_directories(${JAVA_INCLUDE_PATH2})
 
     swig_add_library(irohalib LANGUAGE java SOURCES bindings.i)
-    swig_link_libraries(irohalib ${Java_LIBRARIES} shared_model_proto_backend shared_model_ed25519_sha3)
+    swig_link_libraries(irohalib ${Java_LIBRARIES} bindings)
 endif()
