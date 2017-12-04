@@ -20,10 +20,10 @@
 
 #include <boost/functional/hash.hpp>
 #include <unordered_set>
+#include "interfaces/base/hashable.hpp"
 #include "interfaces/common_objects/signature.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/hashable.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {

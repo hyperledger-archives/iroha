@@ -21,7 +21,7 @@
 #include "backend/protobuf/common_objects/signature.hpp"
 #include "cryptography/crypto_provider/crypto_signer.hpp"
 #include "cryptography/keypair.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 
 namespace shared_model {
   namespace proto {

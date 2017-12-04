@@ -24,7 +24,7 @@
 #include "common/types.hpp"
 #include "cryptography/public_key.hpp"
 #include "interfaces/common_objects/signature.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 
 namespace shared_model {
 
