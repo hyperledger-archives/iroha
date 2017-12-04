@@ -42,23 +42,14 @@ namespace iroha {
        */
       pubkey_t pubkey;
 
-      /**
-       * Json data for the account
-       */
-      std::string json_data;
-
       bool operator==(const Command &command) const override;
 
-      CreateAccount() : json_data("{}") {}
+      CreateAccount() {}
 
       CreateAccount(const std::string &account_name,
                     const std::string &domain_id,
-                    const pubkey_t &pubkey,
-                    const std::string &data)
-          : account_name(account_name),
-            domain_id(domain_id),
-            pubkey(pubkey),
-            json_data(data) {}
+                    const pubkey_t &pubkey)
+          : account_name(account_name), domain_id(domain_id), pubkey(pubkey) {}
     };
   }  // namespace model
 }  // namespace iroha

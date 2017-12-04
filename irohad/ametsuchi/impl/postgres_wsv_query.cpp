@@ -134,13 +134,13 @@ namespace iroha {
 
     nonstd::optional<std::string> PostgresWsvQuery::getAccountDetail(
         const std::string &account_id,
-        const std::string &creator_id,
+        const std::string &creator_account_id,
         const std::string &detail) {
       pqxx::result result;
       try {
         result = transaction_.exec(
             "SELECT data#>>"
-            + transaction_.quote("{" + creator_id + ", " + detail + "}")
+            + transaction_.quote("{" + creator_account_id + ", " + detail + "}")
             + " FROM account WHERE account_id = "
             + transaction_.quote(account_id)
             + ";");

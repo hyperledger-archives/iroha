@@ -213,25 +213,17 @@ namespace iroha {
         document.AddMember("domain_id", create_account->domain_id, allocator);
         document.AddMember(
             "pubkey", create_account->pubkey.to_hexstring(), allocator);
-        document.AddMember("json_data", create_account->json_data, allocator);
-
         return document;
       }
 
       optional_ptr<Command> JsonCommandFactory::deserializeCreateAccount(
           const Value &document) {
         auto des = makeFieldDeserializer(document);
-        auto des_val = make_optional_ptr<CreateAccount>()
+        return make_optional_ptr<CreateAccount>()
             | des.String(&CreateAccount::account_name, "account_name")
             | des.String(&CreateAccount::domain_id, "domain_id")
-            | des.String(&CreateAccount::pubkey, "pubkey");
-
-        if (document.HasMember("json_data")) {
-          des_val =
-              des_val | des.String(&CreateAccount::json_data, "json_data");
-        }
-
-        return des_val | toCommand;
+            | des.String(&CreateAccount::pubkey, "pubkey")
+            | toCommand;
       }
 
       // Set Account Detail

@@ -64,14 +64,12 @@ class KVTest : public AmetsuchiTest {
     CreateAccount createAccount1;
     createAccount1.account_name = account_name1;
     createAccount1.domain_id = domain_id;
-    createAccount1.json_data = account_data1;
     txn1_1.commands.push_back(std::make_shared<CreateAccount>(createAccount1));
 
     // Create account user2
     CreateAccount createAccount2;
     createAccount2.account_name = account_name2;
     createAccount2.domain_id = domain_id;
-    createAccount2.json_data = "{}";
     txn1_1.commands.push_back(std::make_shared<CreateAccount>(createAccount2));
 
     // Set age for user2
@@ -109,23 +107,6 @@ class KVTest : public AmetsuchiTest {
   std::string account_name2 = "user2";
 };
 
-/**
- * @given storage with account of user1 containing json data
- * @when get account detail query is invoked
- * @then the requested information of user1 is returned
- */
-TEST_F(KVTest, GetAccountDetail) {
-  auto account_id1 = account_name1 + "@" + domain_id;
-  auto account = wsv_query->getAccount(account_id1);
-  ASSERT_TRUE(account);
-  ASSERT_EQ(account->account_id, account_id1);
-  ASSERT_EQ(account->domain_id, domain_id);
-  ASSERT_EQ(account->json_data, account_data1);
-
-  auto age = wsv_query->getAccountDetail(account_id1, "user1", "age");
-  ASSERT_TRUE(age);
-  ASSERT_EQ(age.value(), "30");
-}
 
 /**
  * @given storage with account1 containing json data

@@ -37,10 +37,11 @@ namespace iroha {
       MOCK_METHOD1(getAccountRoles,
                    nonstd::optional<std::vector<std::string>>(
                        const std::string &account_id));
-      MOCK_METHOD3(getAccountDetail,
-                   nonstd::optional<std::string>(const std::string &account_id,
-                                                 const std::string &creator_id,
-                                                 const std::string &detail));
+      MOCK_METHOD3(
+          getAccountDetail,
+          nonstd::optional<std::string>(const std::string &account_id,
+                                        const std::string &creator_account_id,
+                                        const std::string &detail));
       MOCK_METHOD1(getRolePermissions,
                    nonstd::optional<std::vector<std::string>>(
                        const std::string &role_name));
