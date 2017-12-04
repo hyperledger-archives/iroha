@@ -18,6 +18,8 @@
 #ifndef IROHA_PROTO_REVOKE_PERMISSION_HPP
 #define IROHA_PROTO_REVOKE_PERMISSION_HPP
 
+#include "interfaces/commands/revoke_permission.hpp"
+
 namespace shared_model {
   namespace proto {
     class RevokePermission final

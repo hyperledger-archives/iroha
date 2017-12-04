@@ -53,7 +53,7 @@ namespace shared_model {
       virtual const std::string &blob() const { return blob_; }
 
       /**
-       * @return provides human-readable representation of blob
+       * @return provides human-readable representation of blob without leading 0x
        */
       virtual const std::string &hex() const { return hex_; }
 

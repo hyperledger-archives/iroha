@@ -53,8 +53,8 @@ namespace shared_model {
                                                Command> {
      private:
       /// polymorphic wrapper type shortcut
-      template <typename Value>
-      using w = detail::PolymorphicWrapper<Value>;
+      template <typename... Value>
+      using wrap = boost::variant<detail::PolymorphicWrapper<Value>...>;
 
       /// lazy variant shortcut
       template <typename T>
@@ -64,19 +64,19 @@ namespace shared_model {
 
      public:
       /// type of proto variant
-      using ProtoCommandVariantType = boost::variant<w<AddAssetQuantity>,
-                                                     w<AddPeer>,
-                                                     w<AddSignatory>,
-                                                     w<AppendRole>,
-                                                     w<CreateAccount>,
-                                                     w<CreateAsset>,
-                                                     w<CreateDomain>,
-                                                     w<CreateRole>,
-                                                     w<GrantPermission>,
-                                                     w<RemoveSignatory>,
-                                                     w<RevokePermission>,
-                                                     w<SetQuorum>,
-                                                     w<TransferAsset>>;
+      using ProtoCommandVariantType = wrap<AddAssetQuantity,
+                                           AddPeer,
+                                           AddSignatory,
+                                           AppendRole,
+                                           CreateAccount,
+                                           CreateAsset,
+                                           CreateDomain,
+                                           CreateRole,
+                                           GrantPermission,
+                                           RemoveSignatory,
+                                           RevokePermission,
+                                           SetQuorum,
+                                           TransferAsset>;
 
       /// list of types in proto variant
       using ProtoCommandListType = ProtoCommandVariantType::types;

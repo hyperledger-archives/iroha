@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-#include "interfaces/commands/remove_signatory.hpp"
 
 #ifndef IROHA_PROTO_REMOVE_SIGNATORY_HPP
 #define IROHA_PROTO_REMOVE_SIGNATORY_HPP
+
+#include "interfaces/commands/remove_signatory.hpp"
 
 namespace shared_model {
   namespace proto {

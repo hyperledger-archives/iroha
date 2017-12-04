@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-#include "interfaces/commands/create_asset.hpp"
 
 #ifndef IROHA_PROTO_CREATE_ASSET_HPP
 #define IROHA_PROTO_CREATE_ASSET_HPP
+
+#include "interfaces/commands/create_asset.hpp"
 
 namespace shared_model {
   namespace proto {

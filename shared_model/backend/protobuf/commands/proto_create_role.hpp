@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-#include "interfaces/commands/create_role.hpp"
 
 #ifndef IROHA_PROTO_CREATE_ROLE_HPP
 #define IROHA_PROTO_CREATE_ROLE_HPP
+
+#include "interfaces/commands/create_role.hpp"
+#include <boost/range/numeric.hpp>
 
 namespace shared_model {
   namespace proto {
@@ -32,16 +34,14 @@ namespace shared_model {
             create_role_(detail::makeReferenceGenerator(
                 proto_, &iroha::protocol::Command::create_role)),
             role_permissions_([this] {
-              std::set<std::string> perms;
-
-              std::for_each(
-                  create_role_->permissions().begin(),
-                  create_role_->permissions().end(),
-                  [&perms](auto perm) {
-                    perms.insert(iroha::protocol::RolePermission_Name(
+              return boost::accumulate(
+                  create_role_->permissions(),
+                  PermissionsType{},
+                  [](auto &&acc, const auto &perm) {
+                    acc.insert(iroha::protocol::RolePermission_Name(
                         static_cast<iroha::protocol::RolePermission>(perm)));
+                    return std::forward<decltype(acc)>(acc);
                   });
-              return perms;
             }) {}
 
       CreateRole(const CreateRole &o) : CreateRole(o.proto_) {}
