@@ -19,6 +19,7 @@
 #define IROHA_SHARED_MODEL_QUERY_HPP
 
 #include <boost/variant.hpp>
+
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
 #include "interfaces/primitive.hpp"
@@ -44,19 +45,19 @@ namespace shared_model {
     class Query : public Signable<Query, iroha::model::Query> {
      private:
       /// Shortcut type for polymorphic wrapper
-      template <typename Value>
-      using w = detail::PolymorphicWrapper<Value>;
+      template <typename... Value>
+      using wrap = boost::variant<detail::PolymorphicWrapper<Value>...>;
 
      public:
       /// Type of variant, that handle concrete query
-      using QueryVariantType = boost::variant<w<GetAccount>,
-                                              w<GetAccountAssets>,
-                                              w<GetAssetInfo>,
-                                              w<GetRoles>,
-                                              w<GetRolePermissions>,
-                                              w<GetAccountAssetTransactions>,
-                                              w<GetAccountTransactions>,
-                                              w<GetSignatories>>;
+      using QueryVariantType = wrap<GetAccount>;
+      //                                              w<GetAccountAssets>,
+      //                                              w<GetAssetInfo>,
+      //                                              w<GetRoles>,
+      //                                              w<GetRolePermissions>,
+      //                                              w<GetAccountAssetTransactions>,
+      //                                              w<GetAccountTransactions>,
+      //                                              w<GetSignatories>>;
 
       /// Types of concrete commands, in attached variant
       using QueryListType = QueryVariantType::types;
@@ -78,7 +79,7 @@ namespace shared_model {
        * system queries plus 1. Required for preventing replay attacks.
        * @return attached query counter
        */
-      virtual const QueryCounterType &queryCounter() const = 0;
+      virtual QueryCounterType queryCounter() const = 0;
 
       // ------------------------| Primitive override |-------------------------
 

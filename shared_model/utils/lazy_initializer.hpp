@@ -47,6 +47,7 @@ namespace shared_model {
         if (target_value_ == boost::none) {
           // Use type move constructor with emplace
           // since Target copy assignment operator could be deleted
+
           target_value_.emplace(generator_());
         }
         return target_value_.get_ptr();
@@ -57,9 +58,7 @@ namespace shared_model {
       /**
        * Remove generated value. Next ptr() call will generate new value
        */
-      void invalidate() const {
-        target_value_ = boost::none;
-      }
+      void invalidate() const { target_value_ = boost::none; }
 
      private:
       GeneratorType generator_;
@@ -88,9 +87,7 @@ namespace shared_model {
      */
     template <typename T, typename F>
     auto makeReferenceGenerator(T &&t, F &&f) {
-      return [&t, f]() -> decltype(auto) {
-        return ((*t.*f)());
-      };
+      return [&t, f]() -> decltype(auto) { return ((*t.*f)()); };
     }
   }  // namespace detail
 }  // namespace shared_model
