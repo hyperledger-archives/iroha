@@ -33,8 +33,7 @@ TEST(ProtoCommand, CommandLoad) {
   auto refl = command.GetReflection();
   auto desc = command.GetDescriptor();
   boost::for_each(
-      // TODO 11/27/17 andrei PR #695 replace 1 with desc->field_count()
-      boost::irange(0, 1),
+      boost::irange(0, desc->field_count()),
       [&](auto i) {
         auto field = desc->field(i);
         refl->SetAllocatedMessage(

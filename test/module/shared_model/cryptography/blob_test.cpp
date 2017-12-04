@@ -15,5 +15,19 @@
  * limitations under the License.
  */
 
-#include "backend/protobuf/commands/proto_command.hpp"
-#include "backend/protobuf/transaction.hpp"
+#include <gtest/gtest.h>
+#include "cryptography/blob.hpp"
+
+using namespace shared_model::crypto;
+
+/**
+ * @given arbitrary string and known its hex representation
+ * @when conversion of this string to hex is done
+ * @then conversion is done right
+ */
+TEST(BlobTest, HexConversionTest){
+  auto data = "Hello World";
+  Blob blob(data);
+  auto hex = blob.hex();
+  ASSERT_EQ("48656c6c6f20576f726c64", hex);
+}

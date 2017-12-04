@@ -21,6 +21,18 @@
 #include "interfaces/commands/command.hpp"
 
 #include "backend/protobuf/commands/proto_add_asset_quantity.hpp"
+#include "backend/protobuf/commands/proto_add_peer.hpp"
+#include "backend/protobuf/commands/proto_add_signatory.hpp"
+#include "backend/protobuf/commands/proto_append_role.hpp"
+#include "backend/protobuf/commands/proto_create_account.hpp"
+#include "backend/protobuf/commands/proto_create_asset.hpp"
+#include "backend/protobuf/commands/proto_create_domain.hpp"
+#include "backend/protobuf/commands/proto_create_role.hpp"
+#include "backend/protobuf/commands/proto_grant_permission.hpp"
+#include "backend/protobuf/commands/proto_remove_signatory.hpp"
+#include "backend/protobuf/commands/proto_revoke_permission.hpp"
+#include "backend/protobuf/commands/proto_set_quorum.hpp"
+#include "backend/protobuf/commands/proto_transfer_asset.hpp"
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "commands.pb.h"
 #include "utils/lazy_initializer.hpp"
@@ -29,9 +41,9 @@
 template <typename... T, typename Archive>
 auto load(Archive &&ar) {
   int which = ar.GetDescriptor()->FindFieldByNumber(ar.command_case())->index();
-  return shared_model::detail::variant_impl<T...>::
-      template load<shared_model::interface::Command::CommandVariantType>(
-          std::forward<Archive>(ar), which);
+  return shared_model::detail::variant_impl<T...>::template load<
+      shared_model::interface::Command::CommandVariantType>(
+      std::forward<Archive>(ar), which);
 }
 
 namespace shared_model {
@@ -41,8 +53,8 @@ namespace shared_model {
                                                Command> {
      private:
       /// polymorphic wrapper type shortcut
-      template <typename Value>
-      using w = detail::PolymorphicWrapper<Value>;
+      template <typename... Value>
+      using wrap = boost::variant<detail::PolymorphicWrapper<Value>...>;
 
       /// lazy variant shortcut
       template <typename T>
@@ -52,7 +64,19 @@ namespace shared_model {
 
      public:
       /// type of proto variant
-      using ProtoCommandVariantType = boost::variant<w<AddAssetQuantity>>;
+      using ProtoCommandVariantType = wrap<AddAssetQuantity,
+                                           AddPeer,
+                                           AddSignatory,
+                                           AppendRole,
+                                           CreateAccount,
+                                           CreateAsset,
+                                           CreateDomain,
+                                           CreateRole,
+                                           GrantPermission,
+                                           RemoveSignatory,
+                                           RevokePermission,
+                                           SetQuorum,
+                                           TransferAsset>;
 
       /// list of types in proto variant
       using ProtoCommandListType = ProtoCommandVariantType::types;
