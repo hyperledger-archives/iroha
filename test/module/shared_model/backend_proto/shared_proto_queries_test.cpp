@@ -16,6 +16,7 @@
  */
 
 #include "backend/protobuf/queries/proto_query.hpp"
+#include "builders/protobuf/queries.hpp"
 
 #include <gtest/gtest.h>
 
@@ -42,4 +43,36 @@ TEST(ProtoQuery, QueryLoad) {
             &query, refl->GetMessage(query, field).New(), field);
         ASSERT_EQ(i, shared_model::proto::Query(query).get().which());
       });
+}
+
+/**
+ * @given query field values and sample command values, reference query
+ * @when create query with sample command using query builder
+ * @then query is built correctly
+ */
+TEST(ProtoQueryBuilder, Builder) {
+  uint64_t created_time = 10000000000ull, query_counter = 1;
+  std::string account_id = "admin@test", asset_id = "coin#test";
+
+  iroha::protocol::Query proto_tx;
+  auto &payload = *proto_tx.mutable_payload();
+  payload.set_created_time(created_time);
+  payload.set_creator_account_id(account_id);
+  payload.set_query_counter(query_counter);
+  {
+    auto &query = *payload.mutable_get_account_assets();
+    query.set_account_id(account_id);
+    query.set_asset_id(asset_id);
+  }
+
+  auto query = shared_model::proto::QueryBuilder()
+                   .createdTime(created_time)
+                   .creatorAccountId(account_id)
+                   .getAccountAssets(account_id, asset_id)
+                   .queryCounter(query_counter)
+                   .build();
+  // TODO IR-648 @l4l: Uncomment on completing proto::Query
+  auto &proto = query;  //.getTransport();
+
+  ASSERT_EQ(proto_tx.SerializeAsString(), proto.SerializeAsString());
 }

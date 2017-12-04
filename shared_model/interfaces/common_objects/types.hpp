@@ -50,6 +50,8 @@ namespace shared_model {
       using PermissionNameType = std::string;
       /// Type of Quorum used in transaction and set quorum
       using QuorumType = uint32_t;
+      /// Type of peer address
+      using AddressType = std::string;
     }  // namespace types
   }    // namespace interface
 }  // namespace shared_model
