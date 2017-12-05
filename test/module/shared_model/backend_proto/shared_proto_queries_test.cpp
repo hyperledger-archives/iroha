@@ -35,14 +35,12 @@ TEST(ProtoQuery, QueryLoad) {
   auto payload = query.mutable_payload();
   auto refl = payload->GetReflection();
   auto desc = payload->GetDescriptor()->FindOneofByName("query");
-  boost::for_each(
-      boost::irange(0, desc->field_count()),
-      [&](auto i) {
-        auto field = desc->field(i);
-        refl->SetAllocatedMessage(
-            payload, refl->GetMessage(*payload, field).New(), field);
-        ASSERT_EQ(i, shared_model::proto::Query(query).get().which());
-      });
+  boost::for_each(boost::irange(0, desc->field_count()), [&](auto i) {
+    auto field = desc->field(i);
+    refl->SetAllocatedMessage(
+        payload, refl->GetMessage(*payload, field).New(), field);
+    ASSERT_EQ(i, shared_model::proto::Query(query).get().which());
+  });
 }
 
 /**
@@ -71,8 +69,7 @@ TEST(ProtoQueryBuilder, Builder) {
                    .getAccountAssets(account_id, asset_id)
                    .queryCounter(query_counter)
                    .build();
-  // TODO IR-648 @l4l: Uncomment on completing proto::Query
-  auto &proto = query;  //.getTransport();
+  auto &proto = query.getTransport();
 
   ASSERT_EQ(proto_tx.SerializeAsString(), proto.SerializeAsString());
 }
