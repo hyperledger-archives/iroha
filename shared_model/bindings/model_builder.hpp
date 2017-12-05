@@ -25,7 +25,7 @@ namespace shared_model {
   namespace bindings {
     /**
      * Wrapper class for transaction builder. Designed only for SWIG bindings,
-     * don't use it other cases.
+     * don't use in other cases.
      */
     class SimpleBuilder {
      public:
@@ -41,26 +41,26 @@ namespace shared_model {
               - 1> &o);
 
       /**
-       * Append creator account id field to builder
+       * Sets id of account creator
        * @param account_id - account id
-       * @return builder with account id field appended
+       * @return builder with account_id field appended
        */
       SimpleBuilder creatorAccountId(
           const interface::types::AccountIdType &account_id);
 
       /**
-       * Append tx counter field to builder
-       * @param tx_counter - tx counter
-       * @return builder with tx counter field appended
+       * Sets transaction counter field
+       * @param tx_counter - transaction counter
+       * @return builder with tx_counter field appended
        */
       SimpleBuilder txCounter(uint64_t tx_counter);
 
       /**
-       * Append add asset quantity field to builder
+       * Adds given quantity of given asset to account
        * @param account_id - account id
        * @param asset_id - asset id
-       * @param amount - amount
-       * @return builder with add asset quantity field appended
+       * @param amount - amount of asset to add
+       * @return builder with added given quantity of given asset for account
        */
       SimpleBuilder addAssetQuantity(
           const interface::types::AccountIdType &account_id,

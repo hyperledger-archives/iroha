@@ -15,21 +15,16 @@
  * limitations under the License.
  */
 
-#include "bindings/simple_transaction_proto.hpp"
+#include "bindings/model_transaction_proto.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
 #include "primitive.pb.h"
 
 namespace shared_model {
   namespace bindings {
-    proto::Transaction SimpleTransactionProto::signAndAddSignature(
-            proto::UnsignedWrapper<proto::Transaction> &tx,
-            const crypto::Keypair &keypair) {
-      return tx.signAndAddSignature(keypair);
-    }
-
-    const iroha::protocol::Transaction &SimpleTransactionProto::getTransport(
-            const proto::Transaction &tx) {
-      return tx.getTransport();
+    crypto::Blob SimpleTransactionProto::signAndAddSignature(
+        proto::UnsignedWrapper<proto::Transaction> &tx,
+        const crypto::Keypair &keypair) {
+      return tx.signAndAddSignature(keypair).blob();
     }
   }  // namespace bindings
 }  // namespace shared_model

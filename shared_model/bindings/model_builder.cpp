@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "bindings/simple_builder.hpp"
+#include "bindings/model_builder.hpp"
 
 namespace shared_model {
   namespace bindings {

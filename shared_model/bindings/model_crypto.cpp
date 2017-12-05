@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "bindings/simple_crypto.hpp"
+#include "bindings/model_crypto.hpp"
 #include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
 #include "cryptography/seed.hpp"
 

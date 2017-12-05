@@ -23,15 +23,15 @@
 %include "std_string.i"
 %include "stdint.i"
 
-%rename(prototx) iroha::protocol::Transaction;
+%rename(ModelTransaction) iroha::protocol::Transaction;
 %rename(_interface) interface;
 %rename(b_equal) shared_model::crypto::Blob::operator==;
 %rename(kp_equal) shared_model::crypto::Keypair::operator==;
 
 %{
-#include "bindings/simple_builder.hpp"
-#include "bindings/simple_crypto.hpp"
-#include "bindings/simple_transaction_proto.hpp"
+#include "bindings/model_builder.hpp"
+#include "bindings/model_crypto.hpp"
+#include "bindings/model_transaction_proto.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 %}
 
@@ -45,25 +45,16 @@
 %include "backend/protobuf/transaction.hpp"
 %include "builders/protobuf/proto_transaction_builder.hpp"
 %include "builders/protobuf/unsigned_proto.hpp"
-%include "bindings/simple_builder.hpp"
-%include "bindings/simple_crypto.hpp"
-%include "bindings/simple_transaction_proto.hpp"
+%include "bindings/model_builder.hpp"
+%include "bindings/model_crypto.hpp"
+%include "bindings/model_transaction_proto.hpp"
 
 %template (UnsignedTx) shared_model::proto::UnsignedWrapper<shared_model::proto::Transaction>;
 
 namespace shared_model {
-  namespace proto {
-    class SimpleBuilder;
-    class SimpleCrypto;
-    class SimpleTransactionProto;
-  }
-}
-
-namespace iroha {
   namespace bindings {
-    class Transaction {
-    public:
-      size_t ByteSizeLong();
-    };
+    class ModelBuilder;
+    class ModelCrypto;
+    class ModelTransactionProto;
   }
 }

@@ -20,6 +20,7 @@
 
 #include "builders/protobuf/proto_transaction_builder.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
+#include "cryptography/blob.hpp"
 
 namespace shared_model {
   namespace bindings {
@@ -33,19 +34,11 @@ namespace shared_model {
        * object
        * @param tx - unsigned transaction
        * @param keypair - keypair to sign
-       * @return signed transaction
+       * @return blob of signed transaction
        */
-      proto::Transaction signAndAddSignature(
+      crypto::Blob signAndAddSignature(
           proto::UnsignedWrapper<proto::Transaction> &tx,
           const crypto::Keypair &keypair);
-
-      /**
-       * Returns proto object from a provided transaction
-       * @param tx - transaction to retrieve proto from
-       * @return protobuf Transaction object
-       */
-      const iroha::protocol::Transaction &getTransport(
-          const proto::Transaction &tx);
     };
   }  // namespace bindings
 }  // namespace shared_model
