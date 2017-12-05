@@ -40,7 +40,7 @@ namespace shared_model {
       /**
        * @return string representation of errors
        */
-      std::string reason() {
+      std::string reason() const {
         return boost::accumulate(
             reasons_map_,
             std::string{},
