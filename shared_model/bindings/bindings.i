@@ -23,7 +23,7 @@
 %include "std_string.i"
 %include "stdint.i"
 
-%rename(prototx) shared_model::proto::Transaction;
+%rename(prototx) iroha::protocol::Transaction;
 %rename(_interface) interface;
 %rename(b_equal) shared_model::crypto::Blob::operator==;
 %rename(kp_equal) shared_model::crypto::Keypair::operator==;
