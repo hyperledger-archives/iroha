@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(stateles_validation
-        default_validator.hpp
+add_library(shared_model_stateless_validation
+        default_validator.cpp
         )
 
-target_link_libraries(stateles_validation
+target_link_libraries(shared_model_stateless_validation
         schema
         model_interfaces
         )

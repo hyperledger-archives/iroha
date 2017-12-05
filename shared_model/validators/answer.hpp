@@ -18,6 +18,7 @@
 #ifndef IROHA_ANSWER_HPP
 #define IROHA_ANSWER_HPP
 
+#include <boost/range/numeric.hpp>
 #include <unordered_map>
 #include "utils/string_builder.hpp"
 
@@ -64,7 +65,7 @@ namespace shared_model {
        * Adds error to map
        * @param reasons
        */
-      void addReason(ReasonsGroupType&& reasons){
+      void addReason(ReasonsGroupType &&reasons) {
         reasons_map_.insert(std::move(reasons));
       }
 

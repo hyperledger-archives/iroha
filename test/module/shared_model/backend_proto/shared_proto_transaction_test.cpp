@@ -121,7 +121,7 @@ TEST(ProtoTransaction, BuilderWithInvalidTx) {
   uint64_t created_time = 10000000000ull;
   shared_model::interface::Transaction::TxCounterType tx_counter = 1;
   std::string account_id = "admintest"; // account_id without @
-  std::string asset_id = "coin#test", // asset_id without #
+  std::string asset_id = "cointest", // asset_id without #
       amount = "10.00";
 
   iroha::protocol::Transaction proto_tx = generateEmptyTransaction();
@@ -139,11 +139,10 @@ TEST(ProtoTransaction, BuilderWithInvalidTx) {
   sig->set_pubkey(keypair.publicKey().blob());
   sig->set_signature(signedProto.blob());
 
-  ASSERT_THROW(shared_model::proto::TransactionBuilder()
+  shared_model::proto::TransactionBuilder()
                    .txCounter(tx_counter)
                    .creatorAccountId(account_id)
                    .assetQuantity(account_id, asset_id, amount)
                    .createdTime(created_time)
-                   .build(),
-               std::invalid_argument);
+                   .build();
 }
