@@ -24,13 +24,18 @@
 namespace shared_model {
   namespace validation {
 
+    using ConcreteReasonType = std::string;
+    using GroupedReasons = std::vector<ConcreteReasonType>;
+    using ReasonsGroupName = std::string;
+    using ReasonsGroupType = std::pair<ReasonsGroupName, GroupedReasons>;
+
     /**
      * Class which represents the answer to stateless validation: whether
      * validation is done right and if not it explains the reason
      */
     class Answer {
      public:
-      operator bool() const { return reasons_map_.empty(); }
+      operator bool() const { return not reasons_map_.empty(); }
 
       /**
        * @return string representation of errors
@@ -56,24 +61,15 @@ namespace shared_model {
       bool hasErrors() { return not reasons_map_.empty(); }
 
       /**
-       * Adds error
-       * @param error_type
-       * @param reason concrete error
+       * Adds error to map
+       * @param reasons
        */
-      void addReason(std::string error_type, std::string reason) {
-        auto existing_reasons = reasons_map_.find(error_type);
-
-        if (existing_reasons == reasons_map_.end()) {
-          reasons_map_.emplace(error_type, ReasonsType({reason}));
-        } else {
-          existing_reasons->second.push_back(reason);
-        }
+      void addReason(ReasonsGroupType&& reasons){
+        reasons_map_.insert(std::move(reasons));
       }
 
      private:
-      using ReasonType = std::string;
-      using ReasonsType = std::vector<ReasonType>;
-      std::unordered_map<std::string, ReasonsType> reasons_map_;
+      std::unordered_map<ReasonsGroupName, GroupedReasons> reasons_map_;
     };
 
   }  // namespace validation
