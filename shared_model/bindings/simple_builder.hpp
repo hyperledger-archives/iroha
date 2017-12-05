@@ -27,7 +27,10 @@ namespace shared_model {
      public:
       SimpleBuilder() = default;
 
-      SimpleBuilder(const TransactionBuilder &o);
+      SimpleBuilder(
+          const TemplateTransactionBuilder<
+              (1 << shared_model::proto::TemplateTransactionBuilder<>::total)
+              - 1> &o);
 
       SimpleBuilder creatorAccountId(
           const interface::types::AccountIdType &account_id);
@@ -42,7 +45,9 @@ namespace shared_model {
       UnsignedWrapper<Transaction> build();
 
      private:
-      TransactionBuilder builder_;
+      TemplateTransactionBuilder<
+          (1 << shared_model::proto::TemplateTransactionBuilder<>::total) - 1>
+          builder_;
     };
   }  // namespace proto
 }  // namespace shared_model

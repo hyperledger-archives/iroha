@@ -81,13 +81,10 @@ namespace shared_model {
        */
       virtual bool addSignature(const types::SignatureType &signature) = 0;
 
-      /// Type of timestamp
-      using TimestampType = uint64_t;
-
       /**
        * @return time of creation
        */
-      virtual TimestampType createdTime() const = 0;
+      virtual types::TimestampType createdTime() const = 0;
 
       /**
        * Provides comparison based on equality of objects and signatures.

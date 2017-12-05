@@ -19,7 +19,11 @@
 
 namespace shared_model {
   namespace proto {
-    SimpleBuilder::SimpleBuilder(const TransactionBuilder &o) : builder_(o) {}
+    SimpleBuilder::SimpleBuilder(
+        const TemplateTransactionBuilder<
+            (1 << shared_model::proto::TemplateTransactionBuilder<>::total) - 1>
+            &o)
+        : builder_(o) {}
 
     SimpleBuilder SimpleBuilder::creatorAccountId(
         const interface::types::AccountIdType &account_id) {

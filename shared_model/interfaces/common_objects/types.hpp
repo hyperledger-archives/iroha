@@ -53,6 +53,8 @@ namespace shared_model {
       using QuorumType = uint32_t;
       /// Type of transaction signature
       using SignatureType = detail::PolymorphicWrapper<Signature>;
+      /// Type of timestamp
+      using TimestampType = uint64_t;
       /// Type of peer address
       using AddressType = std::string;
     }  // namespace types
