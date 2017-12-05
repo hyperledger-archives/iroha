@@ -16,7 +16,6 @@
  */
 
 #include "bindings/simple_signer.hpp"
-#include "cryptography/crypto_provider/crypto_signer.hpp"
 #include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
 #include "cryptography/seed.hpp"
 
@@ -24,11 +23,6 @@ namespace shared_model {
   namespace proto {
     crypto::Keypair SimpleSigner::generateKeypair() {
       return crypto::CryptoProviderEd25519Sha3::generateKeypair();
-    }
-
-    crypto::Signed SimpleSigner::sign(const crypto::Blob &blob,
-                                      crypto::Keypair &keypair) {
-      return crypto::CryptoSigner<>::sign(blob, keypair);
     }
   }  // namespace proto
 }  // namespace shared_model

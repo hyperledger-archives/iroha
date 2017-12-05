@@ -88,9 +88,7 @@ namespace shared_model {
       }
 
       bool addSignature(
-          const shared_model::interface::Signable<
-              shared_model::interface::Transaction,
-              iroha::model::Transaction>::SignatureType &signature) override {
+          const interface::types::SignatureType &signature) override {
         if (signatures_->count(signature) > 0) {
           return false;
         }

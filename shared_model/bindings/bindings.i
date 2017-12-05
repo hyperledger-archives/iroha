@@ -32,6 +32,7 @@
 #include "bindings/simple_builder.hpp"
 #include "bindings/simple_signer.hpp"
 #include "bindings/simple_transaction_proto.hpp"
+#include "builders/protobuf/unsigned_proto.hpp"
 %}
 
 %include "interfaces/common_objects/types.hpp"
@@ -43,10 +44,12 @@
 %include "cryptography/signed.hpp"
 %include "backend/protobuf/transaction.hpp"
 %include "builders/protobuf/proto_transaction_builder.hpp"
+%include "builders/protobuf/unsigned_proto.hpp"
 %include "bindings/simple_builder.hpp"
 %include "bindings/simple_signer.hpp"
 %include "bindings/simple_transaction_proto.hpp"
 
+%template (unsignedTx) shared_model::proto::UnsignedWrapper<shared_model::proto::Transaction>;
 
 namespace shared_model {
   namespace proto {
@@ -60,7 +63,7 @@ namespace iroha {
   namespace protocol {
     class Transaction {
     public:
-        size_t ByteSizeLong();
+      size_t ByteSizeLong();
     };
   }
 }

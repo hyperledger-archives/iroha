@@ -37,6 +37,8 @@ namespace shared_model {
       return builder_.addAssetQuantity(account_id, asset_id, amount);
     }
 
-    Transaction SimpleBuilder::build() { return builder_.build(); }
+    UnsignedWrapper<Transaction> SimpleBuilder::build() {
+      return builder_.build();
+    }
   }  // namespace proto
 }  // namespace shared_model

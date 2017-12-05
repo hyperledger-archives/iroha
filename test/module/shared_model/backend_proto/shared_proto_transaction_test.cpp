@@ -16,6 +16,10 @@
  */
 
 #include "backend/protobuf/transaction.hpp"
+#include "builders/protobuf/proto_transaction_builder.hpp"
+#include "cryptography/crypto_provider/crypto_signer.hpp"
+#include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
+#include "interfaces/polymorphic_wrapper.hpp"
 #include "builders/protobuf/transaction.hpp"
 
 #include <gtest/gtest.h>
@@ -54,12 +58,23 @@ TEST(ProtoTransaction, Builder) {
   command.mutable_amount()->mutable_value()->set_fourth(1000);
   command.mutable_amount()->set_precision(2);
 
+  auto keypair =
+      shared_model::crypto::CryptoProviderEd25519Sha3::generateKeypair();
+  auto signedProto = shared_model::crypto::CryptoSigner<>::sign(
+      shared_model::crypto::Blob(proto_tx.SerializeAsString()), keypair);
+
+  auto sig = proto_tx.add_signature();
+  sig->set_pubkey(keypair.publicKey().blob());
+  sig->set_signature(signedProto.blob());
+
   auto tx = shared_model::proto::TransactionBuilder()
                 .txCounter(tx_counter)
                 .creatorAccountId(account_id)
                 .assetQuantity(account_id, asset_id, amount)
                 .createdTime(created_time)
                 .build();
+
+  auto signedTx = tx.signAndAddSignature(keypair);
   auto &proto = tx.getTransport();
 
   ASSERT_EQ(proto_tx.SerializeAsString(), proto.SerializeAsString());

@@ -27,8 +27,6 @@ namespace shared_model {
     class SimpleSigner {
      public:
       crypto::Keypair generateKeypair();
-
-      crypto::Signed sign(const crypto::Blob &blob, crypto::Keypair &keypair);
     };
   }  // namespace proto
 }  // namespace shared_model

@@ -21,6 +21,7 @@
 #include <boost/functional/hash.hpp>
 #include <unordered_set>
 #include "interfaces/common_objects/signature.hpp"
+#include "interfaces/common_objects/types.hpp"
 #include "interfaces/hashable.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
@@ -37,9 +38,6 @@ namespace shared_model {
     template <typename Model, typename OldModel>
     class Signable : public Hashable<Model, OldModel> {
      public:
-      /// Type of transaction signature
-      using SignatureType = detail::PolymorphicWrapper<Signature>;
-
       /**
        * Hash class for SigWrapper type. It's required since std::unordered_set
        * uses hash inside and it should be declared explicitly for user-defined
@@ -53,7 +51,7 @@ namespace shared_model {
          * @param sig - item to find hash from
          * @return calculated hash
          */
-        size_t operator()(const SignatureType &sig) const {
+        size_t operator()(const types::SignatureType &sig) const {
           std::size_t seed = 0;
           boost::hash_combine(seed, sig->publicKey().blob());
           boost::hash_combine(seed, sig->signedData().blob());
@@ -68,7 +66,8 @@ namespace shared_model {
        * limitations: it requires to have write access for elements for some
        * internal operations.
        */
-      using SignatureSetType = std::unordered_set<SignatureType, SignableHash>;
+      using SignatureSetType =
+          std::unordered_set<types::SignatureType, SignableHash>;
 
       /**
        * @return attached signatures
@@ -80,7 +79,7 @@ namespace shared_model {
        * @param signature - signature object for insertion
        * @return true, if signature was added
        */
-      virtual bool addSignature(const SignatureType &signature) = 0;
+      virtual bool addSignature(const types::SignatureType &signature) = 0;
 
       /// Type of timestamp
       using TimestampType = uint64_t;

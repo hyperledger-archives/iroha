@@ -19,14 +19,16 @@
 #define IROHA_SIMPLE_TRANSACTION_PROTO_HPP
 
 #include "builders/protobuf/proto_transaction_builder.hpp"
+#include "builders/protobuf/unsigned_proto.hpp"
 
 namespace shared_model {
   namespace proto {
     class SimpleTransactionProto {
      public:
-      bool addSignature(Transaction &tx, crypto::Signed sign, crypto::PublicKey publicKey);
+      Transaction signAndAddSignature(UnsignedWrapper<Transaction> &tx,
+                                      const crypto::Keypair &keypair);
 
-      iroha::protocol::Transaction getTransport(const Transaction &tx);
+      const iroha::protocol::Transaction &getTransport(const Transaction &tx);
     };
   }  // namespace proto
 }  // namespace shared_model

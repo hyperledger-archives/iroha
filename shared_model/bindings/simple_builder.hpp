@@ -19,6 +19,7 @@
 #define IROHA_SIMPLE_BUILDER_HPP
 
 #include "builders/protobuf/proto_transaction_builder.hpp"
+#include "builders/protobuf/unsigned_proto.hpp"
 
 namespace shared_model {
   namespace proto {
@@ -38,7 +39,7 @@ namespace shared_model {
           const interface::types::AssetIdType &asset_id,
           const std::string &amount);
 
-      Transaction build();
+      UnsignedWrapper<Transaction> build();
 
      private:
       TransactionBuilder builder_;

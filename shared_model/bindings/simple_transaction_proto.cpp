@@ -21,17 +21,12 @@
 
 namespace shared_model {
   namespace proto {
-    bool SimpleTransactionProto::addSignature(Transaction &tx,
-                                              crypto::Signed sign,
-                                              crypto::PublicKey publicKey) {
-      iroha::protocol::Signature protosig;
-      protosig.set_pubkey(publicKey.blob());
-      protosig.set_signature(sign.blob());
-      Signature *s1 = new Signature(protosig);
-      return tx.addSignature(detail::PolymorphicWrapper<Signature>(s1));
+    Transaction SimpleTransactionProto::signAndAddSignature(
+        UnsignedWrapper<Transaction> &tx, const crypto::Keypair &keypair) {
+      return tx.signAndAddSignature(keypair);
     }
 
-    iroha::protocol::Transaction SimpleTransactionProto::getTransport(
+    const iroha::protocol::Transaction &SimpleTransactionProto::getTransport(
         const Transaction &tx) {
       return tx.getTransport();
     }
