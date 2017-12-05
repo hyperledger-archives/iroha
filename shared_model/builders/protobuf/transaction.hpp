@@ -27,13 +27,14 @@
 #include "builders/protobuf/helpers.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "validators/default_validator.hpp"
 
 namespace shared_model {
   namespace proto {
-    template <int S = 0>
+    template <int S = 0, typename SV = validation::DefaultValidator>
     class TemplateTransactionBuilder {
      private:
-      template <int>
+      template <int, typename SVV>
       friend class TemplateTransactionBuilder;
 
       enum RequiredFields {
@@ -50,8 +51,12 @@ namespace shared_model {
       iroha::protocol::Transaction transaction_;
 
       template <int Sp>
-      TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp> &o)
-          : transaction_(o.transaction_) {}
+      TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp> &o,
+                                 SV stateless_validator = SV())
+          : transaction_(o.transaction_),
+            stateless_validator_(stateless_validator) {}
+
+      SV stateless_validator_;
 
      public:
       TemplateTransactionBuilder() = default;
@@ -167,6 +172,13 @@ namespace shared_model {
 
       UnsignedWrapper<Transaction> build() {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
+        Transaction validate_tx(transaction_);
+
+        auto answer = stateless_validator_.validate(
+            detail::make_polymorphic<Transaction>(transaction_));
+        if (answer.hasErrors()) {
+          throw std::invalid_argument(answer.reason());
+        }
         return UnsignedWrapper<Transaction>(
             Transaction(iroha::protocol::Transaction(transaction_)));
       }
