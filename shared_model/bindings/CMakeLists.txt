@@ -40,8 +40,12 @@ if (SWIG_PYTHON)
     # path to where Python.h is found
     include_directories(${PYTHON_INCLUDE_DIRS})
 
+    if (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+        set(MAC_OPTS "-flat_namespace -undefined suppress")
+    endif()
+
     swig_add_library(iroha LANGUAGE python SOURCES bindings.i)
-    swig_link_libraries(iroha ${Python_LIBRARIES} bindings)
+    swig_link_libraries(iroha ${Python_LIBRARIES} bindings ${MAC_OPTS})
 endif()
 
 if (SWIG_JAVA)
