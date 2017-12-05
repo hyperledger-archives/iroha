@@ -18,7 +18,7 @@
 #ifndef IROHA_SIMPLE_TRANSACTION_PROTO_HPP
 #define IROHA_SIMPLE_TRANSACTION_PROTO_HPP
 
-#include "builders/protobuf/proto_transaction_builder.hpp"
+#include "builders/protobuf/transaction.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 #include "cryptography/blob.hpp"
 

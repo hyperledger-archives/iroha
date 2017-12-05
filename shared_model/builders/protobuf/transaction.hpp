@@ -25,6 +25,7 @@
 
 #include "amount/amount.hpp"
 #include "builders/protobuf/helpers.hpp"
+#include "builders/protobuf/unsigned_proto.hpp"
 #include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {
@@ -163,14 +164,17 @@ namespace shared_model {
         return *this;
       }
 
-      Transaction build() {
+      UnsignedWrapper<Transaction> build() {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
 
-        return Transaction(iroha::protocol::Transaction(transaction_));
+        return UnsignedWrapper<Transaction>(
+            Transaction(std::move(transaction_)));
       }
 
+      static const int total = RequiredFields::TOTAL;
+
      private:
-      auto proto_command() {
+      iroha::protocol::Command *proto_command() {
         return transaction_.mutable_payload()->add_commands();
       }
     };

@@ -38,7 +38,7 @@ namespace shared_model {
         const interface::types::AccountIdType &account_id,
         const interface::types::AssetIdType &asset_id,
         const std::string &amount) {
-      return builder_.addAssetQuantity(account_id, asset_id, amount);
+      return builder_.assetQuantity(account_id, asset_id, amount);
     }
 
     proto::UnsignedWrapper<proto::Transaction> SimpleBuilder::build() {

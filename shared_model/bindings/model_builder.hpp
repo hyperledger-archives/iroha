@@ -18,7 +18,7 @@
 #ifndef IROHA_SIMPLE_BUILDER_HPP
 #define IROHA_SIMPLE_BUILDER_HPP
 
-#include "builders/protobuf/proto_transaction_builder.hpp"
+#include "builders/protobuf/transaction.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 
 namespace shared_model {

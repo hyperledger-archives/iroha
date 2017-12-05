@@ -16,11 +16,10 @@
  */
 
 #include "backend/protobuf/transaction.hpp"
-#include "builders/protobuf/proto_transaction_builder.hpp"
+#include "builders/protobuf/transaction.hpp"
 #include "cryptography/crypto_provider/crypto_signer.hpp"
 #include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
 #include "interfaces/polymorphic_wrapper.hpp"
-#include "builders/protobuf/transaction.hpp"
 
 #include <gtest/gtest.h>
 
@@ -75,7 +74,7 @@ TEST(ProtoTransaction, Builder) {
                 .build();
 
   auto signedTx = tx.signAndAddSignature(keypair);
-  auto &proto = tx.getTransport();
+  auto &proto = signedTx.getTransport();
 
   ASSERT_EQ(proto_tx.SerializeAsString(), proto.SerializeAsString());
 }

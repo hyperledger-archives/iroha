@@ -43,7 +43,7 @@
 %include "cryptography/keypair.hpp"
 %include "cryptography/signed.hpp"
 %include "backend/protobuf/transaction.hpp"
-%include "builders/protobuf/proto_transaction_builder.hpp"
+%include "builders/protobuf/transaction.hpp"
 %include "builders/protobuf/unsigned_proto.hpp"
 %include "bindings/model_builder.hpp"
 %include "bindings/model_crypto.hpp"
