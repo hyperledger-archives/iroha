@@ -135,7 +135,7 @@ namespace shared_model {
         void validateAssetId(
             ReasonsGroupType &reason,
             const interface::types::AssetIdType &asset_id) const {
-          std::regex e("[a-z]{1,9}\\@[a-z]{1,9}");
+          std::regex e("[a-z]{1,9}\\#[a-z]{1,9}");
           if (not std::regex_match(asset_id, e)) {
             reason.second.push_back("Wrongly formed asset_id");
           }
@@ -166,8 +166,11 @@ namespace shared_model {
       Answer validate(detail::PolymorphicWrapper<interface::Transaction> tx) {
         Answer answer;
         for (auto &command : tx->commands()) {
-          answer.addReason(
-              boost::apply_visitor(CommandsValidatorVisitor(), command->get()));
+          auto reason =
+              boost::apply_visitor(CommandsValidatorVisitor(), command->get());
+          if (not reason.second.empty()) {
+            answer.addReason(std::move(reason));
+          }
         }
         return answer;
       }

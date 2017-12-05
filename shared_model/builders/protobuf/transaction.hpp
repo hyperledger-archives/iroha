@@ -172,7 +172,6 @@ namespace shared_model {
 
       UnsignedWrapper<Transaction> build() {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
-        Transaction validate_tx(transaction_);
 
         auto answer = stateless_validator_.validate(
             detail::make_polymorphic<Transaction>(transaction_));
