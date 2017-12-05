@@ -18,8 +18,7 @@
 #ifndef IROHA_PROTO_QUERY_BUILDER_HPP
 #define IROHA_PROTO_QUERY_BUILDER_HPP
 
-// TODO @l4l IR-648
-// #include "backend/protobuf/queries.hpp"
+#include "backend/protobuf/queries/proto_query.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "queries.pb.h"
 
@@ -128,10 +127,9 @@ namespace shared_model {
         return *this;
       }
 
-      // TODO IR-648 @l4l: Uncomment on completing proto::Query
-      iroha::protocol::Query /*Query*/ build() {
+      Query build() {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
-        return query_;  // Query(iroha::protocol::Query(query_));
+        return Query(iroha::protocol::Query(query_));
       }
     };
 
