@@ -22,15 +22,32 @@
 #include "builders/protobuf/unsigned_proto.hpp"
 
 namespace shared_model {
-  namespace proto {
+  namespace bindings {
+    /**
+     * Class for proto operations for SWIG
+     */
     class SimpleTransactionProto {
      public:
-      Transaction signAndAddSignature(UnsignedWrapper<Transaction> &tx,
-                                      const crypto::Keypair &keypair);
+      /**
+       * Signs unsigned transaction and adds signature to its internal proto
+       * object
+       * @param tx - unsigned transaction
+       * @param keypair - keypair to sign
+       * @return signed transaction
+       */
+      proto::Transaction signAndAddSignature(
+          proto::UnsignedWrapper<proto::Transaction> &tx,
+          const crypto::Keypair &keypair);
 
-      const iroha::protocol::Transaction &getTransport(const Transaction &tx);
+      /**
+       * Returns proto object from a provided transaction
+       * @param tx - transaction to retrieve proto from
+       * @return protobuf Transaction object
+       */
+      const iroha::protocol::Transaction &getTransport(
+          const proto::Transaction &tx);
     };
-  }  // namespace proto
+  }  // namespace bindings
 }  // namespace shared_model
 
 #endif  // IROHA_SIMPLE_TRANSACTION_PROTO_HPP

@@ -20,15 +20,16 @@
 #include "primitive.pb.h"
 
 namespace shared_model {
-  namespace proto {
-    Transaction SimpleTransactionProto::signAndAddSignature(
-        UnsignedWrapper<Transaction> &tx, const crypto::Keypair &keypair) {
+  namespace bindings {
+    proto::Transaction SimpleTransactionProto::signAndAddSignature(
+            proto::UnsignedWrapper<proto::Transaction> &tx,
+            const crypto::Keypair &keypair) {
       return tx.signAndAddSignature(keypair);
     }
 
     const iroha::protocol::Transaction &SimpleTransactionProto::getTransport(
-        const Transaction &tx) {
+            const proto::Transaction &tx) {
       return tx.getTransport();
     }
-  }  // namespace proto
+  }  // namespace bindings
 }  // namespace shared_model

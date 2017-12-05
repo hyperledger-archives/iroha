@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-%module irohalib
+%module iroha
 
 #define DEPRECATED
 #pragma SWIG nowarn=325, 401, 509, 516
@@ -30,7 +30,7 @@
 
 %{
 #include "bindings/simple_builder.hpp"
-#include "bindings/simple_signer.hpp"
+#include "bindings/simple_crypto.hpp"
 #include "bindings/simple_transaction_proto.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 %}
@@ -46,15 +46,15 @@
 %include "builders/protobuf/proto_transaction_builder.hpp"
 %include "builders/protobuf/unsigned_proto.hpp"
 %include "bindings/simple_builder.hpp"
-%include "bindings/simple_signer.hpp"
+%include "bindings/simple_crypto.hpp"
 %include "bindings/simple_transaction_proto.hpp"
 
-%template (unsignedTx) shared_model::proto::UnsignedWrapper<shared_model::proto::Transaction>;
+%template (UnsignedTx) shared_model::proto::UnsignedWrapper<shared_model::proto::Transaction>;
 
 namespace shared_model {
   namespace proto {
     class SimpleBuilder;
-    class SimpleSigner;
+    class SimpleCrypto;
     class SimpleTransactionProto;
   }
 }

@@ -18,9 +18,9 @@
 #include "bindings/simple_builder.hpp"
 
 namespace shared_model {
-  namespace proto {
+  namespace bindings {
     SimpleBuilder::SimpleBuilder(
-        const TemplateTransactionBuilder<
+        const proto::TemplateTransactionBuilder<
             (1 << shared_model::proto::TemplateTransactionBuilder<>::total) - 1>
             &o)
         : builder_(o) {}
@@ -41,8 +41,8 @@ namespace shared_model {
       return builder_.addAssetQuantity(account_id, asset_id, amount);
     }
 
-    UnsignedWrapper<Transaction> SimpleBuilder::build() {
+    proto::UnsignedWrapper<proto::Transaction> SimpleBuilder::build() {
       return builder_.build();
     }
-  }  // namespace proto
+  }  // namespace bindings
 }  // namespace shared_model

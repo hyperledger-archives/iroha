@@ -15,7 +15,7 @@
 
 add_library(bindings
         simple_builder.cpp
-        simple_signer.cpp
+        simple_crypto.cpp
         simple_transaction_proto.cpp
         )
 
@@ -40,8 +40,8 @@ if (SWIG_PYTHON)
     # path to where Python.h is found
     include_directories(${PYTHON_INCLUDE_DIRS})
 
-    swig_add_library(irohalib LANGUAGE python SOURCES bindings.i)
-    swig_link_libraries(irohalib ${Python_LIBRARIES} bindings)
+    swig_add_library(iroha LANGUAGE python SOURCES bindings.i)
+    swig_link_libraries(iroha ${Python_LIBRARIES} bindings)
 endif()
 
 if (SWIG_JAVA)
@@ -51,6 +51,6 @@ if (SWIG_JAVA)
     # the include path to jni_md.h
     include_directories(${JAVA_INCLUDE_PATH2})
 
-    swig_add_library(irohalib LANGUAGE java SOURCES bindings.i)
-    swig_link_libraries(irohalib ${Java_LIBRARIES} bindings)
+    swig_add_library(iroha LANGUAGE java SOURCES bindings.i)
+    swig_link_libraries(iroha ${Java_LIBRARIES} bindings)
 endif()

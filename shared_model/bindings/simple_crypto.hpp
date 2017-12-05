@@ -15,20 +15,27 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SIMPLE_SIGNER_HPP
-#define IROHA_SIMPLE_SIGNER_HPP
+#ifndef IROHA_SIMPLE_CRYPTO_HPP
+#define IROHA_SIMPLE_CRYPTO_HPP
 
 #include "cryptography/blob.hpp"
 #include "cryptography/keypair.hpp"
 #include "cryptography/signed.hpp"
 
 namespace shared_model {
-  namespace proto {
-    class SimpleSigner {
+  namespace bindings {
+    /**
+     * Class for crypto operations for SWIG
+     */
+    class SimpleCrypto {
      public:
+      /**
+       * Generates new keypair (ed25519)
+       * @return generated keypair
+       */
       crypto::Keypair generateKeypair();
     };
-  }  // namespace proto
+  }  // namespace bindings
 }  // namespace shared_model
 
-#endif  // IROHA_SIMPLE_SIGNER_HPP
+#endif  // IROHA_SIMPLE_CRYPTO_HPP
