@@ -60,7 +60,7 @@ namespace shared_model {
 }
 
 namespace iroha {
-  namespace protocol {
+  namespace bindings {
     class Transaction {
     public:
       size_t ByteSizeLong();
