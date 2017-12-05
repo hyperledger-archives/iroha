@@ -28,8 +28,14 @@
 namespace shared_model {
   namespace validation {
 
+    /**
+     * Class that validates commands from transaction
+     */
     class CommandsValidator {
-     public:
+     private:
+      /**
+       * Visitor used by commands validator to validate fields from tx commands
+       */
       class CommandsValidatorVisitor
           : public boost::static_visitor<ReasonsGroupType> {
        public:
@@ -263,14 +269,18 @@ namespace shared_model {
           // define permission constraints
         }
 
-        void validateQuorum(
-            ReasonsGroupType &reason,
-            const interface::types::QuorumType &quorum) const {
+        void validateQuorum(ReasonsGroupType &reason,
+                            const interface::types::QuorumType &quorum) const {
           // define quorum constraints
         }
-
       };
 
+     public:
+      /**
+       * Applies command validation on given tx
+       * @param tx
+       * @return Answer containing found error if any
+       */
       Answer validate(detail::PolymorphicWrapper<interface::Transaction> tx) {
         Answer answer;
         for (auto &command : tx->commands()) {
