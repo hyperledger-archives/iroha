@@ -194,7 +194,7 @@ namespace shared_model {
         void validateAccountId(
             ReasonsGroupType &reason,
             const interface::types::AccountIdType &account_id) const {
-          std::regex e("[a-z]{1,9}\\@[a-z]{1,9}");
+          std::regex e(R"([a-z]{1,9}\\@[a-z]{1,9})");
           if (not std::regex_match(account_id, e)) {
             reason.second.push_back("Wrongly formed account_id");
           }
@@ -203,7 +203,7 @@ namespace shared_model {
         void validateAssetId(
             ReasonsGroupType &reason,
             const interface::types::AssetIdType &asset_id) const {
-          std::regex e("[a-z]{1,9}\\#[a-z]{1,9}");
+          std::regex e(R"([a-z]{1,9}\\#[a-z]{1,9})");
           if (not std::regex_match(asset_id, e)) {
             reason.second.push_back("Wrongly formed asset_id");
           }
@@ -211,29 +211,34 @@ namespace shared_model {
 
         void validateAmount(ReasonsGroupType &reason,
                             const interface::Amount &amount) const {
-          // what kind of validation could be here?
+          // put here any validations
         }
 
         void validatePubkey(ReasonsGroupType &reason,
                             const interface::types::PubkeyType &pubkey) const {
-          // what constraints can be here?
+          if (pubkey.blob().size() != 32){
+            reason.second.push_back("Public key has wrong size");
+          }
         }
 
         void validatePeerAddress(
             ReasonsGroupType &reason,
             const interface::AddPeer::AddressType &address) const {
-          // what constraints can be here?
+          //TODO kamilsa 06.12.17 add dns check during stateless validation
         }
 
         void validateRoleId(ReasonsGroupType &reason,
                             const interface::types::RoleIdType &role_id) const {
-          // what constraints can be here?
+          std::regex e(R"([a-z]{1,9})");
+          if (not std::regex_match(role_id, e)){
+            reason.second.push_back("Wrongly formed role_id");
+          }
         }
 
         void validateAccountName(ReasonsGroupType &reason,
                                  const interface::CreateAccount::AccountNameType
                                      &account_name) const {
-          std::regex e("[a-z]{1,9}");
+          std::regex e(R"([a-z]{1,9})");
           if (not std::regex_match(account_name, e)) {
             reason.second.push_back("Wrongly formed account_name");
           }
@@ -242,7 +247,7 @@ namespace shared_model {
         void validateDomainId(
             ReasonsGroupType &reason,
             const interface::types::DomainIdType &domain_id) const {
-          std::regex e("[a-z]{1,9}");
+          std::regex e(R"([a-z]{1,9})");
           if (not std::regex_match(domain_id, e)) {
             reason.second.push_back("Wrongly formed domain_id");
           }
@@ -251,7 +256,7 @@ namespace shared_model {
         void validateAssetName(
             ReasonsGroupType &reason,
             const interface::CreateAsset::AssetNameType &asset_name) const {
-          std::regex e("[a-z]{1,9}");
+          std::regex e(R"([a-z]{1,9})");
           if (not std::regex_match(asset_name, e)) {
             reason.second.push_back("Wrongly formed asset_name");
           }

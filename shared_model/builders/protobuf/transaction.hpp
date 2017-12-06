@@ -34,7 +34,7 @@ namespace shared_model {
     template <int S = 0, typename SV = validation::DefaultValidator>
     class TemplateTransactionBuilder {
      private:
-      template <int, typename SVV>
+      template <int, typename>
       friend class TemplateTransactionBuilder;
 
       enum RequiredFields {
