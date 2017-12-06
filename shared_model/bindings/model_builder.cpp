@@ -19,29 +19,23 @@
 
 namespace shared_model {
   namespace bindings {
-    SimpleBuilder::SimpleBuilder(
-        const proto::TemplateTransactionBuilder<
-            (1 << shared_model::proto::TemplateTransactionBuilder<>::total) - 1>
-            &o)
-        : builder_(o) {}
-
-    SimpleBuilder SimpleBuilder::creatorAccountId(
+    ModelBuilder ModelBuilder::creatorAccountId(
         const interface::types::AccountIdType &account_id) {
-      return builder_.creatorAccountId(account_id);
+      return ModelBuilder(builder_.creatorAccountId(account_id));
     }
 
-    SimpleBuilder SimpleBuilder::txCounter(uint64_t tx_counter) {
-      return builder_.txCounter(tx_counter);
+    ModelBuilder ModelBuilder::txCounter(uint64_t tx_counter) {
+      return ModelBuilder(builder_.txCounter(tx_counter));
     }
 
-    SimpleBuilder SimpleBuilder::addAssetQuantity(
+    ModelBuilder ModelBuilder::addAssetQuantity(
         const interface::types::AccountIdType &account_id,
         const interface::types::AssetIdType &asset_id,
         const std::string &amount) {
-      return builder_.assetQuantity(account_id, asset_id, amount);
+      return ModelBuilder(builder_.assetQuantity(account_id, asset_id, amount));
     }
 
-    proto::UnsignedWrapper<proto::Transaction> SimpleBuilder::build() {
+    proto::UnsignedWrapper<proto::Transaction> ModelBuilder::build() {
       return builder_.build();
     }
   }  // namespace bindings

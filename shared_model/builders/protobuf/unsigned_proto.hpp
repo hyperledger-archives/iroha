@@ -36,7 +36,7 @@ namespace shared_model {
        * Constructs new unsigned object instance
        * @param o - object received from builder
        */
-      UnsignedWrapper(const T &o) : unsigned_(o) {}
+      explicit UnsignedWrapper(const T &o) : unsigned_(o) {}
 
       /**
        * Add signature and retrieve signed result

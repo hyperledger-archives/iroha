@@ -21,7 +21,7 @@
 
 namespace shared_model {
   namespace bindings {
-    crypto::Blob SimpleTransactionProto::signAndAddSignature(
+    crypto::Blob ModelTransactionProto::signAndAddSignature(
         proto::UnsignedWrapper<proto::Transaction> &tx,
         const crypto::Keypair &keypair) {
       return tx.signAndAddSignature(keypair).blob();

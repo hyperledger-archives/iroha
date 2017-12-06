@@ -21,7 +21,7 @@
 
 namespace shared_model {
   namespace bindings {
-    crypto::Keypair SimpleCrypto::generateKeypair() {
+    crypto::Keypair ModelCrypto::generateKeypair() {
       return crypto::CryptoProviderEd25519Sha3::generateKeypair();
     }
   }  // namespace bindings

@@ -27,7 +27,7 @@ namespace shared_model {
     /**
      * Class for crypto operations for SWIG
      */
-    class SimpleCrypto {
+    class ModelCrypto {
      public:
       /**
        * Generates new keypair (ed25519)

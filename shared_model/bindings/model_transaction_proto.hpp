@@ -27,7 +27,7 @@ namespace shared_model {
     /**
      * Class for proto operations for SWIG
      */
-    class SimpleTransactionProto {
+    class ModelTransactionProto {
      public:
       /**
        * Signs unsigned transaction and adds signature to its internal proto
