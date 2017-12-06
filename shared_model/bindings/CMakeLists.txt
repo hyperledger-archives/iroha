@@ -12,13 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+add_library(bindings
+        model_builder.cpp
+        model_crypto.cpp
+        model_transaction_proto.cpp
+        )
+
+target_link_libraries(bindings
+        shared_model_proto_backend
+        shared_model_ed25519_sha3
+        )
+
+
+
 if (SWIG_PYTHON OR SWIG_JAVA)
     find_package(SWIG 3.0.12 REQUIRED)
     include(${SWIG_USE_FILE})
 
     set(CMAKE_SWIG_FLAGS "")
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-    set_source_files_properties(crypto.i PROPERTIES CPLUSPLUS ON)
+    set_source_files_properties(bindings.i PROPERTIES CPLUSPLUS ON)
 endif()
 
 if (SWIG_PYTHON)
@@ -26,8 +40,12 @@ if (SWIG_PYTHON)
     # path to where Python.h is found
     include_directories(${PYTHON_INCLUDE_DIRS})
 
-    swig_add_library(irohacrypto LANGUAGE python SOURCES crypto.i)
-    swig_link_libraries(irohacrypto ${Python_LIBRARIES} shared_ed25519_sha3)
+    if (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+        set(MAC_OPTS "-flat_namespace -undefined suppress")
+    endif()
+
+    swig_add_library(iroha LANGUAGE python SOURCES bindings.i)
+    swig_link_libraries(iroha ${Python_LIBRARIES} bindings ${MAC_OPTS})
 endif()
 
 if (SWIG_JAVA)
@@ -37,6 +55,6 @@ if (SWIG_JAVA)
     # the include path to jni_md.h
     include_directories(${JAVA_INCLUDE_PATH2})
 
-    swig_add_library(irohacrypto LANGUAGE java SOURCES crypto.i)
-    swig_link_libraries(irohacrypto ${Java_LIBRARIES} shared_ed25519_sha3)
+    swig_add_library(iroha LANGUAGE java SOURCES bindings.i)
+    swig_link_libraries(iroha ${Java_LIBRARIES} bindings)
 endif()

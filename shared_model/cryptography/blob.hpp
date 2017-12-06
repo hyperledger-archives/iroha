@@ -21,7 +21,7 @@
 #include <iomanip>
 #include <sstream>
 #include "interfaces/model_primitive.hpp"
-#include "utils/deprecated.hpp"
+#include "utils/swig_keyword_hider.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "utils/string_builder.hpp"
 
@@ -42,7 +42,7 @@ namespace shared_model {
         std::stringstream ss;
         ss << std::hex << std::setfill('0');
         for (const auto &c : blob_) {
-          ss << std::setw(2) << static_cast<int>(c);
+          ss << std::setw(2) << (static_cast<int>(c) & 0xff);
         }
         hex_ = ss.str();
       }

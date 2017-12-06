@@ -13,6 +13,7 @@
 # limitations under the License.
 
 add_subdirectory(backend)
+add_subdirectory(bindings)
 add_subdirectory(builders)
 add_subdirectory(converters)
 add_subdirectory(cryptography)

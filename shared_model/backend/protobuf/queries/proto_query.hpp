@@ -110,7 +110,8 @@ namespace shared_model {
         return *signatures_;
       }
 
-      bool addSignature(const SignatureType &signature) override {
+      bool addSignature(
+          const interface::types::SignatureType &signature) override {
         if (proto_->has_signature()) return false;
 
         auto sig = proto_->mutable_signature();
@@ -119,7 +120,7 @@ namespace shared_model {
         return true;
       }
 
-      TimestampType createdTime() const override {
+      interface::types::TimestampType createdTime() const override {
         return proto_->payload().created_time();
       }
 

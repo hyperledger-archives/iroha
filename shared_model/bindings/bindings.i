@@ -15,47 +15,47 @@
  * limitations under the License.
  */
 
-%module irohacrypto
+%module iroha
 
 #define DEPRECATED
-#pragma SWIG nowarn=401
+#define FINAL
+#pragma SWIG nowarn=325, 401, 509, 516
 
 %include "std_string.i"
+%include "stdint.i"
 
-%{
-#include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
-%}
-
+%rename(ModelTransaction) iroha::protocol::Transaction;
 %rename(_interface) interface;
 %rename(b_equal) shared_model::crypto::Blob::operator==;
 %rename(kp_equal) shared_model::crypto::Keypair::operator==;
-%rename(mp_equal) shared_model::interface::ModelPrimitive::operator==;
-%rename(mp_nequal) shared_model::interface::ModelPrimitive::operator!=;
 
-%include "interfaces/model_primitive.hpp"
-%include "interfaces/primitive.hpp"
+%{
+#include "bindings/model_builder.hpp"
+#include "bindings/model_crypto.hpp"
+#include "bindings/model_transaction_proto.hpp"
+#include "builders/protobuf/unsigned_proto.hpp"
+%}
+
+%include "interfaces/common_objects/types.hpp"
+%include "interfaces/signable.hpp"
 %include "cryptography/blob.hpp"
-%include "cryptography/seed.hpp"
-%include "cryptography/signed.hpp"
 %include "cryptography/public_key.hpp"
 %include "cryptography/private_key.hpp"
 %include "cryptography/keypair.hpp"
-%include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
+%include "cryptography/signed.hpp"
+%include "backend/protobuf/transaction.hpp"
+%include "builders/protobuf/transaction.hpp"
+%include "builders/protobuf/unsigned_proto.hpp"
+%include "bindings/model_builder.hpp"
+%include "bindings/model_crypto.hpp"
+%include "bindings/model_transaction_proto.hpp"
+
+%template (UnsignedTx) shared_model::proto::UnsignedWrapper<shared_model::proto::Transaction>;
 
 namespace shared_model {
-  namespace interface {
-    %template(imodelprim) shared_model::interface::ModelPrimitive<shared_model::crypto::Blob>;
-    %template(ikeypair) ModelPrimitive<crypto::Keypair>;
-    %template(iprim) shared_model::interface::Primitive<crypto::Keypair, iroha::keypair_t>;
-  }
-
-  namespace crypto {
-    class Blob;
-    class Keypair;
-    class Seed;
-    class Signed;
-    class PublicKey;
-    class PrivateKey;
-    class CryptoProvider;
+  namespace bindings {
+    class ModelBuilder;
+    class ModelCrypto;
+    class ModelTransactionProto;
   }
 }

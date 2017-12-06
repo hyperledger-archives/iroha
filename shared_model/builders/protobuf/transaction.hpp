@@ -25,6 +25,7 @@
 
 #include "amount/amount.hpp"
 #include "builders/protobuf/helpers.hpp"
+#include "builders/protobuf/unsigned_proto.hpp"
 #include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {
@@ -48,11 +49,11 @@ namespace shared_model {
 
       iroha::protocol::Transaction transaction_;
 
-     public:
       template <int Sp>
       TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp> &o)
           : transaction_(o.transaction_) {}
 
+     public:
       TemplateTransactionBuilder() = default;
 
       NextBuilder<CreatorAccountId> creatorAccountId(
@@ -66,7 +67,8 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<CreatedTime> createdTime(uint64_t created_time) {
+      NextBuilder<CreatedTime> createdTime(
+          interface::types::TimestampType created_time) {
         transaction_.mutable_payload()->set_created_time(created_time);
         return *this;
       }
@@ -163,14 +165,16 @@ namespace shared_model {
         return *this;
       }
 
-      Transaction build() {
+      UnsignedWrapper<Transaction> build() {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
-
-        return Transaction(iroha::protocol::Transaction(transaction_));
+        return UnsignedWrapper<Transaction>(
+            Transaction(iroha::protocol::Transaction(transaction_)));
       }
 
+      static const int total = RequiredFields::TOTAL;
+
      private:
-      auto proto_command() {
+      iroha::protocol::Command *proto_command() {
         return transaction_.mutable_payload()->add_commands();
       }
     };

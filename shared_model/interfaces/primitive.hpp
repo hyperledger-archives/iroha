@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_PRIMITIVE_HPP
 
 #include "interfaces/model_primitive.hpp"
-#include "utils/deprecated.hpp"
+#include "utils/swig_keyword_hider.hpp"
 
 namespace shared_model {
   namespace interface {

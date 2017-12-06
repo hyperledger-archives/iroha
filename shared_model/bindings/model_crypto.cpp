@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_DEPRECATED_HPP
-#define IROHA_DEPRECATED_HPP
+#include "bindings/model_crypto.hpp"
+#include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
+#include "cryptography/seed.hpp"
 
-/**
- * Swig doesn't support annotations so we use this trick to use
- * define directive instead of annotation. When we build Swig bindings
- * we undef DEPRECATED in .i file.
- */
-#define DEPRECATED [[deprecated]]
-
-#endif  // IROHA_DEPRECATED_HPP
+namespace shared_model {
+  namespace bindings {
+    crypto::Keypair ModelCrypto::generateKeypair() {
+      // TODO: 06.12.2017 luckychess create keypair generation interface IR-684
+      return crypto::CryptoProviderEd25519Sha3::generateKeypair();
+    }
+  }  // namespace bindings
+}  // namespace shared_model
