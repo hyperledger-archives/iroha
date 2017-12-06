@@ -49,11 +49,11 @@ namespace shared_model {
 
       iroha::protocol::Transaction transaction_;
 
-     public:
       template <int Sp>
       TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp> &o)
           : transaction_(o.transaction_) {}
 
+     public:
       TemplateTransactionBuilder() = default;
 
       NextBuilder<CreatorAccountId> creatorAccountId(
@@ -67,7 +67,7 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<CreatedTime> createdTime(uint64_t created_time) {
+      NextBuilder<CreatedTime> createdTime(interface::types::TimestampType created_time) {
         transaction_.mutable_payload()->set_created_time(created_time);
         return *this;
       }
