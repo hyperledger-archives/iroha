@@ -67,7 +67,8 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<CreatedTime> createdTime(interface::types::TimestampType created_time) {
+      NextBuilder<CreatedTime> createdTime(
+          interface::types::TimestampType created_time) {
         transaction_.mutable_payload()->set_created_time(created_time);
         return *this;
       }
@@ -166,9 +167,8 @@ namespace shared_model {
 
       UnsignedWrapper<Transaction> build() {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
-
         return UnsignedWrapper<Transaction>(
-            Transaction(std::move(transaction_)));
+            Transaction(iroha::protocol::Transaction(transaction_)));
       }
 
       static const int total = RequiredFields::TOTAL;

@@ -21,7 +21,7 @@
 #include <iomanip>
 #include <sstream>
 #include "interfaces/model_primitive.hpp"
-#include "utils/deprecated.hpp"
+#include "utils/swig_keyword_hider.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "utils/string_builder.hpp"
 

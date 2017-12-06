@@ -15,14 +15,17 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_DEPRECATED_HPP
-#define IROHA_DEPRECATED_HPP
+#ifndef IROHA_SWIG_KEYWORD_HIDER_HPP
+#define IROHA_SWIG_KEYWORD_HIDER_HPP
 
 /**
  * Swig doesn't support annotations so we use this trick to use
  * define directive instead of annotation. When we build Swig bindings
  * we undef DEPRECATED in .i file.
+ * Also Swig has no idea about final keyword.
  */
 #define DEPRECATED [[deprecated]]
 
-#endif  // IROHA_DEPRECATED_HPP
+#define FINAL final
+
+#endif  // IROHA_SWIG_KEYWORD_HIDER_HPP

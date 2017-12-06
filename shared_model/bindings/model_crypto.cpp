@@ -22,6 +22,7 @@
 namespace shared_model {
   namespace bindings {
     crypto::Keypair ModelCrypto::generateKeypair() {
+      // TODO: 06.12.2017 luckychess create keypair generation interface IR-684
       return crypto::CryptoProviderEd25519Sha3::generateKeypair();
     }
   }  // namespace bindings

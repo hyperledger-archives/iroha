@@ -18,6 +18,7 @@
 %module iroha
 
 #define DEPRECATED
+#define FINAL
 #pragma SWIG nowarn=325, 401, 509, 516
 
 %include "std_string.i"

@@ -30,7 +30,7 @@
 
 namespace shared_model {
   namespace proto {
-    class Transaction : public CopyableProto<interface::Transaction,
+    class Transaction FINAL : public CopyableProto<interface::Transaction,
                                              iroha::protocol::Transaction,
                                              Transaction> {
      public:
