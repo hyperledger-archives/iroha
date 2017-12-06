@@ -19,6 +19,7 @@
 #define IROHA_POLYMORPHIC_WRAPPER_HPP
 
 #include <memory>
+#include <utility>
 
 namespace shared_model {
   namespace detail {
@@ -37,6 +38,8 @@ namespace shared_model {
       using WrappedType = T;
 
       PolymorphicWrapper() = delete;
+
+      PolymorphicWrapper(std::shared_ptr<T> shp) : ptr_(shp) {}
 
       /**
        * Copy constructor that performs deep copy
@@ -58,17 +61,16 @@ namespace shared_model {
        * @param value - pointer for wrapping
        */
       template <typename Y,
-          typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
-      explicit PolymorphicWrapper(Y *value)
-          : ptr_(value) {}
+                typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
+      explicit PolymorphicWrapper(Y *value) : ptr_(value) {}
 
       template <typename Y,
-          typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
+                typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
       PolymorphicWrapper(const PolymorphicWrapper<Y> &rhs)
           : ptr_(rhs.ptr_->copy()) {}
 
       template <typename Y,
-          typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
+                typename = std::enable_if_t<std::is_base_of<T, Y>::value>>
       PolymorphicWrapper(PolymorphicWrapper<Y> &&rhs) noexcept
           : ptr_(std::move(rhs.ptr_)) {
         rhs.ptr_ = nullptr;
@@ -119,6 +121,12 @@ namespace shared_model {
       /// pointer with wrapped value
       std::shared_ptr<WrappedType> ptr_;
     };
+
+    template <class T, class... Args>
+    PolymorphicWrapper<T> make_polymorphic(Args &&... args) {
+      return PolymorphicWrapper<T>(
+          std::make_shared<T>(std::forward<Args>(args)...));
+    }
 
   }  // namespace detail
 }  // namespace shared_model

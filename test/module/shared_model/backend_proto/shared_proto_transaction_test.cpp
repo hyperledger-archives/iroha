@@ -35,27 +35,57 @@ TEST(ProtoTransaction, Create) {
   ASSERT_EQ(proto.transactionCounter(), transaction.payload().tx_counter());
 }
 
+// global variables for tests
+auto created_time = 10000000000ull;
+shared_model::interface::Transaction::TxCounterType tx_counter = 1;
+std::string creator_account_id = "admin@test";
+
+/**
+ * generates sample transaction without commands
+ * @return generated transaction
+ */
+iroha::protocol::Transaction generateEmptyTransaction() {
+  iroha::protocol::Transaction proto_tx;
+  auto &payload = *proto_tx.mutable_payload();
+  payload.set_tx_counter(tx_counter);
+  payload.set_creator_account_id(creator_account_id);
+  payload.set_created_time(created_time);
+
+  return proto_tx;
+}
+
+/**
+ * Helper function to generate AddAssetQuantityCommand
+ * @param account_id account id to add asset quantity to
+ * @param asset_id asset id to add value to
+ * @return AddAssetQuantity protocol command
+ */
+iroha::protocol::AddAssetQuantity generateAddAssetQuantity(
+    std::string account_id, std::string asset_id) {
+  iroha::protocol::AddAssetQuantity command;
+
+  command.set_account_id(account_id);
+  command.set_asset_id(asset_id);
+  command.mutable_amount()->mutable_value()->set_fourth(1000);
+  command.mutable_amount()->set_precision(2);
+
+  return command;
+}
+
 /**
  * @given transaction field values and sample command values, reference tx
  * @when create transaction with sample command using transaction builder
  * @then transaction is built correctly
  */
 TEST(ProtoTransaction, Builder) {
-  uint64_t created_time = 10000000000ull;
-  shared_model::interface::Transaction::TxCounterType tx_counter = 1;
-  std::string account_id = "admin@test", asset_id = "coin#test",
-              amount = "10.00";
+  iroha::protocol::Transaction proto_tx = generateEmptyTransaction();
 
-  iroha::protocol::Transaction proto_tx;
-  auto &payload = *proto_tx.mutable_payload();
-  auto &command = *payload.add_commands()->mutable_add_asset_quantity();
-  payload.set_tx_counter(tx_counter);
-  payload.set_creator_account_id(account_id);
-  payload.set_created_time(created_time);
-  command.set_account_id(account_id);
-  command.set_asset_id(asset_id);
-  command.mutable_amount()->mutable_value()->set_fourth(1000);
-  command.mutable_amount()->set_precision(2);
+  std::string account_id = "admin@test", asset_id = "coin#test",
+      amount = "10.00";
+  auto command =
+      proto_tx.mutable_payload()->add_commands()->mutable_add_asset_quantity();
+
+  command->CopyFrom(generateAddAssetQuantity(account_id, asset_id));
 
   auto keypair =
       shared_model::crypto::CryptoProviderEd25519Sha3::generateKeypair();
@@ -68,7 +98,7 @@ TEST(ProtoTransaction, Builder) {
 
   auto tx = shared_model::proto::TransactionBuilder()
                 .txCounter(tx_counter)
-                .creatorAccountId(account_id)
+                .creatorAccountId(creator_account_id)
                 .assetQuantity(account_id, asset_id, amount)
                 .createdTime(created_time)
                 .build();
@@ -77,4 +107,39 @@ TEST(ProtoTransaction, Builder) {
   auto &proto = signedTx.getTransport();
 
   ASSERT_EQ(proto_tx.SerializeAsString(), proto.SerializeAsString());
+}
+
+/**
+ * @given transaction field values and sample command values with wrongly set
+ * values
+ * @when create transaction with sample command using transaction builder
+ * @then transaction throws exception due to badly formed fields in commands
+ */
+TEST(ProtoTransaction, BuilderWithInvalidTx) {
+  std::string account_id = "admintest"; // account_id without @
+  std::string asset_id = "cointest", // asset_id without #
+      amount = "10.00";
+
+  iroha::protocol::Transaction proto_tx = generateEmptyTransaction();
+  auto command =
+      proto_tx.mutable_payload()->add_commands()->mutable_add_asset_quantity();
+
+  command->CopyFrom(generateAddAssetQuantity(account_id, asset_id));
+
+  auto keypair =
+      shared_model::crypto::CryptoProviderEd25519Sha3::generateKeypair();
+  auto signedProto = shared_model::crypto::CryptoSigner<>::sign(
+      shared_model::crypto::Blob(proto_tx.SerializeAsString()), keypair);
+
+  auto sig = proto_tx.add_signature();
+  sig->set_pubkey(keypair.publicKey().blob());
+  sig->set_signature(signedProto.blob());
+
+  ASSERT_THROW(shared_model::proto::TransactionBuilder()
+                   .txCounter(tx_counter)
+                   .creatorAccountId(account_id)
+                   .assetQuantity(account_id, asset_id, amount)
+                   .createdTime(created_time)
+                   .build(),
+               std::invalid_argument);
 }
