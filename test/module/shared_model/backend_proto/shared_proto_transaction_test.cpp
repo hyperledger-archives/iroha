@@ -19,7 +19,7 @@
 #include "builders/protobuf/transaction.hpp"
 #include "cryptography/crypto_provider/crypto_signer.hpp"
 #include "cryptography/ed25519_sha3_impl/crypto_provider.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 
 #include <gtest/gtest.h>
 
@@ -81,7 +81,7 @@ TEST(ProtoTransaction, Builder) {
   iroha::protocol::Transaction proto_tx = generateEmptyTransaction();
 
   std::string account_id = "admin@test", asset_id = "coin#test",
-      amount = "10.00";
+              amount = "10.00";
   auto command =
       proto_tx.mutable_payload()->add_commands()->mutable_add_asset_quantity();
 
@@ -116,8 +116,8 @@ TEST(ProtoTransaction, Builder) {
  * @then transaction throws exception due to badly formed fields in commands
  */
 TEST(ProtoTransaction, BuilderWithInvalidTx) {
-  std::string account_id = "admintest"; // account_id without @
-  std::string asset_id = "cointest", // asset_id without #
+  std::string account_id = "admintest";  // account_id without @
+  std::string asset_id = "cointest",     // asset_id without #
       amount = "10.00";
 
   iroha::protocol::Transaction proto_tx = generateEmptyTransaction();

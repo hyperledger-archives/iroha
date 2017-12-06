@@ -21,8 +21,8 @@
 #include <boost/variant/static_visitor.hpp>
 #include <regex>
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/polymorphic_wrapper.hpp"
 #include "interfaces/transaction.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 #include "validators/answer.hpp"
 
 namespace shared_model {
@@ -216,7 +216,7 @@ namespace shared_model {
 
         void validatePubkey(ReasonsGroupType &reason,
                             const interface::types::PubkeyType &pubkey) const {
-          if (pubkey.blob().size() != 32){
+          if (pubkey.blob().size() != 32) {
             reason.second.push_back("Public key has wrong size");
           }
         }
@@ -224,11 +224,12 @@ namespace shared_model {
         void validatePeerAddress(
             ReasonsGroupType &reason,
             const interface::AddPeer::AddressType &address) const {
-          if (address != "localhost"){
+          if (address != "localhost") {
             std::regex ipRegex(
-                "((([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5]))).){3}(([0-1]?\\d\\d?)|((2[0-4]"
-                    "\\d)|(25[0-5])))");
-            if (not std::regex_match(address, ipRegex)){
+                "((([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5]))).){3}(([0-1]?\\d\\d?"
+                ")|((2[0-4]"
+                "\\d)|(25[0-5])))");
+            if (not std::regex_match(address, ipRegex)) {
               reason.second.push_back("Wrongly formed PeerAddress");
             }
           }
@@ -237,7 +238,7 @@ namespace shared_model {
         void validateRoleId(ReasonsGroupType &reason,
                             const interface::types::RoleIdType &role_id) const {
           std::regex e(R"([a-z]{1,9})");
-          if (not std::regex_match(role_id, e)){
+          if (not std::regex_match(role_id, e)) {
             reason.second.push_back("Wrongly formed role_id");
           }
         }
