@@ -224,7 +224,14 @@ namespace shared_model {
         void validatePeerAddress(
             ReasonsGroupType &reason,
             const interface::AddPeer::AddressType &address) const {
-          //TODO kamilsa 06.12.17 add dns check during stateless validation
+          if (address != "localhost"){
+            std::regex ipRegex(
+                "((([0-1]?\\d\\d?)|((2[0-4]\\d)|(25[0-5]))).){3}(([0-1]?\\d\\d?)|((2[0-4]"
+                    "\\d)|(25[0-5])))");
+            if (not std::regex_match(address, ipRegex)){
+              reason.second.push_back("Wrongly formed PeerAddress");
+            }
+          }
         }
 
         void validateRoleId(ReasonsGroupType &reason,
