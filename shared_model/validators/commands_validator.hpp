@@ -194,7 +194,7 @@ namespace shared_model {
         void validateAccountId(
             ReasonsGroupType &reason,
             const interface::types::AccountIdType &account_id) const {
-          std::regex e(R"([a-z]{1,9}\\@[a-z]{1,9})");
+          std::regex e(R"([a-z]{1,9}\@[a-z]{1,9})");
           if (not std::regex_match(account_id, e)) {
             reason.second.push_back("Wrongly formed account_id");
           }
@@ -203,7 +203,7 @@ namespace shared_model {
         void validateAssetId(
             ReasonsGroupType &reason,
             const interface::types::AssetIdType &asset_id) const {
-          std::regex e(R"([a-z]{1,9}\\#[a-z]{1,9})");
+          std::regex e(R"([a-z]{1,9}\#[a-z]{1,9})");
           if (not std::regex_match(asset_id, e)) {
             reason.second.push_back("Wrongly formed asset_id");
           }

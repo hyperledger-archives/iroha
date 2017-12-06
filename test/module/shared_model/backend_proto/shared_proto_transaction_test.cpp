@@ -116,8 +116,6 @@ TEST(ProtoTransaction, Builder) {
  * @then transaction throws exception due to badly formed fields in commands
  */
 TEST(ProtoTransaction, BuilderWithInvalidTx) {
-  iroha::protocol::Transaction proto_tx = generateEmptyTransaction();
-
   std::string account_id = "admintest"; // account_id without @
   std::string asset_id = "cointest", // asset_id without #
       amount = "10.00";

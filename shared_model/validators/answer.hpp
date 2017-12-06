@@ -51,7 +51,7 @@ namespace shared_model {
                          .appendAll(command_reasons.second,
                                     [](auto &element) { return element; })
                          .finalize();
-              return std::move(acc);
+              return std::forward<decltype(acc)>(acc);
             });
       }
 
