@@ -52,9 +52,9 @@ namespace shared_model {
 
       template <int Sp>
       TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp> &o,
-                                 SV stateless_validator = SV())
+                                 SV&& stateless_validator = SV())
           : transaction_(o.transaction_),
-            stateless_validator_(stateless_validator) {}
+            stateless_validator_(std::forward<SV>(stateless_validator)) {}
 
       SV stateless_validator_;
 
