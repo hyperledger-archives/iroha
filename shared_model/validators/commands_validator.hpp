@@ -307,6 +307,8 @@ namespace shared_model {
       Answer validate(detail::PolymorphicWrapper<interface::Transaction> tx) {
         Answer answer;
         for (auto &command : tx->commands()) {
+          //FIXME print only for debug purposes, put your comment if you see this comment during review
+          std::cout << command->toString() << std::endl;
           auto reason =
               boost::apply_visitor(CommandsValidatorVisitor(), command->get());
           if (not reason.second.empty()) {

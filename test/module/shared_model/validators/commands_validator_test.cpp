@@ -178,28 +178,66 @@ iroha::protocol::RevokePermission generateRevokePermission(
 using namespace iroha::protocol;
 using namespace shared_model;
 
+TEST(CommandsValidatorTest, StatelessValidTest) {
+  std::string valid_account_id = "account@domain";
+  std::string valid_asset_id = "asset#domain";
+  std::string valid_address = "localhost";
+  std::string valid_role_name = "user";
+
+  auto public_key_size = 32;
+  std::string valid_public_key(public_key_size, '0');
+
+  iroha::protocol::Transaction tx = generateEmptyTransaction();
+  auto payload = tx.mutable_payload();
+
+  // AddAssetQuantity
+  payload->add_commands()->mutable_add_asset_quantity()->CopyFrom(
+      generateAddAssetQuantity(valid_account_id, valid_asset_id));
+
+  // AddPeer
+  payload->add_commands()->mutable_add_peer()->CopyFrom(
+      generateAddPeer(valid_address, valid_public_key));
+
+  // AddSignatory
+  payload->add_commands()->mutable_add_signatory()->CopyFrom(
+      generateAddSignatory(valid_account_id, valid_public_key));
+
+  // AppendRole
+  payload->add_commands()->mutable_append_role()->CopyFrom(
+      generateAppendRole(valid_account_id, valid_role_name));
+
+  shared_model::validation::CommandsValidator commands_validator;
+  auto answer = commands_validator.validate(
+      detail::make_polymorphic<proto::Transaction>(tx));
+
+  ASSERT_FALSE(answer.hasErrors());
+}
+
 TEST(CommandsValidatorTest, StatelessInvalidTest) {
   iroha::protocol::Transaction tx = generateEmptyTransaction();
   auto payload = tx.mutable_payload();
 
-  std::string invalid_account_id = "invalid_account_id";
-  std::string invalid_asset_id = "invalid_asset_id";
-
-  payload->add_commands()->mutable_add_asset_quantity()->CopyFrom(AddAssetQuantity());
+  // create commands from default constructors, which will have empty, therefore
+  // invalid values
+  payload->add_commands()->mutable_add_asset_quantity()->CopyFrom(
+      AddAssetQuantity());
   payload->add_commands()->mutable_add_peer()->CopyFrom(AddPeer());
   payload->add_commands()->mutable_add_signatory()->CopyFrom(AddSignatory());
   payload->add_commands()->mutable_append_role()->CopyFrom(AppendRole());
   payload->add_commands()->mutable_create_account()->CopyFrom(CreateAccount());
   payload->add_commands()->mutable_create_domain()->CopyFrom(CreateDomain());
   payload->add_commands()->mutable_create_role()->CopyFrom(CreateRole());
-  payload->add_commands()->mutable_grant_permission()->CopyFrom(GrantPermission());
+  payload->add_commands()->mutable_grant_permission()->CopyFrom(
+      GrantPermission());
   payload->add_commands()->mutable_remove_sign()->CopyFrom(RemoveSignatory());
-  payload->add_commands()->mutable_revoke_permission()->CopyFrom(RevokePermission());
+  payload->add_commands()->mutable_revoke_permission()->CopyFrom(
+      RevokePermission());
   payload->add_commands()->mutable_set_quorum()->CopyFrom(SetAccountQuorum());
   payload->add_commands()->mutable_transfer_asset()->CopyFrom(TransferAsset());
 
   shared_model::validation::CommandsValidator commands_validator;
-  auto answer = commands_validator.validate(detail::make_polymorphic<proto::Transaction>(tx));
+  auto answer = commands_validator.validate(
+      detail::make_polymorphic<proto::Transaction>(tx));
 
   ASSERT_EQ(answer.getReasonsMap().size(), 12);
 }
