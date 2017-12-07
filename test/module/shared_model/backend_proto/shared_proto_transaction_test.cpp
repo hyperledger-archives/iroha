@@ -35,7 +35,7 @@ TEST(ProtoTransaction, Create) {
   ASSERT_EQ(proto.transactionCounter(), transaction.payload().tx_counter());
 }
 
-// global variables for tests
+// common data for tests
 auto created_time = 10000000000ull;
 shared_model::interface::Transaction::TxCounterType tx_counter = 1;
 std::string creator_account_id = "admin@test";
@@ -117,29 +117,14 @@ TEST(ProtoTransaction, Builder) {
  * @then transaction throws exception due to badly formed fields in commands
  */
 TEST(ProtoTransaction, BuilderWithInvalidTx) {
-  std::string account_id = "admintest";  // account_id without @
-  std::string asset_id = "cointest",     // asset_id without #
+  std::string invalid_account_id = "admintest";  // invalid account_id without @
+  std::string invalid_asset_id = "cointest",     // invalid asset_id without #
       amount = "10.00";
-
-  iroha::protocol::Transaction proto_tx = generateEmptyTransaction();
-  auto command =
-      proto_tx.mutable_payload()->add_commands()->mutable_add_asset_quantity();
-
-  command->CopyFrom(generateAddAssetQuantity(account_id, asset_id));
-
-  auto keypair =
-      shared_model::crypto::CryptoProviderEd25519Sha3::generateKeypair();
-  auto signedProto = shared_model::crypto::CryptoSigner<>::sign(
-      shared_model::crypto::Blob(proto_tx.SerializeAsString()), keypair);
-
-  auto sig = proto_tx.add_signature();
-  sig->set_pubkey(keypair.publicKey().blob());
-  sig->set_signature(signedProto.blob());
 
   ASSERT_THROW(shared_model::proto::TransactionBuilder()
                    .txCounter(tx_counter)
-                   .creatorAccountId(account_id)
-                   .assetQuantity(account_id, asset_id, amount)
+                   .creatorAccountId(invalid_account_id)
+                   .assetQuantity(invalid_account_id, invalid_asset_id, amount)
                    .createdTime(created_time)
                    .build(),
                std::invalid_argument);

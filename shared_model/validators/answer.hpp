@@ -69,6 +69,10 @@ namespace shared_model {
         reasons_map_.insert(std::move(reasons));
       }
 
+      std::unordered_map<ReasonsGroupName, GroupedReasons> getReasonsMap(){
+        return reasons_map_;
+      };
+
      private:
       std::unordered_map<ReasonsGroupName, GroupedReasons> reasons_map_;
     };
