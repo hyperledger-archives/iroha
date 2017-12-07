@@ -79,6 +79,7 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::AppendRole> &ar) const {
           std::string class_name = "AppendRole";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validateAccountId(res, ar->accountId());
           validateRoleId(res, ar->roleName());
@@ -91,6 +92,7 @@ namespace shared_model {
             const {
           std::string class_name = "CreateAccount";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validatePubkey(res, ca->pubkey());
           validateAccountName(res, ca->accountName());
@@ -101,8 +103,9 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateAsset> &ca)
             const {
-          std::string class_name = "CreateAccount";
+          std::string class_name = "CreateAsset";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validateAssetName(res, ca->assetName());
           validateDomainId(res, ca->domainId());
@@ -116,6 +119,7 @@ namespace shared_model {
             const {
           std::string class_name = "CreateDomain";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validateDomainId(res, cd->domainId());
 
@@ -126,6 +130,7 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::CreateRole> &cr) const {
           std::string class_name = "CreateRole";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validateRoleId(res, cr->roleName());
 
@@ -137,6 +142,7 @@ namespace shared_model {
             const {
           std::string class_name = "GrantPermission";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validateAccountId(res, gp->accountId());
 
@@ -148,6 +154,7 @@ namespace shared_model {
             const {
           std::string class_name = "RemoveSignatory";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validateAccountId(res, rs->accountId());
           validatePubkey(res, rs->pubkey());
@@ -159,6 +166,7 @@ namespace shared_model {
             const {
           std::string class_name = "RevokePermission";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validateAccountId(res, rp->accountId());
           validatePermission(res, rp->permissionName());
@@ -169,6 +177,7 @@ namespace shared_model {
             const detail::PolymorphicWrapper<interface::SetQuorum> &sq) const {
           std::string class_name = "SetQuorum";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validateAccountId(res, sq->accountId());
           validateQuorum(res, sq->newQuorum());
@@ -179,8 +188,9 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::TransferAsset> &ta)
             const {
-          std::string class_name = "SetQuorum";
+          std::string class_name = "TransferAsset";
           ReasonsGroupType res;
+          res.first = class_name;
 
           validateAccountId(res, ta->srcAccountId());
           validateAccountId(res, ta->destAccountId());
