@@ -103,7 +103,6 @@ class KVTest : public AmetsuchiTest {
 
   std::string domain_id = "ru";
   std::string account_name1 = "user1";
-  std::string account_data1 = R"({"user1": {"age": "30"}})";
   std::string account_name2 = "user2";
 };
 
