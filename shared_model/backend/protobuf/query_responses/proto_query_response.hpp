@@ -18,6 +18,7 @@
 #ifndef IROHA_PROTO_QUERY_RESPONSE_HPP
 #define IROHA_PROTO_QUERY_RESPONSE_HPP
 
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "backend/protobuf/query_responses/proto_account_asset_response.hpp"
 #include "interfaces/queries/query.hpp"
 #include "interfaces/query_responses/query_response.hpp"
@@ -36,7 +37,10 @@ auto loadQueryResponse(Archive &&ar) {
 
 namespace shared_model {
   namespace proto {
-    class QueryResponse final : public interface::QueryResponse {
+    class QueryResponse final
+        : public CopyableProto<interface::QueryResponse,
+                               iroha::protocol::QueryResponse,
+                               QueryResponse> {
      private:
       template <typename... Value>
       using w = boost::variant<detail::PolymorphicWrapper<Value>...>;
@@ -58,35 +62,23 @@ namespace shared_model {
 
       template <typename QueryResponseType>
       explicit QueryResponse(QueryResponseType &&queryResponse)
-          : queryResponse_(std::forward<QueryResponseType>(queryResponse)),
+          : CopyableProto(std::forward<QueryResponseType>(queryResponse)),
             variant_([this] {
-              return loadQueryResponse<ProtoQueryResponseListType>(
-                  *queryResponse_);
+              return loadQueryResponse<ProtoQueryResponseListType>(*proto_);
             }),
-            hash_([this] {
-              return QueryHashType(queryResponse_->query_hash());
-            }) {}
+            hash_([this] { return QueryHashType(proto_->query_hash()); }) {}
 
-      QueryResponse(const QueryResponse &o)
-          : QueryResponse(*o.queryResponse_) {}
+      QueryResponse(const QueryResponse &o) : QueryResponse(o.proto_) {}
 
       QueryResponse(QueryResponse &&o) noexcept
-          : QueryResponse(std::move(o.queryResponse_.variant())) {}
+          : QueryResponse(std::move(o.proto_)) {}
 
       const QueryResponseVariantType &get() const override { return *variant_; }
 
       const QueryHashType &queryHash() const override { return *hash_; }
 
-      ModelType *copy() const override {
-        return new QueryResponse(
-            iroha::protocol::QueryResponse(*queryResponse_));
-      }
-
      private:
-      detail::ReferenceHolder<iroha::protocol::QueryResponse> queryResponse_;
-
       const LazyVariantType variant_;
-
       const Lazy<QueryHashType> hash_;
     };
   }  // namespace proto

@@ -37,7 +37,7 @@
 %}
 
 %include "interfaces/common_objects/types.hpp"
-%include "interfaces/signable.hpp"
+%include "interfaces/base/signable.hpp"
 %include "cryptography/blob.hpp"
 %include "cryptography/public_key.hpp"
 %include "cryptography/private_key.hpp"

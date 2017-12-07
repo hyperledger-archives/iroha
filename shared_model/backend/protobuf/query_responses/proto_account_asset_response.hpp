@@ -18,7 +18,8 @@
 #ifndef IROHA_PROTO_ACCOUNT_ASSET_RESPONSE_HPP
 #define IROHA_PROTO_ACCOUNT_ASSET_RESPONSE_HPP
 
-#include "backend/protobuf/common_objects/proto_account_asset.hpp"
+#include "backend/protobuf/common_objects/account_asset.hpp"
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "interfaces/query_responses/account_asset_response.hpp"
 #include "responses.pb.h"
 #include "utils/lazy_initializer.hpp"
@@ -26,42 +27,37 @@
 
 namespace shared_model {
   namespace proto {
-    class AccountAssetResponse final : public interface::AccountAssetResponse {
+    class AccountAssetResponse final
+        : public CopyableProto<interface::AccountAssetResponse,
+                               iroha::protocol::QueryResponse,
+                               AccountAssetResponse> {
      public:
       template <typename QueryResponseType>
       explicit AccountAssetResponse(QueryResponseType &&queryResponse)
-          : queryResponse_(std::forward<QueryResponseType>(queryResponse)),
-            accountAssetResponse_(
-                [this] { return queryResponse_->account_assets_response(); }),
+          : CopyableProto(std::forward<QueryResponseType>(queryResponse)),
+            accountAssetResponse_(detail::makeReferenceGenerator(
+                proto_,
+                &iroha::protocol::QueryResponse::account_assets_response)),
             accountAsset_([this] {
               return AccountAsset(accountAssetResponse_->account_asset());
             }) {}
 
-      AccountAssetResponse(const AccountAssetResponse &accountAssetResponse)
-          : AccountAssetResponse(*accountAssetResponse.queryResponse_) {}
+      AccountAssetResponse(const AccountAssetResponse &o)
+          : AccountAssetResponse(o.proto_) {}
 
-      AccountAssetResponse(AccountAssetResponse &&accountAssetResponse)
-          : AccountAssetResponse(
-                std::move(accountAssetResponse.queryResponse_.variant())) {}
+      AccountAssetResponse(AccountAssetResponse &&o)
+          : AccountAssetResponse(std::move(o.proto_)) {}
 
       const interface::AccountAsset &accountAsset() const override {
         return *accountAsset_;
       }
 
-      ModelType *copy() const override {
-        return new AccountAssetResponse(
-            iroha::protocol::QueryResponse(*queryResponse_));
-      }
-
      private:
-      detail::ReferenceHolder<iroha::protocol::QueryResponse> queryResponse_;
-
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
       const Lazy<const iroha::protocol::AccountAssetResponse &>
           accountAssetResponse_;
-
       const Lazy<AccountAsset> accountAsset_;
     };
   }  // namespace proto

@@ -18,7 +18,8 @@
 #ifndef IROHA_PROTO_ACCOUNT_ASSET_HPP
 #define IROHA_PROTO_ACCOUNT_ASSET_HPP
 
-#include "backend/protobuf/common_objects/proto_amount.hpp"
+#include "backend/protobuf/common_objects/amount.hpp"
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "interfaces/common_objects/account_asset.hpp"
 #include "responses.pb.h"
 #include "utils/lazy_initializer.hpp"
@@ -26,24 +27,23 @@
 
 namespace shared_model {
   namespace proto {
-    class AccountAsset final : public interface::AccountAsset {
+    class AccountAsset final
+        : public CopyableProto<interface::AccountAsset,
+                               iroha::protocol::AccountAsset,
+                               AccountAsset> {
      public:
       template <typename AccountAssetType>
       explicit AccountAsset(AccountAssetType &&accountAssetType)
-          : protoAccountAsset_(
-                std::forward<AccountAssetType>(accountAssetType)),
-            accountId_(protoAccountAsset_->account_id()),
-            assetId_(protoAccountAsset_->asset_id()),
-            balance_([this] { return Amount(protoAccountAsset_->balance()); }),
-            blob_([this] {
-              return BlobType(protoAccountAsset_->SerializeAsString());
-            }) {}
+          : CopyableProto(std::forward<AccountAssetType>(accountAssetType)),
+            accountId_(proto_->account_id()),
+            assetId_(proto_->asset_id()),
+            balance_([this] { return Amount(proto_->balance()); }),
+            blob_([this] { return BlobType(proto_->SerializeAsString()); }) {}
 
-      AccountAsset(const AccountAsset &o)
-          : AccountAsset(*o.protoAccountAsset_) {}
+      AccountAsset(const AccountAsset &o) : AccountAsset(o.proto_) {}
 
       AccountAsset(AccountAsset &&o) noexcept
-          : AccountAsset(std::move(o.protoAccountAsset_.variant())) {}
+          : AccountAsset(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return accountId_;
@@ -57,14 +57,7 @@ namespace shared_model {
 
       const BlobType &blob() const override { return *blob_; }
 
-      AccountAsset *copy() const override {
-        return new AccountAsset(
-            iroha::protocol::AccountAsset(*protoAccountAsset_));
-      }
-
      private:
-      detail::ReferenceHolder<iroha::protocol::AccountAsset> protoAccountAsset_;
-
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
