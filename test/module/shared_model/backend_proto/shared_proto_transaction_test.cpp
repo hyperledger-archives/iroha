@@ -90,7 +90,8 @@ TEST(ProtoTransaction, Builder) {
   auto keypair =
       shared_model::crypto::CryptoProviderEd25519Sha3::generateKeypair();
   auto signedProto = shared_model::crypto::CryptoSigner<>::sign(
-      shared_model::crypto::Blob(proto_tx.SerializeAsString()), keypair);
+      shared_model::crypto::Blob(proto_tx.payload().SerializeAsString()),
+      keypair);
 
   auto sig = proto_tx.add_signature();
   sig->set_pubkey(keypair.publicKey().blob());
