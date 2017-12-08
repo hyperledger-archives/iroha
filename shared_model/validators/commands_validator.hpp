@@ -305,7 +305,7 @@ namespace shared_model {
             answer.addReason(std::move(reason));
           }
         }
-        std::string tx_reason_name = "Trasaction";
+        std::string tx_reason_name = "Transaction";
         ReasonsGroupType tx_reason(tx_reason_name, GroupedReasons());
         validateCreatorAccountId(tx_reason, tx->creatorAccountId());
         validateCreatedTime(tx_reason, tx->createdTime());
