@@ -19,7 +19,7 @@
 #define IROHA_ANSWER_HPP
 
 #include <boost/range/numeric.hpp>
-#include <unordered_map>
+#include <map>
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
@@ -50,7 +50,7 @@ namespace shared_model {
                          .init(command_reasons.first)
                          .appendAll(command_reasons.second,
                                     [](auto &element) { return element; })
-                         .finalize();
+                         .finalize() + "\n";
               return std::forward<decltype(acc)>(acc);
             });
       }
@@ -69,12 +69,12 @@ namespace shared_model {
         reasons_map_.insert(std::move(reasons));
       }
 
-      std::unordered_map<ReasonsGroupName, GroupedReasons> getReasonsMap(){
+      std::map<ReasonsGroupName, GroupedReasons> getReasonsMap(){
         return reasons_map_;
       };
 
      private:
-      std::unordered_map<ReasonsGroupName, GroupedReasons> reasons_map_;
+      std::map<ReasonsGroupName, GroupedReasons> reasons_map_;
     };
 
   }  // namespace validation

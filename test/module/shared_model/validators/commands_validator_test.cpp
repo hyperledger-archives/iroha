@@ -142,6 +142,18 @@ iroha::protocol::AppendRole generateAppendRole(std::string account_id,
   return command;
 }
 
+iroha::protocol::CreateAccount generateCreateAccount(std::string account_name,
+                                                     std::string domain_id,
+                                                     std::string main_pubkey) {
+  iroha::protocol::CreateAccount command;
+
+  command.set_account_name(account_name);
+  command.set_domain_id(domain_id);
+  command.set_main_pubkey(main_pubkey);
+
+  return command;
+}
+
 iroha::protocol::CreateRole generateCreateRole(
     std::string role_name,
     std::vector<iroha::protocol::RolePermission> permissions) {
@@ -178,16 +190,32 @@ iroha::protocol::RevokePermission generateRevokePermission(
 using namespace iroha::protocol;
 using namespace shared_model;
 
+/**
+ * @given transaction made of commands with valid fields
+ * @when commands validation is invoked
+ * @then answer has no errors
+ */
 TEST(CommandsValidatorTest, StatelessValidTest) {
   std::string valid_account_id = "account@domain";
   std::string valid_asset_id = "asset#domain";
   std::string valid_address = "localhost";
   std::string valid_role_name = "user";
+  std::string valid_account_name = "admin";
+  std::string valid_domain_id = "ru";
+  std::vector<RolePermission> valid_role_permissions;
+  iroha::protocol::GrantablePermission valid_grantable_permission =
+      iroha::protocol::GrantablePermission ::can_add_my_signatory;
+  uint8_t valid_quorum = 2;
+  std::string valid_amount = "12.34";
+  std::string valid_description = "this is meaningless description";
+  auto valid_created_time = iroha::time::now();
 
   auto public_key_size = 32;
   std::string valid_public_key(public_key_size, '0');
 
   iroha::protocol::Transaction tx = generateEmptyTransaction();
+  tx.mutable_payload()->set_creator_account_id(valid_account_id);
+  tx.mutable_payload()->set_created_time(valid_created_time);
   auto payload = tx.mutable_payload();
 
   // AddAssetQuantity
@@ -206,6 +234,43 @@ TEST(CommandsValidatorTest, StatelessValidTest) {
   payload->add_commands()->mutable_append_role()->CopyFrom(
       generateAppendRole(valid_account_id, valid_role_name));
 
+  // Create Account
+  payload->add_commands()->mutable_create_account()->CopyFrom(
+      generateCreateAccount(
+          valid_account_name, valid_domain_id, valid_public_key));
+
+  // Create Domain
+  payload->add_commands()->mutable_create_domain()->CopyFrom(
+      generateCreateDomain(valid_domain_id, valid_role_name));
+
+  // Create Role
+  payload->add_commands()->mutable_create_role()->CopyFrom(
+      generateCreateRole(valid_role_name, valid_role_permissions));
+
+  // Grant Permission
+  payload->add_commands()->mutable_grant_permission()->CopyFrom(
+      generateGrantPermission(valid_account_id, valid_grantable_permission));
+
+  // Remove Signatory
+  payload->add_commands()->mutable_remove_sign()->CopyFrom(
+      generateRemoveSignatory(valid_account_id, valid_public_key));
+
+  // Revoke permission
+  payload->add_commands()->mutable_revoke_permission()->CopyFrom(
+      generateRevokePermission(valid_account_id, valid_grantable_permission));
+
+  // Set Account Quorum
+  payload->add_commands()->mutable_set_quorum()->CopyFrom(
+      generateSetAccountQuorum(valid_account_id, valid_quorum));
+
+  // Transfer Asset
+  payload->add_commands()->mutable_transfer_asset()->CopyFrom(
+      generateTransferAsset(valid_account_id,
+                            valid_account_id,
+                            valid_asset_id,
+                            valid_description,
+                            valid_amount));
+
   shared_model::validation::CommandsValidator commands_validator;
   auto answer = commands_validator.validate(
       detail::make_polymorphic<proto::Transaction>(tx));
@@ -213,6 +278,12 @@ TEST(CommandsValidatorTest, StatelessValidTest) {
   ASSERT_FALSE(answer.hasErrors());
 }
 
+/**
+ * @given transaction made of commands with invalid fields
+ * @when commands validation is invoked
+ * @then answer has errors and number of errors in answer is the same as the
+ * number of commands in tx
+ */
 TEST(CommandsValidatorTest, StatelessInvalidTest) {
   iroha::protocol::Transaction tx = generateEmptyTransaction();
   auto payload = tx.mutable_payload();
@@ -239,5 +310,7 @@ TEST(CommandsValidatorTest, StatelessInvalidTest) {
   auto answer = commands_validator.validate(
       detail::make_polymorphic<proto::Transaction>(tx));
 
-  ASSERT_EQ(answer.getReasonsMap().size(), 12);
+  // in total there should be 13 reasons of bad answer: 12 for each command + 1
+  // for transaction metadata
+  ASSERT_EQ(answer.getReasonsMap().size(), 13);
 }

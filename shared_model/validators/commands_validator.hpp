@@ -18,8 +18,10 @@
 #ifndef IROHA_COMMANDS_VALIDATOR_HPP
 #define IROHA_COMMANDS_VALIDATOR_HPP
 
+#include <boost/format.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <regex>
+#include "datetime/time.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/transaction.hpp"
 #include "utils/polymorphic_wrapper.hpp"
@@ -54,150 +56,151 @@ namespace shared_model {
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::AddPeer> &ap) const {
-          ReasonsGroupType res;
-          res.first = "AddPeer";
+          ReasonsGroupType reason;
+          reason.first = "AddPeer";
 
-          validatePubkey(res, ap->peerKey());
-          validatePeerAddress(res, ap->peerAddress());
+          validatePubkey(reason, ap->peerKey());
+          validatePeerAddress(reason, ap->peerAddress());
 
-          return res;
+          return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::AddSignatory> &as)
             const {
           std::string class_name = "AddSignatory";
-          ReasonsGroupType res;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateAccountId(res, as->accountId());
-          validatePubkey(res, as->pubkey());
+          validateAccountId(reason, as->accountId());
+          validatePubkey(reason, as->pubkey());
 
-          return res;
+          return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::AppendRole> &ar) const {
           std::string class_name = "AppendRole";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateAccountId(res, ar->accountId());
-          validateRoleId(res, ar->roleName());
+          validateAccountId(reason, ar->accountId());
+          validateRoleId(reason, ar->roleName());
 
-          return res;
+          return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateAccount> &ca)
             const {
           std::string class_name = "CreateAccount";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validatePubkey(res, ca->pubkey());
-          validateAccountName(res, ca->accountName());
+          validatePubkey(reason, ca->pubkey());
+          validateAccountName(reason, ca->accountName());
 
-          return res;
+          return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateAsset> &ca)
             const {
           std::string class_name = "CreateAsset";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateAssetName(res, ca->assetName());
-          validateDomainId(res, ca->domainId());
-          validatePrecision(res, ca->precision());
+          validateAssetName(reason, ca->assetName());
+          validateDomainId(reason, ca->domainId());
+          validatePrecision(reason, ca->precision());
 
-          return res;
+          return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateDomain> &cd)
             const {
           std::string class_name = "CreateDomain";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateDomainId(res, cd->domainId());
+          validateDomainId(reason, cd->domainId());
 
-          return res;
+          return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateRole> &cr) const {
           std::string class_name = "CreateRole";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateRoleId(res, cr->roleName());
+          validateRoleId(reason, cr->roleName());
 
-          return res;
+          return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::GrantPermission> &gp)
             const {
           std::string class_name = "GrantPermission";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateAccountId(res, gp->accountId());
+          validateAccountId(reason, gp->accountId());
 
-          return res;
+          return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::RemoveSignatory> &rs)
             const {
           std::string class_name = "RemoveSignatory";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateAccountId(res, rs->accountId());
-          validatePubkey(res, rs->pubkey());
+          validateAccountId(reason, rs->accountId());
+          validatePubkey(reason, rs->pubkey());
 
-          return res;
+          return reason;
         }
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::RevokePermission> &rp)
             const {
           std::string class_name = "RevokePermission";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateAccountId(res, rp->accountId());
-          validatePermission(res, rp->permissionName());
+          validateAccountId(reason, rp->accountId());
+          validatePermission(reason, rp->permissionName());
 
-          return res;
+          return reason;
         }
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::SetQuorum> &sq) const {
           std::string class_name = "SetQuorum";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateAccountId(res, sq->accountId());
-          validateQuorum(res, sq->newQuorum());
+          validateAccountId(reason, sq->accountId());
+          validateQuorum(reason, sq->newQuorum());
 
-          return res;
+          return reason;
         }
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::TransferAsset> &ta)
             const {
           std::string class_name = "TransferAsset";
-          ReasonsGroupType res;
-          res.first = class_name;
+          ReasonsGroupType reason;
+          reason.first = class_name;
 
-          validateAccountId(res, ta->srcAccountId());
-          validateAccountId(res, ta->destAccountId());
-          validateAssetId(res, ta->assetId());
-          validateAmount(res, ta->amount());
+          validateAccountId(reason, ta->srcAccountId());
+          validateAccountId(reason, ta->destAccountId());
+          validateAssetId(reason, ta->assetId());
+          validateAmount(reason, ta->amount());
 
-          return res;
+          return reason;
         }
 
        private:
@@ -307,18 +310,61 @@ namespace shared_model {
       Answer validate(detail::PolymorphicWrapper<interface::Transaction> tx) {
         Answer answer;
         for (auto &command : tx->commands()) {
-          //FIXME print only for debug purposes, put your comment if you see this comment during review
-          std::cout << command->toString() << std::endl;
           auto reason =
               boost::apply_visitor(CommandsValidatorVisitor(), command->get());
           if (not reason.second.empty()) {
             answer.addReason(std::move(reason));
           }
         }
+        std::string tx_reason_name = "Trasaction";
+        ReasonsGroupType tx_reason(tx_reason_name, GroupedReasons());
+        validateCreatorAccountId(tx_reason, tx->creatorAccountId());
+        validateCreatedTime(tx_reason, tx->createdTime());
+
+        if (not tx_reason.second.empty()) {
+          answer.addReason(std::move(tx_reason));
+        }
         return answer;
       }
 
      private:
+      void validateCreatorAccountId(
+          ReasonsGroupType &reason,
+          const interface::types::AccountIdType &account_id) const {
+        // TODO kamilsa 08.12.17 this validation is the same as
+        // validateAccountId, but adds another message, make template method
+        // overcome similar code dublicating
+        std::regex e(R"([a-z]{1,9}\@[a-z]{1,9})");
+        if (not std::regex_match(account_id, e)) {
+          reason.second.push_back("Wrongly formed creator_account_id");
+        }
+      }
+
+      void validateCreatedTime(
+          ReasonsGroupType &reason,
+          const interface::types::TimestampType &timestamp) {
+        iroha::ts64_t now = iroha::time::now();
+        // TODO 06/08/17 Muratov: make future gap for passing timestamp, like
+        // with old timestamps IR-511 #goodfirstissue
+        if (now < timestamp) {
+          auto message =
+              boost::format(
+                  "timestamp broken: send from future (%llu, now %llu)")
+              % timestamp % now;
+          reason.second.push_back(message.str());
+        }
+
+        if (now - timestamp > MAX_DELAY) {
+          auto message =
+              boost::format("timestamp broken: too old (%llu, now %llu)")
+              % timestamp % now;
+          reason.second.push_back(message.str());
+        }
+      }
+
+      // max-delay between tx creation and validation
+      static constexpr auto MAX_DELAY =
+          std::chrono::hours(24) / std::chrono::milliseconds(1);
       Answer answer_;
     };
 
