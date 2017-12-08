@@ -108,7 +108,7 @@ class KVTest : public AmetsuchiTest {
 
 
 /**
- * @given storage with account1 containing json data
+ * @given empty in account1
  * @when non existing detail is queried using GetAccountDetail
  * @then nullopt is returned
  */
