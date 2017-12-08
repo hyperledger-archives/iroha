@@ -33,7 +33,7 @@ namespace shared_model {
       template <typename QueryType>
       explicit GetAssetInfo(QueryType &&query)
           : CopyableProto(std::forward<QueryType>(query)),
-            asset_id_(detail::makeReferenceGenerator(
+            asset_info_(detail::makeReferenceGenerator(
                 &proto_->payload(),
                 &iroha::protocol::Query::Payload::get_asset_info)) {}
 
@@ -43,13 +43,13 @@ namespace shared_model {
           : GetAssetInfo(std::move(o.proto_)) {}
 
       const interface::types::AssetIdType &assetId() const override {
-        return asset_id_->asset_id();
+        return asset_info_->asset_id();
       }
 
      private:
       // ------------------------------| fields |-------------------------------
       const detail::LazyInitializer<const iroha::protocol::GetAssetInfo &>
-          asset_id_;
+          asset_info_;
     };
 
   }  // namespace proto
