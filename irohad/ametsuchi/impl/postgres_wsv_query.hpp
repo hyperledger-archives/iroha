@@ -38,7 +38,9 @@ namespace iroha {
       nonstd::optional<model::Account> getAccount(
           const std::string &account_id) override;
       nonstd::optional<std::string> getAccountDetail(
-          const std::string &account_id, const std::string &detail) override;
+          const std::string &account_id,
+          const std::string &creator_account_id,
+          const std::string &detail) override;
       nonstd::optional<std::vector<pubkey_t>> getSignatories(
           const std::string &account_id) override;
       nonstd::optional<model::Asset> getAsset(

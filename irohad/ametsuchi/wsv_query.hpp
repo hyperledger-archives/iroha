@@ -88,11 +88,14 @@ namespace iroha {
       /**
        * Get accounts information from its key-value storage
        * @param account_id
+       * @param creator_account_id
        * @param detail
        * @return
        */
       virtual nonstd::optional<std::string> getAccountDetail(
-          const std::string &account_id, const std::string &detail) = 0;
+          const std::string &account_id,
+          const std::string &creator_account_id,
+          const std::string &detail) = 0;
 
       /**
        * Get signatories of account by user account_id

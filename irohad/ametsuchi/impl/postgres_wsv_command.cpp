@@ -308,16 +308,24 @@ namespace iroha {
     }
 
     bool PostgresWsvCommand::setAccountKV(const std::string &account_id,
+                                          const std::string &creator_account_id,
                                           const std::string &key,
                                           const std::string &val) {
       try {
-        transaction_.exec("UPDATE account SET data = jsonb_set(data,"
-                          + transaction_.quote("{" + key + "}")
-                          + ","
-                          + transaction_.quote("\"" + val + "\"")
-                          + ") WHERE account_id="
-                          + transaction_.quote(account_id)
-                          + ";");
+        transaction_.exec(
+            "UPDATE account SET data = jsonb_set(CASE WHEN data ?"
+            + transaction_.quote(creator_account_id)
+            + " THEN data ELSE jsonb_set(data, "
+            + transaction_.quote("{" + creator_account_id + "}")
+            + ","
+            + transaction_.quote("{}")
+            + ") END,"
+            + transaction_.quote("{" + creator_account_id + ", " + key + "}")
+            + ","
+            + transaction_.quote("\"" + val + "\"")
+            + ") WHERE account_id="
+            + transaction_.quote(account_id)
+            + ";");
       } catch (const std::exception &e) {
         log_->error(e.what());
         return false;

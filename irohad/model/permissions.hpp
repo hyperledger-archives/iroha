@@ -36,6 +36,7 @@ namespace iroha {
     const std::string can_set_quorum = "CanSetQuorum";
     const std::string can_transfer = "CanTransfer";
     const std::string can_receive = "CanReceive";
+    const std::string can_set_detail = "CanSetAccountInfo";
 
     // ---------|Query permissions|-------------
     const std::string can_read_assets = "CanReadAssets";
@@ -77,7 +78,8 @@ namespace iroha {
         can_grant + can_set_quorum,
         can_grant + can_add_signatory,
         can_grant + can_remove_signatory,
-        can_grant + can_transfer
+        can_grant + can_transfer,
+        can_grant + can_set_detail
         };
 
     const std::set<std::string> edit_self_group = {
@@ -103,6 +105,7 @@ namespace iroha {
         can_grant + can_add_signatory,
         can_grant + can_remove_signatory,
         can_grant + can_transfer,
+        can_grant + can_set_detail,
         can_set_quorum,
         can_add_signatory,
         can_remove_signatory,
