@@ -24,15 +24,14 @@
 
 #include "backend/protobuf/commands/proto_command.hpp"
 #include "backend/protobuf/common_objects/signature.hpp"
-#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "block.pb.h"
 #include "utils/lazy_initializer.hpp"
 
 namespace shared_model {
   namespace proto {
     class Transaction FINAL : public CopyableProto<interface::Transaction,
-                                             iroha::protocol::Transaction,
-                                             Transaction> {
+                                                   iroha::protocol::Transaction,
+                                                   Transaction> {
      public:
       template <typename TransactionType>
       explicit Transaction(TransactionType &&transaction)
@@ -49,6 +48,8 @@ namespace shared_model {
                   });
             }),
             blob_([this] { return BlobType(proto_->SerializeAsString()); }),
+            blobTypePayload_(
+                [this] { return BlobType(payload_->SerializeAsString()); }),
             signatures_([this] {
               return boost::accumulate(
                   proto_->signature(),
@@ -79,6 +80,8 @@ namespace shared_model {
       }
 
       const crypto::Blob &blob() const override { return *blob_; }
+
+      const crypto::Blob &payload() const override { return *blobTypePayload_; }
 
       const shared_model::interface::Signable<
           shared_model::interface::Transaction,
@@ -113,6 +116,8 @@ namespace shared_model {
       const Lazy<CommandsType> commands_;
 
       const Lazy<BlobType> blob_;
+
+      const Lazy<BlobType> blobTypePayload_;
 
       const Lazy<SignatureSetType> signatures_;
     };

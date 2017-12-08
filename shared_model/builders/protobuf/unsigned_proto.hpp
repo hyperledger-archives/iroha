@@ -45,7 +45,7 @@ namespace shared_model {
        */
       T signAndAddSignature(const crypto::Keypair &keypair) {
         auto signedBlob = shared_model::crypto::CryptoSigner<>::sign(
-            shared_model::crypto::Blob(unsigned_.blob()), keypair);
+            shared_model::crypto::Blob(unsigned_.payload()), keypair);
         iroha::protocol::Signature protosig;
         protosig.set_pubkey(keypair.publicKey().blob());
         protosig.set_signature(signedBlob.blob());

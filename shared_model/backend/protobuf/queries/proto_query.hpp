@@ -83,6 +83,9 @@ namespace shared_model {
             variant_(
                 [this] { return load_query<ProtoQueryListType>(*proto_); }),
             blob_([this] { return BlobType(proto_->SerializeAsString()); }),
+            payload_([this] {
+              return BlobType(proto_->payload().SerializeAsString());
+            }),
             signatures_([this] {
               SignatureSetType set;
               set.emplace(new Signature(proto_->signature()));
@@ -104,6 +107,8 @@ namespace shared_model {
       }
 
       const BlobType &blob() const override { return *blob_; }
+
+      const BlobType &payload() const override { return *payload_; }
 
       // ------------------------| Signable override  |-------------------------
       const SignatureSetType &signatures() const override {
@@ -130,6 +135,7 @@ namespace shared_model {
       const LazyVariantType variant_;
 
       const Lazy<BlobType> blob_;
+      const Lazy<BlobType> payload_;
       const Lazy<SignatureSetType> signatures_;
     };
   }  // namespace proto

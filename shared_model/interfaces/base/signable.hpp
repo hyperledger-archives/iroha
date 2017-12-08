@@ -87,6 +87,12 @@ namespace shared_model {
       virtual types::TimestampType createdTime() const = 0;
 
       /**
+       * @return object payload (everything except signatures)
+       */
+      virtual const typename Hashable<Model, OldModel>::BlobType &payload()
+          const = 0;
+
+      /**
        * Provides comparison based on equality of objects and signatures.
        * @param rhs - another model object
        * @return true, if objects totally equal
