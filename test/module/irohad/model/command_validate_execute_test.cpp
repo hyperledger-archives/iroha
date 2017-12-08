@@ -268,6 +268,11 @@ TEST_F(SubtractAssetQuantityTest, InvalidWhenNoWallet) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when correct arguments
+ * @then executor will be passed
+ */
 TEST_F(SubtractAssetQuantityTest, ValidWhenExistingWallet) {
   // There is already asset- there is a wallet
   // When there is a wallet - no new accountAsset created
@@ -287,6 +292,11 @@ TEST_F(SubtractAssetQuantityTest, ValidWhenExistingWallet) {
   ASSERT_TRUE(validateAndExecute());
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when arguments amount is greater than wallet's amount
+ * @then executor will be failed
+ */
 TEST_F(SubtractAssetQuantityTest, InvalidWhenOverAmount) {
   Amount amount(1204, 2);
   subtract_asset_quantity->amount = amount;
@@ -306,6 +316,11 @@ TEST_F(SubtractAssetQuantityTest, InvalidWhenOverAmount) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when account doesn't have role
+ * @then executor will be failed
+ */
 TEST_F(SubtractAssetQuantityTest, InvalidWhenNoRoles) {
   // Creator has no roles
   EXPECT_CALL(*wsv_query, getAccountRoles(subtract_asset_quantity->account_id))
@@ -313,6 +328,11 @@ TEST_F(SubtractAssetQuantityTest, InvalidWhenNoRoles) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when arguments amount is zero
+ * @then executor will be failed
+ */
 TEST_F(SubtractAssetQuantityTest, InvalidWhenZeroAmount) {
   // Amount is zero
   Amount amount(0);
@@ -325,6 +345,11 @@ TEST_F(SubtractAssetQuantityTest, InvalidWhenZeroAmount) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when arguments amount precision is invalid
+ * @then executor will be failed
+ */
 TEST_F(SubtractAssetQuantityTest, InvalidWhenWrongPrecision) {
   // Amount is with wrong precision (must be 2)
   Amount amount(subtract_asset_quantity->amount.getIntValue(), 30);
@@ -337,12 +362,22 @@ TEST_F(SubtractAssetQuantityTest, InvalidWhenWrongPrecision) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when account doesn't exist
+ * @then executor will be failed
+ */
 TEST_F(SubtractAssetQuantityTest, InvalidWhenNoAccount) {
   // Account to subtract doesn't exist
   subtract_asset_quantity->account_id = "noacc";
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when asset doesn't exist
+ * @then executor will be failed
+ */
 TEST_F(SubtractAssetQuantityTest, InvalidWhenNoAsset) {
   // Asset doesn't exist
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
