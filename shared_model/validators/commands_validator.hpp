@@ -68,9 +68,8 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::AddSignatory> &as)
             const {
-          std::string class_name = "AddSignatory";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "AddSignatory";
 
           validateAccountId(reason, as->accountId());
           validatePubkey(reason, as->pubkey());
@@ -80,9 +79,8 @@ namespace shared_model {
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::AppendRole> &ar) const {
-          std::string class_name = "AppendRole";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "AppendRole";
 
           validateAccountId(reason, ar->accountId());
           validateRoleId(reason, ar->roleName());
@@ -92,10 +90,9 @@ namespace shared_model {
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateAccount> &ca)
-            const {
-          std::string class_name = "CreateAccount";
+            const {;
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "CreateAccount";
 
           validatePubkey(reason, ca->pubkey());
           validateAccountName(reason, ca->accountName());
@@ -106,9 +103,8 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateAsset> &ca)
             const {
-          std::string class_name = "CreateAsset";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "CreateAsset";
 
           validateAssetName(reason, ca->assetName());
           validateDomainId(reason, ca->domainId());
@@ -120,9 +116,8 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateDomain> &cd)
             const {
-          std::string class_name = "CreateDomain";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "CreateDomain";
 
           validateDomainId(reason, cd->domainId());
 
@@ -131,9 +126,8 @@ namespace shared_model {
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateRole> &cr) const {
-          std::string class_name = "CreateRole";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "CreateRole";
 
           validateRoleId(reason, cr->roleName());
 
@@ -143,9 +137,8 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::GrantPermission> &gp)
             const {
-          std::string class_name = "GrantPermission";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "GrantPermission";
 
           validateAccountId(reason, gp->accountId());
 
@@ -155,9 +148,8 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::RemoveSignatory> &rs)
             const {
-          std::string class_name = "RemoveSignatory";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "RemoveSignatory";
 
           validateAccountId(reason, rs->accountId());
           validatePubkey(reason, rs->pubkey());
@@ -167,9 +159,8 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::RevokePermission> &rp)
             const {
-          std::string class_name = "RevokePermission";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "RevokePermission";
 
           validateAccountId(reason, rp->accountId());
           validatePermission(reason, rp->permissionName());
@@ -178,9 +169,8 @@ namespace shared_model {
         }
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::SetQuorum> &sq) const {
-          std::string class_name = "SetQuorum";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "SetQuorum";
 
           validateAccountId(reason, sq->accountId());
           validateQuorum(reason, sq->newQuorum());
@@ -191,9 +181,8 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::TransferAsset> &ta)
             const {
-          std::string class_name = "TransferAsset";
           ReasonsGroupType reason;
-          reason.first = class_name;
+          reason.first = "TransferAsset";
 
           validateAccountId(reason, ta->srcAccountId());
           validateAccountId(reason, ta->destAccountId());
@@ -331,9 +320,6 @@ namespace shared_model {
       void validateCreatorAccountId(
           ReasonsGroupType &reason,
           const interface::types::AccountIdType &account_id) const {
-        // TODO kamilsa 08.12.17 this validation is the same as
-        // validateAccountId, but adds another message, make template method
-        // overcome similar code dublicating
         std::regex e(R"([a-z]{1,9}\@[a-z]{1,9})");
         if (not std::regex_match(account_id, e)) {
           reason.second.push_back("Wrongly formed creator_account_id");
