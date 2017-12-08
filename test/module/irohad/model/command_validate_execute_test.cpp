@@ -245,6 +245,11 @@ public:
     std::shared_ptr<SubtractAssetQuantity> subtract_asset_quantity;
 };
 
+/**
+ * @given SubtractAssetQuantity
+ * @when account doesn't have wallet of target asset
+ * @then executor will be failed
+ */
 TEST_F(SubtractAssetQuantityTest, InvalidWhenNoWallet) {
   // Subtract asset - no wallet
   // When there is no wallet - Failed
