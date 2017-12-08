@@ -48,14 +48,14 @@ namespace shared_model {
      public:
       /// Type of container with all concrete query response
       using QueryResponseVariantType =
-          boost::variant<w<AccountAssetResponse>,
-                         w<AccountResponse>,
-                         w<AssetResponse>,
-                         w<RolePermissionsResponse>,
-                         w<RolesResponse>,
-                         w<SignatoriesResponse>,
-                         w<TransactionsResponse>,
-                         w<ErrorQueryResponse>>;
+          boost::variant<w<AccountAssetResponse>>;
+//                         w<AccountResponse>,
+//                         w<AssetResponse>,
+//                         w<RolePermissionsResponse>,
+//                         w<RolesResponse>,
+//                         w<SignatoriesResponse>,
+//                         w<TransactionsResponse>,
+//                         w<ErrorQueryResponse>>;
 
       /// Type of all available query responses
       using QueryResponseListType = QueryResponseVariantType::types;

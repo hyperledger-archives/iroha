@@ -17,7 +17,6 @@
 
 #include "bindings/model_transaction_proto.hpp"
 #include "primitive.pb.h"
-#include "utils/polymorphic_wrapper.hpp"
 
 namespace shared_model {
   namespace bindings {

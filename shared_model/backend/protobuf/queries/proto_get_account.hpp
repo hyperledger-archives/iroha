@@ -34,7 +34,7 @@ namespace shared_model {
       explicit GetAccount(QueryType &&query)
           : CopyableProto(std::forward<QueryType>(query)),
 
-            account_id_(detail::makeReferenceGenerator(
+            account_(detail::makeReferenceGenerator(
                 &proto_->payload(),
                 &iroha::protocol::Query::Payload::get_account)) {}
 
@@ -43,13 +43,13 @@ namespace shared_model {
       GetAccount(GetAccount &&o) noexcept : GetAccount(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return account_id_->account_id();
+        return account_->account_id();
       }
 
      private:
       // ------------------------------| fields |-------------------------------
       const detail::LazyInitializer<const iroha::protocol::GetAccount &>
-          account_id_;
+          account_;
     };
 
   }  // namespace proto
