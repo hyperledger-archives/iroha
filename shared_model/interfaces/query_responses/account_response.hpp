@@ -34,6 +34,9 @@ namespace shared_model {
     class AccountResponse
         : public Primitive<AccountResponse, iroha::model::AccountResponse> {
      public:
+      /// Collection of role_id types
+      using SetRoleIdType = std::vector<types::RoleIdType>;
+
       /**
        * @return the fetched account.
        */
@@ -42,7 +45,7 @@ namespace shared_model {
       /**
        * @return roles attached to the account
        */
-      virtual const std::vector<types::RoleIdType> &roles() const = 0;
+      virtual const SetRoleIdType &roles() const = 0;
 
       /**
        * Stringify the data.

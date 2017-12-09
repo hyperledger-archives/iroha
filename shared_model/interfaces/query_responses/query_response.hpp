@@ -42,20 +42,18 @@ namespace shared_model {
         : public Primitive<QueryResponse, iroha::model::QueryResponse> {
      private:
       /// Shortcut type for polymorphic wrapper
-      template <typename Value>
-      using w = detail::PolymorphicWrapper<Value>;
+      template <typename... Value>
+      using w = boost::variant<detail::PolymorphicWrapper<Value>...>;
 
      public:
       /// Type of container with all concrete query response
-      using QueryResponseVariantType =
-          boost::variant<w<AccountAssetResponse>>;
-//                         w<AccountResponse>,
-//                         w<AssetResponse>,
-//                         w<RolePermissionsResponse>,
-//                         w<RolesResponse>,
-//                         w<SignatoriesResponse>,
-//                         w<TransactionsResponse>,
-//                         w<ErrorQueryResponse>>;
+      using QueryResponseVariantType = w<AccountAssetResponse, AccountResponse>;
+      //                         w<AssetResponse>,
+      //                         w<RolePermissionsResponse>,
+      //                         w<RolesResponse>,
+      //                         w<SignatoriesResponse>,
+      //                         w<TransactionsResponse>,
+      //                         w<ErrorQueryResponse>>;
 
       /// Type of all available query responses
       using QueryResponseListType = QueryResponseVariantType::types;

@@ -37,9 +37,6 @@ namespace shared_model {
     class Transaction
         : public Signable<Transaction, iroha::model::Transaction> {
      public:
-      /// Type of creator id
-      using CreatorIdType = std::string;
-
       /**
        * @return creator of transaction
        */
