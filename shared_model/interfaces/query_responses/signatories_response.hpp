@@ -36,7 +36,7 @@ namespace shared_model {
       /**
        * @return All public keys attached to account
        */
-      virtual types::PublicKeyCollectionType keys() const = 0;
+      virtual const types::PublicKeyCollectionType& keys() const = 0;
 
       /**
        * Stringify the data.

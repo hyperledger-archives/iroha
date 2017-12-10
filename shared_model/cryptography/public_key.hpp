@@ -38,6 +38,10 @@ namespace shared_model {
             .append(Blob::hex())
             .finalize();
       }
+
+      PublicKey *copy() const override {
+        return new PublicKey(blob());
+      }
     };
   }  // namespace crypto
 }  // namespace shared_model

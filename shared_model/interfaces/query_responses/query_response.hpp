@@ -47,12 +47,13 @@ namespace shared_model {
 
      public:
       /// Type of container with all concrete query response
-      using QueryResponseVariantType =
-          w<AccountAssetResponse, AccountResponse, ErrorQueryResponse>;
+      using QueryResponseVariantType = w<AccountAssetResponse,
+                                         AccountResponse,
+                                         ErrorQueryResponse,
+                                         SignatoriesResponse>;
       //                         w<AssetResponse>,
       //                         w<RolePermissionsResponse>,
       //                         w<RolesResponse>,
-      //                         w<SignatoriesResponse>,
       //                         w<TransactionsResponse>
 
       /// Type of all available query responses

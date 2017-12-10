@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROTO_ACCOUNT_RESPONSE_HPP
-#define IROHA_PROTO_ACCOUNT_RESPONSE_HPP
+#ifndef IROHA_SHARED_MODEL_PROTO_ACCOUNT_RESPONSE_HPP
+#define IROHA_SHARED_MODEL_PROTO_ACCOUNT_RESPONSE_HPP
 
 #include "backend/protobuf/common_objects/account.hpp"
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
@@ -68,4 +68,4 @@ namespace shared_model {
   }  // namespace proto
 }  // namespace shared_model
 
-#endif  // IROHA_PROTO_ACCOUNT_RESPONSE_HPP
+#endif  // IROHA_SHARED_MODEL_PROTO_ACCOUNT_RESPONSE_HPP
