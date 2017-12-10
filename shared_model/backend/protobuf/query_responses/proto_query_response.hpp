@@ -21,6 +21,7 @@
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "backend/protobuf/query_responses/proto_account_asset_response.hpp"
 #include "backend/protobuf/query_responses/proto_account_response.hpp"
+#include "backend/protobuf/query_responses/proto_error_query_response.hpp"
 #include "interfaces/queries/query.hpp"
 #include "interfaces/query_responses/query_response.hpp"
 #include "responses.pb.h"
@@ -54,7 +55,7 @@ namespace shared_model {
      public:
       /// type of proto variant
       using ProtoQueryResponseVariantType =
-          w<AccountAssetResponse, AccountResponse>;
+          w<AccountAssetResponse, AccountResponse, ErrorQueryResponse>;
 
       /// list of types in variant
       using ProtoQueryResponseListType = ProtoQueryResponseVariantType::types;
