@@ -18,13 +18,14 @@
 #ifndef IROHA_SHARED_MODEL_PROTO_QUERY_RESPONSE_HPP
 #define IROHA_SHARED_MODEL_PROTO_QUERY_RESPONSE_HPP
 
-#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "backend/protobuf/query_responses/proto_account_asset_response.hpp"
 #include "backend/protobuf/query_responses/proto_account_response.hpp"
+#include "backend/protobuf/query_responses/proto_asset_response.hpp"
 #include "backend/protobuf/query_responses/proto_error_query_response.hpp"
 #include "backend/protobuf/query_responses/proto_signatories_response.hpp"
 #include "backend/protobuf/query_responses/proto_transaction_response.hpp"
 
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "interfaces/queries/query.hpp"
 #include "interfaces/query_responses/query_response.hpp"
 #include "responses.pb.h"
@@ -60,7 +61,9 @@ namespace shared_model {
       using ProtoQueryResponseVariantType = w<AccountAssetResponse,
                                               AccountResponse,
                                               ErrorQueryResponse,
-                                              SignatoriesResponse>;
+                                              SignatoriesResponse,
+                                              TransactionsResponse,
+                                              AssetResponse>;
 
       /// list of types in variant
       using ProtoQueryResponseListType = ProtoQueryResponseVariantType::types;

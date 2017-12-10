@@ -51,8 +51,8 @@ namespace shared_model {
                                          AccountResponse,
                                          ErrorQueryResponse,
                                          SignatoriesResponse,
-                                         TransactionsResponse>;
-      //                         w<AssetResponse>,
+                                         TransactionsResponse,
+                                         AssetResponse>;
       //                         w<RolePermissionsResponse>,
       //                         w<RolesResponse>,
 
