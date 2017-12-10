@@ -23,6 +23,8 @@
 #include "backend/protobuf/query_responses/proto_account_response.hpp"
 #include "backend/protobuf/query_responses/proto_error_query_response.hpp"
 #include "backend/protobuf/query_responses/proto_signatories_response.hpp"
+#include "backend/protobuf/query_responses/proto_transaction_response.hpp"
+
 #include "interfaces/queries/query.hpp"
 #include "interfaces/query_responses/query_response.hpp"
 #include "responses.pb.h"

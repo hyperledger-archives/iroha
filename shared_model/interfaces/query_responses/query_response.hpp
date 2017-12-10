@@ -50,11 +50,11 @@ namespace shared_model {
       using QueryResponseVariantType = w<AccountAssetResponse,
                                          AccountResponse,
                                          ErrorQueryResponse,
-                                         SignatoriesResponse>;
+                                         SignatoriesResponse,
+                                         TransactionsResponse>;
       //                         w<AssetResponse>,
       //                         w<RolePermissionsResponse>,
       //                         w<RolesResponse>,
-      //                         w<TransactionsResponse>
 
       /// Type of all available query responses
       using QueryResponseListType = QueryResponseVariantType::types;
