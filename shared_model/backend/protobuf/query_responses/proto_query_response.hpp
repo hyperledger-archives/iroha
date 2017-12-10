@@ -22,6 +22,7 @@
 #include "backend/protobuf/query_responses/proto_account_response.hpp"
 #include "backend/protobuf/query_responses/proto_asset_response.hpp"
 #include "backend/protobuf/query_responses/proto_error_query_response.hpp"
+#include "backend/protobuf/query_responses/proto_roles_response.hpp"
 #include "backend/protobuf/query_responses/proto_signatories_response.hpp"
 #include "backend/protobuf/query_responses/proto_transaction_response.hpp"
 
@@ -63,7 +64,8 @@ namespace shared_model {
                                               ErrorQueryResponse,
                                               SignatoriesResponse,
                                               TransactionsResponse,
-                                              AssetResponse>;
+                                              AssetResponse,
+                                              RolesResponse>;
 
       /// list of types in variant
       using ProtoQueryResponseListType = ProtoQueryResponseVariantType::types;
