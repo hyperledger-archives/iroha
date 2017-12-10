@@ -32,11 +32,14 @@ namespace shared_model {
         : public Primitive<RolePermissionsResponse,
                            iroha::model::RolePermissionsResponse> {
      public:
+      /// type of role permissions collection
+      using PermissionNameCollectionType =
+          std::vector<types::PermissionNameType>;
+
       /**
        * @return role permissions
        */
-      virtual const std::vector<types::PermissionNameType> &rolePermissions()
-          const = 0;
+      virtual const PermissionNameCollectionType &rolePermissions() const = 0;
 
       /**
        * Stringify the data.

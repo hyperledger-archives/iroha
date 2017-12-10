@@ -53,8 +53,8 @@ namespace shared_model {
                                          SignatoriesResponse,
                                          TransactionsResponse,
                                          AssetResponse,
-                                         RolesResponse>;
-      //                         w<RolePermissionsResponse>,
+                                         RolesResponse,
+                                         RolePermissionsResponse>;
 
       /// Type of all available query responses
       using QueryResponseListType = QueryResponseVariantType::types;
