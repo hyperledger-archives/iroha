@@ -15,29 +15,9 @@
 # limitations under the License.
 #
 
-add_subdirectory(backend_proto)
-add_subdirectory(validators)
-
-AddTest(lazy_test
-    lazy_test.cpp
-    )
-target_include_directories(lazy_test PUBLIC
-    ${Boost_INCLUDE_DIRS}
-    )
-
-AddTest(crypto_usage_test
-    crypto_usage_test.cpp
-    )
-target_link_libraries(crypto_usage_test
-    shared_model_ed25519_sha3
-    logger
-    )
-
-AddTest(blob_test cryptography/blob_test.cpp)
-
-AddTest(reference_holder_test
-    reference_holder_test.cpp
-    )
-target_include_directories(reference_holder_test PUBLIC
-    ${Boost_INCLUDE_DIRS}
-    )
+addtest(commands_validator_test
+        commands_validator_test.cpp
+        )
+target_link_libraries(commands_validator_test
+        shared_model_proto_backend
+        )
