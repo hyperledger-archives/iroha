@@ -84,6 +84,11 @@ SubtractAssetQuantity createSubtractAssetQuantity() {
   return saq;
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when Same data
+ * @then Return true
+ */
 TEST(ModelOperatorTest, SubtractAssetQuantityTest) {
   auto first = createSubtractAssetQuantity();
   auto second = createSubtractAssetQuantity();

@@ -115,6 +115,11 @@ TEST_F(JsonCommandTest, add_asset_quantity) {
   command_converter_test(orig_command);
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when Set all data
+ * @then Return Json Data
+ */
 TEST_F(JsonCommandTest, subtract_asset_quantity) {
   auto orig_command = std::make_shared<SubtractAssetQuantity>();
   orig_command->account_id = "23";

@@ -61,6 +61,11 @@ TEST(CommandTest, add_asset_quantity) {
   command_converter_test(orig_command);
 }
 
+/**
+ * @given SubtractAssetQuantity
+ * @when Set all data
+ * @then Return Protobuf Data
+ */
 TEST(CommandTest, subtract_asset_quantity) {
   auto orig_command = iroha::model::SubtractAssetQuantity();
   orig_command.account_id = "23";
