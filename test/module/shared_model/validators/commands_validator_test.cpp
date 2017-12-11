@@ -19,6 +19,9 @@
 #include "builders/protobuf/transaction.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 
+// TODO kamilsa 08.12.2017 IR-701 improve transaction builder api, so that we
+// can omit generate methods below
+
 iroha::protocol::Transaction generateEmptyTransaction() {
   auto created_time = 10000000000ull;
   shared_model::interface::Transaction::TxCounterType tx_counter = 1;
