@@ -23,6 +23,15 @@
 
 %include "std_string.i"
 %include "stdint.i"
+%include "exception.i"
+
+%exception {
+  try {
+    $action
+  } catch (const std::invalid_argument &e) {
+    SWIG_exception(SWIG_ValueError, e.what());
+  }
+}
 
 %rename(ModelTransaction) iroha::protocol::Transaction;
 %rename(_interface) interface;
@@ -51,11 +60,3 @@
 %include "bindings/model_transaction_proto.hpp"
 
 %template (UnsignedTx) shared_model::proto::UnsignedWrapper<shared_model::proto::Transaction>;
-
-namespace shared_model {
-  namespace bindings {
-    class ModelBuilder;
-    class ModelCrypto;
-    class ModelTransactionProto;
-  }
-}
