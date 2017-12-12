@@ -78,7 +78,7 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<Command> assetQuantity(
+      NextBuilder<Command> addAssetQuantity(
           const interface::types::AccountIdType &account_id,
           const interface::types::AssetIdType &asset_id,
           const std::string &amount) {
