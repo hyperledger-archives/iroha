@@ -40,20 +40,19 @@ namespace shared_model {
         : public Primitive<ErrorQueryResponse, iroha::model::ErrorResponse> {
      private:
       /// Shortcut type for polymorphic wrapper
-      template <typename Value>
-      using w = detail::PolymorphicWrapper<Value>;
+      template <typename... Value>
+      using w = boost::variant<detail::PolymorphicWrapper<Value>...>;
 
      public:
       /// Type of container with all concrete error query responses
-      using QueryErrorResponseVariantType =
-          boost::variant<w<StatelessFailedErrorResponse>,
-                         w<StatefulFailedErrorResponse>,
-                         w<NoAccountErrorResponse>,
-                         w<NoAssetErrorResponse>,
-                         w<NoRolesErrorResponse>,
-                         w<NoAccountAssetsErrorResponse>,
-                         w<NoSignatoriesErrorResponse>,
-                         w<NotSupportedErrorResponse>>;
+      using QueryErrorResponseVariantType = w<StatelessFailedErrorResponse,
+                                              StatefulFailedErrorResponse,
+                                              NoAccountErrorResponse,
+                                              NoAccountAssetsErrorResponse,
+                                              NoSignatoriesErrorResponse,
+                                              NotSupportedErrorResponse,
+                                              NoAssetErrorResponse,
+                                              NoRolesErrorResponse>;
 
       /// Type list with all concrete query error responses
       using QueryResponseListType = QueryErrorResponseVariantType::types;

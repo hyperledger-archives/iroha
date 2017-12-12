@@ -31,10 +31,13 @@ namespace shared_model {
     class RolesResponse
         : public Primitive<RolesResponse, iroha::model::RolesResponse> {
      public:
+      /// type of roles collection
+      using RolesIdType = std::vector<types::RoleIdType>;
+
       /**
        * @return all roles of the current system
        */
-      virtual const std::vector<types::RoleIdType> &roles() const = 0;
+      virtual const RolesIdType &roles() const = 0;
 
       /**
        * Stringify the data.
