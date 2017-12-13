@@ -31,6 +31,7 @@
 #include "backend/protobuf/commands/proto_grant_permission.hpp"
 #include "backend/protobuf/commands/proto_remove_signatory.hpp"
 #include "backend/protobuf/commands/proto_revoke_permission.hpp"
+#include "backend/protobuf/commands/proto_set_account_detail.hpp"
 #include "backend/protobuf/commands/proto_set_quorum.hpp"
 #include "backend/protobuf/commands/proto_transfer_asset.hpp"
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
@@ -75,6 +76,7 @@ namespace shared_model {
                                            GrantPermission,
                                            RemoveSignatory,
                                            RevokePermission,
+                                           SetAccountDetail,
                                            SetQuorum,
                                            TransferAsset>;
 

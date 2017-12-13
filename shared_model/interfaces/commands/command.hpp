@@ -32,6 +32,7 @@
 #include "interfaces/commands/grant_permission.hpp"
 #include "interfaces/commands/remove_signatory.hpp"
 #include "interfaces/commands/revoke_permission.hpp"
+#include "interfaces/commands/set_account_detail.hpp"
 #include "interfaces/commands/set_quorum.hpp"
 #include "interfaces/commands/transfer_asset.hpp"
 #include "model/command.hpp"
@@ -64,6 +65,7 @@ namespace shared_model {
                                       GrantPermission,
                                       RemoveSignatory,
                                       RevokePermission,
+                                      SetAccountDetail,
                                       SetQuorum,
                                       TransferAsset>;
 

@@ -167,6 +167,19 @@ namespace shared_model {
 
           return reason;
         }
+
+        ReasonsGroupType operator()(
+            const detail::PolymorphicWrapper<interface::SetAccountDetail> &sad)
+            const {
+          ReasonsGroupType reason;
+          reason.first = "SetAccountDetail";
+
+          validateAccountId(reason, sad->accountId());
+          validateAccountDetailKey(reason, sad->key());
+
+          return reason;
+        }
+
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::SetQuorum> &sq) const {
           ReasonsGroupType reason;
@@ -269,6 +282,16 @@ namespace shared_model {
           std::regex e(R"([a-z]{1,9})");
           if (not std::regex_match(asset_name, e)) {
             reason.second.push_back("Wrongly formed asset_name");
+          }
+        }
+
+        void validateAccountDetailKey(
+            ReasonsGroupType &reason,
+            const interface::SetAccountDetail::AccountDetailKeyType &key)
+            const {
+          std::regex e(R"([A-Za-z0-9_]{1,})");
+          if (not std::regex_match(key, e)) {
+            reason.second.push_back("Wrongly formed key");
           }
         }
 
