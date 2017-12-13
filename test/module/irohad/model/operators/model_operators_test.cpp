@@ -80,7 +80,7 @@ SubtractAssetQuantity createSubtractAssetQuantity() {
   saq.account_id = "acc";
   iroha::Amount amount(1010, 2);
   saq.amount = amount;
-  saq.asset_id = "ass";
+  saq.asset_id = "ast";
   return saq;
 }
 

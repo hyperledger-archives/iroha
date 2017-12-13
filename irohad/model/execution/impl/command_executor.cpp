@@ -284,10 +284,6 @@ namespace iroha {
           log_->info("amount is wrongly formed");
           return false;
         }
-        if (not queries.getAccount(subtract_asset_quantity.account_id).has_value()) {
-          log_->info("amount {} is absent", subtract_asset_quantity.account_id);
-          return false;
-        }
         auto account_asset = queries.getAccountAsset(
           subtract_asset_quantity.account_id, subtract_asset_quantity.asset_id);
         if (not account_asset.has_value()) {

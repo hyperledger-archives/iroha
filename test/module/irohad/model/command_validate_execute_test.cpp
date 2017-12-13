@@ -263,8 +263,6 @@ TEST_F(SubtractAssetQuantityTest, InvalidWhenNoWallet) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
     .WillOnce(Return(role_permissions));
   EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
-  EXPECT_CALL(*wsv_query, getAccount(subtract_asset_quantity->account_id))
-    .WillOnce(Return(account));
   ASSERT_FALSE(validateAndExecute());
 }
 
@@ -282,8 +280,6 @@ TEST_F(SubtractAssetQuantityTest, ValidWhenExistingWallet) {
       .WillOnce(Return(wallet));
 
   EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
-  EXPECT_CALL(*wsv_query, getAccount(subtract_asset_quantity->account_id))
-      .WillOnce(Return(account));
   EXPECT_CALL(*wsv_command, upsertAccountAsset(_)).WillOnce(Return(true));
   EXPECT_CALL(*wsv_query, getAccountRoles(subtract_asset_quantity->account_id))
       .WillOnce(Return(admin_roles));
@@ -310,8 +306,6 @@ TEST_F(SubtractAssetQuantityTest, InvalidWhenOverAmount) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
   EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
-  EXPECT_CALL(*wsv_query, getAccount(subtract_asset_quantity->account_id))
-      .WillOnce(Return(account));
 
   ASSERT_FALSE(validateAndExecute());
 }
