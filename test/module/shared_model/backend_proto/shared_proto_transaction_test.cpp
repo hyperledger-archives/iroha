@@ -100,7 +100,7 @@ TEST(ProtoTransaction, Builder) {
   auto tx = shared_model::proto::TransactionBuilder()
                 .txCounter(tx_counter)
                 .creatorAccountId(creator_account_id)
-                .assetQuantity(account_id, asset_id, amount)
+                .addAssetQuantity(account_id, asset_id, amount)
                 .createdTime(created_time)
                 .build();
 
@@ -121,11 +121,12 @@ TEST(ProtoTransaction, BuilderWithInvalidTx) {
   std::string invalid_asset_id = "cointest",     // invalid asset_id without #
       amount = "10.00";
 
-  ASSERT_THROW(shared_model::proto::TransactionBuilder()
-                   .txCounter(tx_counter)
-                   .creatorAccountId(invalid_account_id)
-                   .assetQuantity(invalid_account_id, invalid_asset_id, amount)
-                   .createdTime(created_time)
-                   .build(),
-               std::invalid_argument);
+  ASSERT_THROW(
+      shared_model::proto::TransactionBuilder()
+          .txCounter(tx_counter)
+          .creatorAccountId(invalid_account_id)
+          .addAssetQuantity(invalid_account_id, invalid_asset_id, amount)
+          .createdTime(created_time)
+          .build(),
+      std::invalid_argument);
 }

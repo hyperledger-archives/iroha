@@ -66,7 +66,7 @@ namespace shared_model {
        * @param amount - amount of asset to add
        * @return builder with asset quantity command appended
        */
-      ModelBuilder assetQuantity(
+      ModelBuilder addAssetQuantity(
           const interface::types::AccountIdType &account_id,
           const interface::types::AssetIdType &asset_id,
           const std::string &amount);
