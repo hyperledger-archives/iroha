@@ -88,6 +88,12 @@ set_target_properties(boost PROPERTIES
     INTERFACE_LINK_LIBRARIES "${Boost_LIBRARIES}"
     )
 
+if(ENABLE_LIBS_PACKAGING)
+  foreach (library ${Boost_LIBRARIES})
+    add_install_step_for_lib(${library})
+  endforeach(library)
+endif()
+
 ##########################
 #       benchmark        #
 ##########################
