@@ -56,7 +56,7 @@ namespace shared_model {
         oldModel->role_name = roleName();
         auto roles = rolePermissions();
         oldModel->permissions =
-            std::unordered_set<std::string>(roles.begin(), roles.end());
+            std::set<std::string>(roles.begin(), roles.end());
         return oldModel;
       }
 

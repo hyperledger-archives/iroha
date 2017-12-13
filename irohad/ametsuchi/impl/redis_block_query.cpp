@@ -16,7 +16,7 @@
  */
 
 #include "ametsuchi/impl/redis_block_query.hpp"
-#include "crypto/hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {
