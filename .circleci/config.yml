@@ -370,8 +370,6 @@ workflows:
 
       # build-linux-release -> dockerize
       - build-linux-release:
-          requires:
-            - build
           filters:
             branches:
               only:
