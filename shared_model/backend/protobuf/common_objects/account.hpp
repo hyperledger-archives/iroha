@@ -36,6 +36,7 @@ namespace shared_model {
             accountId_(proto_->account_id()),
             domainId_(proto_->domain_id()),
             quorum_(proto_->quorum()),
+            json_data_(proto_->json_data()),
             blob_([this] { return BlobType(proto_->SerializeAsString()); }) {}
 
       Account(const Account &o) : Account(o.proto_) {}
@@ -54,6 +55,10 @@ namespace shared_model {
         return quorum_;
       }
 
+      const interface::types::JsonType &jsonData() const override {
+        return json_data_;
+      }
+
       const BlobType &blob() const override { return *blob_; }
 
      private:
@@ -65,6 +70,8 @@ namespace shared_model {
       interface::types::DomainIdType domainId_;
 
       interface::types::QuorumType quorum_;
+
+      interface::types::JsonType json_data_;
 
       const Lazy<BlobType> blob_;
     };
