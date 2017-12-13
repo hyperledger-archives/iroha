@@ -175,8 +175,6 @@ jobs:
                 tag=develop
               elif [ "$CIRCLE_BRANCH" == "master" ]; then
                 tag=latest
-              else
-                tag=test
               fi
             fi
             docker build -t hyperledger/iroha-docker:$tag $IROHA_HOME/docker/release
@@ -379,7 +377,6 @@ workflows:
               only:
                 - develop
                 - master
-                - fix/iroha-docker
             tags:
               only: /v[\.0-9]+.*/
       - dockerize:
@@ -390,6 +387,5 @@ workflows:
               only:
                 - develop
                 - master
-                - fix/iroha-docker
             tags:
               only: /v[\.0-9]+.*/
