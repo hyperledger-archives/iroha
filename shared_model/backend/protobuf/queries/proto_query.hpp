@@ -35,6 +35,7 @@
 #include "backend/protobuf/queries/proto_get_role_permissions.hpp"
 #include "backend/protobuf/queries/proto_get_roles.hpp"
 #include "backend/protobuf/queries/proto_get_signatories.hpp"
+#include "backend/protobuf/queries/proto_get_transactions.hpp"
 
 template <typename... T, typename Archive>
 shared_model::interface::Query::QueryVariantType load_query(Archive &&ar) {
@@ -70,6 +71,7 @@ namespace shared_model {
                          wrap<GetSignatories>,
                          wrap<GetAccountTransactions>,
                          wrap<GetAccountAssetTransactions>,
+                         wrap<GetTransactions>,
                          wrap<GetAccountAssets>,
                          wrap<GetRoles>,
                          wrap<GetRolePermissions>,
