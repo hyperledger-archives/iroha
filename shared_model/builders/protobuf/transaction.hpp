@@ -20,6 +20,8 @@
 
 #include "backend/protobuf/transaction.hpp"
 
+#include <boost/range/algorithm/for_each.hpp>
+
 #include "block.pb.h"
 #include "commands.pb.h"
 
@@ -175,6 +177,35 @@ namespace shared_model {
           auto command = proto_command->mutable_create_domain();
           command->set_domain_id(domain_id);
           command->set_default_role(default_role);
+        });
+      }
+
+      auto createRole(
+          const interface::types::RoleIdType &role_name,
+          std::initializer_list<interface::types::PermissionNameType>
+              permissions) {
+        return createRole(role_name, permissions);
+      }
+
+      template <typename... Permission>
+      auto createRole(
+          const interface::types::RoleIdType &role_name,
+          const Permission &... permissions) {
+        return createRole(role_name, {permissions...});
+      }
+
+      template <typename Collection>
+      auto createRole(
+          const interface::types::RoleIdType &role_name,
+          const Collection &permissions) {
+        return addCommand([&](auto proto_command) {
+          auto command = proto_command()->mutable_create_role();
+          command->set_role_name(role_name);
+          boost::for_each(permissions, [&command](const auto &perm) {
+            iroha::protocol::RolePermission p;
+            iroha::protocol::RolePermission_Parse(perm, &p);
+            command->add_permissions(p);
+          });
         });
       }
 

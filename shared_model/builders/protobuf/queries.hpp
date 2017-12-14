@@ -21,6 +21,7 @@
 #include "backend/protobuf/queries/proto_query.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "interfaces/transaction.hpp"
 #include "queries.pb.h"
 
 namespace shared_model {
@@ -120,6 +121,25 @@ namespace shared_model {
           const interface::types::RoleIdType &role_id) {
         auto query = query_.mutable_payload()->mutable_get_role_permissions();
         query->set_role_id(role_id);
+        return *this;
+      }
+
+      NextBuilder<QueryField> getTransactions(
+          std::initializer_list<interface::Transaction::HashType> hashes) {
+        return getTransactions(hashes);
+      }
+
+      template <typename... Hash>
+      NextBuilder<QueryField> getTransactions(const Hash &... hashes) {
+        return getTransactions({hashes...});
+      }
+
+      template <typename Collection>
+      NextBuilder<QueryField> getTransactions(const Collection &hashes) {
+        auto query = query_.mutable_payload()->mutable_get_transactions();
+        boost::for_each(hashes, [&query](const auto &hash) {
+          query->add_tx_hashes(hash.blob());
+        });
         return *this;
       }
 

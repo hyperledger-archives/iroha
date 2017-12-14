@@ -36,7 +36,7 @@ namespace shared_model {
        */
       virtual const types::RoleIdType &roleName() const = 0;
       /// Set of Permissions to insure the order for consistent hash
-      using PermissionsType = std::set<std::string>;
+      using PermissionsType = std::set<types::PermissionNameType>;
       /**
        * @return permissions associated with the role
        */
@@ -54,9 +54,8 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::CreateRole;
         oldModel->role_name = roleName();
-        auto roles = rolePermissions();
-        oldModel->permissions =
-            std::set<std::string>(roles.begin(), roles.end());
+        oldModel->permissions.insert(rolePermissions().begin(),
+                                     rolePermissions().end());
         return oldModel;
       }
 
