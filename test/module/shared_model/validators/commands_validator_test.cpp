@@ -194,6 +194,20 @@ using namespace iroha::protocol;
 using namespace shared_model;
 
 /**
+ * @given transaction without any commands
+ * @when commands validator is invoked
+ * @then answer has error about empty transaction
+ */
+TEST(commandsValidatorTest, EmptyTransactionTest) {
+  auto tx = generateEmptyTransaction();
+  tx.mutable_payload()->set_created_time(iroha::time::now());
+  shared_model::validation::CommandsValidator commands_validator;
+  auto answer = commands_validator.validate(
+          detail::make_polymorphic<proto::Transaction>(tx));
+  ASSERT_TRUE(answer.hasErrors());
+}
+
+/**
  * @given transaction made of commands with valid fields
  * @when commands validation is invoked
  * @then answer has no errors
