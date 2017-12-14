@@ -54,6 +54,21 @@ namespace iroha {
       return true;
     }
 
+    bool PostgresWsvCommand::deleteAccountRole(const std::string &account_id,
+                                               const std::string &role_name) {
+      try {
+        transaction_.exec("DELETE FROM account_has_roles WHERE account_id="
+                          + transaction_.quote(account_id)
+                          + "AND role_id="
+                          + transaction_.quote(role_name)
+                          + ";");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return false;
+      }
+      return true;
+    }
+
     bool PostgresWsvCommand::insertRolePermissions(
         const std::string &role_id, const std::set<std::string> &permissions) {
       auto entry = [this, &role_id](auto permission) {

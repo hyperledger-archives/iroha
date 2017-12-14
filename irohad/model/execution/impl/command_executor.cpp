@@ -26,6 +26,7 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/detach_role.hpp"
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
@@ -79,6 +80,32 @@ namespace iroha {
     bool AppendRoleExecutor::isValid(const Command &command,
                                      ametsuchi::WsvQuery &queries) {
       // TODO 26/09/17 grimadas: check. No additional checks required
+      return true;
+    }
+
+    // ----------------------------| Append Role |-----------------------------
+    DetachRoleExecutor::DetachRoleExecutor() {
+      log_ = logger::log("DetachRoleExecutor");
+    }
+
+    bool DetachRoleExecutor::execute(const Command &command,
+                                     ametsuchi::WsvQuery &queries,
+                                     ametsuchi::WsvCommand &commands) {
+      auto cmd_value = static_cast<const DetachRole&>(command);
+
+      return commands.deleteAccountRole(cmd_value.account_id,
+                                        cmd_value.role_name);
+    }
+
+    bool DetachRoleExecutor::hasPermissions(const Command &command,
+                                            ametsuchi::WsvQuery &queries,
+                                            const Account &creator) {
+      return checkAccountRolePermission(
+          creator.account_id, queries, can_detach_role);
+    }
+
+    bool DetachRoleExecutor::isValid(const Command &command,
+                                     ametsuchi::WsvQuery &queries) {
       return true;
     }
 
@@ -583,7 +610,7 @@ namespace iroha {
                                            ametsuchi::WsvQuery &queries,
                                            ametsuchi::WsvCommand &commands) {
       auto cmd = static_cast<const SetAccountDetail &>(command);
-      if (creator_.account_id.empty()){
+      if (creator_.account_id.empty()) {
         // 30/11 grimadas TODO: check if this statement always hold
         // If creator is empty, it means this is genesis insert
         creator_.account_id = "genesis";

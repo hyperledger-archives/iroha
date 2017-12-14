@@ -78,6 +78,7 @@ namespace iroha_cli {
 
       const std::string CREATE_ROLE = "crt_role";
       const std::string APPEND_ROLE = "apnd_role";
+      const std::string DETACH_ROLE = "detach";
       const std::string GRANT_PERM = "grant_perm";
       const std::string REVOKE_PERM = "revoke_perm";
 
@@ -125,6 +126,8 @@ namespace iroha_cli {
       std::shared_ptr<iroha::model::Command> parseTransferAsset(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseAppendRole(
+          std::vector<std::string> line);
+      std::shared_ptr<iroha::model::Command> parseDetachRole(
           std::vector<std::string> line);
       std::shared_ptr<iroha::model::Command> parseCreateRole(
           std::vector<std::string> line);

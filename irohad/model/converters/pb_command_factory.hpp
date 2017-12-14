@@ -31,6 +31,7 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/detach_role.hpp"
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
@@ -112,6 +113,12 @@ namespace iroha {
             const model::AppendRole &command);
         model::AppendRole deserializeAppendRole(
             const protocol::AppendRole &command);
+
+        // Append role
+        protocol::DetachRole serializeDetachRole(
+            const model::DetachRole &command);
+        model::DetachRole deserializeDetachRole(
+            const protocol::DetachRole &command);
 
         // Create Role
         protocol::CreateRole serializeCreateRole(

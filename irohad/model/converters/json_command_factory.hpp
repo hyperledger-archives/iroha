@@ -103,6 +103,12 @@ namespace iroha {
         optional_ptr<Command> deserializeAppendRole(
             const rapidjson::Value &document);
 
+        // DetachRole
+        rapidjson::Document serializeDetachRole(
+            std::shared_ptr<Command> command);
+        optional_ptr<Command> deserializeDetachRole(
+            const rapidjson::Value &document);
+
         // CreateRole
         rapidjson::Document serializeCreateRole(
             std::shared_ptr<Command> command);

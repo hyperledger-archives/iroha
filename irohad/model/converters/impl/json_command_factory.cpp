@@ -32,6 +32,7 @@
 
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/detach_role.hpp"
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/revoke_permission.hpp"
 
@@ -88,6 +89,7 @@ namespace iroha {
              &JsonCommandFactory::serializeTransferAsset},
             {typeid(AppendRole), &JsonCommandFactory::serializeAppendRole},
             {typeid(CreateRole), &JsonCommandFactory::serializeCreateRole},
+            {typeid(DetachRole), &JsonCommandFactory::serializeDetachRole},
             {typeid(GrantPermission),
              &JsonCommandFactory::serializeGrantPermission},
             {typeid(RevokePermission),
@@ -111,6 +113,7 @@ namespace iroha {
             {"SetQuorum", &JsonCommandFactory::deserializeSetQuorum},
             {"TransferAsset", &JsonCommandFactory::deserializeTransferAsset},
             {"AppendRole", &JsonCommandFactory::deserializeAppendRole},
+            {"DetachRole", &JsonCommandFactory::deserializeDetachRole},
             {"CreateRole", &JsonCommandFactory::deserializeCreateRole},
             {"GrantPermission",
              &JsonCommandFactory::deserializeGrantPermission},
@@ -229,8 +232,7 @@ namespace iroha {
         return make_optional_ptr<CreateAccount>()
             | des.String(&CreateAccount::account_name, "account_name")
             | des.String(&CreateAccount::domain_id, "domain_id")
-            | des.String(&CreateAccount::pubkey, "pubkey")
-            | toCommand;
+            | des.String(&CreateAccount::pubkey, "pubkey") | toCommand;
       }
 
       // Set Account Detail
@@ -424,6 +426,28 @@ namespace iroha {
         return make_optional_ptr<AppendRole>()
             | des.String(&AppendRole::account_id, "account_id")
             | des.String(&AppendRole::role_name, "role_name") | toCommand;
+      }
+
+      rapidjson::Document JsonCommandFactory::serializeDetachRole(
+          std::shared_ptr<Command> command) {
+        auto cmd = static_cast<DetachRole *>(command.get());
+
+        Document document;
+        auto &allocator = document.GetAllocator();
+
+        document.SetObject();
+        document.AddMember("command_type", "DetachRole", allocator);
+        document.AddMember("account_id", cmd->account_id, allocator);
+        document.AddMember("role_name", cmd->role_name, allocator);
+        return document;
+      }
+
+      optional_ptr<Command> JsonCommandFactory::deserializeDetachRole(
+          const rapidjson::Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<DetachRole>()
+            | des.String(&DetachRole::account_id, "account_id")
+            | des.String(&DetachRole::role_name, "role_name") | toCommand;
       }
 
       rapidjson::Document JsonCommandFactory::serializeCreateRole(
