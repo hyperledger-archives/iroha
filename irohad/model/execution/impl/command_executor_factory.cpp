@@ -45,6 +45,7 @@ CommandExecutorFactory::create() {
   executors[typeid(GrantPermission)] = std::make_shared<GrantPermissionExecutor>();
   executors[typeid(RevokePermission)] = std::make_shared<RevokePermissionExecutor>();
   executors[typeid(SetAccountDetail)] = std::make_shared<SetAccountDetailExecutor>();
+  executors[typeid(DetachRole)] = std::make_shared<DetachRoleExecutor>();
 
 
   auto result =
