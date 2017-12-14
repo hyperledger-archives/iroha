@@ -18,322 +18,215 @@
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 #include <model/queries/responses/account_assets_response.hpp>
+#include "model/permissions.hpp"
 #include "model/queries/responses/account_response.hpp"
 #include "model/queries/responses/asset_response.hpp"
 #include "model/queries/responses/error_response.hpp"
 #include "model/queries/responses/roles_response.hpp"
 #include "model/query_execution.hpp"
-#include "model/permissions.hpp"
 
 using ::testing::Return;
 using ::testing::AtLeast;
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::StrictMock;
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
 
-// TODO 26/09/17 grimadas: refactor (check CommandValidateExecuteTest test) IR-513
+class QueryValidateExecuteTest : public ::testing::Test {
+ public:
+  QueryValidateExecuteTest() = default;
+
+  void SetUp() override {
+    wsv_query = std::make_shared<StrictMock<MockWsvQuery>>();
+    block_query = std::make_shared<StrictMock<MockBlockQuery>>();
+    factory = std::make_shared<QueryProcessingFactory>(wsv_query, block_query);
+
+    creator.account_id = admin_id;
+    creator.domain_id = domain_id;
+    creator.json_data = "{}";
+    creator.quorum = 1;
+
+    account.account_id = account_id;
+    account.domain_id = domain_id;
+    account.json_data = "{}";
+    account.quorum = 1;
+  }
+
+  std::shared_ptr<QueryResponse> validateAndExecute() {
+    return factory->execute(query);
+  }
+
+  std::string admin_id = "admin@test", account_id = "test@test",
+              asset_id = "coin#test", domain_id = "test";
+
+  std::string admin_role = "admin";
+
+  std::vector<std::string> admin_roles = {admin_role};
+  std::vector<std::string> role_permissions;
+  Domain default_domain;
+
+  Account creator, account;
+  std::shared_ptr<MockWsvQuery> wsv_query;
+  std::shared_ptr<MockBlockQuery> block_query;
+
+  std::shared_ptr<QueryProcessingFactory> factory;
+  std::shared_ptr<Query> query;
+};
+
+class GetAccountTest : public QueryValidateExecuteTest {
+ public:
+  void SetUp() override {
+    QueryValidateExecuteTest::SetUp();
+    get_account = std::make_shared<GetAccount>();
+    get_account->account_id = admin_id;
+    get_account->creator_account_id = admin_id;
+    query = get_account;
+
+    role_permissions = {can_get_my_account};
+  }
+  std::shared_ptr<GetAccount> get_account;
+};
 
 /**
- * Variables for testing
+ * @given initialized storage, permission to his account
+ * @when get account information
+ * @then Return account
  */
-auto ACCOUNT_ID = "test@test";
-auto ADMIN_ID = "admin@test";
-auto DOMAIN_NAME = "test";
-auto ADVERSARY_ID = "adversary@test";
-auto ASSET_ID = "coin";
-auto ADMIN_ROLE = "admin";
-
-/**
- * Default accounts for testing
- */
-
-iroha::model::Account get_default_creator() {
-  iroha::model::Account creator = iroha::model::Account();
-  creator.account_id = ADMIN_ID;
-  creator.domain_id = DOMAIN_NAME;
-  creator.quorum = 1;
-  // TODO: add role based permission
-  return creator;
-}
-
-iroha::model::Account get_default_account() {
-  auto dummy = iroha::model::Account();
-  dummy.account_id = ACCOUNT_ID;
-  dummy.domain_id = DOMAIN_NAME;
-  dummy.quorum = 1;
-  return dummy;
-}
-
-iroha::model::Account get_default_adversary() {
-  auto dummy = iroha::model::Account();
-  dummy.account_id = ADVERSARY_ID;
-  dummy.domain_id = DOMAIN_NAME;
-  dummy.quorum = 1;
-  return dummy;
-}
-
-/**
- * Set default behaviour for Ametsuchi mock classes
- * @param test_wsv
- * @param test_blocks
- */
-void set_default_ametsuchi(MockWsvQuery &test_wsv,
-                           MockBlockQuery &test_blocks) {
-  // If No account exist - return nullopt
-  EXPECT_CALL(test_wsv, getAccount(_)).WillRepeatedly(Return(nonstd::nullopt));
-
-  // Admin's account exist in the database
-  auto admin = get_default_creator();
-  EXPECT_CALL(test_wsv, getAccount(ADMIN_ID)).WillRepeatedly(Return(admin));
-  // Test account exist in the database
-  auto dummy = get_default_account();
-  EXPECT_CALL(test_wsv, getAccount(ACCOUNT_ID)).WillRepeatedly(Return(dummy));
-  // Adversary database exist in the database
-  auto adversary = get_default_adversary();
-  EXPECT_CALL(test_wsv, getAccount(ADVERSARY_ID))
-      .WillRepeatedly(Return(adversary));
-  // If no account_asset exist - return nullopt
-  EXPECT_CALL(test_wsv, getAccountAsset(_, _))
-      .WillRepeatedly(Return(nonstd::nullopt));
-
-  std::vector<std::string> roles = {ADMIN_ROLE};
-  EXPECT_CALL(test_wsv, getRoles()).WillRepeatedly(Return(roles));
-
-  EXPECT_CALL(test_wsv, getAccountRoles(_))
-      .WillRepeatedly(Return(nonstd::nullopt));
-  EXPECT_CALL(test_wsv, getAccountRoles(ADMIN_ID))
-      .WillRepeatedly(Return(roles));
-  EXPECT_CALL(test_wsv, getAccountRoles(ACCOUNT_ID))
-      .WillRepeatedly(Return(roles));
-
-  std::vector<std::string> perms = {can_get_all_acc_ast_txs,
-                                    can_get_all_acc_ast,
-                                    can_get_all_acc_txs,
-                                    can_get_all_accounts,
-                                    can_get_all_signatories,
-                                    can_read_assets,
-                                    can_get_roles};
-  EXPECT_CALL(test_wsv, getRolePermissions(_))
-      .WillRepeatedly(Return(nonstd::nullopt));
-  EXPECT_CALL(test_wsv, getRolePermissions(ADMIN_ROLE))
-      .WillRepeatedly(Return(perms));
-  auto def_asset = Asset(ASSET_ID, DOMAIN_NAME, 2);
-  EXPECT_CALL(test_wsv, getAsset(_)).WillRepeatedly(Return(nonstd::nullopt));
-  EXPECT_CALL(test_wsv, getAsset(ASSET_ID)).WillRepeatedly(Return(def_asset));
-  // Test account has some amount of test assets
-  auto acct_asset = iroha::model::AccountAsset();
-  acct_asset.asset_id = ASSET_ID;
-  acct_asset.account_id = ACCOUNT_ID;
-  iroha::Amount balance(150);
-  acct_asset.balance = balance;
-  EXPECT_CALL(test_wsv, getAccountAsset(ACCOUNT_ID, ASSET_ID))
-      .WillRepeatedly(Return(acct_asset));
-  acct_asset.account_id = ADMIN_ID;
-  EXPECT_CALL(test_wsv, getAccountAsset(ADMIN_ID, ASSET_ID))
-      .WillRepeatedly(Return(acct_asset));
-  EXPECT_CALL(test_wsv, hasAccountGrantablePermission(_, _, _))
-      .WillRepeatedly(Return(false));
-}
-
-TEST(QueryExecutor, get_account) {
-  auto wsv_queries = std::make_shared<MockWsvQuery>();
-  auto block_queries = std::make_shared<MockBlockQuery>();
-
-  auto query_proccesor =
-      iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
-
-  set_default_ametsuchi(*wsv_queries, *block_queries);
-
-  // Valid cases:
-  // 1. Admin asks about test account
-  auto query = std::make_shared<iroha::model::GetAccount>();
-  query->account_id = ACCOUNT_ID;
-  query->creator_account_id = ADMIN_ID;
-
-  auto response = query_proccesor.execute(query);
+TEST_F(GetAccountTest, MyAccountValidCase) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillRepeatedly(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillRepeatedly(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getAccount(admin_id)).WillOnce(Return(creator));
+  auto response = validateAndExecute();
   auto cast_resp =
       std::static_pointer_cast<iroha::model::AccountResponse>(response);
-  ASSERT_EQ(cast_resp->account.account_id, ACCOUNT_ID);
-
-  // 2. Account creator asks about his account
-  query->account_id = ADMIN_ID;
-  query->creator_account_id = ADMIN_ID;
-  response = query_proccesor.execute(query);
-  cast_resp = std::static_pointer_cast<iroha::model::AccountResponse>(response);
-  ASSERT_EQ(cast_resp->account.account_id, ADMIN_ID);
-
-  // --------- Non valid cases: -------
-
-  // 1. Asking non-existing account
-
-  query->account_id = "nonacct";
-  query->creator_account_id = ADMIN_ID;
-  response = query_proccesor.execute(query);
-  auto cast_resp_2 =
-      std::dynamic_pointer_cast<iroha::model::AccountResponse>(response);
-  ASSERT_EQ(cast_resp_2, nullptr);
-  auto err_resp =
-      std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::NO_ACCOUNT);
-
-  // 2. No rights to ask account
-  query->account_id = ACCOUNT_ID;
-  query->creator_account_id = ADVERSARY_ID;
-  response = query_proccesor.execute(query);
-  cast_resp =
-      std::dynamic_pointer_cast<iroha::model::AccountResponse>(response);
-  ASSERT_EQ(cast_resp, nullptr);
-
-  err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::STATEFUL_INVALID);
-
-  // 3. No creator
-  query->account_id = ACCOUNT_ID;
-  query->creator_account_id = "noacc";
-  response = query_proccesor.execute(query);
-  cast_resp =
-      std::dynamic_pointer_cast<iroha::model::AccountResponse>(response);
-  ASSERT_EQ(cast_resp, nullptr);
-
-  err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::STATEFUL_INVALID);
-
-  // TODO: tests for signatures
+  ASSERT_EQ(cast_resp->account.account_id, admin_id);
 }
 
-TEST(QueryExecutor, get_account_assets) {
-  auto wsv_queries = std::make_shared<MockWsvQuery>();
-  auto block_queries = std::make_shared<MockBlockQuery>();
+/**
+ * @given initialized storage, global permission
+ * @when get account information about other user
+ * @then Return account
+ */
+TEST_F(GetAccountTest, AllAccountValidCase) {
+  get_account->account_id = account_id;
+  get_account->creator_account_id = admin_id;
+  role_permissions = {can_get_all_accounts};
 
-  auto query_proccesor =
-      iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
-
-  set_default_ametsuchi(*wsv_queries, *block_queries);
-
-  // Valid cases:
-  // 1. Admin asks account_id
-  auto query = std::make_shared<iroha::model::GetAccountAssets>();
-  query->account_id = ACCOUNT_ID;
-  query->asset_id = ASSET_ID;
-  query->creator_account_id = ADMIN_ID;
-  auto response = query_proccesor.execute(query);
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillRepeatedly(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillRepeatedly(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getAccount(account_id)).WillOnce(Return(account));
+  EXPECT_CALL(*wsv_query, getAccountRoles(account_id))
+      .WillOnce(Return(admin_roles));
+  auto response = validateAndExecute();
   auto cast_resp =
-      std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
-  ASSERT_EQ(cast_resp->acct_asset.account_id, ACCOUNT_ID);
-  ASSERT_EQ(cast_resp->acct_asset.asset_id, ASSET_ID);
-
-  // 2. Account creator asks about his account
-  query->account_id = ADMIN_ID;
-  query->creator_account_id = ADMIN_ID;
-  response = query_proccesor.execute(query);
-  cast_resp =
-      std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
-  ASSERT_EQ(cast_resp->acct_asset.account_id, ADMIN_ID);
-  ASSERT_EQ(cast_resp->acct_asset.asset_id, ASSET_ID);
-
-  // --------- Non valid cases: -------
-
-  // 1. Asking non-existed account asset
-
-  query->account_id = "nonacct";
-  query->creator_account_id = ADMIN_ID;
-  response = query_proccesor.execute(query);
-  auto cast_resp_2 =
-      std::dynamic_pointer_cast<iroha::model::AccountAssetResponse>(response);
-  ASSERT_EQ(cast_resp_2, nullptr);
-  auto err_resp =
-      std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::NO_ACCOUNT_ASSETS);
-
-  // Asking non-existed account asset
-
-  query->account_id = ACCOUNT_ID;
-  query->asset_id = "nonasset";
-  query->creator_account_id = ADMIN_ID;
-  response = query_proccesor.execute(query);
-  cast_resp_2 =
-      std::dynamic_pointer_cast<iroha::model::AccountAssetResponse>(response);
-  ASSERT_EQ(cast_resp_2, nullptr);
-  err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::NO_ACCOUNT_ASSETS);
-
-  // 2. No rights to ask
-  query->account_id = ACCOUNT_ID;
-  query->asset_id = ASSET_ID;
-  query->creator_account_id = ADVERSARY_ID;
-  response = query_proccesor.execute(query);
-  cast_resp =
-      std::dynamic_pointer_cast<iroha::model::AccountAssetResponse>(response);
-  ASSERT_EQ(cast_resp, nullptr);
-
-  err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::STATEFUL_INVALID);
-
-  // 3. No creator
-  query->account_id = ACCOUNT_ID;
-  query->creator_account_id = "noacct";
-  response = query_proccesor.execute(query);
-  cast_resp =
-      std::dynamic_pointer_cast<iroha::model::AccountAssetResponse>(response);
-  ASSERT_EQ(cast_resp, nullptr);
-
-  err_resp = std::dynamic_pointer_cast<iroha::model::ErrorResponse>(response);
-  ASSERT_EQ(err_resp->reason, iroha::model::ErrorResponse::STATEFUL_INVALID);
-
-  // TODO: tests for signatures
+      std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  ASSERT_EQ(cast_resp->account.account_id, account_id);
 }
 
-TEST(QueryExecutor, get_asset_info) {
-  auto wsv_queries = std::make_shared<MockWsvQuery>();
-  auto block_queries = std::make_shared<MockBlockQuery>();
+/**
+ * @given initialized storage, domain permission
+ * @when get account information about other user in the same domain
+ * @then Return account
+ */
+TEST_F(GetAccountTest, DomainAccountValidCase) {
+  get_account->account_id = account_id;
+  get_account->creator_account_id = admin_id;
+  role_permissions = {can_get_domain_accounts};
 
-  auto query_proccesor =
-      iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
-
-  set_default_ametsuchi(*wsv_queries, *block_queries);
-
-  auto query = std::make_shared<GetAssetInfo>(ASSET_ID);
-  query->creator_account_id = ADMIN_ID;
-  auto response = query_proccesor.execute(query);
-  auto cast_resp = std::static_pointer_cast<AssetResponse>(response);
-  ASSERT_EQ(ASSET_ID, cast_resp->asset.asset_id);
-  // TODO: add more bad test cases
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillRepeatedly(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillRepeatedly(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getAccount(account_id)).WillOnce(Return(account));
+  EXPECT_CALL(*wsv_query, getAccountRoles(account_id))
+      .WillOnce(Return(admin_roles));
+  auto response = validateAndExecute();
+  auto cast_resp =
+      std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  ASSERT_EQ(cast_resp->account.account_id, account_id);
 }
 
-TEST(QueryExecutor, get_roles) {
-  auto wsv_queries = std::make_shared<MockWsvQuery>();
-  auto block_queries = std::make_shared<MockBlockQuery>();
+/**
+ * @given initialized storage, granted permission
+ * @when get account information about other user
+ * @then Return error
+ */
+TEST_F(GetAccountTest, GrantAccountValidCase) {
+  get_account->account_id = account_id;
+  get_account->creator_account_id = admin_id;
+  role_permissions = {};
 
-  auto query_proccesor =
-      iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillRepeatedly(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillRepeatedly(Return(role_permissions));
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, get_account->account_id, can_get_my_account))
+      .WillOnce(Return(true));
 
-  set_default_ametsuchi(*wsv_queries, *block_queries);
-
-  auto query = std::make_shared<GetRoles>();
-  query->creator_account_id = ADMIN_ID;
-  auto response = query_proccesor.execute(query);
-  auto cast_resp = std::static_pointer_cast<RolesResponse>(response);
-  ASSERT_EQ(1, cast_resp->roles.size());
-  ASSERT_EQ(ADMIN_ROLE, cast_resp->roles.at(0));
-  // TODO: add more test cases
+  EXPECT_CALL(*wsv_query, getAccount(account_id)).WillOnce(Return(account));
+  EXPECT_CALL(*wsv_query, getAccountRoles(account_id))
+      .WillOnce(Return(admin_roles));
+  auto response = validateAndExecute();
+  auto cast_resp =
+      std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  ASSERT_EQ(cast_resp->account.account_id, account_id);
 }
 
-TEST(QueryExecutor, get_role_permissions) {
-  auto wsv_queries = std::make_shared<MockWsvQuery>();
-  auto block_queries = std::make_shared<MockBlockQuery>();
+/**
+ * @given initialized storage, domain permission
+ * @when get account information about other user in the other domain
+ * @then Return error
+ */
+TEST_F(GetAccountTest, DifferentDomainAccountInValidCase) {
+  get_account->account_id = "test@test2";  // other domain
+  get_account->creator_account_id = admin_id;
+  role_permissions = {can_get_domain_accounts};
 
-  auto query_proccesor =
-      iroha::model::QueryProcessingFactory(wsv_queries, block_queries);
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillRepeatedly(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillRepeatedly(Return(role_permissions));
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, get_account->account_id, can_get_my_account))
+      .WillOnce(Return(false));
 
-  set_default_ametsuchi(*wsv_queries, *block_queries);
-
-  auto query = std::make_shared<GetRolePermissions>(ADMIN_ROLE);
-  query->creator_account_id = ADMIN_ID;
-  auto response = query_proccesor.execute(query);
-  auto cast_resp = std::static_pointer_cast<RolePermissionsResponse>(response);
-  ASSERT_GT(cast_resp->role_permissions.size(), 0);
-  // TODO: add more test cases
+  auto response = validateAndExecute();
+  auto cast_resp =
+      std::static_pointer_cast<iroha::model::ErrorResponse>(response);
+  ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
 }
 
+/**
+ * @given initialized storage, permission
+ * @when get account information about non existing account
+ * @then Return error
+ */
+TEST_F(GetAccountTest, NoAccountExist) {
+  get_account->account_id = "none";
+  get_account->creator_account_id = admin_id;
+  role_permissions = {can_get_all_accounts};
+
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillRepeatedly(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillRepeatedly(Return(role_permissions));
+
+  EXPECT_CALL(*wsv_query, getAccount(get_account->account_id))
+      .WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv_query, getAccountRoles(get_account->account_id))
+      .WillOnce(Return(nonstd::nullopt));
+
+  auto response = validateAndExecute();
+  auto cast_resp =
+      std::static_pointer_cast<iroha::model::ErrorResponse>(response);
+  ASSERT_EQ(cast_resp->reason, ErrorResponse::NO_ACCOUNT);
+}
