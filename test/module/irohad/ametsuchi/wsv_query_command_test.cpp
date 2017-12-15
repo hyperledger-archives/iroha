@@ -282,6 +282,45 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
       ASSERT_EQ(0, roles->size());
     }
 
+    /**
+     * @given inserted role, domain
+     * @when insert and delete account role
+     * @then role is detached
+     */
+    TEST_F(AccountRoleTest, DeleteAccountRoleWhenExist) {
+      ASSERT_TRUE(command->insertAccountRole(account.account_id, role));
+      ASSERT_TRUE(command->deleteAccountRole(account.account_id, role));
+      auto roles = query->getAccountRoles(account.account_id);
+      ASSERT_TRUE(roles);
+      ASSERT_EQ(0, roles->size());
+    }
+
+    /**
+     * @given inserted role, domain
+     * @when no account exist
+     * @then nothing is deleted
+     */
+    TEST_F(AccountRoleTest, DeleteAccountRoleWhenNoAccount) {
+      ASSERT_TRUE(command->insertAccountRole(account.account_id, role));
+      ASSERT_TRUE(command->deleteAccountRole("no", role));
+      auto roles = query->getAccountRoles(account.account_id);
+      ASSERT_TRUE(roles);
+      ASSERT_EQ(1, roles->size());
+    }
+
+    /**
+     * @given inserted role, domain
+     * @when no role exist
+     * @then nothing is deleted
+     */
+    TEST_F(AccountRoleTest, DeleteAccountRoleWhenNoRole) {
+      ASSERT_TRUE(command->insertAccountRole(account.account_id, role));
+      ASSERT_TRUE(command->deleteAccountRole(account.account_id, "no"));
+      auto roles = query->getAccountRoles(account.account_id);
+      ASSERT_TRUE(roles);
+      ASSERT_EQ(1, roles->size());
+    }
+
     class AccountGrantablePermissionTest : public WsvQueryCommandTest {
      public:
       AccountGrantablePermissionTest() {

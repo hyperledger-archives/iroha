@@ -64,6 +64,11 @@ message AppendRole {
     string role_name = 2;
 }
 
+message DetachRole {
+    string account_id = 1;
+    string role_name = 2;
+}
+
 message CreateRole {
     string role_name = 1;
     repeated RolePermission permissions = 2;
@@ -102,5 +107,6 @@ message Command {
         RevokePermission revoke_permission = 14;
         SetAccountDetail set_account_detail = 15;
         SubtractAssetQuantity subtract_asset_quantity = 16;
+        DetachRole detach_role = 17;
     }
 }

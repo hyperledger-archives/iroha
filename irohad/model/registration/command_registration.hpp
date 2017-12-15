@@ -34,6 +34,7 @@
 
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/detach_role.hpp"
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/revoke_permission.hpp"
 #include "model/commands/set_account_detail.hpp"
@@ -59,6 +60,7 @@ namespace iroha {
         command_handler.register_type(typeid(SetQuorum));
         command_handler.register_type(typeid(TransferAsset));
         command_handler.register_type(typeid(AppendRole));
+        command_handler.register_type(typeid(DetachRole));
         command_handler.register_type(typeid(CreateRole));
         command_handler.register_type(typeid(GrantPermission));
         command_handler.register_type(typeid(RevokePermission));
@@ -68,7 +70,7 @@ namespace iroha {
       ClassHandler command_handler{};
     };
 
-  } // namespace model
-} // namespace iroha
+  }  // namespace model
+}  // namespace iroha
 
-#endif //IROHA_COMMAND_REGISTRATION_HPP
+#endif  // IROHA_COMMAND_REGISTRATION_HPP

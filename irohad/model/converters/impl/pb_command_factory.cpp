@@ -63,6 +63,8 @@ namespace iroha {
             (protocol::RolePermission::can_subtract_asset_qty, can_subtract_asset_qty)
             // Can append role
             (protocol::RolePermission::can_append_role, can_append_role)
+            // Can append role
+            (protocol::RolePermission::can_detach_role, can_detach_role)
             // Can create asset
             (protocol::RolePermission::can_create_asset, can_create_asset)
             // Can create role
@@ -328,6 +330,20 @@ namespace iroha {
         return cmd;
       }
 
+      // Append Role
+      model::DetachRole PbCommandFactory::deserializeDetachRole(
+          const protocol::DetachRole &command) {
+        return DetachRole(command.account_id(), command.role_name());
+      }
+
+      protocol::DetachRole PbCommandFactory::serializeDetachRole(
+          const model::DetachRole &command) {
+        protocol::DetachRole cmd;
+        cmd.set_account_id(command.account_id);
+        cmd.set_role_name(command.role_name);
+        return cmd;
+      }
+
       // Create Role
       model::CreateRole PbCommandFactory::deserializeCreateRole(
           const protocol::CreateRole &command) {
@@ -431,6 +447,13 @@ namespace iroha {
           auto serialized = commandFactory.serializeAppendRole(
               static_cast<const model::AppendRole &>(command));
           cmd.set_allocated_append_role(new protocol::AppendRole(serialized));
+        }
+
+        // -----|DetachRole|-----
+        if (instanceof <model::DetachRole>(command)) {
+          auto serialized = commandFactory.serializeDetachRole(
+              static_cast<const model::DetachRole &>(command));
+          cmd.set_allocated_detach_role(new protocol::DetachRole(serialized));
         }
 
         // -----|GrantPermission|-----
@@ -556,6 +579,13 @@ namespace iroha {
           auto pb_command = command.append_role();
           auto cmd = commandFactory.deserializeAppendRole(pb_command);
           val = std::make_shared<model::AppendRole>(cmd);
+        }
+
+        // -----|DetachRole|-----
+        if (command.has_detach_role()) {
+          auto pb_command = command.detach_role();
+          auto cmd = commandFactory.deserializeDetachRole(pb_command);
+          val = std::make_shared<model::DetachRole>(cmd);
         }
 
         // -----|GrantPermission|-----

@@ -4,6 +4,7 @@ package iroha.protocol;
 enum RolePermission {
    // Command Permissions
     can_append_role = 0;
+    can_detach_role = 30;
     can_create_role = 1;
     can_add_asset_qty = 2;
     can_add_peer = 3;

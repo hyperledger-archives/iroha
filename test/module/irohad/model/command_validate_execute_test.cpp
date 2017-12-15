@@ -25,6 +25,7 @@
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/create_role.hpp"
+#include "model/commands/detach_role.hpp"
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
@@ -47,7 +48,9 @@ using namespace iroha::model;
 
 class CommandValidateExecuteTest : public ::testing::Test {
  public:
-  CommandValidateExecuteTest() { spdlog::set_level(spdlog::level::off); }
+  CommandValidateExecuteTest() {
+    spdlog::set_level(spdlog::level::off);
+  }
 
   void SetUp() override {
     factory = CommandExecutorFactory::create().value();
@@ -522,7 +525,8 @@ TEST_F(CreateAccountTest, InvalidWhenLongName) {
       .WillOnce(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
-  create_account->account_name = "aAccountNameMustBeLessThan64characters00000000000000000000000000";
+  create_account->account_name =
+      "aAccountNameMustBeLessThan64characters00000000000000000000000000";
   ASSERT_FALSE(validateAndExecute());
 }
 
@@ -1166,6 +1170,34 @@ TEST_F(AppendRoleTest, InvalidCase) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+class DetachRoleTest : public CommandValidateExecuteTest {
+ public:
+  void SetUp() override {
+    CommandValidateExecuteTest::SetUp();
+    exact_command = std::make_shared<DetachRole>("yoda", "master");
+    command = exact_command;
+    role_permissions = {can_detach_role};
+  }
+  std::shared_ptr<DetachRole> exact_command;
+};
+
+TEST_F(DetachRoleTest, ValidCase) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_command, deleteAccountRole(_, _)).WillOnce(Return(true));
+  ASSERT_TRUE(validateAndExecute());
+}
+
+TEST_F(DetachRoleTest, InvalidCase) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(nonstd::nullopt));
+  ASSERT_FALSE(validateAndExecute());
+}
+
 class GrantPermissionTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -1255,8 +1287,9 @@ TEST_F(SetAccountDetailTest, ValidWhenCreatorHasPermissions) {
  */
 TEST_F(SetAccountDetailTest, InValidWhenOtherCreator) {
   cmd->account_id = account_id;
-  EXPECT_CALL(*wsv_query, hasAccountGrantablePermission(
-      admin_id, cmd->account_id, needed_permission))
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, cmd->account_id, needed_permission))
       .WillOnce(Return(false));
   ASSERT_FALSE(validateAndExecute());
 }
