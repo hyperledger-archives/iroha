@@ -46,12 +46,6 @@ namespace shared_model {
        */
       virtual TransactionsNumberType &txsNumber() const = 0;
 
-      /**
-       * @return Root of merkle tree based on the block and all previous blocks
-       * in the ledger
-       */
-      virtual HashType &merkleRoot() const = 0;
-
       /// Type of a single Transaction
       using TransactionType = detail::PolymorphicWrapper<Transaction>;
 
@@ -69,8 +63,6 @@ namespace shared_model {
         oldStyleBlock->prev_hash =
             iroha::model::Block::HashType::from_string(prevHash().toString());
         oldStyleBlock->txs_number = txsNumber();
-        oldStyleBlock->merkle_root =
-            iroha::model::Block::HashType::from_string(merkleRoot().toString());
         std::for_each(
             transactions().begin(),
             transactions().end(),
@@ -95,7 +87,6 @@ namespace shared_model {
             .append("height", std::to_string(height()))
             .append("prevHash", prevHash().hex())
             .append("txsNumber", std::to_string(txsNumber()))
-            .append("merkleRoot", merkleRoot().hex())
             .append("createdtime", std::to_string(createdTime()))
             .append("transactions")
             .appendAll(transactions(), [](auto &tx) { return tx->toString(); })
