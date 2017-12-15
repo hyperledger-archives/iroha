@@ -41,7 +41,7 @@ iroha::model::QueryProcessingFactory::QueryProcessingFactory(
 std::string getDomainFromName(const std::string &account_id) {
   std::vector<std::string> res;
   boost::split(res, account_id, boost::is_any_of("@"));
-  return res.at(1);
+  return res.size() > 1 ? res.at(1) : "";
 }
 
 bool hasQueryPermission(const std::string &creator,
@@ -50,22 +50,27 @@ bool hasQueryPermission(const std::string &creator,
                         const std::string &indiv_permission_id,
                         const std::string &all_permission_id,
                         const std::string &domain_permission_id) {
-  // TODO: refactor to use role query only once
+  auto perms_set = getAccountPermissions(creator, wsv_query);
   return
-      // 1. Creator want to query his account, must have role permission on that
-      (creator == target_account
-       and checkAccountRolePermission(creator,
-                                      wsv_query,
-                                      indiv_permission_id))
-      or  // 2. Creator has permission to get any account globally
-      (checkAccountRolePermission(creator, wsv_query, all_permission_id))
-      or  // 3. Creator has domain permission
-      (getDomainFromName(creator) == getDomainFromName(target_account)
-       and checkAccountRolePermission(creator, wsv_query, domain_permission_id))
-      or  // 4. Creator has grant permission from other user
+      // 1. Creator has grant permission from other user
       (creator != target_account
        and wsv_query.hasAccountGrantablePermission(
-               creator, target_account, indiv_permission_id));
+               creator, target_account, indiv_permission_id))
+      or  // ----- Creator has role permission ---------
+      (perms_set.has_value()
+       and (
+               // 2. Creator want to query his account, must have role
+               // permission
+               (creator == target_account
+                and accountHasPermission(perms_set.value(),
+                                         indiv_permission_id))
+               or  // 3. Creator has global permission to get any account
+               (accountHasPermission(perms_set.value(),
+                                     all_permission_id))
+               or  // 4. Creator has domain permission
+               (getDomainFromName(creator) == getDomainFromName(target_account)
+                and accountHasPermission(perms_set.value(),
+                                         domain_permission_id))));
 }
 
 bool iroha::model::QueryProcessingFactory::validate(
