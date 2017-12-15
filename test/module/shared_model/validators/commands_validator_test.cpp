@@ -204,7 +204,7 @@ TEST(commandsValidatorTest, EmptyTransactionTest) {
   shared_model::validation::CommandsValidator commands_validator;
   auto answer = commands_validator.validate(
           detail::make_polymorphic<proto::Transaction>(tx));
-  ASSERT_TRUE(answer.hasErrors());
+  ASSERT_EQ(answer.getReasonsMap().size(), 1);
 }
 
 /**
