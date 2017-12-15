@@ -28,8 +28,7 @@ namespace iroha {
      public:
       explicit RedisBlockIndex(cpp_redis::redis_client &client);
 
-      void index_block(uint64_t height,
-                       const model::Block &block) override;
+      void index(const model::Block &block) override;
 
      private:
       cpp_redis::redis_client &client_;

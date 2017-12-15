@@ -26,22 +26,21 @@ namespace iroha {
     RedisBlockIndex::RedisBlockIndex(cpp_redis::redis_client &client)
         : client_(client) {}
 
-    void RedisBlockIndex::index_block(uint64_t height,
-                                      const model::Block &block) {
+    void RedisBlockIndex::index(const model::Block &block) {
       for (size_t i = 0; i < block.transactions.size(); i++) {
         auto tx = block.transactions.at(i);
         auto account_id = tx.creator_account_id;
         auto hash = iroha::hash(tx).to_string();
 
         // tx hash -> block where hash is stored
-        client_.set(hash, std::to_string(height));
+        client_.set(hash, std::to_string(block.height));
 
         // to make index account_id -> list of blocks where his txs exist
-        client_.sadd(account_id, {std::to_string(height)});
+        client_.sadd(account_id, {std::to_string(block.height)});
 
         // to make index account_id:height -> list of tx indexes (where
         // tx is placed in the block)
-        client_.rpush(account_id + ":" + std::to_string(height),
+        client_.rpush(account_id + ":" + std::to_string(block.height),
                       {std::to_string(i)});
 
         // collect all assets belonging to user "account_id"
@@ -66,7 +65,7 @@ namespace iroha {
           std::string account_assets_key;
           account_assets_key.append(account_id);
           account_assets_key.append(":");
-          account_assets_key.append(std::to_string(height));
+          account_assets_key.append(std::to_string(block.height));
           account_assets_key.append(":");
           account_assets_key.append(asset_id);
           client_.rpush(account_assets_key, {std::to_string(i)});

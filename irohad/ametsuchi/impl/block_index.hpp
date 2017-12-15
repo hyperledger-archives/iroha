@@ -23,19 +23,17 @@
 namespace iroha {
   namespace ametsuchi {
     /**
-     *
+     * Internal interface for modifying index on blocks and transactions
      */
     class BlockIndex {
      public:
       virtual ~BlockIndex() = default;
 
       /**
-       *
-       * @param height
-       * @param block
+       * Add block to index
+       * @param block to be indexed
        */
-      virtual void index_block(const uint64_t height,
-                               const model::Block &block) = 0;
+      virtual void index(const model::Block &block) = 0;
     };
   } // namespace ametsuchi
 } // namespace iroha
