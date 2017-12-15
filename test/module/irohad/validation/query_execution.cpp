@@ -3,7 +3,7 @@
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this/her file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *        http://www.apache.org/licenses/LICENSE-2.0
@@ -17,8 +17,9 @@
 
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
-#include <model/queries/responses/account_assets_response.hpp>
+#include "framework/test_subscriber.hpp"
 #include "model/permissions.hpp"
+#include "model/queries/responses/account_assets_response.hpp"
 #include "model/queries/responses/account_response.hpp"
 #include "model/queries/responses/asset_response.hpp"
 #include "model/queries/responses/error_response.hpp"
@@ -35,6 +36,7 @@ using ::testing::StrictMock;
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
+using namespace framework::test_subscriber;
 
 class QueryValidateExecuteTest : public ::testing::Test {
  public:
@@ -70,8 +72,6 @@ class QueryValidateExecuteTest : public ::testing::Test {
 
   std::vector<std::string> admin_roles = {admin_role};
   std::vector<std::string> role_permissions;
-  Domain default_domain;
-
   Account creator, account;
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
@@ -95,11 +95,14 @@ class GetAccountTest : public QueryValidateExecuteTest {
 };
 
 /**
- * @given initialized storage, permission to his account
+ * @given initialized storage, permission to his/her account
  * @when get account information
  * @then Return account
  */
 TEST_F(GetAccountTest, MyAccountValidCase) {
+  // getAccount calls getAccountRoles and combines it into AccountResponse
+  // In case when user is requesting her account the getAccountRoles will be
+  // called twice: 1. To check permissions; 2. To create AccountResponse
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .Times(2)
       .WillRepeatedly(Return(admin_roles));
@@ -107,8 +110,7 @@ TEST_F(GetAccountTest, MyAccountValidCase) {
       .WillOnce(Return(role_permissions));
   EXPECT_CALL(*wsv_query, getAccount(admin_id)).WillOnce(Return(creator));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  auto cast_resp = std::static_pointer_cast<AccountResponse>(response);
   ASSERT_EQ(cast_resp->account.account_id, admin_id);
 }
 
@@ -130,8 +132,7 @@ TEST_F(GetAccountTest, AllAccountValidCase) {
   EXPECT_CALL(*wsv_query, getAccountRoles(account_id))
       .WillOnce(Return(admin_roles));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  auto cast_resp = std::static_pointer_cast<AccountResponse>(response);
   ASSERT_EQ(cast_resp->account.account_id, account_id);
 }
 
@@ -153,15 +154,14 @@ TEST_F(GetAccountTest, DomainAccountValidCase) {
   EXPECT_CALL(*wsv_query, getAccountRoles(account_id))
       .WillOnce(Return(admin_roles));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  auto cast_resp = std::static_pointer_cast<AccountResponse>(response);
   ASSERT_EQ(cast_resp->account.account_id, account_id);
 }
 
 /**
  * @given initialized storage, granted permission
  * @when get account information about other user
- * @then Return error
+ * @then Return users account
  */
 TEST_F(GetAccountTest, GrantAccountValidCase) {
   get_account->account_id = account_id;
@@ -181,15 +181,14 @@ TEST_F(GetAccountTest, GrantAccountValidCase) {
   EXPECT_CALL(*wsv_query, getAccountRoles(account_id))
       .WillOnce(Return(admin_roles));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::AccountResponse>(response);
+  auto cast_resp = std::static_pointer_cast<AccountResponse>(response);
   ASSERT_EQ(cast_resp->account.account_id, account_id);
 }
 
 /**
  * @given initialized storage, domain permission
  * @when get account information about other user in the other domain
- * @then Return error
+ * @then Return users account
  */
 TEST_F(GetAccountTest, DifferentDomainAccountInValidCase) {
   get_account->account_id = "test@test2";  // other domain
@@ -206,8 +205,7 @@ TEST_F(GetAccountTest, DifferentDomainAccountInValidCase) {
       .WillOnce(Return(false));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::ErrorResponse>(response);
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
   ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
 }
 
@@ -232,8 +230,7 @@ TEST_F(GetAccountTest, NoAccountExist) {
       .WillOnce(Return(nonstd::nullopt));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::ErrorResponse>(response);
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
   ASSERT_EQ(cast_resp->reason, ErrorResponse::NO_ACCOUNT);
 }
 
@@ -260,7 +257,7 @@ class GetAccountAssetsTest : public QueryValidateExecuteTest {
 };
 
 /**
- * @given initialized storage, permission to his account
+ * @given initialized storage, permission to his/her account
  * @when get account assets
  * @then Return account asset of user
  */
@@ -272,8 +269,7 @@ TEST_F(GetAccountAssetsTest, MyAccountValidCase) {
   EXPECT_CALL(*wsv_query, getAccountAsset(admin_id, asset_id))
       .WillOnce(Return(accountAsset));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  auto cast_resp = std::static_pointer_cast<AccountAssetResponse>(response);
   ASSERT_EQ(cast_resp->acct_asset.account_id, admin_id);
 }
 
@@ -294,9 +290,9 @@ TEST_F(GetAccountAssetsTest, AllAccountValidCase) {
   EXPECT_CALL(*wsv_query, getAccountAsset(account_id, asset_id))
       .WillOnce(Return(accountAsset));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  auto cast_resp = std::static_pointer_cast<AccountAssetResponse>(response);
   ASSERT_EQ(cast_resp->acct_asset.account_id, account_id);
+  ASSERT_EQ(cast_resp->acct_asset.asset_id, asset_id);
 }
 
 /**
@@ -316,15 +312,15 @@ TEST_F(GetAccountAssetsTest, DomainAccountValidCase) {
   EXPECT_CALL(*wsv_query, getAccountAsset(account_id, asset_id))
       .WillOnce(Return(accountAsset));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  auto cast_resp = std::static_pointer_cast<AccountAssetResponse>(response);
   ASSERT_EQ(cast_resp->acct_asset.account_id, account_id);
+  ASSERT_EQ(cast_resp->acct_asset.asset_id, asset_id);
 }
 
 /**
  * @given initialized storage, granted permission
  * @when get account information about other user
- * @then Return error
+ * @then Return account assets
  */
 TEST_F(GetAccountAssetsTest, GrantAccountValidCase) {
   get_account_assets->account_id = account_id;
@@ -344,15 +340,15 @@ TEST_F(GetAccountAssetsTest, GrantAccountValidCase) {
       .WillOnce(Return(accountAsset));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::AccountAssetResponse>(response);
+  auto cast_resp = std::static_pointer_cast<AccountAssetResponse>(response);
   ASSERT_EQ(cast_resp->acct_asset.account_id, account_id);
+  ASSERT_EQ(cast_resp->acct_asset.asset_id, asset_id);
 }
 
 /**
  * @given initialized storage, domain permission
  * @when get account information about other user in the other domain
- * @then Return error
+ * @then Return account assets
  */
 TEST_F(GetAccountAssetsTest, DifferentDomainAccountInValidCase) {
   get_account_assets->account_id = "test@test2";
@@ -369,8 +365,7 @@ TEST_F(GetAccountAssetsTest, DifferentDomainAccountInValidCase) {
       .WillOnce(Return(false));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::ErrorResponse>(response);
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
   ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
 }
 
@@ -394,8 +389,7 @@ TEST_F(GetAccountAssetsTest, NoAccountExist) {
       .WillOnce(Return(nonstd::nullopt));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::ErrorResponse>(response);
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
   ASSERT_EQ(cast_resp->reason, ErrorResponse::NO_ACCOUNT_ASSETS);
 }
 
@@ -416,7 +410,7 @@ class GetSignatoriesTest : public QueryValidateExecuteTest {
 };
 
 /**
- * @given initialized storage, permission to his account
+ * @given initialized storage, permission to his/her account
  * @when get account assets
  * @then Return account asset of user
  */
@@ -427,8 +421,7 @@ TEST_F(GetSignatoriesTest, MyAccountValidCase) {
       .WillOnce(Return(role_permissions));
   EXPECT_CALL(*wsv_query, getSignatories(admin_id)).WillOnce(Return(signs));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::SignatoriesResponse>(response);
+  auto cast_resp = std::static_pointer_cast<::SignatoriesResponse>(response);
   ASSERT_EQ(cast_resp->keys.size(), 1);
 }
 
@@ -447,8 +440,7 @@ TEST_F(GetSignatoriesTest, AllAccountValidCase) {
       .WillOnce(Return(role_permissions));
   EXPECT_CALL(*wsv_query, getSignatories(account_id)).WillOnce(Return(signs));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::SignatoriesResponse>(response);
+  auto cast_resp = std::static_pointer_cast<::SignatoriesResponse>(response);
   ASSERT_EQ(cast_resp->keys.size(), 1);
 }
 
@@ -467,15 +459,14 @@ TEST_F(GetSignatoriesTest, DomainAccountValidCase) {
       .WillOnce(Return(role_permissions));
   EXPECT_CALL(*wsv_query, getSignatories(account_id)).WillOnce(Return(signs));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::SignatoriesResponse>(response);
+  auto cast_resp = std::static_pointer_cast<::SignatoriesResponse>(response);
   ASSERT_EQ(cast_resp->keys.size(), 1);
 }
 
 /**
  * @given initialized storage, granted permission
  * @when get account information about other user
- * @then Return error
+ * @then Return signatories
  */
 TEST_F(GetSignatoriesTest, GrantAccountValidCase) {
   get_signatories->account_id = account_id;
@@ -494,15 +485,14 @@ TEST_F(GetSignatoriesTest, GrantAccountValidCase) {
   EXPECT_CALL(*wsv_query, getSignatories(account_id)).WillOnce(Return(signs));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::SignatoriesResponse>(response);
+  auto cast_resp = std::static_pointer_cast<::SignatoriesResponse>(response);
   ASSERT_EQ(cast_resp->keys.size(), 1);
 }
 
 /**
  * @given initialized storage, domain permission
  * @when get account information about other user in the other domain
- * @then Return error
+ * @then Return signatories
  */
 TEST_F(GetSignatoriesTest, DifferentDomainAccountInValidCase) {
   get_signatories->account_id = "test@test2";
@@ -519,8 +509,7 @@ TEST_F(GetSignatoriesTest, DifferentDomainAccountInValidCase) {
       .WillOnce(Return(false));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::ErrorResponse>(response);
+  auto cast_resp = std::static_pointer_cast<::ErrorResponse>(response);
   ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
 }
 
@@ -542,8 +531,7 @@ TEST_F(GetSignatoriesTest, NoAccountExist) {
       .WillOnce(Return(nonstd::nullopt));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::ErrorResponse>(response);
+  auto cast_resp = std::static_pointer_cast<::ErrorResponse>(response);
   ASSERT_EQ(cast_resp->reason, ErrorResponse::NO_SIGNATORIES);
 }
 
@@ -557,11 +545,10 @@ class GetAccountTransactionsTest : public QueryValidateExecuteTest {
     get_tx->creator_account_id = admin_id;
     query = get_tx;
     role_permissions = {can_get_my_acc_txs};
-    N = 3;
     txs_observable = rxcpp::observable<>::iterate([this] {
-      std::vector<iroha::model::Transaction> result;
+      std::vector<::Transaction> result;
       for (size_t i = 0; i < N; ++i) {
-        iroha::model::Transaction current;
+        ::Transaction current;
         current.creator_account_id = account_id;
         current.tx_counter = i;
         result.push_back(current);
@@ -571,11 +558,11 @@ class GetAccountTransactionsTest : public QueryValidateExecuteTest {
   }
   std::shared_ptr<GetAccountTransactions> get_tx;
   rxcpp::observable<Transaction> txs_observable;
-  size_t N;
+  size_t N = 3;
 };
 
 /**
- * @given initialized storage, permission to his account
+ * @given initialized storage, permission to his/her account
  * @when get account assets
  * @then Return account asset of user
  */
@@ -586,9 +573,9 @@ TEST_F(GetAccountTransactionsTest, MyAccountValidCase) {
       .WillOnce(Return(role_permissions));
 
   txs_observable = rxcpp::observable<>::iterate([this] {
-    std::vector<iroha::model::Transaction> result;
+    std::vector<::Transaction> result;
     for (size_t i = 0; i < N; ++i) {
-      iroha::model::Transaction current;
+      Transaction current;
       current.creator_account_id = admin_id;
       current.tx_counter = i;
       result.push_back(current);
@@ -599,11 +586,12 @@ TEST_F(GetAccountTransactionsTest, MyAccountValidCase) {
   EXPECT_CALL(*block_query, getAccountTransactions(admin_id))
       .WillOnce(Return(txs_observable));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::TransactionsResponse>(response);
+  auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
 
-  cast_resp->transactions.as_blocking().subscribe(
-      [this](auto tx) { ASSERT_EQ(admin_id, tx.creator_account_id); }, []() {});
+  auto TxWrapper = make_test_subscriber<CallExact>(txs_observable, N);
+  TxWrapper.subscribe(
+      [this](auto val) { EXPECT_EQ(admin_id, val.creator_account_id); });
+  ASSERT_TRUE(TxWrapper.validate());
 }
 
 /**
@@ -623,11 +611,11 @@ TEST_F(GetAccountTransactionsTest, AllAccountValidCase) {
   EXPECT_CALL(*block_query, getAccountTransactions(account_id))
       .WillOnce(Return(txs_observable));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::TransactionsResponse>(response);
-  cast_resp->transactions.as_blocking().subscribe(
-      [this](auto tx) { ASSERT_EQ(account_id, tx.creator_account_id); },
-      []() {});
+
+  auto TxWrapper = make_test_subscriber<CallExact>(txs_observable, N);
+  TxWrapper.subscribe(
+      [this](auto val) { EXPECT_EQ(account_id, val.creator_account_id); });
+  ASSERT_TRUE(TxWrapper.validate());
 }
 
 /**
@@ -647,11 +635,11 @@ TEST_F(GetAccountTransactionsTest, DomainAccountValidCase) {
   EXPECT_CALL(*block_query, getAccountTransactions(account_id))
       .WillOnce(Return(txs_observable));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::TransactionsResponse>(response);
-  cast_resp->transactions.as_blocking().subscribe(
-      [this](auto tx) { ASSERT_EQ(account_id, tx.creator_account_id); },
-      []() {});
+
+  auto TxWrapper = make_test_subscriber<CallExact>(txs_observable, N);
+  TxWrapper.subscribe(
+      [this](auto val) { EXPECT_EQ(account_id, val.creator_account_id); });
+  ASSERT_TRUE(TxWrapper.validate());
 }
 
 /**
@@ -675,11 +663,11 @@ TEST_F(GetAccountTransactionsTest, GrantAccountValidCase) {
   EXPECT_CALL(*block_query, getAccountTransactions(account_id))
       .WillOnce(Return(txs_observable));
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::TransactionsResponse>(response);
-  cast_resp->transactions.as_blocking().subscribe(
-      [this](auto tx) { ASSERT_EQ(account_id, tx.creator_account_id); },
-      []() {});
+
+  auto TxWrapper = make_test_subscriber<CallExact>(txs_observable, N);
+  TxWrapper.subscribe(
+      [this](auto val) { EXPECT_EQ(account_id, val.creator_account_id); });
+  ASSERT_TRUE(TxWrapper.validate());
 }
 
 /**
@@ -701,8 +689,7 @@ TEST_F(GetAccountTransactionsTest, DifferentDomainAccountInValidCase) {
       .WillOnce(Return(false));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::ErrorResponse>(response);
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
   ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
 }
 
@@ -724,6 +711,5 @@ TEST_F(GetAccountTransactionsTest, NoAccountExist) {
       .WillOnce(Return(rxcpp::observable<>::empty<Transaction>()));
 
   auto response = validateAndExecute();
-  auto cast_resp =
-      std::static_pointer_cast<iroha::model::TransactionsResponse>(response);
+  auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
 }
