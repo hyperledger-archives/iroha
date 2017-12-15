@@ -90,7 +90,7 @@ namespace shared_model {
 
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::CreateAccount> &ca)
-            const {;
+            const {
           ReasonsGroupType reason;
           reason.first = "CreateAccount";
 
@@ -298,6 +298,16 @@ namespace shared_model {
        */
       Answer validate(detail::PolymorphicWrapper<interface::Transaction> tx) {
         Answer answer;
+        std::string tx_reason_name = "Transaction";
+        ReasonsGroupType tx_reason(tx_reason_name, GroupedReasons());
+
+        validateAmountOfCommands(tx_reason, tx->commands().size());
+        validateCreatorAccountId(tx_reason, tx->creatorAccountId());
+        validateCreatedTime(tx_reason, tx->createdTime());
+        if (not tx_reason.second.empty()) {
+          answer.addReason(std::move(tx_reason));
+        }
+
         for (auto &command : tx->commands()) {
           auto reason =
               boost::apply_visitor(CommandsValidatorVisitor(), command->get());
@@ -305,18 +315,19 @@ namespace shared_model {
             answer.addReason(std::move(reason));
           }
         }
-        std::string tx_reason_name = "Transaction";
-        ReasonsGroupType tx_reason(tx_reason_name, GroupedReasons());
-        validateCreatorAccountId(tx_reason, tx->creatorAccountId());
-        validateCreatedTime(tx_reason, tx->createdTime());
 
-        if (not tx_reason.second.empty()) {
-          answer.addReason(std::move(tx_reason));
-        }
         return answer;
       }
 
      private:
+      void validateAmountOfCommands(ReasonsGroupType &reason,
+                                    size_t size) const {
+        if (size == 0) {
+          reason.second.push_back(
+              "Transaction should contain at least one command");
+        }
+      }
+
       void validateCreatorAccountId(
           ReasonsGroupType &reason,
           const interface::types::AccountIdType &account_id) const {
