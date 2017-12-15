@@ -83,7 +83,7 @@ namespace iroha {
       return true;
     }
 
-    // ----------------------------| Append Role |-----------------------------
+    // ----------------------------| Detach Role |-----------------------------
     DetachRoleExecutor::DetachRoleExecutor() {
       log_ = logger::log("DetachRoleExecutor");
     }
