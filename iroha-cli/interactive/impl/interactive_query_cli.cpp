@@ -17,6 +17,7 @@
 
 #include "interactive/interactive_query_cli.hpp"
 
+#include <boost/algorithm/string.hpp>
 #include <fstream>
 
 #include "byteutils.hpp"
@@ -174,16 +175,14 @@ namespace iroha_cli {
 
     std::shared_ptr<iroha::model::Query>
     InteractiveQueryCli::parseGetTransactions(QueryParams params) {
-      // TODO 22/11/17 motxx - Parser grammer is obvious for user.
-      // hash1,hash2,... (without spaces)
-      std::stringstream ss(params[0]);
+      // Parser definition: hash1 hash2 ...
       GetTransactions::TxHashCollectionType tx_hashes;
-      for (std::string hexhash; std::getline(ss, hexhash, ',');) {
+      std::for_each(params.begin(), params.end(), [&tx_hashes](auto const& hex_hash){
         if (auto opt =
-            iroha::hexstringToArray<GetTransactions::TxHashType::size()>(hexhash)) {
+          iroha::hexstringToArray<GetTransactions::TxHashType::size()>(hex_hash)) {
           tx_hashes.push_back(*opt);
         }
-      }
+      });
       return generator_.generateGetTransactions(
         local_time_, creator_, counter_, tx_hashes);
     }
