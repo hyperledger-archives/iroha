@@ -19,9 +19,15 @@ target_link_libraries(flat_file_test
 
 addtest(block_query_test block_query_test.cpp)
 target_link_libraries(block_query_test
-        ametsuchi
-        libs_common
-        )
+    ametsuchi
+    libs_common
+    )
+
+addtest(block_query_transfer_test block_query_transfer_test.cpp)
+target_link_libraries(block_query_transfer_test
+    ametsuchi
+    libs_common
+    )
 
 addtest(kv_storage_test kv_storage_test.cpp)
 target_link_libraries(kv_storage_test
