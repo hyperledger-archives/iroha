@@ -176,41 +176,55 @@ TEST_F(AmetsuchiTest, SampleTest) {
   }
 
   // Block store tests
-  blocks->getBlocks(1, 2).subscribe([block1hash, block2hash](auto eachBlock) {
+  auto block_wrap = make_test_subscriber<CallExact>(blocks->getBlocks(1, 2), 2);
+  block_wrap.subscribe([block1hash, block2hash](auto eachBlock) {
     if (eachBlock.height == 1) {
       EXPECT_EQ(eachBlock.hash, block1hash);
     } else if (eachBlock.height == 2) {
       EXPECT_EQ(eachBlock.hash, block2hash);
     }
   });
+  ASSERT_TRUE(block_wrap.validate());
 
-  blocks->getAccountTransactions("admin1").subscribe([](auto tx) {
+  auto wrap = make_test_subscriber<CallExact>(
+      blocks->getAccountTransactions("admin1"), 1);
+  wrap.subscribe([](auto tx) {
     EXPECT_EQ(tx.creator_account_id, "admin1");
     EXPECT_EQ(tx.commands.size(), 3);
   });
-  blocks->getAccountTransactions("admin2").subscribe([](auto tx) {
+  ASSERT_TRUE(wrap.validate());
+
+  wrap = make_test_subscriber<CallExact>(
+      blocks->getAccountTransactions("admin2"), 1);
+  wrap.subscribe([](auto tx) {
     EXPECT_EQ(tx.creator_account_id, "admin2");
     EXPECT_EQ(tx.commands.size(), 4);
   });
+  ASSERT_TRUE(wrap.validate());
 
   // request for non-existing user
-  auto getAccountsTxWrapper = make_test_subscriber<CallExact>(
+  wrap = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions("non_existing_user"), 0);
-  getAccountsTxWrapper.subscribe();
-  ASSERT_TRUE(getAccountsTxWrapper.validate());
+  wrap.subscribe();
+  ASSERT_TRUE(wrap.validate());
 
-  blocks->getAccountAssetTransactions("user1@ru", "RUB#ru")
-      .subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  blocks->getAccountAssetTransactions("user2@ru", "RUB#ru")
-      .subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
+  auto tx_wrap = make_test_subscriber<CallExact>(
+      blocks->getAccountAssetTransactions("user1@ru", "RUB#ru"), 1);
+  tx_wrap.subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
+  ASSERT_TRUE(tx_wrap.validate());
+
+  tx_wrap = make_test_subscriber<CallExact>(
+      blocks->getAccountAssetTransactions("user2@ru", "RUB#ru"), 1);
+  tx_wrap.subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
+  ASSERT_TRUE(tx_wrap.validate());
 
   // request for non-existing asset
-  auto getAccountAssetTxWrapper = make_test_subscriber<CallExact>(
+  tx_wrap = make_test_subscriber<CallExact>(
       blocks->getAccountAssetTransactions("non_existing_user",
                                           "non_existing_asset"),
       0);
-  getAccountAssetTxWrapper.subscribe();
-  ASSERT_TRUE(getAccountAssetTxWrapper.validate());
+  tx_wrap.subscribe();
+  ASSERT_TRUE(tx_wrap.validate());
 }
 
 TEST_F(AmetsuchiTest, PeerTest) {
