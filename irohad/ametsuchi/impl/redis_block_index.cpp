@@ -17,6 +17,15 @@
 
 #include "ametsuchi/impl/redis_block_index.hpp"
 
+#include <boost/format.hpp>
+#include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/indexed.hpp>
+#include <boost/range/adaptor/transformed.hpp>
+#include <boost/range/algorithm/for_each.hpp>
+#include <boost/range/numeric.hpp>
+#include <unordered_map>
+#include <unordered_set>
+
 #include "crypto/hash.hpp"
 #include "model/commands/transfer_asset.hpp"
 
@@ -27,50 +36,73 @@ namespace iroha {
         : client_(client) {}
 
     void RedisBlockIndex::index(const model::Block &block) {
-      for (size_t i = 0; i < block.transactions.size(); i++) {
-        auto tx = block.transactions.at(i);
-        auto account_id = tx.creator_account_id;
-        auto hash = iroha::hash(tx).to_string();
+      const auto &height = std::to_string(block.height);
 
-        // tx hash -> block where hash is stored
-        client_.set(hash, std::to_string(block.height));
+      boost::format account_id_height("%s:%s"),
+          account_id_height_asset_id("%s:%s:%s");
 
-        // to make index account_id -> list of blocks where his txs exist
-        client_.sadd(account_id, {std::to_string(block.height)});
+      boost::for_each(
+          block.transactions | boost::adaptors::indexed(0),
+          [&](const auto &tx) {
+            const auto &creator_id = tx.value().creator_account_id;
+            const auto &hash = iroha::hash(tx.value()).to_string();
+            const auto &index = std::to_string(tx.index());
 
-        // to make index account_id:height -> list of tx indexes (where
-        // tx is placed in the block)
-        client_.rpush(account_id + ":" + std::to_string(block.height),
-                      {std::to_string(i)});
+            // tx hash -> block where hash is stored
+            client_.set(hash, height);
 
-        // collect all assets belonging to user "account_id"
-        std::set<std::string> users_assets_in_tx;
-        std::for_each(tx.commands.begin(),
-                      tx.commands.end(),
-                      [&account_id, &users_assets_in_tx](auto command) {
-                        if (instanceof <model::TransferAsset>(*command)) {
-                          auto transferAsset =
-                              (model::TransferAsset *)command.get();
-                          if (transferAsset->dest_account_id == account_id
-                              or transferAsset->src_account_id == account_id) {
-                            users_assets_in_tx.insert(transferAsset->asset_id);
-                          }
-                        }
-                      });
+            // to make index account_id -> list of blocks where his txs exist
+            client_.sadd(creator_id, {height});
 
-        // to make account_id:height:asset_id -> list of tx indexes (where tx
-        // with certain asset is placed in the block )
-        for (const auto &asset_id : users_assets_in_tx) {
-          // create key to put user's txs with given asset_id
-          std::string account_assets_key;
-          account_assets_key.append(account_id);
-          account_assets_key.append(":");
-          account_assets_key.append(std::to_string(block.height));
-          account_assets_key.append(":");
-          account_assets_key.append(asset_id);
-          client_.rpush(account_assets_key, {std::to_string(i)});
-        }
-      }
+            // to make index account_id:height -> list of tx indexes (where
+            // tx is placed in the block)
+            client_.rpush(boost::str(account_id_height % creator_id % height),
+                          {index});
+
+            // collect all assets belonging to creator, sender, and receiver
+            // to make account_id:height:asset_id -> list of tx indexes (where
+            // tx with certain asset is placed in the block )
+            boost::accumulate(
+                tx.value().commands
+                    // filter transfers
+                    | boost::adaptors::filtered([](const auto &cmd) {
+                        return instanceof <model::TransferAsset>(*cmd);
+                      })
+                    // map pointer to an abstract command to
+                    // reference to a transfer command
+                    | boost::adaptors::transformed(
+                          [](const auto &cmd) -> decltype(auto) {
+                            return (
+                                *std::static_pointer_cast<model::TransferAsset>(
+                                    cmd));
+                          }),
+                std::unordered_map<std::string,
+                                   std::unordered_set<std::string>>(),
+                [&](auto &&acc, const auto &cmd) {
+                  for (const auto &id :
+                       {cmd.src_account_id, cmd.dest_account_id}) {
+                    client_.sadd(id, {height});
+                  }
+
+                  auto ids = {
+                      creator_id, cmd.src_account_id, cmd.dest_account_id};
+                  boost::for_each(
+                      ids
+                          // map id to account_id:height:asset_id
+                          | boost::adaptors::transformed([&](const auto &id) {
+                              return boost::str(account_id_height_asset_id % id
+                                                % block.height
+                                                % cmd.asset_id);
+                            })
+                          // filter unindexed values
+                          | boost::adaptors::filtered([&](const auto &key) {
+                              return acc[key].insert(index).second;
+                            }),
+                      [&](const auto &key) { client_.rpush(key, {index}); });
+
+                  return std::forward<decltype(acc)>(acc);
+                });
+          });
     }
-  } // namespace ametsuchi
-} // namespace iroha
+  }  // namespace ametsuchi
+}  // namespace iroha
