@@ -194,14 +194,10 @@ TEST_F(AmetsuchiTest, SampleTest) {
   });
 
   // request for non-existing user
-  auto number_of_calls = 0;
   auto getAccountsTxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions("non_existing_user"), 0);
-  getAccountsTxWrapper.subscribe(
-      [&number_of_calls](auto val) { number_of_calls++; });
-
+  getAccountsTxWrapper.subscribe();
   ASSERT_TRUE(getAccountsTxWrapper.validate());
-  ASSERT_EQ(number_of_calls, 0);
 
   blocks->getAccountAssetTransactions("user1@ru", "RUB#ru")
       .subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
@@ -209,16 +205,12 @@ TEST_F(AmetsuchiTest, SampleTest) {
       .subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
 
   // request for non-existing asset
-  number_of_calls = 0;
   auto getAccountAssetTxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountAssetTransactions("non_existing_user",
                                           "non_existing_asset"),
       0);
-  getAccountAssetTxWrapper.subscribe(
-      [&number_of_calls](auto val) { number_of_calls++; });
-
+  getAccountAssetTxWrapper.subscribe();
   ASSERT_TRUE(getAccountAssetTxWrapper.validate());
-  ASSERT_EQ(number_of_calls, 0);
 }
 
 TEST_F(AmetsuchiTest, PeerTest) {
