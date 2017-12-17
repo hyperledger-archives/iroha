@@ -52,6 +52,76 @@ auto combine(std::initializer_list<T> &&...lists) {
   return boost::combine(std::move(lists)...);
 }
 
+template <typename O, typename F>
+decltype(auto) validateCalls(O &&o,
+                             F &&f,
+                             uint64_t call_count,
+                             const std::string &msg = {}) {
+  auto wrap = make_test_subscriber<CallExact>(std::forward<O>(o), call_count);
+  wrap.subscribe(std::forward<F>(f));
+  ASSERT_TRUE(wrap.validate()) << "Expected " << call_count << " calls" << msg;
+}
+
+template <typename B>
+auto validateAccountTransactions(B &&blocks) {
+  return [&](const auto &p) {
+    std::string account;
+    int call_count, command_count;
+    boost::tie(account, call_count, command_count) = p;
+    validateCalls(
+        blocks->getAccountTransactions(account),
+        [=](const auto &tx) { EXPECT_EQ(tx.commands.size(), command_count); },
+        call_count, " for " + account);
+  };
+}
+
+template <typename B>
+auto validateAccountAssetTransactions(B &&blocks) {
+  return [&](const auto &p) {
+    std::string account, asset;
+    int call_count, command_count;
+    boost::tie(account, asset, call_count, command_count) = p;
+    validateCalls(
+        blocks->getAccountAssetTransactions(account, asset),
+        [=](const auto &tx) { EXPECT_EQ(tx.commands.size(), command_count); },
+        call_count,
+        " for " + account + " " + asset);
+  };
+}
+
+template <typename W>
+auto validateAccountAsset(W &&wsv) {
+  return [&](const auto &p) {
+    std::string account, asset;
+    iroha::Amount amount;
+    boost::tie(account, asset, amount) = p;
+    auto account_asset = wsv->getAccountAsset(account, asset);
+    ASSERT_TRUE(account_asset);
+    ASSERT_EQ(account_asset->account_id, account);
+    ASSERT_EQ(account_asset->asset_id, asset);
+    ASSERT_EQ(account_asset->balance, amount);
+  };
+}
+
+template <typename W>
+auto validateAccount(W &&wsv) {
+  return [&](const auto &id, const auto &domain) {
+    auto account = wsv->getAccount(id);
+    ASSERT_TRUE(account);
+    ASSERT_EQ(account->account_id, id);
+    ASSERT_EQ(account->domain_id, domain);
+  };
+}
+
+template <typename S>
+auto apply(S &&storage) {
+  return [&](const auto &block) {
+    auto ms = storage->createMutableStorage();
+    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
+    storage->commit(std::move(ms));
+  };
+}
+
 TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   // Commit block => get block => observable completed
   auto storage =
@@ -62,9 +132,7 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   Block block;
   block.height = 1;
 
-  auto ms = storage->createMutableStorage();
-  ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
-  storage->commit(std::move(ms));
+  apply(storage)(block);
 
   auto completed_wrapper =
       make_test_subscriber<IsCompleted>(blocks->getBlocks(1, 1));
@@ -78,26 +146,27 @@ TEST_F(AmetsuchiTest, SampleTest) {
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
-  CreateRole createRole;
-  createRole.role_name = "user";
-  createRole.permissions = {can_add_peer, can_create_asset, can_get_my_account};
+
+  const auto domain = "ru", user1name = "user1", user2name = "user2",
+             user1id = "user1@ru", user2id = "user2@ru", assetname = "RUB",
+             assetid = "RUB#ru";
+
+  std::string account, src_account, dest_account, asset;
+  iroha::Amount amount;
 
   // Tx 1
   Transaction txn;
   txn.creator_account_id = "admin1";
 
   // Create domain ru
-  txn.commands.push_back(std::make_shared<CreateRole>(createRole));
-  CreateDomain createDomain;
-  createDomain.domain_id = "ru";
-  createDomain.user_default_role = "user";
-  txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
+  txn.commands.push_back(std::make_shared<CreateRole>(
+      "user",
+      std::set<std::string>{
+          can_add_peer, can_create_asset, can_get_my_account}));
+  txn.commands.push_back(std::make_shared<CreateDomain>(domain, "user"));
 
   // Create account user1
-  CreateAccount createAccount;
-  createAccount.account_name = "user1";
-  createAccount.domain_id = "ru";
-  txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
+  txn.commands.push_back(cmd_gen.generateCreateAccount(user1name, domain, {}));
 
   // Compose block
   Block block;
@@ -108,57 +177,27 @@ TEST_F(AmetsuchiTest, SampleTest) {
   block.hash = block1hash;
   block.txs_number = block.transactions.size();
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &blk, auto &query, const auto &top_hash) {
-      return true;
-    });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
-  {
-    auto account = wsv->getAccount(createAccount.account_name + "@"
-                                   + createAccount.domain_id);
-    ASSERT_TRUE(account);
-    ASSERT_EQ(account->account_id,
-              createAccount.account_name + "@" + createAccount.domain_id);
-    ASSERT_EQ(account->domain_id, createAccount.domain_id);
-  }
+  validateAccount(wsv)(user1id, domain);
 
   // Tx 2
   txn = Transaction();
   txn.creator_account_id = "admin2";
 
   // Create account user2
-  createAccount = CreateAccount();
-  createAccount.account_name = "user2";
-  createAccount.domain_id = "ru";
-  txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
+  txn.commands.push_back(cmd_gen.generateCreateAccount(user2name, domain, {}));
 
   // Create asset RUB#ru
-  CreateAsset createAsset;
-  createAsset.domain_id = "ru";
-  createAsset.asset_name = "RUB";
-  createAsset.precision = 2;
-  txn.commands.push_back(std::make_shared<CreateAsset>(createAsset));
+  txn.commands.push_back(cmd_gen.generateCreateAsset(assetname, domain, 2));
 
   // Add RUB#ru to user1
-  AddAssetQuantity addAssetQuantity;
-  addAssetQuantity.asset_id = "RUB#ru";
-  addAssetQuantity.account_id = "user1@ru";
-  iroha::Amount asset_amount(150, 2);
-  addAssetQuantity.amount = asset_amount;
-  txn.commands.push_back(std::make_shared<AddAssetQuantity>(addAssetQuantity));
+  txn.commands.push_back(cmd_gen.generateAddAssetQuantity(
+      user1id, assetid, iroha::Amount(150, 2)));
 
   // Transfer asset from user 1
-  TransferAsset transferAsset;
-  transferAsset.src_account_id = "user1@ru";
-  transferAsset.dest_account_id = "user2@ru";
-  transferAsset.asset_id = "RUB#ru";
-  transferAsset.description = "test transfer";
-  iroha::Amount transfer_amount(100, 2);
-  transferAsset.amount = transfer_amount;
-  txn.commands.push_back(std::make_shared<TransferAsset>(transferAsset));
+  txn.commands.push_back(cmd_gen.generateTransferAsset(
+      user1id, user2id, assetid, iroha::Amount(100, 2)));
 
   // Compose block
   block = Block();
@@ -169,76 +208,31 @@ TEST_F(AmetsuchiTest, SampleTest) {
   block.hash = block2hash;
   block.txs_number = block.transactions.size();
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
-  {
-    auto asset1 = wsv->getAccountAsset("user1@ru", "RUB#ru");
-    ASSERT_TRUE(asset1);
-    ASSERT_EQ(asset1->account_id, "user1@ru");
-    ASSERT_EQ(asset1->asset_id, "RUB#ru");
-    ASSERT_EQ(asset1->balance, iroha::Amount(50, 2));
-
-    auto asset2 = wsv->getAccountAsset("user2@ru", "RUB#ru");
-    ASSERT_TRUE(asset2);
-    ASSERT_EQ(asset2->account_id, "user2@ru");
-    ASSERT_EQ(asset2->asset_id, "RUB#ru");
-    ASSERT_EQ(asset2->balance, iroha::Amount(100, 2));
-  }
+  boost::for_each(combine({user1id, user2id},
+                          {assetid, assetid},
+                          {iroha::Amount(50, 2), iroha::Amount(100, 2)}),
+                  validateAccountAsset(wsv));
 
   // Block store tests
-  auto block_wrap = make_test_subscriber<CallExact>(blocks->getBlocks(1, 2), 2);
-  block_wrap.subscribe([block1hash, block2hash](auto eachBlock) {
-    if (eachBlock.height == 1) {
-      EXPECT_EQ(eachBlock.hash, block1hash);
-    } else if (eachBlock.height == 2) {
-      EXPECT_EQ(eachBlock.hash, block2hash);
-    }
-  });
-  ASSERT_TRUE(block_wrap.validate());
+  validateCalls(
+      blocks->getBlocks(1, 2),
+      [ x = 0, hashes = {block1hash, block2hash} ](auto eachBlock) mutable {
+        EXPECT_EQ(*(hashes.begin() + x++), eachBlock.hash);
+      },
+      2);
 
-  auto wrap = make_test_subscriber<CallExact>(
-      blocks->getAccountTransactions("admin1"), 1);
-  wrap.subscribe([](auto tx) {
-    EXPECT_EQ(tx.creator_account_id, "admin1");
-    EXPECT_EQ(tx.commands.size(), 3);
-  });
-  ASSERT_TRUE(wrap.validate());
+  boost::for_each(
+      combine({"admin1", "admin2", "non_existing_user"}, {1, 1, 0}, {3, 4, 0}),
+      validateAccountTransactions(blocks));
 
-  wrap = make_test_subscriber<CallExact>(
-      blocks->getAccountTransactions("admin2"), 1);
-  wrap.subscribe([](auto tx) {
-    EXPECT_EQ(tx.creator_account_id, "admin2");
-    EXPECT_EQ(tx.commands.size(), 4);
-  });
-  ASSERT_TRUE(wrap.validate());
-
-  // request for non-existing user
-  wrap = make_test_subscriber<CallExact>(
-      blocks->getAccountTransactions("non_existing_user"), 0);
-  wrap.subscribe();
-  ASSERT_TRUE(wrap.validate());
-
-  auto tx_wrap = make_test_subscriber<CallExact>(
-      blocks->getAccountAssetTransactions("user1@ru", "RUB#ru"), 1);
-  tx_wrap.subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  ASSERT_TRUE(tx_wrap.validate());
-
-  tx_wrap = make_test_subscriber<CallExact>(
-      blocks->getAccountAssetTransactions("user2@ru", "RUB#ru"), 1);
-  tx_wrap.subscribe([](auto tx) { EXPECT_EQ(tx.commands.size(), 1); });
-  ASSERT_TRUE(tx_wrap.validate());
-
-  // request for non-existing asset
-  tx_wrap = make_test_subscriber<CallExact>(
-      blocks->getAccountAssetTransactions("non_existing_user",
-                                          "non_existing_asset"),
-      0);
-  tx_wrap.subscribe();
-  ASSERT_TRUE(tx_wrap.validate());
+  boost::for_each(
+      combine({user1id, user2id, "non_existing_user"},
+              {assetid, assetid, "non_existing_asset"},
+              {1, 1, 0},
+              {1, 1, 0}),
+      validateAccountAssetTransactions(blocks));
 }
 
 TEST_F(AmetsuchiTest, PeerTest) {
@@ -256,11 +250,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
   Block block;
   block.transactions.push_back(txn);
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
   auto peers = wsv->getPeers();
   ASSERT_TRUE(peers);
@@ -273,30 +263,17 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   auto storage =
       StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
   ASSERT_TRUE(storage);
-  auto apply = [&](auto &&block) {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
-    storage->commit(std::move(ms));
-  };
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
 
-  const auto admin = "admin1";
-  const auto domain = "domain";
-  const auto user1name = "user1";
-  const auto user2name = "user2";
-  const auto user3name = "user3";
-  const auto user1id = "user1@domain";
-  const auto user2id = "user2@domain";
-  const auto user3id = "user3@domain";
-  const auto asset1name = "asset1";
-  const auto asset2name = "asset2";
-  const auto asset1id = "asset1#domain";
-  const auto asset2id = "asset2#domain";
+  const auto admin = "admin1", domain = "domain", user1name = "user1",
+             user2name = "user2", user3name = "user3", user1id = "user1@domain",
+             user2id = "user2@domain", user3id = "user3@domain",
+             asset1name = "asset1", asset2name = "asset2",
+             asset1id = "asset1#domain", asset2id = "asset2#domain";
 
   std::string account, src_account, dest_account, asset;
   iroha::Amount amount;
-  int call_count, command_count;
 
   // 1st tx
   Transaction txn;
@@ -337,28 +314,18 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   block.hash = block1hash;
   block.txs_number = static_cast<uint16_t>(block.transactions.size());
 
-  apply(block);
+  apply(storage)(block);
 
   // Check querying accounts
   for (const auto &id : {user1id, user2id, user3id}) {
-    auto account = wsv->getAccount(id);
-    ASSERT_TRUE(account);
-    ASSERT_EQ(account->account_id, id);
-    ASSERT_EQ(account->domain_id, domain);
+    validateAccount(wsv)(id, domain);
   }
 
   // Check querying assets for users
   boost::for_each(combine({user1id, user2id},
                           {asset1id, asset2id},
                           {iroha::Amount(300, 2), iroha::Amount(250, 2)}),
-                  [&](const auto &p) {
-                    boost::tie(account, asset, amount) = p;
-                    auto account_asset = wsv->getAccountAsset(account, asset);
-                    ASSERT_TRUE(account_asset);
-                    ASSERT_EQ(account_asset->account_id, account);
-                    ASSERT_EQ(account_asset->asset_id, asset);
-                    ASSERT_EQ(account_asset->balance, amount);
-                  });
+                  validateAccountAsset(wsv));
 
   // 2th tx (user1 -> user2 # asset1)
   txn = Transaction();
@@ -376,20 +343,13 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   block.hash = block2hash;
   block.txs_number = static_cast<uint16_t>(block.transactions.size());
 
-  apply(block);
+  apply(storage)(block);
 
   // Check account asset after transfer assets
   boost::for_each(combine({user1id, user2id},
                           {asset1id, asset1id},
                           {iroha::Amount(180, 2), iroha::Amount(120, 2)}),
-                  [&](const auto &p) {
-                    boost::tie(account, asset, amount) = p;
-                    auto account_asset = wsv->getAccountAsset(account, asset);
-                    ASSERT_TRUE(account_asset);
-                    ASSERT_EQ(account_asset->account_id, account);
-                    ASSERT_EQ(account_asset->asset_id, asset);
-                    ASSERT_EQ(account_asset->balance, amount);
-                  });
+                  validateAccountAsset(wsv));
 
   // 3rd tx
   //   (user2 -> user3 # asset2)
@@ -415,48 +375,26 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   block.hash = block3hash;
   block.txs_number = static_cast<uint16_t>(block.transactions.size());
 
-  apply(block);
+  apply(storage)(block);
 
   boost::for_each(
       combine(
           {user2id, user3id, user1id},
           {asset2id, asset2id, asset2id},
           {iroha::Amount(90, 2), iroha::Amount(150, 2), iroha::Amount(10, 2)}),
-      [&](const auto &p) {
-        boost::tie(account, asset, amount) = p;
-        auto account_asset = wsv->getAccountAsset(account, asset);
-        ASSERT_TRUE(account_asset);
-        ASSERT_EQ(account_asset->account_id, account);
-        ASSERT_EQ(account_asset->asset_id, asset);
-        ASSERT_EQ(account_asset->balance, amount);
-      });
+      validateAccountAsset(wsv));
 
   // Block store tests
-  auto block_wrap = make_test_subscriber<CallExact>(blocks->getBlocks(1, 3), 3);
-  block_wrap.subscribe(
-      [block1hash, block2hash, block3hash](auto eachBlock) {
-        if (eachBlock.height == 1) {
-          EXPECT_EQ(eachBlock.hash, block1hash);
-        } else if (eachBlock.height == 2) {
-          EXPECT_EQ(eachBlock.hash, block2hash);
-        } else if (eachBlock.height == 3) {
-          EXPECT_EQ(eachBlock.hash, block3hash);
-        }
-      });
-  ASSERT_TRUE(block_wrap.validate());
+  validateCalls(blocks->getBlocks(1, 3),
+                [ x = 0, hashes = {block1hash, block2hash, block3hash} ](
+                    auto eachBlock) mutable {
+                  EXPECT_EQ(*(hashes.begin() + x++), eachBlock.hash);
+                },
+                3);
 
   boost::for_each(
       combine({admin, user1id, user2id, user3id}, {1, 1, 1, 0}, {9, 1, 2, 0}),
-      [&](const auto &p) {
-        boost::tie(account, call_count, command_count) = p;
-        auto wrap = make_test_subscriber<CallExact>(
-            blocks->getAccountTransactions(account), call_count);
-        wrap.subscribe([=](const auto &tx) {
-          EXPECT_EQ(tx.commands.size(), command_count);
-        });
-        ASSERT_TRUE(wrap.validate()) << "Expected " << call_count
-                                     << " calls for " << account;
-      });
+      validateAccountTransactions(blocks));
 
   // (user1 -> user2 # asset1)
   // (user2 -> user3 # asset2)
@@ -466,16 +404,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
               {asset1id, asset1id, asset1id, asset2id, asset2id, asset2id},
               {1, 1, 0, 1, 1, 1},
               {1, 1, 0, 1, 2, 1}),
-      [&](const auto &p) {
-        boost::tie(account, asset, call_count, command_count) = p;
-        auto wrap = make_test_subscriber<CallExact>(
-            blocks->getAccountAssetTransactions(account, asset), call_count);
-        wrap.subscribe([=](const auto &tx) {
-          EXPECT_EQ(tx.commands.size(), command_count);
-        });
-        ASSERT_TRUE(wrap.validate()) << "Expected " << call_count
-                                     << " call for " << account << " " << asset;
-      });
+      validateAccountAssetTransactions(blocks));
 }
 
 TEST_F(AmetsuchiTest, AddSignatoryTest) {
@@ -519,13 +448,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   block.hash = block1hash;
   block.txs_number = block.transactions.size();
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &blk, auto &query, const auto &top_hash) {
-      return true;
-    });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
   {
     auto account = wsv->getAccount(user1id);
@@ -556,11 +479,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   block.hash = block2hash;
   block.txs_number = block.transactions.size();
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
   {
     auto account = wsv->getAccount(user1id);
@@ -591,11 +510,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   block.hash = block3hash;
   block.txs_number = block.transactions.size();
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
   {
     auto account1 = wsv->getAccount(user1id);
@@ -633,11 +548,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   block.hash = block4hash;
   block.txs_number = block.transactions.size();
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
   {
     auto account = wsv->getAccount(user1id);
@@ -678,11 +589,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   block.hash = block5hash;
   block.txs_number = block.transactions.size();
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
   {
     auto account = wsv->getAccount(user2id);
@@ -714,11 +621,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   block.hash = block6hash;
   block.txs_number = block.transactions.size();
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
   {
     // user2 only has pubkey1.
@@ -866,13 +769,7 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   block.txs_number = block.transactions.size();
   block.hash = iroha::hash(block);
 
-  {
-    auto ms = storage->createMutableStorage();
-    ms->apply(block, [](const auto &blk, auto &query, const auto &top_hash) {
-      return true;
-    });
-    storage->commit(std::move(ms));
-  }
+  apply(storage)(block);
 
   // TODO: 31.10.2017 luckychess move tx3hash case into a separate test after
   // ametsuchi_test redesign
