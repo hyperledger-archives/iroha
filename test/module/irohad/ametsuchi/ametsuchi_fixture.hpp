@@ -25,6 +25,8 @@
 #include <cpp_redis/cpp_redis>
 #include <pqxx/pqxx>
 
+#include "model/generators/command_generator.hpp"
+
 namespace iroha {
   namespace ametsuchi {
     /**
@@ -82,6 +84,8 @@ DROP TABLE IF EXISTS role;
 
         iroha::remove_all(block_store_path);
       }
+
+      model::generators::CommandGenerator cmd_gen;
 
       std::string pgopt_ =
           "host=localhost port=5432 user=postgres password=mysecretpassword";
