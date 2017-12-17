@@ -231,7 +231,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
       combine({user1id, user2id, "non_existing_user"},
               {assetid, assetid, "non_existing_asset"},
               {1, 1, 0},
-              {1, 1, 0}),
+              {4, 4, 0}),
       validateAccountAssetTransactions(blocks));
 }
 
@@ -403,7 +403,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
       combine({user1id, user2id, user3id, user1id, user2id, user3id},
               {asset1id, asset1id, asset1id, asset2id, asset2id, asset2id},
               {1, 1, 0, 1, 1, 1},
-              {1, 1, 0, 1, 2, 1}),
+              {1, 1, 0, 2, 2, 2}),
       validateAccountAssetTransactions(blocks));
 }
 
