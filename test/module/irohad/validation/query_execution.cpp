@@ -545,19 +545,25 @@ class GetAccountTransactionsTest : public QueryValidateExecuteTest {
     get_tx->creator_account_id = admin_id;
     query = get_tx;
     role_permissions = {can_get_my_acc_txs};
-    txs_observable = rxcpp::observable<>::iterate([this] {
+    txs_observable = getDefaultTransactions(account_id);
+  }
+
+  rxcpp::observable<Transaction> getDefaultTransactions(
+      const std::string &creator) {
+    return rxcpp::observable<>::iterate([&creator, this] {
       std::vector<::Transaction> result;
       for (size_t i = 0; i < N; ++i) {
-        ::Transaction current;
-        current.creator_account_id = account_id;
+        Transaction current;
+        current.creator_account_id = creator;
         current.tx_counter = i;
         result.push_back(current);
       }
       return result;
     }());
   }
-  std::shared_ptr<GetAccountTransactions> get_tx;
+
   rxcpp::observable<Transaction> txs_observable;
+  std::shared_ptr<GetAccountTransactions> get_tx;
   size_t N = 3;
 };
 
@@ -572,16 +578,7 @@ TEST_F(GetAccountTransactionsTest, MyAccountValidCase) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
 
-  txs_observable = rxcpp::observable<>::iterate([this] {
-    std::vector<::Transaction> result;
-    for (size_t i = 0; i < N; ++i) {
-      Transaction current;
-      current.creator_account_id = admin_id;
-      current.tx_counter = i;
-      result.push_back(current);
-    }
-    return result;
-  }());
+  txs_observable = getDefaultTransactions(admin_id);
 
   EXPECT_CALL(*block_query, getAccountTransactions(admin_id))
       .WillOnce(Return(txs_observable));
