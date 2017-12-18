@@ -710,3 +710,406 @@ TEST_F(GetAccountTransactionsTest, NoAccountExist) {
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
 }
+
+/// --------- Get Account Assets Transactions-------------
+class GetAccountAssetsTransactionsTest : public QueryValidateExecuteTest {
+ public:
+  void SetUp() override {
+    QueryValidateExecuteTest::SetUp();
+    get_tx = std::make_shared<GetAccountAssetTransactions>();
+    get_tx->asset_id = asset_id;
+    get_tx->account_id = account_id;
+    get_tx->creator_account_id = admin_id;
+    query = get_tx;
+    role_permissions = {can_get_my_acc_ast_txs};
+    txs_observable = getDefaultTransactions(account_id, asset_id);
+  }
+
+  rxcpp::observable<Transaction> getDefaultTransactions(
+      const std::string &creator_id, const std::string &asset_id) {
+    return rxcpp::observable<>::iterate([&creator_id, asset_id, this] {
+      std::vector<::Transaction> result;
+      for (size_t i = 0; i < N; ++i) {
+        Transaction current;
+        current.creator_account_id = creator_id;
+        current.tx_counter = i;
+        result.push_back(current);
+      }
+      return result;
+    }());
+  }
+
+  rxcpp::observable<Transaction> txs_observable;
+  std::shared_ptr<GetAccountAssetTransactions> get_tx;
+  size_t N = 3;
+};
+
+/**
+ * @given initialized storage, permission to his/her account
+ * @when get account assets
+ * @then Return account asset of user
+ */
+TEST_F(GetAccountAssetsTransactionsTest, MyAccountValidCase) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  get_tx->account_id = admin_id;
+  txs_observable = getDefaultTransactions(admin_id, asset_id);
+
+  EXPECT_CALL(*block_query, getAccountAssetTransactions(admin_id, asset_id))
+      .WillOnce(Return(txs_observable));
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
+
+  auto TxWrapper = make_test_subscriber<CallExact>(txs_observable, N);
+  TxWrapper.subscribe(
+      [this](auto val) { EXPECT_EQ(admin_id, val.creator_account_id); });
+  ASSERT_TRUE(TxWrapper.validate());
+}
+
+/**
+ * @given initialized storage, global permission
+ * @when get account information about other user
+ * @then Return account asset
+ */
+TEST_F(GetAccountAssetsTransactionsTest, AllAccountValidCase) {
+  get_tx->account_id = account_id;
+  role_permissions = {can_get_all_acc_ast_txs};
+
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+
+  EXPECT_CALL(*block_query, getAccountAssetTransactions(account_id, asset_id))
+      .WillOnce(Return(txs_observable));
+  auto response = validateAndExecute();
+
+  auto TxWrapper = make_test_subscriber<CallExact>(txs_observable, N);
+  TxWrapper.subscribe(
+      [this](auto val) { EXPECT_EQ(account_id, val.creator_account_id); });
+  ASSERT_TRUE(TxWrapper.validate());
+}
+
+/**
+ * @given initialized storage, domain permission
+ * @when get account information about other user in the same domain
+ * @then Return account
+ */
+TEST_F(GetAccountAssetsTransactionsTest, DomainAccountValidCase) {
+  get_tx->account_id = account_id;
+  role_permissions = {can_get_domain_acc_ast_txs};
+
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+
+  EXPECT_CALL(*block_query, getAccountAssetTransactions(account_id, asset_id))
+      .WillOnce(Return(txs_observable));
+  auto response = validateAndExecute();
+
+  auto TxWrapper = make_test_subscriber<CallExact>(txs_observable, N);
+  TxWrapper.subscribe(
+      [this](auto val) { EXPECT_EQ(account_id, val.creator_account_id); });
+  ASSERT_TRUE(TxWrapper.validate());
+}
+
+/**
+ * @given initialized storage, granted permission
+ * @when get account information about other user
+ * @then Return error
+ */
+TEST_F(GetAccountAssetsTransactionsTest, GrantAccountValidCase) {
+  get_tx->account_id = account_id;
+  role_permissions = {};
+
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, get_tx->account_id, can_get_my_acc_ast_txs))
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*block_query, getAccountAssetTransactions(account_id, asset_id))
+      .WillOnce(Return(txs_observable));
+  auto response = validateAndExecute();
+
+  auto TxWrapper = make_test_subscriber<CallExact>(txs_observable, N);
+  TxWrapper.subscribe(
+      [this](auto val) { EXPECT_EQ(account_id, val.creator_account_id); });
+  ASSERT_TRUE(TxWrapper.validate());
+}
+
+/**
+ * @given initialized storage, domain permission
+ * @when get account information about other user in the other domain
+ * @then Return error
+ */
+TEST_F(GetAccountAssetsTransactionsTest, DifferentDomainAccountInValidCase) {
+  get_tx->account_id = "test@test2";
+  role_permissions = {can_get_domain_acc_ast_txs};
+
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, get_tx->account_id, can_get_my_acc_ast_txs))
+      .WillOnce(Return(false));
+
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
+  ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
+}
+
+/**
+ * @given initialized storage, permission
+ * @when get account information about non existing account
+ * @then Return empty response
+ */
+TEST_F(GetAccountAssetsTransactionsTest, NoAccountExist) {
+  get_tx->account_id = "none";
+  role_permissions = {can_get_all_acc_ast_txs};
+
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+
+  EXPECT_CALL(*block_query,
+              getAccountAssetTransactions(get_tx->account_id, asset_id))
+      .WillOnce(Return(rxcpp::observable<>::empty<Transaction>()));
+
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
+}
+
+/**
+ * @given initialized storage, permission
+ * @when get account information about non existing asset
+ * @then Return empty response
+ */
+TEST_F(GetAccountAssetsTransactionsTest, NoAssetExist) {
+  get_tx->account_id = account_id;
+  get_tx->asset_id = "none";
+  role_permissions = {can_get_all_acc_ast_txs};
+
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+
+  EXPECT_CALL(*block_query,
+              getAccountAssetTransactions(get_tx->account_id, get_tx->asset_id))
+      .WillOnce(Return(rxcpp::observable<>::empty<Transaction>()));
+
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
+}
+
+/// --------- Get Asset Info -------------
+class GetAssetInfoTest : public QueryValidateExecuteTest {
+ public:
+  void SetUp() override {
+    QueryValidateExecuteTest::SetUp();
+    qry = std::make_shared<GetAssetInfo>();
+    qry->asset_id = asset_id;
+    qry->creator_account_id = admin_id;
+    query = qry;
+    role_permissions = {can_read_assets};
+    asset = Asset(asset_id, "test", 2);
+  }
+  Asset asset;
+  std::shared_ptr<GetAssetInfo> qry;
+};
+
+/**
+ * @given initialized storage, permission to read all system assets
+ * @when get asset info
+ * @then Return asset
+ */
+TEST_F(GetAssetInfoTest, MyAccountValidCase) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+
+  EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<AssetResponse>(response);
+  ASSERT_EQ(cast_resp->asset.asset_id, asset_id);
+}
+
+/**
+ * @given initialized storage, no permissions
+ * @when get asset info
+ * @then Error
+ */
+TEST_F(GetAssetInfoTest, PermissionsInvalidCase) {
+  role_permissions = {};
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
+  ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
+}
+
+/**
+ * @given initialized storage, all permissions
+ * @when get asset info of non existing asset
+ * @then Error
+ */
+TEST_F(GetAssetInfoTest, AssetInvalidCase) {
+  qry->asset_id = "none";
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getAsset(qry->asset_id))
+      .WillOnce(Return(nonstd::nullopt));
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
+  ASSERT_EQ(cast_resp->reason, ErrorResponse::NO_ASSET);
+}
+
+/// --------- Get Roles -------------
+class GetRolesTest : public QueryValidateExecuteTest {
+ public:
+  void SetUp() override {
+    QueryValidateExecuteTest::SetUp();
+    qry = std::make_shared<GetRoles>();
+    qry->creator_account_id = admin_id;
+    query = qry;
+    role_permissions = {can_get_roles};
+    roles = {admin_role, "some_role"};
+  }
+  std::vector<std::string> roles;
+  std::shared_ptr<GetRoles> qry;
+};
+
+/**
+ * @given initialized storage, permission to read all roles
+ * @when get system roles
+ * @then Return roles
+ */
+TEST_F(GetRolesTest, ValidCase) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getRoles()).WillOnce(Return(roles));
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<RolesResponse>(response);
+  ASSERT_EQ(cast_resp->roles.size(), roles.size());
+  for (size_t i = 0; i < roles.size(); ++i) {
+    ASSERT_EQ(cast_resp->roles.at(i), roles.at(i));
+  }
+}
+
+/**
+ * @given initialized storage, no permission to read all roles
+ * @when get system roles
+ * @then Return Error
+ */
+TEST_F(GetRolesTest, InValidCaseNoPermissions) {
+  role_permissions = {};
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
+  ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
+}
+
+/**
+ * @given initialized storage, no roles exist
+ * @when get system roles
+ * @then Return Error
+ */
+TEST_F(GetRolesTest, InValidCaseNoRoles) {
+  admin_roles = {};
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
+  ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
+}
+
+/// --------- Get Role Permissions -------------
+class GetRolePermissionsTest : public QueryValidateExecuteTest {
+ public:
+  void SetUp() override {
+    QueryValidateExecuteTest::SetUp();
+    qry = std::make_shared<GetRolePermissions>();
+    qry->creator_account_id = admin_id;
+    qry->role_id = "user";
+    query = qry;
+    role_permissions = {can_get_roles};
+    perms = {can_get_my_account, can_get_my_signatories};
+  }
+  std::vector<std::string> perms;
+  std::shared_ptr<GetRolePermissions> qry;
+};
+
+/**
+ * @given initialized storage, permission to read all roles
+ * @when get system roles
+ * @then Return roles
+ */
+TEST_F(GetRolePermissionsTest, ValidCase) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getRolePermissions(qry->role_id))
+      .WillOnce(Return(perms));
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<RolePermissionsResponse>(response);
+  ASSERT_EQ(cast_resp->role_permissions.size(), perms.size());
+  for (size_t i = 0; i < perms.size(); ++i) {
+    ASSERT_EQ(cast_resp->role_permissions.at(i), perms.at(i));
+  }
+}
+
+/**
+ * @given initialized storage, no permission to read all roles
+ * @when get system roles
+ * @then Return Error
+ */
+TEST_F(GetRolePermissionsTest, InValidCaseNoPermissions) {
+  role_permissions = {};
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
+  ASSERT_EQ(cast_resp->reason, ErrorResponse::STATEFUL_INVALID);
+}
+
+
+/**
+ * @given initialized storage,  permission to read all roles, no role exist
+ * @when get system roles
+ * @then Return Error
+ */
+TEST_F(GetRolePermissionsTest, InValidCaseNoRole) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getRolePermissions(qry->role_id))
+      .WillOnce(Return(nonstd::nullopt));
+  auto response = validateAndExecute();
+  auto cast_resp = std::static_pointer_cast<ErrorResponse>(response);
+  ASSERT_EQ(cast_resp->reason, ErrorResponse::NO_ROLES);
+}
