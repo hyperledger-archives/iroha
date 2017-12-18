@@ -27,6 +27,7 @@ addtest(block_query_transfer_test block_query_transfer_test.cpp)
 target_link_libraries(block_query_transfer_test
     ametsuchi
     libs_common
+    ametsuchi_fixture
     )
 
 addtest(kv_storage_test kv_storage_test.cpp)

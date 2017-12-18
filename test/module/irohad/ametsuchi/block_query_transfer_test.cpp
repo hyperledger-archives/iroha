@@ -36,21 +36,9 @@ namespace iroha {
         ASSERT_TRUE(file);
         index = std::make_shared<RedisBlockIndex>(client);
         blocks = std::make_shared<RedisBlockQuery>(client, *file);
+      }
 
-        model::Transaction txn;
-        txn.creator_account_id = creator1;
-
-        auto cmd = std::make_shared<model::TransferAsset>();
-        cmd->src_account_id = creator1;
-        cmd->dest_account_id = creator2;
-        cmd->asset_id = asset;
-        txn.commands.push_back(cmd);
-        tx_hashes.push_back(iroha::hash(txn));
-
-        model::Block block;
-        block.height = 1;
-        block.transactions.push_back(txn);
-
+      void insert(const model::Block &block) {
         file->add(block.height,
                   iroha::stringToBytes(model::converters::jsonToString(
                       model::converters::JsonBlockFactory().serialize(block))));
@@ -63,16 +51,27 @@ namespace iroha {
       std::unique_ptr<FlatFile> file;
       std::string creator1 = "user1@test";
       std::string creator2 = "user2@test";
+      std::string creator3 = "user3@test";
       std::string asset = "coin#test";
     };
 
     /**
      * @given block store and index with block containing 1 transaction
-     * from creator 1 with transfer to creator 2 sending asset
+     * with transfer from creator 1 to creator 2 sending asset
      * @when query to get asset transactions of sender
      * @then query returns the transaction
      */
     TEST_F(BlockQueryTransferTest, SenderAssetName) {
+      model::Block block;
+      block.transactions.emplace_back();
+
+      block.transactions.back().commands.push_back(
+          cmd_gen.generateTransferAsset(creator1, creator2, asset, {}));
+      tx_hashes.push_back(iroha::hash(block.transactions.back()));
+
+      block.height = 1;
+      insert(block);
+
       auto wrapper = make_test_subscriber<CallExact>(
           blocks->getAccountAssetTransactions(creator1, asset), 1);
       wrapper.subscribe(
@@ -82,15 +81,86 @@ namespace iroha {
 
     /**
      * @given block store and index with block containing 1 transaction
-     * from creator 1 with transfer to creator 2 sending asset
+     * with transfer from creator 1 to creator 2 sending asset
      * @when query to get asset transactions of receiver
      * @then query returns the transaction
      */
     TEST_F(BlockQueryTransferTest, ReceiverAssetName) {
+      model::Block block;
+      block.transactions.emplace_back();
+
+      block.transactions.back().commands.push_back(
+          cmd_gen.generateTransferAsset(creator1, creator2, asset, {}));
+      tx_hashes.push_back(iroha::hash(block.transactions.back()));
+
+      block.height = 1;
+      insert(block);
+
       auto wrapper = make_test_subscriber<CallExact>(
           blocks->getAccountAssetTransactions(creator2, asset), 1);
       wrapper.subscribe(
           [this](auto val) { ASSERT_EQ(tx_hashes.at(0), iroha::hash(val)); });
+      ASSERT_TRUE(wrapper.validate());
+    }
+
+    /**
+     * @given block store and index with block containing 1 transaction
+     * from creator 3 with transfer from creator 1 to creator 2 sending asset
+     * @when query to get asset transactions of transaction creator
+     * @then query returns the transaction
+     */
+    TEST_F(BlockQueryTransferTest, GrantedTransfer) {
+      model::Block block;
+      block.transactions.emplace_back();
+      block.transactions.back().creator_account_id = creator3;
+
+      block.transactions.back().commands.push_back(
+          cmd_gen.generateTransferAsset(creator1, creator2, asset, {}));
+      tx_hashes.push_back(iroha::hash(block.transactions.back()));
+
+      block.height = 1;
+      insert(block);
+
+      auto wrapper = make_test_subscriber<CallExact>(
+          blocks->getAccountAssetTransactions(creator3, asset), 1);
+      wrapper.subscribe(
+          [this](auto val) { ASSERT_EQ(tx_hashes.at(0), iroha::hash(val)); });
+      ASSERT_TRUE(wrapper.validate());
+    }
+
+    /**
+     * @given block store and index with 2 blocks containing 1 transaction
+     * with transfer from creator 1 to creator 2 sending asset
+     * @when query to get asset transactions of sender
+     * @then query returns the transactions
+     */
+    TEST_F(BlockQueryTransferTest, TwoBlocks) {
+      model::Block block;
+      block.transactions.emplace_back();
+
+      block.transactions.back().commands.push_back(
+          cmd_gen.generateTransferAsset(creator1, creator2, asset, {}));
+      tx_hashes.push_back(iroha::hash(block.transactions.back()));
+
+      block.height = 1;
+      insert(block);
+
+      block = model::Block();
+      block.transactions.emplace_back();
+
+      block.transactions.back().commands.push_back(
+          cmd_gen.generateTransferAsset(creator1, creator2, asset, {}));
+      tx_hashes.push_back(iroha::hash(block.transactions.back()));
+
+      block.height = 2;
+      insert(block);
+
+      auto wrapper = make_test_subscriber<CallExact>(
+          blocks->getAccountAssetTransactions(creator1, asset), 2);
+      wrapper.subscribe([ i = 0, this ](auto val) mutable {
+        ASSERT_EQ(tx_hashes.at(i), iroha::hash(val));
+        ++i;
+      });
       ASSERT_TRUE(wrapper.validate());
     }
   }  // namespace ametsuchi
