@@ -70,7 +70,7 @@ auto validateAccountTransactions(B &&blocks) {
     boost::tie(account, call_count, command_count) = p;
     validateCalls(
         blocks->getAccountTransactions(account),
-        [=](const auto &tx) { EXPECT_EQ(tx.commands.size(), command_count); },
+        [&](const auto &tx) { EXPECT_EQ(tx.commands.size(), command_count); },
         call_count, " for " + account);
   };
 }
@@ -83,7 +83,7 @@ auto validateAccountAssetTransactions(B &&blocks) {
     boost::tie(account, asset, call_count, command_count) = p;
     validateCalls(
         blocks->getAccountAssetTransactions(account, asset),
-        [=](const auto &tx) { EXPECT_EQ(tx.commands.size(), command_count); },
+        [&](const auto &tx) { EXPECT_EQ(tx.commands.size(), command_count); },
         call_count,
         " for " + account + " " + asset);
   };
