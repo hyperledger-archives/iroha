@@ -52,8 +52,18 @@ auto combine(std::initializer_list<T> &&...lists) {
   return boost::combine(std::move(lists)...);
 }
 
+/**
+ * Shortcut to create CallExact observable wrapper, subscribe with given lambda,
+ * and validate the number of calls with optional custom output
+ * @tparam O observable type
+ * @tparam F on_next function type
+ * @param o observable object
+ * @param f function object
+ * @param call_count number of expected calls
+ * @param msg custom validation failure message
+ */
 template <typename O, typename F>
-decltype(auto) validateCalls(O &&o,
+void validateCalls(O &&o,
                              F &&f,
                              uint64_t call_count,
                              const std::string &msg = {}) {
@@ -62,6 +72,14 @@ decltype(auto) validateCalls(O &&o,
   ASSERT_TRUE(wrap.validate()) << "Expected " << call_count << " calls" << msg;
 }
 
+/**
+ * Make function which validates getAccountTransaction with given parameters:
+ * account id, number of observable calls, number of commands in transaction,
+ * and given block query
+ * @tparam B block query type
+ * @param blocks block query object
+ * @return validating function taking parameter tuple
+ */
 template <typename B>
 auto validateAccountTransactions(B &&blocks) {
   return [&](const auto &p) {
@@ -75,6 +93,14 @@ auto validateAccountTransactions(B &&blocks) {
   };
 }
 
+/**
+ * Make function which validates getAccountAssetTransactions with given
+ * parameters: account id, asset id, number of observable calls, number of
+ * commands in transaction, and given block query
+ * @tparam B block query type
+ * @param blocks block query object
+ * @return validation function taking parameter tuple
+ */
 template <typename B>
 auto validateAccountAssetTransactions(B &&blocks) {
   return [&](const auto &p) {
@@ -89,6 +115,13 @@ auto validateAccountAssetTransactions(B &&blocks) {
   };
 }
 
+/**
+ * Make function which validates getAccountAsset with given parameters:
+ * account id, asset id, amount, and given WSV query
+ * @tparam W WSV query type
+ * @param wsv WSV query object
+ * @return validation function taking parameter tuple
+ */
 template <typename W>
 auto validateAccountAsset(W &&wsv) {
   return [&](const auto &p) {
@@ -103,6 +136,13 @@ auto validateAccountAsset(W &&wsv) {
   };
 }
 
+/**
+ * Make function which validates getAccount with given parameters: account id,
+ * domain, and given WSV query
+ * @tparam W WSV query type
+ * @param wsv WSV query object
+ * @return validation function taking listed parameters
+ */
 template <typename W>
 auto validateAccount(W &&wsv) {
   return [&](const auto &id, const auto &domain) {
@@ -113,6 +153,12 @@ auto validateAccount(W &&wsv) {
   };
 }
 
+/**
+ * Apply block to given storage
+ * @tparam S storage type
+ * @param storage storage object
+ * @return function for block application
+ */
 template <typename S>
 auto apply(S &&storage) {
   return [&](const auto &block) {
