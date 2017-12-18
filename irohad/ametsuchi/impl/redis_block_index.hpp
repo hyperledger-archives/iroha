@@ -20,6 +20,7 @@
 
 #include "ametsuchi/impl/block_index.hpp"
 
+#include <boost/format.hpp>
 #include <cpp_redis/redis_client.hpp>
 
 namespace iroha {
@@ -31,9 +32,33 @@ namespace iroha {
       void index(const model::Block &block) override;
 
      private:
-      cpp_redis::redis_client &client_;
-    };
-  } // namespace ametsuchi
-} // namespace iroha
+      /**
+       * Make index account_id -> list of blocks where his txs exist
+       * @param account_id of transaction creator
+       * @param height of block
+       */
+      void indexAccountIdHeight(const std::string &account_id,
+                                const std::string &height);
 
-#endif //IROHA_REDIS_BLOCK_INDEX_HPP
+      /**
+       * Collect all assets belonging to creator, sender, and receiver
+       * to make account_id:height:asset_id -> list of tx indexes (where
+       * tx with certain asset is placed in the block)
+       * @param account_id of transaction creator
+       * @param height of block
+       * @param index of transaction in the block
+       * @param commands in the transaction
+       */
+      void indexAccountAssets(const std::string &account_id,
+                             const std::string &height,
+                             const std::string &index,
+                             const model::Transaction::CommandsType &commands);
+
+      cpp_redis::redis_client &client_;
+      /// format strings for index keys
+      boost::format account_id_height_, account_id_height_asset_id_;
+    };
+  }  // namespace ametsuchi
+}  // namespace iroha
+
+#endif  // IROHA_REDIS_BLOCK_INDEX_HPP
