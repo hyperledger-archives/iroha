@@ -64,35 +64,30 @@ namespace iroha {
             // tx with certain asset is placed in the block )
             boost::accumulate(
                 tx.value().commands
-                    // filter transfers
-                    | boost::adaptors::filtered([](const auto &cmd) {
-                        return instanceof <model::TransferAsset>(*cmd);
+                    // flat map abstract commands to transfers
+                    | boost::adaptors::transformed([](const auto &cmd) {
+                        return std::dynamic_pointer_cast<model::TransferAsset>(
+                            cmd);
                       })
-                    // map pointer to an abstract command to
-                    // reference to a transfer command
-                    | boost::adaptors::transformed(
-                          [](const auto &cmd) -> decltype(auto) {
-                            return (
-                                *std::static_pointer_cast<model::TransferAsset>(
-                                    cmd));
-                          }),
+                    | boost::adaptors::filtered(
+                          [](const auto &cmd) { return bool(cmd); }),
                 std::unordered_map<std::string,
                                    std::unordered_set<std::string>>(),
                 [&](auto &&acc, const auto &cmd) {
                   for (const auto &id :
-                       {cmd.src_account_id, cmd.dest_account_id}) {
+                       {cmd->src_account_id, cmd->dest_account_id}) {
                     client_.sadd(id, {height});
                   }
 
                   auto ids = {
-                      creator_id, cmd.src_account_id, cmd.dest_account_id};
+                      creator_id, cmd->src_account_id, cmd->dest_account_id};
                   boost::for_each(
                       ids
                           // map id to account_id:height:asset_id
                           | boost::adaptors::transformed([&](const auto &id) {
                               return boost::str(account_id_height_asset_id % id
                                                 % block.height
-                                                % cmd.asset_id);
+                                                % cmd->asset_id);
                             })
                           // filter unindexed values
                           | boost::adaptors::filtered([&](const auto &key) {
