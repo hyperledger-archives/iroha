@@ -15,56 +15,50 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_SHARED_MODEL_CREATE_ROLE_HPP
-#define IROHA_SHARED_MODEL_CREATE_ROLE_HPP
+#ifndef IROHA_SHARED_MODEL_DETACH_ROLE_HPP
+#define IROHA_SHARED_MODEL_DETACH_ROLE_HPP
 
-#include <numeric>
-#include <set>
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "model/commands/create_role.hpp"
+#include "model/commands/detach_role.hpp"
 
 namespace shared_model {
   namespace interface {
+
     /**
-     * Create new role in Iroha
+     * Remove role from account used in Iroha
      */
-    class CreateRole : public Primitive<CreateRole, iroha::model::CreateRole> {
+    class DetachRole : public Primitive<DetachRole, iroha::model::DetachRole> {
      public:
       /**
-       * @return Id of the domain to create
+       * @return Account to remove the role
+       */
+      virtual const types::AccountIdType &accountId() const = 0;
+      /**
+       * @return Role name to remove from account
        */
       virtual const types::RoleIdType &roleName() const = 0;
-      /// Set of Permissions to insure the order for consistent hash
-      using PermissionsType = std::set<types::PermissionNameType>;
-      /**
-       * @return permissions associated with the role
-       */
-      virtual const PermissionsType &rolePermissions() const = 0;
 
       std::string toString() const override {
-        auto roles_set = rolePermissions();
         return detail::PrettyStringBuilder()
-            .init("CreateRole")
+            .init("DetachRole")
             .append("role_name", roleName())
-            .appendAll(roles_set, [](auto &role) { return role; })
+            .append("account_id", accountId())
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
-        auto oldModel = new iroha::model::CreateRole;
+        auto oldModel = new iroha::model::DetachRole;
         oldModel->role_name = roleName();
-        oldModel->permissions.insert(rolePermissions().begin(),
-                                     rolePermissions().end());
+        oldModel->account_id = accountId();
         return oldModel;
       }
 
       bool operator==(const ModelType &rhs) const override {
-        return roleName() == rhs.roleName()
-            and rolePermissions() == rhs.rolePermissions();
+        return accountId() == rhs.accountId() and roleName() == rhs.roleName();
       }
     };
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_SHARED_MODEL_CREATE_ROLE_HPP
+#endif  // IROHA_SHARED_MODEL_DETACH_ROLE_HPP

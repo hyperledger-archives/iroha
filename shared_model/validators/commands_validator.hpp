@@ -130,6 +130,18 @@ namespace shared_model {
           reason.first = "CreateRole";
 
           validateRoleId(reason, cr->roleName());
+          validatePermissions(reason, cr->rolePermissions());
+
+          return reason;
+        }
+
+        ReasonsGroupType operator()(
+            const detail::PolymorphicWrapper<interface::DetachRole> &dr) const {
+          ReasonsGroupType reason;
+          reason.first = "DetachRole";
+
+          validateAccountId(reason, dr->accountId());
+          validateRoleId(reason, dr->roleName());
 
           return reason;
         }
@@ -167,6 +179,19 @@ namespace shared_model {
 
           return reason;
         }
+
+        ReasonsGroupType operator()(
+            const detail::PolymorphicWrapper<interface::SetAccountDetail> &sad)
+            const {
+          ReasonsGroupType reason;
+          reason.first = "SetAccountDetail";
+
+          validateAccountId(reason, sad->accountId());
+          validateAccountDetailKey(reason, sad->key());
+
+          return reason;
+        }
+
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::SetQuorum> &sq) const {
           ReasonsGroupType reason;
@@ -174,6 +199,19 @@ namespace shared_model {
 
           validateAccountId(reason, sq->accountId());
           validateQuorum(reason, sq->newQuorum());
+
+          return reason;
+        }
+
+        ReasonsGroupType operator()(
+            const detail::PolymorphicWrapper<interface::SubtractAssetQuantity>
+                &saq) const {
+          ReasonsGroupType reason;
+          reason.first = "SubtractAssetQuantity";
+
+          validateAccountId(reason, saq->accountId());
+          validateAssetId(reason, saq->assetId());
+          validateAmount(reason, saq->amount());
 
           return reason;
         }
@@ -272,6 +310,16 @@ namespace shared_model {
           }
         }
 
+        void validateAccountDetailKey(
+            ReasonsGroupType &reason,
+            const interface::SetAccountDetail::AccountDetailKeyType &key)
+            const {
+          std::regex e(R"([A-Za-z0-9_]{1,})");
+          if (not std::regex_match(key, e)) {
+            reason.second.push_back("Wrongly formed key");
+          }
+        }
+
         void validatePrecision(
             ReasonsGroupType &reason,
             const interface::types::PrecisionType &precision) const {
@@ -282,6 +330,15 @@ namespace shared_model {
             ReasonsGroupType &reason,
             const interface::types::PermissionNameType &permission_name) const {
           // define permission constraints
+        }
+
+        void validatePermissions(
+            ReasonsGroupType &reason,
+            const interface::CreateRole::PermissionsType &permissions) const {
+          if (permissions.empty()) {
+            reason.second.push_back(
+                "Permission set should contain at least one permission");
+          }
         }
 
         void validateQuorum(ReasonsGroupType &reason,

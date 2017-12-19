@@ -48,6 +48,11 @@ namespace shared_model {
       virtual const types::QuorumType &quorum() const = 0;
 
       /**
+       * @return JSON data stored in account
+       */
+      virtual const types::JsonType &jsonData() const = 0;
+
+      /**
        * Stringify the data.
        * @return the content of account asset.
        */

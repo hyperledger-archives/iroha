@@ -31,6 +31,7 @@
 #include "interfaces/queries/get_role_permissions.hpp"
 #include "interfaces/queries/get_roles.hpp"
 #include "interfaces/queries/get_signatories.hpp"
+#include "interfaces/queries/get_transactions.hpp"
 #include "model/query.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
@@ -56,6 +57,7 @@ namespace shared_model {
                                     GetSignatories,
                                     GetAccountTransactions,
                                     GetAccountAssetTransactions,
+                                    GetTransactions,
                                     GetAccountAssets,
                                     GetRoles,
                                     GetRolePermissions,

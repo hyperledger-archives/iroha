@@ -21,6 +21,7 @@
 #include "backend/protobuf/queries/proto_query.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "interfaces/transaction.hpp"
 #include "queries.pb.h"
 
 namespace shared_model {
@@ -51,7 +52,8 @@ namespace shared_model {
      public:
       TemplateQueryBuilder() = default;
 
-      NextBuilder<CreatedTime> createdTime(uint64_t created_time) {
+      NextBuilder<CreatedTime> createdTime(
+          interface::types::TimestampType created_time) {
         query_.mutable_payload()->set_created_time(created_time);
         return *this;
       }
@@ -123,7 +125,27 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<QueryCounter> queryCounter(uint64_t query_counter) {
+      NextBuilder<QueryField> getTransactions(
+          std::initializer_list<interface::Transaction::HashType> hashes) {
+        return getTransactions(hashes);
+      }
+
+      template <typename... Hash>
+      NextBuilder<QueryField> getTransactions(const Hash &... hashes) {
+        return getTransactions({hashes...});
+      }
+
+      template <typename Collection>
+      NextBuilder<QueryField> getTransactions(const Collection &hashes) {
+        auto query = query_.mutable_payload()->mutable_get_transactions();
+        boost::for_each(hashes, [&query](const auto &hash) {
+          query->add_tx_hashes(hash.blob());
+        });
+        return *this;
+      }
+
+      NextBuilder<QueryCounter> queryCounter(
+          interface::types::CounterType query_counter) {
         query_.mutable_payload()->set_query_counter(query_counter);
         return *this;
       }

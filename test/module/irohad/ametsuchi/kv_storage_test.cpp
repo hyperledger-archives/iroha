@@ -18,7 +18,7 @@
 #include <gtest/gtest.h>
 #include "ametsuchi/block_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
-#include "crypto/hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/create_role.hpp"
