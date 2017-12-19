@@ -130,6 +130,7 @@ namespace shared_model {
           reason.first = "CreateRole";
 
           validateRoleId(reason, cr->roleName());
+          validatePermissions(reason, cr->rolePermissions());
 
           return reason;
         }
@@ -329,6 +330,15 @@ namespace shared_model {
             ReasonsGroupType &reason,
             const interface::types::PermissionNameType &permission_name) const {
           // define permission constraints
+        }
+
+        void validatePermissions(
+            ReasonsGroupType &reason,
+            const interface::CreateRole::PermissionsType &permissions) const {
+          if (permissions.empty()) {
+            reason.second.push_back(
+                "Permission set should contain at least one permission");
+          }
         }
 
         void validateQuorum(ReasonsGroupType &reason,

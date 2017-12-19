@@ -36,161 +36,6 @@ iroha::protocol::Transaction generateEmptyTransaction() {
   return proto_tx;
 }
 
-iroha::protocol::AddAssetQuantity generateAddAssetQuantity(
-    std::string account_id, std::string asset_id) {
-  iroha::protocol::AddAssetQuantity command;
-
-  command.set_account_id(account_id);
-  command.set_asset_id(asset_id);
-  command.mutable_amount()->mutable_value()->set_fourth(1000);
-  command.mutable_amount()->set_precision(2);
-
-  return command;
-}
-
-iroha::protocol::AddPeer generateAddPeer(std::string address,
-                                         std::string peer_key) {
-  iroha::protocol::AddPeer command;
-
-  command.set_address(address);
-  command.set_peer_key(peer_key);
-
-  return command;
-}
-
-iroha::protocol::AddSignatory generateAddSignatory(std::string account_id,
-                                                   std::string public_key) {
-  iroha::protocol::AddSignatory command;
-
-  command.set_account_id(account_id);
-  command.set_public_key(public_key);
-
-  return command;
-}
-
-iroha::protocol::CreateAsset generateCreateAsset(std::string asset_name,
-                                                 std::string domain_id,
-                                                 uint32_t precision) {
-  iroha::protocol::CreateAsset command;
-
-  command.set_asset_name(asset_name);
-  command.set_domain_id(domain_id);
-  command.set_precision(precision);
-
-  return command;
-}
-
-iroha::protocol::CreateDomain generateCreateDomain(std::string domain_id,
-                                                   std::string default_role) {
-  iroha::protocol::CreateDomain command;
-
-  command.set_domain_id(domain_id);
-  command.set_default_role(default_role);
-
-  return command;
-}
-
-iroha::protocol::RemoveSignatory generateRemoveSignatory(
-    std::string account_id, std::string public_key) {
-  iroha::protocol::RemoveSignatory command;
-
-  command.set_account_id(account_id);
-  command.set_public_key(public_key);
-
-  return command;
-}
-
-iroha::protocol::SetAccountQuorum generateSetAccountQuorum(
-    std::string account_id, uint32_t quorum) {
-  iroha::protocol::SetAccountQuorum command;
-
-  command.set_account_id(account_id);
-  command.set_quorum(quorum);
-
-  return command;
-}
-
-iroha::protocol::TransferAsset generateTransferAsset(
-    std::string src_account_id,
-    std::string dest_account_id,
-    std::string asset_id,
-    std::string description,
-    std::string amount) {
-  iroha::protocol::TransferAsset command;
-
-  command.set_src_account_id(src_account_id);
-  command.set_dest_account_id(dest_account_id);
-  command.set_asset_id(asset_id);
-  command.set_description(description);
-
-  auto iroha_amount = iroha::Amount::createFromString(amount).value();
-  auto proto_amount = command.mutable_amount();
-  proto_amount->set_precision(iroha_amount.getPrecision());
-  auto proto_amount_value = proto_amount->mutable_value();
-  auto uint64s = iroha_amount.to_uint64s();
-  proto_amount_value->set_first(uint64s.at(0));
-  proto_amount_value->set_second(uint64s.at(1));
-  proto_amount_value->set_third(uint64s.at(2));
-  proto_amount_value->set_fourth(uint64s.at(3));
-
-  return command;
-}
-
-iroha::protocol::AppendRole generateAppendRole(std::string account_id,
-                                               std::string role_name) {
-  iroha::protocol::AppendRole command;
-
-  command.set_account_id(account_id);
-  command.set_role_name(role_name);
-
-  return command;
-}
-
-iroha::protocol::CreateAccount generateCreateAccount(std::string account_name,
-                                                     std::string domain_id,
-                                                     std::string main_pubkey) {
-  iroha::protocol::CreateAccount command;
-
-  command.set_account_name(account_name);
-  command.set_domain_id(domain_id);
-  command.set_main_pubkey(main_pubkey);
-
-  return command;
-}
-
-iroha::protocol::CreateRole generateCreateRole(
-    std::string role_name,
-    std::vector<iroha::protocol::RolePermission> permissions) {
-  iroha::protocol::CreateRole command;
-
-  command.set_role_name(role_name);
-  for (auto permission : permissions) {
-    command.add_permissions(permission);
-  }
-
-  return command;
-}
-
-iroha::protocol::GrantPermission generateGrantPermission(
-    std::string account_id, iroha::protocol::GrantablePermission permission) {
-  iroha::protocol::GrantPermission command;
-
-  command.set_account_id(account_id);
-  command.set_permission(permission);
-
-  return command;
-}
-
-iroha::protocol::RevokePermission generateRevokePermission(
-    std::string account_id, iroha::protocol::GrantablePermission permission) {
-  iroha::protocol::RevokePermission command;
-
-  command.set_account_id(account_id);
-  command.set_permission(permission);
-
-  return command;
-}
-
 using namespace iroha::protocol;
 using namespace shared_model;
 
@@ -217,82 +62,89 @@ TEST(CommandsValidatorTest, StatelessValidTest) {
   std::string valid_account_id = "account@domain";
   std::string valid_asset_id = "asset#domain";
   std::string valid_address = "localhost";
+  iroha::protocol::Amount valid_amount;
+  valid_amount.set_precision(2);
+  valid_amount.mutable_value()->set_fourth(1000);
+  auto public_key_size = 32;
+  std::string valid_public_key(public_key_size, '0');
   std::string valid_role_name = "user";
   std::string valid_account_name = "admin";
   std::string valid_domain_id = "ru";
+  std::string valid_asset_name = "asset";
   uint8_t valid_precision = 42;
-  std::vector<RolePermission> valid_role_permissions;
+  iroha::protocol::RolePermission valid_role_permission =
+      iroha::protocol::RolePermission::can_append_role;
   iroha::protocol::GrantablePermission valid_grantable_permission =
-      iroha::protocol::GrantablePermission ::can_add_my_signatory;
+      iroha::protocol::GrantablePermission::can_add_my_signatory;
+  std::string valid_detail_key = "key";
   uint8_t valid_quorum = 2;
-  std::string valid_amount = "12.34";
-  std::string valid_description = "this is meaningless description";
   auto valid_created_time = iroha::time::now();
 
-  auto public_key_size = 32;
-  std::string valid_public_key(public_key_size, '0');
+  auto setField = [&](auto setter) {
+    return [setter](const auto &value) {
+      return [setter, &value](auto refl, auto msg, auto field) {
+        (refl->*setter)(msg, field, value);
+      };
+    };
+  };
+
+  auto setString = setField(&google::protobuf::Reflection::SetString);
+  auto setUInt32 = setField(&google::protobuf::Reflection::SetUInt32);
+  auto addEnum = setField(&google::protobuf::Reflection::AddEnumValue);
+  auto setEnum = setField(&google::protobuf::Reflection::SetEnumValue);
+
+  std::unordered_map<std::string,
+                     std::function<void(
+                         const google::protobuf::Reflection *,
+                         google::protobuf::Message *,
+                         const google::protobuf::FieldDescriptor *)>>
+      field_setters;
+  for (const auto &id : {"account_id", "src_account_id", "dest_account_id"}) {
+    field_setters[id] = setString(valid_account_id);
+  }
+  for (const auto &id : {"peer_key", "public_key", "main_pubkey"}) {
+    field_setters[id] = setString(valid_public_key);
+  }
+  for (const auto &id : {"role_name", "default_role"}) {
+    field_setters[id] = setString(valid_role_name);
+  }
+  field_setters["asset_id"] = setString(valid_asset_id);
+  field_setters["address"] = setString(valid_address);
+  field_setters["account_name"] = setString(valid_account_name);
+  field_setters["domain_id"] = setString(valid_domain_id);
+  field_setters["asset_name"] = setString(valid_asset_name);
+  field_setters["precision"] = setUInt32(valid_precision);
+  field_setters["permissions"] = addEnum(valid_role_permission);
+  field_setters["permission"] = setEnum(valid_grantable_permission);
+  field_setters["key"] = setString(valid_detail_key);
+  field_setters["value"] = setString("");
+  field_setters["quorum"] = setUInt32(valid_quorum);
+  field_setters["description"] = setString("");
+  field_setters["amount"] = [&](auto refl, auto msg, auto field) {
+    refl->MutableMessage(msg, field)->CopyFrom(valid_amount);
+  };
 
   iroha::protocol::Transaction tx = generateEmptyTransaction();
   tx.mutable_payload()->set_creator_account_id(valid_account_id);
   tx.mutable_payload()->set_created_time(valid_created_time);
   auto payload = tx.mutable_payload();
 
-  // AddAssetQuantity
-  payload->add_commands()->mutable_add_asset_quantity()->CopyFrom(
-      generateAddAssetQuantity(valid_account_id, valid_asset_id));
+  iroha::protocol::Command command;
+  auto refl = command.GetReflection();
+  auto desc = command.GetDescriptor();
+  boost::for_each(boost::irange(0, desc->field_count()), [&](auto i) {
+    auto field = desc->field(i);
+    auto command = refl->MutableMessage(payload->add_commands(), field);
 
-  // AddPeer
-  payload->add_commands()->mutable_add_peer()->CopyFrom(
-      generateAddPeer(valid_address, valid_public_key));
+    auto command_refl = command->GetReflection();
+    auto command_desc = command->GetDescriptor();
 
-  // AddSignatory
-  payload->add_commands()->mutable_add_signatory()->CopyFrom(
-      generateAddSignatory(valid_account_id, valid_public_key));
+    boost::for_each(boost::irange(0, command_desc->field_count()), [&](auto i) {
+      auto field = command_desc->field(i);
 
-  // AppendRole
-  payload->add_commands()->mutable_append_role()->CopyFrom(
-      generateAppendRole(valid_account_id, valid_role_name));
-
-  // Create Account
-  payload->add_commands()->mutable_create_account()->CopyFrom(
-      generateCreateAccount(
-          valid_account_name, valid_domain_id, valid_public_key));
-
-  // Create Asset
-  payload->add_commands()->mutable_create_asset()->CopyFrom(generateCreateAsset(
-      valid_account_name, valid_domain_id, valid_precision));
-
-  // Create Domain
-  payload->add_commands()->mutable_create_domain()->CopyFrom(
-      generateCreateDomain(valid_domain_id, valid_role_name));
-
-  // Create Role
-  payload->add_commands()->mutable_create_role()->CopyFrom(
-      generateCreateRole(valid_role_name, valid_role_permissions));
-
-  // Grant Permission
-  payload->add_commands()->mutable_grant_permission()->CopyFrom(
-      generateGrantPermission(valid_account_id, valid_grantable_permission));
-
-  // Remove Signatory
-  payload->add_commands()->mutable_remove_sign()->CopyFrom(
-      generateRemoveSignatory(valid_account_id, valid_public_key));
-
-  // Revoke permission
-  payload->add_commands()->mutable_revoke_permission()->CopyFrom(
-      generateRevokePermission(valid_account_id, valid_grantable_permission));
-
-  // Set Account Quorum
-  payload->add_commands()->mutable_set_quorum()->CopyFrom(
-      generateSetAccountQuorum(valid_account_id, valid_quorum));
-
-  // Transfer Asset
-  payload->add_commands()->mutable_transfer_asset()->CopyFrom(
-      generateTransferAsset(valid_account_id,
-                            valid_account_id,
-                            valid_asset_id,
-                            valid_description,
-                            valid_amount));
+      field_setters.at(field->name())(command_refl, command, field);
+    });
+  });
 
   shared_model::validation::CommandsValidator commands_validator;
   auto answer = commands_validator.validate(
