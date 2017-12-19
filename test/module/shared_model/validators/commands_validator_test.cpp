@@ -16,6 +16,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <boost/range/irange.hpp>
 #include "builders/protobuf/transaction.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 
@@ -312,28 +313,23 @@ TEST(CommandsValidatorTest, StatelessInvalidTest) {
 
   // create commands from default constructors, which will have empty, therefore
   // invalid values
-  payload->add_commands()->mutable_add_asset_quantity()->CopyFrom(
-      AddAssetQuantity());
-  payload->add_commands()->mutable_add_peer()->CopyFrom(AddPeer());
-  payload->add_commands()->mutable_add_signatory()->CopyFrom(AddSignatory());
-  payload->add_commands()->mutable_append_role()->CopyFrom(AppendRole());
-  payload->add_commands()->mutable_create_account()->CopyFrom(CreateAccount());
-  payload->add_commands()->mutable_create_asset()->CopyFrom(CreateAsset());
-  payload->add_commands()->mutable_create_domain()->CopyFrom(CreateDomain());
-  payload->add_commands()->mutable_create_role()->CopyFrom(CreateRole());
-  payload->add_commands()->mutable_grant_permission()->CopyFrom(
-      GrantPermission());
-  payload->add_commands()->mutable_remove_sign()->CopyFrom(RemoveSignatory());
-  payload->add_commands()->mutable_revoke_permission()->CopyFrom(
-      RevokePermission());
-  payload->add_commands()->mutable_set_quorum()->CopyFrom(SetAccountQuorum());
-  payload->add_commands()->mutable_transfer_asset()->CopyFrom(TransferAsset());
+  iroha::protocol::Command command;
+  auto refl = command.GetReflection();
+  auto desc = command.GetDescriptor();
+  boost::for_each(
+      boost::irange(0, desc->field_count()),
+      [&](auto i) {
+        auto field = desc->field(i);
+        refl->SetAllocatedMessage(
+            &command, refl->GetMessage(command, field).New(), field);
+        *payload->add_commands() = command;
+      });
 
   shared_model::validation::CommandsValidator commands_validator;
   auto answer = commands_validator.validate(
       detail::make_polymorphic<proto::Transaction>(tx));
 
-  // in total there should be 13 reasons of bad answer: 12 for each command + 1
-  // for transaction metadata
-  ASSERT_EQ(answer.getReasonsMap().size(), 14);
+  // in total there should be number_of_commands + 1 reasons of bad answer:
+  // number_of_commands for each command + 1 for transaction metadata
+  ASSERT_EQ(answer.getReasonsMap().size(), desc->field_count() + 1);
 }
