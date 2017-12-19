@@ -52,7 +52,8 @@ namespace shared_model {
      public:
       TemplateQueryBuilder() = default;
 
-      NextBuilder<CreatedTime> createdTime(uint64_t created_time) {
+      NextBuilder<CreatedTime> createdTime(
+          interface::types::TimestampType created_time) {
         query_.mutable_payload()->set_created_time(created_time);
         return *this;
       }
@@ -143,7 +144,8 @@ namespace shared_model {
         return *this;
       }
 
-      NextBuilder<QueryCounter> queryCounter(uint64_t query_counter) {
+      NextBuilder<QueryCounter> queryCounter(
+          interface::types::CounterType query_counter) {
         query_.mutable_payload()->set_query_counter(query_counter);
         return *this;
       }
