@@ -135,6 +135,17 @@ namespace shared_model {
         }
 
         ReasonsGroupType operator()(
+            const detail::PolymorphicWrapper<interface::DetachRole> &dr) const {
+          ReasonsGroupType reason;
+          reason.first = "DetachRole";
+
+          validateAccountId(reason, dr->accountId());
+          validateRoleId(reason, dr->roleName());
+
+          return reason;
+        }
+
+        ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::GrantPermission> &gp)
             const {
           ReasonsGroupType reason;
@@ -187,6 +198,19 @@ namespace shared_model {
 
           validateAccountId(reason, sq->accountId());
           validateQuorum(reason, sq->newQuorum());
+
+          return reason;
+        }
+
+        ReasonsGroupType operator()(
+            const detail::PolymorphicWrapper<interface::SubtractAssetQuantity>
+                &saq) const {
+          ReasonsGroupType reason;
+          reason.first = "SubtractAssetQuantity";
+
+          validateAccountId(reason, saq->accountId());
+          validateAssetId(reason, saq->assetId());
+          validateAmount(reason, saq->amount());
 
           return reason;
         }

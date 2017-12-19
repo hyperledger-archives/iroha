@@ -28,11 +28,13 @@
 #include "backend/protobuf/commands/proto_create_asset.hpp"
 #include "backend/protobuf/commands/proto_create_domain.hpp"
 #include "backend/protobuf/commands/proto_create_role.hpp"
+#include "backend/protobuf/commands/proto_detach_role.hpp"
 #include "backend/protobuf/commands/proto_grant_permission.hpp"
 #include "backend/protobuf/commands/proto_remove_signatory.hpp"
 #include "backend/protobuf/commands/proto_revoke_permission.hpp"
 #include "backend/protobuf/commands/proto_set_account_detail.hpp"
 #include "backend/protobuf/commands/proto_set_quorum.hpp"
+#include "backend/protobuf/commands/proto_subtract_asset_quantity.hpp"
 #include "backend/protobuf/commands/proto_transfer_asset.hpp"
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "commands.pb.h"
@@ -73,11 +75,13 @@ namespace shared_model {
                                            CreateAsset,
                                            CreateDomain,
                                            CreateRole,
+                                           DetachRole,
                                            GrantPermission,
                                            RemoveSignatory,
                                            RevokePermission,
                                            SetAccountDetail,
                                            SetQuorum,
+                                           SubtractAssetQuantity,
                                            TransferAsset>;
 
       /// list of types in proto variant

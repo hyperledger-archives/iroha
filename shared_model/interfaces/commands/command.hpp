@@ -29,11 +29,13 @@
 #include "interfaces/commands/create_asset.hpp"
 #include "interfaces/commands/create_domain.hpp"
 #include "interfaces/commands/create_role.hpp"
+#include "interfaces/commands/detach_role.hpp"
 #include "interfaces/commands/grant_permission.hpp"
 #include "interfaces/commands/remove_signatory.hpp"
 #include "interfaces/commands/revoke_permission.hpp"
 #include "interfaces/commands/set_account_detail.hpp"
 #include "interfaces/commands/set_quorum.hpp"
+#include "interfaces/commands/subtract_asset_quantity.hpp"
 #include "interfaces/commands/transfer_asset.hpp"
 #include "model/command.hpp"
 #include "utils/polymorphic_wrapper.hpp"
@@ -62,11 +64,13 @@ namespace shared_model {
                                       CreateAsset,
                                       CreateDomain,
                                       CreateRole,
+                                      DetachRole,
                                       GrantPermission,
                                       RemoveSignatory,
                                       RevokePermission,
                                       SetAccountDetail,
                                       SetQuorum,
+                                      SubtractAssetQuantity,
                                       TransferAsset>;
 
       /// Types of concrete commands, in attached variant
