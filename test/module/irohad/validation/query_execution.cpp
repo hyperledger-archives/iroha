@@ -271,6 +271,7 @@ TEST_F(GetAccountAssetsTest, MyAccountValidCase) {
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<AccountAssetResponse>(response);
   ASSERT_EQ(cast_resp->acct_asset.account_id, admin_id);
+  ASSERT_EQ(cast_resp->acct_asset.asset_id, asset_id);
 }
 
 /**
