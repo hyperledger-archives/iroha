@@ -59,6 +59,7 @@ TEST(commandsValidatorTest, EmptyTransactionTest) {
  * @then answer has no errors
  */
 TEST(CommandsValidatorTest, StatelessValidTest) {
+  // Valid values for fields in commands
   std::string valid_account_id = "account@domain";
   std::string valid_asset_id = "asset#domain";
   std::string valid_address = "localhost";
@@ -80,6 +81,7 @@ TEST(CommandsValidatorTest, StatelessValidTest) {
   uint8_t valid_quorum = 2;
   auto valid_created_time = iroha::time::now();
 
+  // Generate protobuf reflection setter for given type and value
   auto setField = [&](auto setter) {
     return [setter](const auto &value) {
       return [setter, &value](auto refl, auto msg, auto field) {
@@ -93,6 +95,7 @@ TEST(CommandsValidatorTest, StatelessValidTest) {
   auto addEnum = setField(&google::protobuf::Reflection::AddEnumValue);
   auto setEnum = setField(&google::protobuf::Reflection::SetEnumValue);
 
+  // List all used fields in commands
   std::unordered_map<std::string,
                      std::function<void(
                          const google::protobuf::Reflection *,
@@ -129,20 +132,25 @@ TEST(CommandsValidatorTest, StatelessValidTest) {
   tx.mutable_payload()->set_created_time(valid_created_time);
   auto payload = tx.mutable_payload();
 
-  iroha::protocol::Command command;
-  auto refl = command.GetReflection();
-  auto desc = command.GetDescriptor();
+  // Iterate through all command types, filling command fields with valid values
+  auto desc = iroha::protocol::Command::descriptor();
   boost::for_each(boost::irange(0, desc->field_count()), [&](auto i) {
+    // Get field descriptor for concrete command (add asset quantity, etc.)
     auto field = desc->field(i);
-    auto command = refl->MutableMessage(payload->add_commands(), field);
+    // Add new command to transaction
+    auto command_variant = payload->add_commands();
+    // Set concrete type for new command
+    auto command = command_variant->GetReflection()->MutableMessage(
+        command_variant, field);
 
-    auto command_refl = command->GetReflection();
+    // Iterate through all fields of concrete command
     auto command_desc = command->GetDescriptor();
-
     boost::for_each(boost::irange(0, command_desc->field_count()), [&](auto i) {
+      // Get field descriptor for concrete command field (account_id, etc.)
       auto field = command_desc->field(i);
 
-      field_setters.at(field->name())(command_refl, command, field);
+      // Will throw key exception in case new field is added
+      field_setters.at(field->name())(command->GetReflection(), command, field);
     });
   });
 
@@ -165,17 +173,16 @@ TEST(CommandsValidatorTest, StatelessInvalidTest) {
 
   // create commands from default constructors, which will have empty, therefore
   // invalid values
-  iroha::protocol::Command command;
-  auto refl = command.GetReflection();
-  auto desc = command.GetDescriptor();
-  boost::for_each(
-      boost::irange(0, desc->field_count()),
-      [&](auto i) {
-        auto field = desc->field(i);
-        refl->SetAllocatedMessage(
-            &command, refl->GetMessage(command, field).New(), field);
-        *payload->add_commands() = command;
-      });
+  auto desc = iroha::protocol::Command::descriptor();
+  boost::for_each(boost::irange(0, desc->field_count()), [&](auto i) {
+    // Get field descriptor for concrete command (add asset quantity, etc.)
+    auto field = desc->field(i);
+    // Add new command to transaction
+    auto command = payload->add_commands();
+    // Set concrete type for new command
+    command->GetReflection()->MutableMessage(command, field);
+    // Note that no fields are set
+  });
 
   shared_model::validation::CommandsValidator commands_validator;
   auto answer = commands_validator.validate(
