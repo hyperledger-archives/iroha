@@ -22,8 +22,8 @@
 
 #include "byteutils.hpp"
 #include "client.hpp"
-#include "crypto/crypto.hpp"
-#include "crypto/hash.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "crypto/keys_manager_impl.hpp"
 #include "datetime/time.hpp"
 #include "grpc_response_handler.hpp"
