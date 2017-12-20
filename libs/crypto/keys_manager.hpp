@@ -41,6 +41,8 @@ namespace iroha {
      * @return false if create account failed
      */
     virtual bool createKeys(std::string pass_phrase) = 0;
+
+    virtual ~KeysManager() = default;
   };
 
 }  // namepsace iroha_cli
