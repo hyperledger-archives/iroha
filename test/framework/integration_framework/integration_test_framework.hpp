@@ -19,11 +19,16 @@
 #define IROHA_INTEGRATION_FRAMEWORK_HPP
 
 #include <tbb/concurrent_queue.h>
+#include <algorithm>
 #include <chrono>
 #include <exception>
 #include <queue>
+#include <string>
 #include <thread>
+#include <vector>
 #include "crypto/keys_manager_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "datetime/time.hpp"
 #include "framework/integration_framework/iroha_instance.hpp"
 #include "logger/logger.hpp"
 #include "model/block.hpp"
@@ -56,6 +61,9 @@ namespace integration_framework {
         tx.commands.push_back(std::move(v));
       }
       b.transactions = {tx};
+      b.height = 1;
+      b.txs_number = 1;
+      b.hash = iroha::hash(b);
       return setInitialState(keypair, b);
     }
 
@@ -96,23 +104,40 @@ namespace integration_framework {
       return *this;
     }
 
-    IntegrationTestFramework &addUser(std::string account_id,
-                                      const iroha::keypair_t &keypair) {
+    IntegrationTestFramework &addUser(
+        std::string account_id,
+        const iroha::keypair_t &keypair,
+        std::vector<iroha::pubkey_t> signatories = {}) {
+      iroha::model::generators::CommandGenerator gen;
       iroha::model::Transaction tx;
+
+      // add an account
+      tx.commands.push_back(gen.generateCreateAccount(
+          account_id, default_domain, keypair.pubkey));
+
+      // set the account quorum
       tx.commands.push_back(
-          iroha::model::generators::CommandGenerator{}.generateCreateAccount(
-              account_id, default_domain, keypair.pubkey));
+          gen.generateSetQuorum(account_id, signatories.size() + 1));
+
+      // add the signatories to the account
+      std::for_each(signatories.begin(), signatories.end(), [&](auto &s) {
+        tx.commands.push_back(gen.generateAddSignatory(account_id, s));
+      });
+
+      tx.created_ts = iroha::time::now();
+      tx.tx_hash = iroha::hash(tx);
+      iroha::model::ModelCryptoProviderImpl(keypair).sign(tx);
       return sendTx(tx);
     }
 
     // send tx
-    IntegrationTestFramework &sendTx(const iroha::model::Transaction &tx) {
+    IntegrationTestFramework &sendTx(iroha::model::Transaction tx) {
       sendTx(tx, [] {});
       return *this;
     }
 
     template <typename Lambda>
-    IntegrationTestFramework &sendTx(const iroha::model::Transaction &tx,
+    IntegrationTestFramework &sendTx(iroha::model::Transaction tx,
                                      Lambda validation) {
       log_->info("send transaction");
       // deserialize
