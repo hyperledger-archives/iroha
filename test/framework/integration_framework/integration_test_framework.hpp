@@ -23,9 +23,11 @@
 #include <exception>
 #include <queue>
 #include <thread>
+#include "crypto/keys_manager_impl.hpp"
 #include "framework/integration_framework/iroha_instance.hpp"
 #include "logger/logger.hpp"
 #include "model/block.hpp"
+#include "model/generators/command_generator.hpp"
 #include "model/proposal.hpp"
 #include "model/transaction.hpp"
 
@@ -41,15 +43,32 @@ namespace integration_framework {
    public:
     // init
     IntegrationTestFramework &setInitialState(
+        const iroha::keypair_t &keypair = iroha::create_keypair()) {
+      iroha::model::Block b;
+      iroha::model::generators::CommandGenerator gen;
+      iroha::model::Transaction tx;
+      for (auto v :
+           {gen.generateAddPeer("0.0.0.0:0", keypair.pubkey),
+            gen.generateCreateUserRole(default_role),
+            gen.generateCreateDomain(default_domain, default_role),
+            gen.generateCreateAccount("admin", default_domain, keypair.pubkey),
+            gen.generateCreateAsset("coin", default_domain, 1)}) {
+        tx.commands.push_back(std::move(v));
+      }
+      b.transactions = {tx};
+      return setInitialState(keypair, b);
+    }
+
+    IntegrationTestFramework &setInitialState(
         const iroha::keypair_t &keypair, const iroha::model::Block &block) {
       log_->info("init state");
       // peer initialization
       iroha_instance_->initPipeline(keypair);
       log_->info("created pipeline");
-      iroha_instance_->clearLedger();
-      log_->info("cleared ledger");
-      iroha_instance_->rawInsertBlock(block);
-      log_->info("raw insert");
+      // iroha_instance_->clearLedger();
+      // log_->info("cleared ledger");
+      iroha_instance_->makeGenesis(block);
+      log_->info("added genesis block");
 
       // subscribing for components
 
@@ -75,6 +94,15 @@ namespace integration_framework {
       iroha_instance_->run();
       log_->info("run iroha");
       return *this;
+    }
+
+    IntegrationTestFramework &addUser(std::string account_id,
+                                      const iroha::keypair_t &keypair) {
+      iroha::model::Transaction tx;
+      tx.commands.push_back(
+          iroha::model::generators::CommandGenerator{}.generateCreateAccount(
+              account_id, default_domain, keypair.pubkey));
+      return sendTx(tx);
     }
 
     // send tx
@@ -133,7 +161,8 @@ namespace integration_framework {
     // shutdown iroha
     void done() {
       log_->info("done");
-      iroha_instance_->clearLedger();
+      iroha_instance_->instance_->storage->dropStorage();
+      ;
     }
 
     /**
@@ -173,6 +202,9 @@ namespace integration_framework {
 
     /// maximum time of waiting before appearing next committed block
     const std::chrono::milliseconds block_waiting = 5000ms;
+
+    const std::string default_domain = "test";
+    const std::string default_role = "user";
 
    private:
     logger::Logger log_ = logger::log("IntegrationTestFramework");

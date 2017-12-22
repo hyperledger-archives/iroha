@@ -28,8 +28,10 @@ namespace integration_framework {
 
   class IrohaInstance {
    public:
-    void clearLedger() {
+    void makeGenesis(const iroha::model::Block &block) {
       instance_->storage->dropStorage();
+      rawInsertBlock(block);
+      instance_->init();
     }
 
     void rawInsertBlock(const iroha::model::Block &block) {
@@ -50,17 +52,12 @@ namespace integration_framework {
                                                vote_delay_,
                                                load_delay_,
                                                keypair_);
-      instance_->init();
     }
 
-    void run() {
-      instance_->run();
-    }
+    void run() { instance_->run(); }
 
     // TODO 20/12/2017 muratovv replace with auto return type
-    std::shared_ptr<TestIrohad> getIrohaInstance() {
-      return instance_;
-    }
+    std::shared_ptr<TestIrohad> getIrohaInstance() { return instance_; }
 
     std::shared_ptr<TestIrohad> instance_;
 
