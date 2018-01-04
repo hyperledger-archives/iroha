@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
 
     if (FLAGS_peers_address.empty()) {
       logger->error("--peers_address is empty");
-      return -1;
+      return EXIT_FAILURE;
     }
 
     std::ifstream file(FLAGS_peers_address);
@@ -145,8 +145,8 @@ int main(int argc, char *argv[]) {
     logger->info("File saved to genesis.block");
   } else if (FLAGS_interactive) {
     if (FLAGS_name.empty()) {
-      logger->error("Specify account name");
-      return -1;
+      logger->error("Specify account name with --name flag");
+      return EXIT_FAILURE;
     }
 
     fs::path path(FLAGS_key_path);
@@ -173,7 +173,8 @@ int main(int argc, char *argv[]) {
             keypair.value()));
     interactiveCli.run();
   } else {
-    assert_config::assert_fatal(false, "Invalid flags");
+    logger->error("Invalid flags");
+    return EXIT_FAILURE;
   }
   return 0;
 }
