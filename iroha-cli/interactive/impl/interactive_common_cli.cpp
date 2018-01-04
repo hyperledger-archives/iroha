@@ -101,7 +101,8 @@ namespace iroha_cli {
 
     nonstd::optional<std::vector<std::string>> parseParams(
         std::string line, std::string command_name, ParamsMap params_map) {
-      auto params_description = findInHandlerMap(command_name, std::move(params_map));
+      auto params_description =
+          findInHandlerMap(command_name, std::move(params_map));
       if (not params_description.has_value()) {
         // Report no params where found for this command
         std::cout << "Command params not found" << std::endl;
@@ -112,12 +113,16 @@ namespace iroha_cli {
       if (words.size() == 1) {
         // Start interactive mode
         std::vector<std::string> params;
-        std::for_each(
-            params_description.value().begin(),
-            params_description.value().end(),
-            [&params](auto param) {
-              params.push_back(promtString(param).value());
-            });
+        std::for_each(params_description.value().begin(),
+                      params_description.value().end(),
+                      [&params](auto param) {
+                        auto val = promtString(param);
+                        if (not val.has_value()) {
+                          // Exit symbol, stop parsing
+                          return nonstd::nullopt;
+                        }
+                        params.push_back(val.value());
+                      });
         return params;
       } else if (words.size() != params_description.value().size() + 1) {
         // Not enough parameters passed
