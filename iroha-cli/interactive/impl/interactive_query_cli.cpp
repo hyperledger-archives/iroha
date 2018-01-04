@@ -109,7 +109,6 @@ namespace iroha_cli {
     }
 
     void InteractiveQueryCli::run() {
-      std::string line;
       bool is_parsing = true;
       current_context_ = MAIN;
       printMenu("Choose query: ", menu_points_);
@@ -119,13 +118,17 @@ namespace iroha_cli {
       local_time_ = iroha::time::now();
 
       while (is_parsing) {
-        line = promtString("> ");
+        auto line = promtString("> ");
+        if (not line.has_value()){
+          is_parsing = false;
+          break;
+        }
         switch (current_context_) {
           case MAIN:
-            is_parsing = parseQuery(line);
+            is_parsing = parseQuery(line.value());
             break;
           case RESULT:
-            is_parsing = parseResult(line);
+            is_parsing = parseResult(line.value());
             break;
         }
       }

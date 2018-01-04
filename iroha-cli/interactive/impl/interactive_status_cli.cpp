@@ -72,12 +72,16 @@ namespace iroha_cli {
       printMenu("Choose action: ", menuPoints_);
       while (isParsing) {
         auto line = promtString("> ");
+        if (not line.has_value()){
+          isParsing = false;
+          break;
+        }
         switch (currentContext_) {
           case MAIN:
-            isParsing = parseAction(line);
+            isParsing = parseAction(line.value());
             break;
           case RESULT:
-            isParsing = parseResult(line);
+            isParsing = parseResult(line.value());
             break;
         }
       }
