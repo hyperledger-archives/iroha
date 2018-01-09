@@ -192,6 +192,7 @@ namespace iroha_cli {
       while (is_parsing) {
         auto line = promtString("> ");
         if (not line.has_value()){
+          // The promtSting returns error
           is_parsing = false;
           break;
         }

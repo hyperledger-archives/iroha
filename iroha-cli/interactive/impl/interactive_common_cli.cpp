@@ -117,12 +117,14 @@ namespace iroha_cli {
                       params_description.value().end(),
                       [&params](auto param) {
                         auto val = promtString(param);
-                        if (not val.has_value()) {
-                          // Exit symbol, stop parsing
-                          return nonstd::nullopt;
+                        if (val.has_value() and not val.value().empty()) {
+                          params.push_back(val.value());
                         }
-                        params.push_back(val.value());
                       });
+        if (params.size()!= params_description.value().size()){
+          // Wrong params passed
+          return nonstd::nullopt;
+        }
         return params;
       } else if (words.size() != params_description.value().size() + 1) {
         // Not enough parameters passed
