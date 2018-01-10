@@ -71,8 +71,9 @@ namespace iroha_cli {
       currentContext_ = MAIN;
       printMenu("Choose action: ", menuPoints_);
       while (isParsing) {
-        auto line = promtString("> ");
-        if (not line.has_value()){
+        auto line = promptString("> ");
+        if (not line){
+          // line has terminating symbol
           isParsing = false;
           break;
         }

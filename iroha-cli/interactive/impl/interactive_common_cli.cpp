@@ -74,10 +74,11 @@ namespace iroha_cli {
       });
     }
 
-    nonstd::optional<std::string> promtString(const std::string &message) {
+    nonstd::optional<std::string> promptString(const std::string &message) {
       std::string line;
       std::cout << message << ": ";
       if (not std::getline(std::cin, line)) {
+        // Input is a terminating symbol
         return nonstd::nullopt;
       }
       return line;
@@ -116,12 +117,12 @@ namespace iroha_cli {
         std::for_each(params_description.value().begin(),
                       params_description.value().end(),
                       [&params](auto param) {
-                        auto val = promtString(param);
-                        if (val.has_value() and not val.value().empty()) {
+                        auto val = promptString(param);
+                        if (val and not val.value().empty()) {
                           params.push_back(val.value());
                         }
                       });
-        if (params.size()!= params_description.value().size()){
+        if (params.size() != params_description.value().size()) {
           // Wrong params passed
           return nonstd::nullopt;
         }

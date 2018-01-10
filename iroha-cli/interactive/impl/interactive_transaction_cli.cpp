@@ -190,9 +190,9 @@ namespace iroha_cli {
       // Creating a new transaction, increment local tx_counter
       ++tx_counter_;
       while (is_parsing) {
-        auto line = promtString("> ");
-        if (not line.has_value()){
-          // The promtSting returns error
+        auto line = promptString("> ");
+        if (not line) {
+          // The promtSting returns error, terminating symbol
           is_parsing = false;
           break;
         }
