@@ -38,7 +38,7 @@
 
 namespace integration_framework {
 
-  using namespace std::chrono_literals;
+  using std::chrono::milliseconds;
 
   class IntegrationTestFramework {
    private:
@@ -46,149 +46,33 @@ namespace integration_framework {
     using BlockType = std::shared_ptr<iroha::model::Block>;
 
    public:
-    // init
     IntegrationTestFramework &setInitialState(
-        const iroha::keypair_t &keypair = iroha::create_keypair()) {
-      iroha::model::Block b;
-      iroha::model::generators::CommandGenerator gen;
-      iroha::model::Transaction tx;
-      for (auto v :
-           {gen.generateAddPeer("0.0.0.0:0", keypair.pubkey),
-            gen.generateCreateUserRole(default_role),
-            gen.generateCreateDomain(default_domain, default_role),
-            gen.generateCreateAccount("admin", default_domain, keypair.pubkey),
-            gen.generateCreateAsset("coin", default_domain, 1)}) {
-        tx.commands.push_back(std::move(v));
-      }
-      b.transactions = {tx};
-      b.height = 1;
-      b.txs_number = 1;
-      b.hash = iroha::hash(b);
-      return setInitialState(keypair, b);
-    }
-
-    IntegrationTestFramework &setInitialState(
-        const iroha::keypair_t &keypair, const iroha::model::Block &block) {
-      log_->info("init state");
-      // peer initialization
-      iroha_instance_->initPipeline(keypair);
-      log_->info("created pipeline");
-      // iroha_instance_->clearLedger();
-      // log_->info("cleared ledger");
-      iroha_instance_->makeGenesis(block);
-      log_->info("added genesis block");
-
-      // subscribing for components
-
-      iroha_instance_->getIrohaInstance()
-          ->getPeerCommunicationService()
-          ->on_proposal()
-          .subscribe([this](auto proposal) {
-            proposal_queue_.push(
-                std::make_shared<iroha::model::Proposal>(proposal));
-          });
-
-      iroha_instance_->getIrohaInstance()
-          ->getPeerCommunicationService()
-          ->on_commit()
-          .subscribe([this](auto commit_observable) {
-            commit_observable.subscribe([this](auto committed_block) {
-              block_queue_.push(
-                  std::make_shared<iroha::model::Block>(committed_block));
-            });
-          });
-
-      // start instance
-      iroha_instance_->run();
-      log_->info("run iroha");
-      return *this;
-    }
+        const iroha::keypair_t &keypair = iroha::create_keypair());
+    IntegrationTestFramework &setInitialState(const iroha::keypair_t &keypair,
+                                              const iroha::model::Block &block);
 
     IntegrationTestFramework &addUser(
         std::string account_id,
         const iroha::keypair_t &keypair,
-        std::vector<iroha::pubkey_t> signatories = {}) {
-      iroha::model::generators::CommandGenerator gen;
-      iroha::model::Transaction tx;
-
-      // add an account
-      tx.commands.push_back(gen.generateCreateAccount(
-          account_id, default_domain, keypair.pubkey));
-
-      // set the account quorum
-      tx.commands.push_back(
-          gen.generateSetQuorum(account_id, signatories.size() + 1));
-
-      // add the signatories to the account
-      std::for_each(signatories.begin(), signatories.end(), [&](auto &s) {
-        tx.commands.push_back(gen.generateAddSignatory(account_id, s));
-      });
-
-      tx.created_ts = iroha::time::now();
-      tx.tx_hash = iroha::hash(tx);
-      iroha::model::ModelCryptoProviderImpl(keypair).sign(tx);
-      return sendTx(tx);
-    }
-
-    // send tx
-    IntegrationTestFramework &sendTx(iroha::model::Transaction tx) {
-      sendTx(tx, [] {});
-      return *this;
-    }
+        std::vector<iroha::pubkey_t> signatories = {});
 
     template <typename Lambda>
     IntegrationTestFramework &sendTx(iroha::model::Transaction tx,
-                                     Lambda validation) {
-      log_->info("send transaction");
-      // deserialize
-      auto pb_tx =
-          iroha::model::converters::PbTransactionFactory().serialize(tx);
-      // send
-      google::protobuf::Empty response;
-      iroha_instance_->getIrohaInstance()->getCommandService()->ToriiAsync(
-          pb_tx, response);
-      // fetch status of transaction
-      // check validation function
-      return *this;
-    }
+                                     Lambda validation);
+    IntegrationTestFramework &sendTx(iroha::model::Transaction tx);
 
-    // proposal
     template <typename Lambda>
-    IntegrationTestFramework &checkProposal(Lambda validation) {
-      log_->info("check proposal");
-      // fetch first proposal from proposal queue
-      ProposalType proposal;
-      fetchFromQueue(
-          proposal_queue_, proposal, proposal_waiting, "missed proposal");
-      return *this;
-    }
+    IntegrationTestFramework &checkProposal(Lambda validation);
+    IntegrationTestFramework &skipProposal();
 
-    IntegrationTestFramework &skipProposal() {
-      checkProposal([](const iroha::model::Proposal &) {});
-      return *this;
-    }
-
-    // block
     template <typename Lambda>
-    IntegrationTestFramework &checkBlock(Lambda validation) {
-      // fetch first from block queue
-      log_->info("check block");
-      BlockType block;
-      fetchFromQueue(block_queue_, block, block_waiting, "missed block");
-      validation(*block);
-      return *this;
-    }
-    IntegrationTestFramework &skipBlock() {
-      checkBlock([](const iroha::model::Block &) {});
-      return *this;
-    }
+    IntegrationTestFramework &checkBlock(Lambda validation);
+    IntegrationTestFramework &skipBlock();
 
-    // shutdown iroha
-    void done() {
-      log_->info("done");
-      iroha_instance_->instance_->storage->dropStorage();
-      ;
-    }
+    /**
+     * Shutdown iroha
+     */
+    void done();
 
     /**
      * general way to fetch object from concurrent queue
@@ -204,14 +88,7 @@ namespace integration_framework {
     static void fetchFromQueue(Queue &queue,
                                ObjectType &ref_for_insertion,
                                const WaitTime &wait,
-                               const std::string &error_reason) {
-      if (!queue.try_pop(ref_for_insertion)) {
-        std::this_thread::sleep_for(wait);
-      }
-      if (!queue.try_pop(ref_for_insertion)) {
-        throw std::runtime_error(error_reason);
-      }
-    }
+                               const std::string &error_reason);
 
    protected:
     std::shared_ptr<IrohaInstance> iroha_instance_ =
@@ -223,10 +100,10 @@ namespace integration_framework {
 
     /// maximum time of waiting before appearing next proposal
     // TODO 21/12/2017 muratovv make relation of time with instance's config
-    const std::chrono::milliseconds proposal_waiting = 5000ms;
+    const milliseconds proposal_waiting = milliseconds(5000);
 
     /// maximum time of waiting before appearing next committed block
-    const std::chrono::milliseconds block_waiting = 5000ms;
+    const milliseconds block_waiting = milliseconds(5000);
 
     const std::string default_domain = "test";
     const std::string default_role = "user";
@@ -234,6 +111,56 @@ namespace integration_framework {
    private:
     logger::Logger log_ = logger::log("IntegrationTestFramework");
   };
+
+  template <typename Lambda>
+  IntegrationTestFramework &IntegrationTestFramework::sendTx(
+      iroha::model::Transaction tx, Lambda validation) {
+    log_->info("send transaction");
+    // deserialize
+    auto pb_tx = iroha::model::converters::PbTransactionFactory().serialize(tx);
+    // send
+    google::protobuf::Empty response;
+    iroha_instance_->getIrohaInstance()->getCommandService()->ToriiAsync(
+        pb_tx, response);
+    // fetch status of transaction
+    // check validation function
+    return *this;
+  }
+  template <typename Lambda>
+  IntegrationTestFramework &IntegrationTestFramework::checkBlock(
+      Lambda validation) {
+    // fetch first from block queue
+    log_->info("check block");
+    BlockType block;
+    fetchFromQueue(block_queue_, block, block_waiting, "missed block");
+    validation(*block);
+    return *this;
+  }
+
+  template <typename Lambda>
+  IntegrationTestFramework &IntegrationTestFramework::checkProposal(
+      Lambda validation) {
+    log_->info("check proposal");
+    // fetch first proposal from proposal queue
+    ProposalType proposal;
+    fetchFromQueue(
+        proposal_queue_, proposal, proposal_waiting, "missed proposal");
+    return *this;
+  }
+
+  template <typename Queue, typename ObjectType, typename WaitTime>
+  void IntegrationTestFramework::fetchFromQueue(
+      Queue &queue,
+      ObjectType &ref_for_insertion,
+      const WaitTime &wait,
+      const std::string &error_reason) {
+    if (!queue.try_pop(ref_for_insertion)) {
+      std::this_thread::sleep_for(wait);
+    }
+    if (!queue.try_pop(ref_for_insertion)) {
+      throw std::runtime_error(error_reason);
+    }
+  }
 }  // namespace integration_framework
 
 #endif  // IROHA_INTEGRATION_FRAMEWORK_HPP
