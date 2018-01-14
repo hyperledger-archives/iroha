@@ -16,6 +16,7 @@
  */
 
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
+#include <random>
 
 namespace iroha {
   namespace consensus {
@@ -33,8 +34,12 @@ namespace iroha {
 
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getOrdering(
           YacHash hash) {
-        // TODO 01/08/17 Muratov: implement effective ordering based on hash value IR-504
-        return getInitialOrdering();
+        return query_->getLedgerPeers() | [&hash](auto peers){
+          std::seed_seq seed(hash.block_hash.begin(),hash.block_hash.end());
+          std::default_random_engine gen(seed);
+          std::shuffle(peers.begin(), peers.end(), gen);
+          return nonstd::make_optional<ClusterOrdering>(peers);
+        };
       }
     }  // namespace yac
   }    // namespace consensus
