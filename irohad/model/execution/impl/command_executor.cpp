@@ -192,10 +192,10 @@ namespace iroha {
         ametsuchi::WsvQuery &queries,
         ametsuchi::WsvCommand &commands,
         const std::string &creator_account_id) {
-      if (creator_account_id.empty()) {
-        log_->info("Creator account is empty");
-        return false;
-      }
+//      if (creator_account_id.empty()) {       TODO: Remove stateless
+//        log_->info("Creator account is empty");
+//        return false;
+//      }
       auto cmd_value = static_cast<const GrantPermission &>(command);
       return commands.insertAccountGrantablePermission(
           cmd_value.account_id, creator_account_id, cmd_value.permission_name);
@@ -229,10 +229,10 @@ namespace iroha {
         ametsuchi::WsvQuery &queries,
         ametsuchi::WsvCommand &commands,
         const std::string &creator_account_id) {
-      if (creator_account_id.empty()) {
-        log_->info("Creator account is empty");
-        return false;
-      }
+//      if (creator_account_id.empty()) {//      TODO: remove stateless
+//        log_->info("Creator account is empty");
+//        return false;
+//      }
       auto cmd_value = static_cast<const RevokePermission &>(command);
       return commands.deleteAccountGrantablePermission(
           cmd_value.account_id, creator_account_id, cmd_value.permission_name);
@@ -770,8 +770,8 @@ namespace iroha {
       if (not src_account_asset.has_value()) {
         log_->info("asset {} is absent of {}",
                    transfer_asset.asset_id,
-                   transfer_asset.src_account_id,
-                   transfer_asset.description);
+                   transfer_asset.src_account_id);
+//                   transfer_asset.description);
 
         return false;
       }

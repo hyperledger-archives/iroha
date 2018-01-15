@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include <limits>
+
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
 #include "model/commands/add_asset_quantity.hpp"
@@ -198,8 +200,15 @@ TEST_F(AddAssetQuantityTest, InvalidWhenWrongPrecision) {
 }
 
 TEST_F(AddAssetQuantityTest, InvalidWhenNoAccount) {
-  // Account to add doesn't exist
-  add_asset_quantity->account_id = "noacc";
+  // Account to add does not exist
+  EXPECT_CALL(*wsv_query, getAccountRoles(add_asset_quantity->account_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
+  EXPECT_CALL(*wsv_query, getAccount(add_asset_quantity->account_id))
+      .WillOnce(Return(nonstd::nullopt));
+
   ASSERT_FALSE(validateAndExecute());
 }
 
@@ -216,6 +225,28 @@ TEST_F(AddAssetQuantityTest, InvalidWhenNoAsset) {
 
   ASSERT_FALSE(validateAndExecute());
 }
+
+TEST_F(AddAssetQuantityTest, InvalidWhenAssetAdditionFails) {
+  // amount overflows
+  Amount max_amount(std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
+  add_asset_quantity->amount = max_amount;
+
+  EXPECT_CALL(*wsv_query,
+              getAccountAsset(add_asset_quantity->account_id,
+                              add_asset_quantity->asset_id))
+      .WillOnce(Return(wallet));
+
+  EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
+  EXPECT_CALL(*wsv_query, getAccount(add_asset_quantity->account_id))
+      .WillOnce(Return(account));
+  EXPECT_CALL(*wsv_query, getAccountRoles(add_asset_quantity->account_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
 
 class SubtractAssetQuantityTest : public CommandValidateExecuteTest {
  public:
@@ -542,6 +573,17 @@ TEST_F(CreateAccountTest, InvalidWhenNameWithSystemSymbols) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+TEST_F(CreateAccountTest, InvalidWhenNoDomain) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getDomain(domain_id))
+      .WillOnce(Return(nonstd::nullopt));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
 class CreateAssetTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -718,6 +760,51 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoKey) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+TEST_F(RemoveSignatoryTest, InvalidWhenNoAccount) {
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, remove_signatory->account_id, can_remove_signatory))
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
+      .WillOnce(Return(nonstd::nullopt));
+
+  EXPECT_CALL(*wsv_query, getSignatories(remove_signatory->account_id))
+      .WillOnce(Return(many_pubkeys));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(RemoveSignatoryTest, InvalidWhenNoSignatories) {
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, remove_signatory->account_id, can_remove_signatory))
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
+      .WillOnce(Return(account));
+
+  EXPECT_CALL(*wsv_query, getSignatories(remove_signatory->account_id))
+      .WillOnce(Return(nonstd::nullopt));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(RemoveSignatoryTest, InvalidWhenNoAccountAndSignatories) {
+  EXPECT_CALL(*wsv_query,
+              hasAccountGrantablePermission(
+                  admin_id, remove_signatory->account_id, can_remove_signatory))
+      .WillOnce(Return(true));
+
+  EXPECT_CALL(*wsv_query, getAccount(remove_signatory->account_id))
+      .WillOnce(Return(nonstd::nullopt));
+
+  EXPECT_CALL(*wsv_query, getSignatories(remove_signatory->account_id))
+      .WillOnce(Return(nonstd::nullopt));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
 class SetQuorumTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -790,6 +877,33 @@ TEST_F(SetQuorumTest, InvalidWhenNoAccount) {
               hasAccountGrantablePermission(
                   admin_id, set_quorum->account_id, can_set_quorum))
       .WillOnce(Return(false));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(SetQuorumTest, InvalidWhenNoAccountButPassedPermissions) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  set_quorum->account_id = creator.account_id;
+  EXPECT_CALL(*wsv_query, getSignatories(set_quorum->account_id))
+      .WillOnce(Return(account_pubkeys));
+
+  EXPECT_CALL(*wsv_query, getAccount(set_quorum->account_id))
+      .WillOnce(Return(nonstd::nullopt));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(SetQuorumTest, InvalidWhenNoSignatories) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  set_quorum->account_id = creator.account_id;
+  EXPECT_CALL(*wsv_query, getSignatories(set_quorum->account_id))
+      .WillOnce(Return(nonstd::nullopt));
 
   ASSERT_FALSE(validateAndExecute());
 }
@@ -954,6 +1068,70 @@ TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAsset) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAssetDuringExecute) {
+  // No source account asset exists
+  EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->src_account_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .Times(2)
+      .WillRepeatedly(Return(role_permissions));
+
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
+      .WillOnce(Return(asset));
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id)).Times(2)
+      .WillOnce(Return(src_wallet)).WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv_query, getAccount(transfer_asset->dest_account_id))
+      .WillOnce(Return(account));
+
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(TransferAssetTest, InvalidWhenNoAssetDuringValidation) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->src_account_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .Times(2)
+      .WillRepeatedly(Return(role_permissions));
+
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
+      .WillOnce(Return(nonstd::nullopt));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(TransferAssetTest, InvalidWhenNoAssetId) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->src_account_id))
+      .WillOnce(Return(admin_roles));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .Times(2)
+      .WillRepeatedly(Return(role_permissions));
+
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
+      .WillOnce(Return(asset)).WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id)).Times(2)
+      .WillRepeatedly(Return(src_wallet));
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->dest_account_id, transfer_asset->asset_id))
+      .WillOnce(Return(dst_wallet));
+  EXPECT_CALL(*wsv_query, getAccount(transfer_asset->dest_account_id))
+      .WillOnce(Return(account));
+
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
 TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
   // No sufficient funds
   EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
@@ -978,6 +1156,25 @@ TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+TEST_F(TransferAssetTest, InvalidWhenInsufficientFundsDuringExecute) {
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id)).WillOnce(Return(asset));
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
+      .WillOnce(Return(src_wallet));
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->dest_account_id, transfer_asset->asset_id))
+      .WillOnce(Return(dst_wallet));
+
+  // More than account
+  transfer_asset->amount = Amount(155, 2);
+
+  auto executor = factory->getCommandExecutor(command);
+  ASSERT_FALSE(executor->execute(
+      *command, *wsv_query, *wsv_command, creator.account_id));
+}
+
 TEST_F(TransferAssetTest, InvalidWhenWrongPrecision) {
   // Amount has wrong precision
   EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
@@ -995,6 +1192,44 @@ TEST_F(TransferAssetTest, InvalidWhenWrongPrecision) {
       .WillOnce(Return(asset));
 
   ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(TransferAssetTest, InvalidWhenWrongPrecisionDuringExecute) {
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id)).WillOnce(Return(asset));
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
+      .WillOnce(Return(src_wallet));
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->dest_account_id, transfer_asset->asset_id))
+      .WillOnce(Return(dst_wallet));
+
+  Amount amount(transfer_asset->amount.getIntValue(), 30);
+  transfer_asset->amount = amount;
+  auto executor = factory->getCommandExecutor(command);
+  ASSERT_FALSE(executor->execute(
+          *command, *wsv_query, *wsv_command, creator.account_id));
+}
+
+TEST_F(TransferAssetTest, InvalidWhenAmountOverflow) {
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id)).WillOnce(Return(asset));
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
+      .WillOnce(Return(src_wallet));
+  EXPECT_CALL(
+      *wsv_query,
+      getAccountAsset(transfer_asset->dest_account_id, transfer_asset->asset_id))
+      .WillOnce(Return(dst_wallet));
+
+  // More than account
+  Amount max_amount(std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
+  transfer_asset->amount = max_amount;
+
+  auto executor = factory->getCommandExecutor(command);
+  ASSERT_FALSE(executor->execute(
+      *command, *wsv_query, *wsv_command, creator.account_id));
 }
 
 TEST_F(TransferAssetTest, InvalidWhenCreatorHasNoPermission) {
