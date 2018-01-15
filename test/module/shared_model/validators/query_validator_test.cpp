@@ -95,3 +95,81 @@ TEST_F(QueryValidatorTest, StatelessInvalidTest) {
         ASSERT_TRUE(answer.hasErrors());
       });
 }
+
+/**
+ * @given Protobuf query object
+ * @when Each query type created with valid fields
+ * @then Answer has no errors
+ */
+TEST_F(QueryValidatorTest, StatelessValidFromNearestFutureTest) {
+  unsigned long long gap =
+      std::chrono::minutes(3) / std::chrono::milliseconds(1);
+  iroha::protocol::Query qry;
+  qry.mutable_payload()->set_created_time(created_time + gap);
+  qry.mutable_payload()->set_creator_account_id(account_id);
+  qry.mutable_payload()->set_query_counter(counter);
+  auto payload = qry.mutable_payload();
+
+  // Iterate through all query types, filling query fields with valid values
+  iterateContainer(
+      [] {
+        return iroha::protocol::Query::Payload::descriptor()->FindOneofByName(
+            "query");
+      },
+      [&](auto field) {
+        // Set concrete type for new query
+        return payload->GetReflection()->MutableMessage(payload, field);
+      },
+      [this](auto field, auto query) {
+        // Will throw key exception in case new field is added
+        try {
+          field_setters.at(field->name())(query->GetReflection(), query, field);
+        } catch (const std::out_of_range &e) {
+          FAIL() << "Missing field setter: " << field->name();
+        }
+      },
+      [] {});
+  auto answer =
+      query_validator.validate(detail::makePolymorphic<proto::Query>(qry));
+
+  ASSERT_FALSE(answer.hasErrors()) << answer.reason();
+}
+
+/**
+ * @given Protobuf query object
+ * @when Query is from far future(30 min)
+ * @then Answer has no errors
+ */
+TEST_F(QueryValidatorTest, StatelessInvalidFromFarFutureTest) {
+  unsigned long long gap =
+      std::chrono::minutes(30) / std::chrono::milliseconds(1);
+  iroha::protocol::Query qry;
+  qry.mutable_payload()->set_created_time(created_time + gap);
+  qry.mutable_payload()->set_creator_account_id(account_id);
+  qry.mutable_payload()->set_query_counter(counter);
+  auto payload = qry.mutable_payload();
+
+  // Iterate through all query types, filling query fields with valid values
+  iterateContainer(
+      [] {
+        return iroha::protocol::Query::Payload::descriptor()->FindOneofByName(
+            "query");
+      },
+      [&](auto field) {
+        // Set concrete type for new query
+        return payload->GetReflection()->MutableMessage(payload, field);
+      },
+      [this](auto field, auto query) {
+        // Will throw key exception in case new field is added
+        try {
+          field_setters.at(field->name())(query->GetReflection(), query, field);
+        } catch (const std::out_of_range &e) {
+          FAIL() << "Missing field setter: " << field->name();
+        }
+      },
+      [] {});
+  auto answer =
+      query_validator.validate(detail::makePolymorphic<proto::Query>(qry));
+
+  ASSERT_TRUE(answer.hasErrors());
+}

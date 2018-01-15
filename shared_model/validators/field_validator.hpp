@@ -35,11 +35,13 @@ namespace shared_model {
      */
     class FieldValidator {
      public:
-      FieldValidator()
+      FieldValidator(unsigned long long future_gap = std::chrono::minutes(5)
+                         / std::chrono::milliseconds(1))
           : account_id_pattern_(R"([a-z]{1,9}\@[a-z]{1,9})"),
             asset_id_pattern_(R"([a-z]{1,9}\#[a-z]{1,9})"),
             name_pattern_(R"([a-z]{1,9})"),
-            detail_key_pattern_(R"([A-Za-z0-9_]{1,})") {}
+            detail_key_pattern_(R"([A-Za-z0-9_]{1,})"),
+            future_gap_(future_gap) {}
 
       void validateAccountId(
           ReasonsGroupType &reason,
@@ -204,19 +206,22 @@ namespace shared_model {
         // TODO 06/08/17 Muratov: make future gap for passing timestamp, like
         // with old timestamps IR-511 #goodfirstissue
 
-        if (now < timestamp) {
+        if (now + future_gap_ < timestamp) {
           auto message = (boost::format("bad timestamp: sent from future, "
                                         "timestamp: %llu, now: %llu")
-                          % timestamp % now)
+                          % timestamp
+                          % now)
                              .str();
           reason.second.push_back(std::move(message));
         }
 
-        if (now - timestamp > max_delay) {
+        // First check is necessary due to unsigned types of the timestamps
+        if (now > timestamp && now - timestamp > max_delay) {
           auto message =
               (boost::format(
                    "bad timestamp: too old, timestamp: %llu, now: %llu")
-               % timestamp % now)
+               % timestamp
+               % now)
                   .str();
           reason.second.push_back(std::move(message));
         }
@@ -241,6 +246,8 @@ namespace shared_model {
       // max-delay between tx creation and validation
       static constexpr auto max_delay =
           std::chrono::hours(24) / std::chrono::milliseconds(1);
+      // gap for future transactions
+      unsigned long long future_gap_;
       // size of key
       static constexpr auto key_size = 32;
     };

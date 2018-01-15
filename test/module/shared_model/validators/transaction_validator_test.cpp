@@ -126,3 +126,74 @@ TEST_F(TransactionValidatorTest, StatelessInvalidTest) {
   ASSERT_EQ(answer.getReasonsMap().size(),
             iroha::protocol::Command::descriptor()->field_count() + 1);
 }
+
+/**
+ * @given transaction from nearest future(3 min) made of commands with valid
+ * fields
+ * @when commands validation is invoked
+ * @then answer has no errors
+ */
+TEST_F(TransactionValidatorTest, StatelessValidFromNearestFutureTest) {
+  unsigned long long gap =
+      std::chrono::minutes(3) / std::chrono::milliseconds(1);
+  iroha::protocol::Transaction tx = generateEmptyTransaction();
+  tx.mutable_payload()->set_created_time(created_time + gap);
+  auto payload = tx.mutable_payload();
+
+  // Iterate through all command types, filling command fields with valid values
+  iterateContainer([] { return iroha::protocol::Command::descriptor(); },
+                   [&](auto field) {
+                     // Add new command to transaction
+                     auto command = payload->add_commands();
+                     // Set concrete type for new command
+                     return command->GetReflection()->MutableMessage(command,
+                                                                     field);
+                   },
+                   [this](auto field, auto command) {
+                     // Will throw key exception in case new field is added
+                     field_setters.at(field->name())(
+                         command->GetReflection(), command, field);
+                   },
+                   [] {});
+
+  shared_model::validation::DefaultTransactionValidator transaction_validator;
+  auto answer = transaction_validator.validate(
+      detail::makePolymorphic<proto::Transaction>(tx));
+
+  ASSERT_FALSE(answer.hasErrors()) << answer.reason();
+}
+
+/**
+ * @given transaction from far future(30 min) made of commands with valid fields
+ * @when commands validation is invoked
+ * @then answer has an error
+ */
+TEST_F(TransactionValidatorTest, StatelessInvalidFromFarFutureTest) {
+  unsigned long long gap =
+      std::chrono::minutes(30) / std::chrono::milliseconds(1);
+  iroha::protocol::Transaction tx = generateEmptyTransaction();
+  tx.mutable_payload()->set_created_time(created_time + gap);
+  auto payload = tx.mutable_payload();
+
+  // Iterate through all command types, filling command fields with valid values
+  iterateContainer([] { return iroha::protocol::Command::descriptor(); },
+                   [&](auto field) {
+                     // Add new command to transaction
+                     auto command = payload->add_commands();
+                     // Set concrete type for new command
+                     return command->GetReflection()->MutableMessage(command,
+                                                                     field);
+                   },
+                   [this](auto field, auto command) {
+                     // Will throw key exception in case new field is added
+                     field_setters.at(field->name())(
+                         command->GetReflection(), command, field);
+                   },
+                   [] {});
+
+  shared_model::validation::DefaultTransactionValidator transaction_validator;
+  auto answer = transaction_validator.validate(
+      detail::makePolymorphic<proto::Transaction>(tx));
+
+  ASSERT_TRUE(answer.hasErrors());
+}

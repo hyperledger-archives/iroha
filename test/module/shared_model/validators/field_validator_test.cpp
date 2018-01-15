@@ -189,13 +189,14 @@ class FieldValidatorTest : public ValidatorsTest {
                                 const std::string &field_name,
                                 F field,
                                 const std::string &value) {
-    return makeTestCase(case_name,
-                        field,
-                        value,
-                        false,
-                        (boost::format("Wrongly formed %s, passed value: '%s'")
-                         % field_name % value)
-                            .str());
+    return makeTestCase(
+        case_name,
+        field,
+        value,
+        false,
+        (boost::format("Wrongly formed %s, passed value: '%s'") % field_name
+         % value)
+            .str());
   }
 
   /// Generate test cases for id types with name, separator, and domain
@@ -303,7 +304,11 @@ class FieldValidatorTest : public ValidatorsTest {
                    false,
                    "Counter should be > 0, passed value: 0")};
   std::vector<FieldTestCase> created_time_test_cases{
-      makeValidCase(&FieldValidatorTest::created_time, iroha::time::now())};
+      makeValidCase(&FieldValidatorTest::created_time, iroha::time::now()),
+      makeValidCase(
+          &FieldValidatorTest::created_time,
+          iroha::time::now()
+              + std::chrono::minutes(3) / std::chrono::milliseconds(1))};
 
   std::vector<FieldTestCase> detail_test_cases{
       makeValidCase(&FieldValidatorTest::detail_key, "happy"),
