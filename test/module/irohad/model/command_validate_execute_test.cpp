@@ -1176,13 +1176,43 @@ TEST_F(AppendRoleTest, ValidCase) {
   ASSERT_TRUE(validateAndExecute());
 }
 
-TEST_F(AppendRoleTest, InvalidCase) {
+TEST_F(AppendRoleTest, InvalidCaseNoPermissions) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .WillOnce(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(nonstd::nullopt));
   ASSERT_FALSE(validateAndExecute());
 }
+
+TEST_F(AppendRoleTest, InvalidCaseNoAccountRole) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id)).Times(2)
+      .WillOnce(Return(admin_roles))
+      .WillOnce((Return(nonstd::nullopt)));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role)).WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getRolePermissions("master")).WillOnce(Return(role_permissions));
+  ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(AppendRoleTest, InvalidCaseNoAccountRoleAndNoPermission) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id)).Times(2)
+      .WillOnce(Return(admin_roles))
+      .WillOnce((Return(nonstd::nullopt)));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role)).WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getRolePermissions("master")).WillOnce(Return(nonstd::nullopt));
+  ASSERT_FALSE(validateAndExecute());
+}
+
+TEST_F(AppendRoleTest, InvalidCaseRoleHasNoPermissions) {
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id)).Times(2)
+      .WillOnce(Return(admin_roles))
+      .WillOnce((Return(admin_roles)));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role)).Times(2)
+      .WillOnce(Return(role_permissions)).WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv_query, getRolePermissions("master")).WillOnce(Return(role_permissions));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
 
 class DetachRoleTest : public CommandValidateExecuteTest {
  public:
