@@ -138,7 +138,7 @@ TEST_F(QueryValidatorTest, StatelessValidFromNearestFutureTest) {
 /**
  * @given Protobuf query object
  * @when Query is from far future(30 min)
- * @then Answer has no errors
+ * @then Answer has an error
  */
 TEST_F(QueryValidatorTest, StatelessInvalidFromFarFutureTest) {
   unsigned long long gap =
