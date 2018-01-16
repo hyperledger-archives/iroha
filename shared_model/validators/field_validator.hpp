@@ -29,6 +29,8 @@
 namespace shared_model {
   namespace validation {
 
+    using time_t = decltype(iroha::time::now());
+
     constexpr auto default_future_gap =
         std::chrono::minutes(5) / std::chrono::milliseconds(1);
 
@@ -38,7 +40,7 @@ namespace shared_model {
      */
     class FieldValidator {
      public:
-      FieldValidator(uint64_t future_gap = default_future_gap)
+      FieldValidator(time_t future_gap = default_future_gap)
           : account_id_pattern_(R"([a-z]{1,9}\@[a-z]{1,9})"),
             asset_id_pattern_(R"([a-z]{1,9}\#[a-z]{1,9})"),
             name_pattern_(R"([a-z]{1,9})"),
@@ -244,7 +246,7 @@ namespace shared_model {
       std::regex name_pattern_;
       std::regex detail_key_pattern_;
       // gap for future transactions
-      uint64_t future_gap_;
+      time_t future_gap_;
       // max-delay between tx creation and validation
       static constexpr auto max_delay =
           std::chrono::hours(24) / std::chrono::milliseconds(1);
