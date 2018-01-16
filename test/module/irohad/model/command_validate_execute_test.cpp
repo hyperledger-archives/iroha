@@ -79,6 +79,16 @@ class CommandValidateExecuteTest : public ::testing::Test {
                 *command, *wsv_query, *wsv_command, creator.account_id);
   }
 
+
+  // skip validation and execute command
+  bool execute() {
+    auto executor = factory->getCommandExecutor(command);
+    return executor->execute(
+        *command, *wsv_query, *wsv_command, creator.account_id);
+  }
+
+
+  Amount max_amount(std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
   std::string admin_id = "admin@test", account_id = "test@test",
               asset_id = "coin#test", domain_id = "test",
               description = "test transfer";
@@ -228,7 +238,6 @@ TEST_F(AddAssetQuantityTest, InvalidWhenNoAsset) {
 
 TEST_F(AddAssetQuantityTest, InvalidWhenAssetAdditionFails) {
   // amount overflows
-  Amount max_amount(std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
   add_asset_quantity->amount = max_amount;
 
   EXPECT_CALL(*wsv_query,
@@ -1170,9 +1179,7 @@ TEST_F(TransferAssetTest, InvalidWhenInsufficientFundsDuringExecute) {
   // More than account
   transfer_asset->amount = Amount(155, 2);
 
-  auto executor = factory->getCommandExecutor(command);
-  ASSERT_FALSE(executor->execute(
-      *command, *wsv_query, *wsv_command, creator.account_id));
+  ASSERT_FALSE(execute());
 }
 
 TEST_F(TransferAssetTest, InvalidWhenWrongPrecision) {
@@ -1207,13 +1214,10 @@ TEST_F(TransferAssetTest, InvalidWhenWrongPrecisionDuringExecute) {
 
   Amount amount(transfer_asset->amount.getIntValue(), 30);
   transfer_asset->amount = amount;
-  auto executor = factory->getCommandExecutor(command);
-  ASSERT_FALSE(executor->execute(
-          *command, *wsv_query, *wsv_command, creator.account_id));
+  ASSERT_FALSE(execute());
 }
 
 TEST_F(TransferAssetTest, InvalidWhenAmountOverflow) {
-  Amount max_amount(std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
   src_wallet.balance = max_amount;
 
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id)).WillOnce(Return(asset));
@@ -1229,9 +1233,7 @@ TEST_F(TransferAssetTest, InvalidWhenAmountOverflow) {
   // More than account balance
   transfer_asset->amount = (max_amount - Amount(100, 2)).value();
 
-  auto executor = factory->getCommandExecutor(command);
-  ASSERT_FALSE(executor->execute(
-      *command, *wsv_query, *wsv_command, creator.account_id));
+  ASSERT_FALSE(execute());
 }
 
 TEST_F(TransferAssetTest, InvalidWhenCreatorHasNoPermission) {
