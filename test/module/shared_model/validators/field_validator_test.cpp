@@ -44,6 +44,8 @@ class FieldValidatorTest : public ValidatorsTest {
   // Gaps for checking transactions from future
   static auto constexpr nearest_future =
       std::chrono::minutes(3) / std::chrono::milliseconds(1);
+  static auto constexpr far_future =
+      std::chrono::minutes(30) / std::chrono::milliseconds(1);
 
   /**
    * FieldTestCase is a struct that represents one value of some field,
@@ -54,6 +56,7 @@ class FieldValidatorTest : public ValidatorsTest {
     InitFieldFunction init_func;
     bool value_is_valid;
     std::string expected_message;
+    bool check_error_message;
   };
 
   // Returns string containing field name and test case name for debug output
@@ -150,8 +153,9 @@ class FieldValidatorTest : public ValidatorsTest {
       if (!testcase.value_is_valid) {
         ASSERT_TRUE(!reason.second.empty())
             << testFailMessage(field_name, testcase.name);
-        EXPECT_EQ(testcase.expected_message, reason.second.at(0))
-            << testFailMessage(field_name, testcase.name);
+        if (testcase.check_error_message)
+          EXPECT_EQ(testcase.expected_message, reason.second.at(0))
+              << testFailMessage(field_name, testcase.name);
       } else {
         EXPECT_TRUE(reason.second.empty())
             << testFailMessage(field_name, testcase.name)
@@ -176,9 +180,13 @@ class FieldValidatorTest : public ValidatorsTest {
                              F field,
                              const V &value,
                              bool valid,
-                             const std::string &message) {
-    return {
-        case_name, [&, field, value] { this->*field = value; }, valid, message};
+                             const std::string &message,
+                             bool check_error_message = true) {
+    return {case_name,
+            [&, field, value] { this->*field = value; },
+            valid,
+            message,
+            check_error_message};
   }
 
   /// Create valid case with "valid" name, and empty message
@@ -235,11 +243,13 @@ class FieldValidatorTest : public ValidatorsTest {
       {"valid_amount",
        [&] { amount.mutable_value()->set_fourth(100); },
        true,
-       ""},
+       "",
+       true},
       {"zero_amount",
        [&] { amount.mutable_value()->set_fourth(0); },
        false,
-       "Amount must be greater than 0, passed value: 0"}};
+       "Amount must be greater than 0, passed value: 0",
+       true}};
 
   FieldTestCase invalidAddressTestCase(const std::string &case_name,
                                        const std::string &address) {
@@ -310,7 +320,13 @@ class FieldValidatorTest : public ValidatorsTest {
   std::vector<FieldTestCase> created_time_test_cases{
       makeValidCase(&FieldValidatorTest::created_time, iroha::time::now()),
       makeValidCase(&FieldValidatorTest::created_time,
-                    iroha::time::now() + nearest_future)};
+                    iroha::time::now() + nearest_future),
+      makeTestCase("invalid due to far future",
+                   &FieldValidatorTest::created_time,
+                   iroha::time::now() + far_future,
+                   false,
+                   "",
+                   false)};
 
   std::vector<FieldTestCase> detail_test_cases{
       makeValidCase(&FieldValidatorTest::detail_key, "happy"),
