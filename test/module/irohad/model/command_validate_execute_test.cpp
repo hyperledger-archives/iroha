@@ -86,8 +86,8 @@ class CommandValidateExecuteTest : public ::testing::Test {
         *command, *wsv_query, *wsv_command, creator.account_id);
   }
 
-  Amount max_amount(
-      std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
+  Amount max_amount{
+      std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2};
   std::string admin_id = "admin@test", account_id = "test@test",
               asset_id = "coin#test", domain_id = "test",
               description = "test transfer";
