@@ -61,6 +61,16 @@ namespace integration_framework {
 
     std::shared_ptr<TestIrohad> instance_;
 
+    std::string getRedisHost() {
+      auto redis_host = std::getenv("IROHA_REDIS_HOST");
+      return redis_host ? redis_host : "localhost";
+    }
+
+    size_t getRedisPort() {
+      auto redis_port = std::getenv("IROHA_REDIS_PORT");
+      return redis_port ? std::stoull(redis_port) : 6379;
+    }
+
     std::string getPostgreCreds() {
       auto pg_host = std::getenv("IROHA_POSTGRES_HOST");
       auto pg_port = std::getenv("IROHA_POSTGRES_PORT");
@@ -79,8 +89,8 @@ namespace integration_framework {
 
     // config area
     const std::string block_store_dir_ = "/tmp/block_store";
-    const std::string redis_host_ = std::getenv("IROHA_REDIS_HOST");
-    const size_t redis_port_ = std::stoull(std::getenv("IROHA_REDIS_PORT"));
+    const std::string redis_host_ = getRedisHost();
+    const size_t redis_port_ = getRedisPort();
     const std::string pg_conn_ = getPostgreCreds();
     const size_t torii_port_ = 11501;
     const size_t internal_port_ = 10001;
