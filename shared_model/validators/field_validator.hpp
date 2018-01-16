@@ -29,14 +29,16 @@
 namespace shared_model {
   namespace validation {
 
+    constexpr auto default_future_gap =
+        std::chrono::minutes(5) / std::chrono::milliseconds(1);
+
     /**
      * Class that validates fields of commands, concrete queries, transaction,
      * and query
      */
     class FieldValidator {
      public:
-      FieldValidator(unsigned long long future_gap = std::chrono::minutes(5)
-                         / std::chrono::milliseconds(1))
+      FieldValidator(uint64_t future_gap = default_future_gap)
           : account_id_pattern_(R"([a-z]{1,9}\@[a-z]{1,9})"),
             asset_id_pattern_(R"([a-z]{1,9}\#[a-z]{1,9})"),
             name_pattern_(R"([a-z]{1,9})"),
@@ -203,8 +205,6 @@ namespace shared_model {
           ReasonsGroupType &reason,
           const interface::types::TimestampType &timestamp) const {
         iroha::ts64_t now = iroha::time::now();
-        // TODO 06/08/17 Muratov: make future gap for passing timestamp, like
-        // with old timestamps IR-511 #goodfirstissue
 
         if (now + future_gap_ < timestamp) {
           auto message = (boost::format("bad timestamp: sent from future, "
@@ -243,11 +243,11 @@ namespace shared_model {
       std::regex asset_id_pattern_;
       std::regex name_pattern_;
       std::regex detail_key_pattern_;
+      // gap for future transactions
+      uint64_t future_gap_;
       // max-delay between tx creation and validation
       static constexpr auto max_delay =
           std::chrono::hours(24) / std::chrono::milliseconds(1);
-      // gap for future transactions
-      unsigned long long future_gap_;
       // size of key
       static constexpr auto key_size = 32;
     };

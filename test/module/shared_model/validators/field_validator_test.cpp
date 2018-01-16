@@ -41,6 +41,10 @@ class FieldValidatorTest : public ValidatorsTest {
   // with various types of fields
   using InitFieldFunction = std::function<void()>;
 
+  // Gaps for checking transactions from future
+  static auto constexpr nearest_future =
+      std::chrono::minutes(3) / std::chrono::milliseconds(1);
+
   /**
    * FieldTestCase is a struct that represents one value of some field,
    * and expected validation result.
@@ -305,10 +309,8 @@ class FieldValidatorTest : public ValidatorsTest {
                    "Counter should be > 0, passed value: 0")};
   std::vector<FieldTestCase> created_time_test_cases{
       makeValidCase(&FieldValidatorTest::created_time, iroha::time::now()),
-      makeValidCase(
-          &FieldValidatorTest::created_time,
-          iroha::time::now()
-              + std::chrono::minutes(3) / std::chrono::milliseconds(1))};
+      makeValidCase(&FieldValidatorTest::created_time,
+                    iroha::time::now() + nearest_future)};
 
   std::vector<FieldTestCase> detail_test_cases{
       makeValidCase(&FieldValidatorTest::detail_key, "happy"),
