@@ -19,6 +19,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include <gmock/gmock-matchers.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <boost/format.hpp>
@@ -56,7 +57,9 @@ class FieldValidatorTest : public ValidatorsTest {
     InitFieldFunction init_func;
     bool value_is_valid;
     std::string expected_message;
-    bool check_error_message;
+
+    // enables regexp check for expected_message
+    bool regexp;
   };
 
   // Returns string containing field name and test case name for debug output
@@ -153,8 +156,12 @@ class FieldValidatorTest : public ValidatorsTest {
       if (!testcase.value_is_valid) {
         ASSERT_TRUE(!reason.second.empty())
             << testFailMessage(field_name, testcase.name);
-        if (testcase.check_error_message)
+        if (not testcase.regexp)
           EXPECT_EQ(testcase.expected_message, reason.second.at(0))
+              << testFailMessage(field_name, testcase.name);
+        else
+          ASSERT_THAT(reason.second.at(0),
+                      testing::MatchesRegex(testcase.expected_message))
               << testFailMessage(field_name, testcase.name);
       } else {
         EXPECT_TRUE(reason.second.empty())
@@ -181,12 +188,12 @@ class FieldValidatorTest : public ValidatorsTest {
                              const V &value,
                              bool valid,
                              const std::string &message,
-                             bool check_error_message = true) {
+                             bool regexp = false) {
     return {case_name,
             [&, field, value] { this->*field = value; },
             valid,
             message,
-            check_error_message};
+            regexp};
   }
 
   /// Create valid case with "valid" name, and empty message
@@ -244,12 +251,12 @@ class FieldValidatorTest : public ValidatorsTest {
        [&] { amount.mutable_value()->set_fourth(100); },
        true,
        "",
-       true},
+       false},
       {"zero_amount",
        [&] { amount.mutable_value()->set_fourth(0); },
        false,
        "Amount must be greater than 0, passed value: 0",
-       true}};
+       false}};
 
   FieldTestCase invalidAddressTestCase(const std::string &case_name,
                                        const std::string &address) {
@@ -321,12 +328,13 @@ class FieldValidatorTest : public ValidatorsTest {
       makeValidCase(&FieldValidatorTest::created_time, iroha::time::now()),
       makeValidCase(&FieldValidatorTest::created_time,
                     iroha::time::now() + nearest_future),
-      makeTestCase("invalid due to far future",
-                   &FieldValidatorTest::created_time,
-                   iroha::time::now() + far_future,
-                   false,
-                   "",
-                   false)};
+      makeTestCase(
+          "invalid due to far future",
+          &FieldValidatorTest::created_time,
+          iroha::time::now() + far_future,
+          false,
+          "bad timestamp: sent from future, timestamp: [0-9]+, now: [0-9]+",
+          true)};
 
   std::vector<FieldTestCase> detail_test_cases{
       makeValidCase(&FieldValidatorTest::detail_key, "happy"),
