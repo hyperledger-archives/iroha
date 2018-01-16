@@ -36,9 +36,15 @@ target_link_libraries(integration_framework
     raw_block_insertion
     keys_manager
     model_generators
+    pb_model_converters
     tbb
     gtest
     gmock
     )
 
 target_include_directories(integration_framework PUBLIC ${PROJECT_SOURCE_DIR}/test)
+
+addtest(itf_test integration_framework/itf_test.cpp)
+target_link_libraries(itf_test
+    integration_framework
+    )
