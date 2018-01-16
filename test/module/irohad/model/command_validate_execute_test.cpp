@@ -1213,6 +1213,9 @@ TEST_F(TransferAssetTest, InvalidWhenWrongPrecisionDuringExecute) {
 }
 
 TEST_F(TransferAssetTest, InvalidWhenAmountOverflow) {
+  Amount max_amount(std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
+  src_wallet.balance = max_amount;
+
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id)).WillOnce(Return(asset));
   EXPECT_CALL(
       *wsv_query,
@@ -1223,9 +1226,8 @@ TEST_F(TransferAssetTest, InvalidWhenAmountOverflow) {
       getAccountAsset(transfer_asset->dest_account_id, transfer_asset->asset_id))
       .WillOnce(Return(dst_wallet));
 
-  // More than account
-  Amount max_amount(std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
-  transfer_asset->amount = max_amount;
+  // More than account balance
+  transfer_asset->amount = (max_amount - Amount(100, 2)).value();
 
   auto executor = factory->getCommandExecutor(command);
   ASSERT_FALSE(executor->execute(
