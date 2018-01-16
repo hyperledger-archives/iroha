@@ -29,8 +29,6 @@
 namespace shared_model {
   namespace validation {
 
-    using time_t = decltype(iroha::time::now());
-
     constexpr auto default_future_gap =
         std::chrono::minutes(5) / std::chrono::milliseconds(1);
 

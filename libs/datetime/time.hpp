@@ -42,6 +42,8 @@ namespace iroha {
       return (std::chrono::system_clock::now().time_since_epoch() + offset)
           / std::chrono::milliseconds(1);
     }
+
+    using time_t = decltype(iroha::time::now());
   }
 }
 

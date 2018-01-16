@@ -102,8 +102,7 @@ TEST_F(QueryValidatorTest, StatelessInvalidTest) {
  * @then Answer has no errors
  */
 TEST_F(QueryValidatorTest, StatelessValidFromNearestFutureTest) {
-  unsigned long long gap =
-      std::chrono::minutes(3) / std::chrono::milliseconds(1);
+  time_t gap = std::chrono::minutes(3) / std::chrono::milliseconds(1);
   iroha::protocol::Query qry;
   qry.mutable_payload()->set_created_time(created_time + gap);
   qry.mutable_payload()->set_creator_account_id(account_id);
@@ -141,8 +140,7 @@ TEST_F(QueryValidatorTest, StatelessValidFromNearestFutureTest) {
  * @then Answer has an error
  */
 TEST_F(QueryValidatorTest, StatelessInvalidFromFarFutureTest) {
-  unsigned long long gap =
-      std::chrono::minutes(30) / std::chrono::milliseconds(1);
+  time_t gap = std::chrono::minutes(30) / std::chrono::milliseconds(1);
   iroha::protocol::Query qry;
   qry.mutable_payload()->set_created_time(created_time + gap);
   qry.mutable_payload()->set_creator_account_id(account_id);

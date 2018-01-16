@@ -134,8 +134,7 @@ TEST_F(TransactionValidatorTest, StatelessInvalidTest) {
  * @then answer has no errors
  */
 TEST_F(TransactionValidatorTest, StatelessValidFromNearestFutureTest) {
-  unsigned long long gap =
-      std::chrono::minutes(3) / std::chrono::milliseconds(1);
+  time_t gap = std::chrono::minutes(3) / std::chrono::milliseconds(1);
   iroha::protocol::Transaction tx = generateEmptyTransaction();
   tx.mutable_payload()->set_created_time(created_time + gap);
   auto payload = tx.mutable_payload();
@@ -169,8 +168,7 @@ TEST_F(TransactionValidatorTest, StatelessValidFromNearestFutureTest) {
  * @then answer has an error
  */
 TEST_F(TransactionValidatorTest, StatelessInvalidFromFarFutureTest) {
-  unsigned long long gap =
-      std::chrono::minutes(30) / std::chrono::milliseconds(1);
+  time_t gap = std::chrono::minutes(30) / std::chrono::milliseconds(1);
   iroha::protocol::Transaction tx = generateEmptyTransaction();
   tx.mutable_payload()->set_created_time(created_time + gap);
   auto payload = tx.mutable_payload();
