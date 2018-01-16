@@ -60,6 +60,7 @@ namespace iroha {
       pqxx::nontransaction &transaction_;
 
       logger::Logger log_;
+
     };
   }  // namespace ametsuchi
 }  // namespace iroha
