@@ -81,7 +81,6 @@ namespace iroha {
     bool AppendRoleExecutor::isValid(const Command &command,
                                      ametsuchi::WsvQuery &queries,
                                      const std::string &creator_account_id) {
-
       auto cmd_value = static_cast<const AppendRole &>(command);
       auto role_permissions = queries.getRolePermissions(cmd_value.role_name);
       auto account_roles = queries.getAccountRoles(creator_account_id);
@@ -102,7 +101,8 @@ namespace iroha {
       return std::none_of((*role_permissions).begin(),
                           (*role_permissions).end(),
                           [&account_permissions](const auto &perm) {
-                            return account_permissions.find(perm) == account_permissions.end();
+                            return account_permissions.find(perm)
+                                == account_permissions.end();
                           });
     }
 
@@ -192,10 +192,6 @@ namespace iroha {
         ametsuchi::WsvQuery &queries,
         ametsuchi::WsvCommand &commands,
         const std::string &creator_account_id) {
-//      if (creator_account_id.empty()) {       TODO: Remove stateless
-//        log_->info("Creator account is empty");
-//        return false;
-//      }
       auto cmd_value = static_cast<const GrantPermission &>(command);
       return commands.insertAccountGrantablePermission(
           cmd_value.account_id, creator_account_id, cmd_value.permission_name);
@@ -229,10 +225,6 @@ namespace iroha {
         ametsuchi::WsvQuery &queries,
         ametsuchi::WsvCommand &commands,
         const std::string &creator_account_id) {
-//      if (creator_account_id.empty()) {//      TODO: remove stateless
-//        log_->info("Creator account is empty");
-//        return false;
-//      }
       auto cmd_value = static_cast<const RevokePermission &>(command);
       return commands.deleteAccountGrantablePermission(
           cmd_value.account_id, creator_account_id, cmd_value.permission_name);
@@ -338,11 +330,13 @@ namespace iroha {
       log_ = logger::log("SubtractAssetQuantityExecutor");
     }
 
-      bool SubtractAssetQuantityExecutor::execute(const Command &command,
-                                             WsvQuery &queries,
-                                             WsvCommand &commands,
+    bool SubtractAssetQuantityExecutor::execute(
+        const Command &command,
+        WsvQuery &queries,
+        WsvCommand &commands,
         const std::string &creator_account_id) {
-        auto subtract_asset_quantity = static_cast<const SubtractAssetQuantity &>(command);
+      auto subtract_asset_quantity =
+          static_cast<const SubtractAssetQuantity &>(command);
 
       auto asset = queries.getAsset(subtract_asset_quantity.asset_id);
       if (not asset) {
@@ -377,20 +371,22 @@ namespace iroha {
       return commands.upsertAccountAsset(account_asset.value());
     }
 
-      bool SubtractAssetQuantityExecutor::hasPermissions(const Command &command,
-                                                    WsvQuery &queries,
-                                                    const std::string &creator_account_id) {
-        auto cmd_value = static_cast<const SubtractAssetQuantity &>(command);
-        return creator_account_id == cmd_value.account_id
-               and checkAccountRolePermission(
-          creator_account_id, queries, can_subtract_asset_qty);
-      }
-
-      bool SubtractAssetQuantityExecutor::isValid(const Command &command,
-                                             ametsuchi::WsvQuery &queries,
+    bool SubtractAssetQuantityExecutor::hasPermissions(
+        const Command &command,
+        WsvQuery &queries,
         const std::string &creator_account_id) {
-        return true;
-      }
+      auto cmd_value = static_cast<const SubtractAssetQuantity &>(command);
+      return creator_account_id == cmd_value.account_id
+          and checkAccountRolePermission(
+                  creator_account_id, queries, can_subtract_asset_qty);
+    }
+
+    bool SubtractAssetQuantityExecutor::isValid(
+        const Command &command,
+        ametsuchi::WsvQuery &queries,
+        const std::string &creator_account_id) {
+      return true;
+    }
 
     // --------------------------|AddPeer|------------------------------
 
@@ -646,8 +642,10 @@ namespace iroha {
                                                     can_remove_signatory));
     }
 
-    bool RemoveSignatoryExecutor::isValid(const Command &command,
-                                          ametsuchi::WsvQuery &queries, const std::string &creator_account_id) {
+    bool RemoveSignatoryExecutor::isValid(
+        const Command &command,
+        ametsuchi::WsvQuery &queries,
+        const std::string &creator_account_id) {
       auto remove_signatory = static_cast<const RemoveSignatory &>(command);
 
       auto account = queries.getAccount(remove_signatory.account_id);
@@ -698,8 +696,10 @@ namespace iroha {
               creator_account_id, cmd.account_id, can_set_detail);
     }
 
-    bool SetAccountDetailExecutor::isValid(const Command &command,
-                                           ametsuchi::WsvQuery &queries, const std::string &creator_account_id) {
+    bool SetAccountDetailExecutor::isValid(
+        const Command &command,
+        ametsuchi::WsvQuery &queries,
+        const std::string &creator_account_id) {
       return true;
     }
 
@@ -741,7 +741,8 @@ namespace iroha {
     }
 
     bool SetQuorumExecutor::isValid(const Command &command,
-                                    ametsuchi::WsvQuery &queries, const std::string &creator_account_id) {
+                                    ametsuchi::WsvQuery &queries,
+                                    const std::string &creator_account_id) {
       auto set_quorum = static_cast<const SetQuorum &>(command);
       auto signatories = queries.getSignatories(set_quorum.account_id);
 
@@ -771,7 +772,6 @@ namespace iroha {
         log_->info("asset {} is absent of {}",
                    transfer_asset.asset_id,
                    transfer_asset.src_account_id);
-//                   transfer_asset.description);
 
         return false;
       }

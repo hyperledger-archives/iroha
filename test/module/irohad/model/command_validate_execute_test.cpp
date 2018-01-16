@@ -38,10 +38,10 @@
 #include "model/execution/command_executor_factory.hpp"
 #include "model/permissions.hpp"
 
-using ::testing::Return;
-using ::testing::AtLeast;
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::AtLeast;
+using ::testing::Return;
 using ::testing::StrictMock;
 
 using namespace iroha;
@@ -79,7 +79,6 @@ class CommandValidateExecuteTest : public ::testing::Test {
                 *command, *wsv_query, *wsv_command, creator.account_id);
   }
 
-
   // skip validation and execute command
   bool execute() {
     auto executor = factory->getCommandExecutor(command);
@@ -87,8 +86,8 @@ class CommandValidateExecuteTest : public ::testing::Test {
         *command, *wsv_query, *wsv_command, creator.account_id);
   }
 
-
-  Amount max_amount(std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
+  Amount max_amount(
+      std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2);
   std::string admin_id = "admin@test", account_id = "test@test",
               asset_id = "coin#test", domain_id = "test",
               description = "test transfer";
@@ -255,7 +254,6 @@ TEST_F(AddAssetQuantityTest, InvalidWhenAssetAdditionFails) {
 
   ASSERT_FALSE(validateAndExecute());
 }
-
 
 class SubtractAssetQuantityTest : public CommandValidateExecuteTest {
  public:
@@ -1091,11 +1089,12 @@ TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAssetDuringExecute) {
       .WillOnce(Return(asset));
   EXPECT_CALL(
       *wsv_query,
-      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id)).Times(2)
-      .WillOnce(Return(src_wallet)).WillOnce(Return(nonstd::nullopt));
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
+      .Times(2)
+      .WillOnce(Return(src_wallet))
+      .WillOnce(Return(nonstd::nullopt));
   EXPECT_CALL(*wsv_query, getAccount(transfer_asset->dest_account_id))
       .WillOnce(Return(account));
-
 
   ASSERT_FALSE(validateAndExecute());
 }
@@ -1125,18 +1124,19 @@ TEST_F(TransferAssetTest, InvalidWhenNoAssetId) {
       .WillRepeatedly(Return(role_permissions));
 
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
-      .WillOnce(Return(asset)).WillOnce(Return(nonstd::nullopt));
+      .WillOnce(Return(asset))
+      .WillOnce(Return(nonstd::nullopt));
   EXPECT_CALL(
       *wsv_query,
-      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id)).Times(2)
+      getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
+      .Times(2)
       .WillRepeatedly(Return(src_wallet));
-  EXPECT_CALL(
-      *wsv_query,
-      getAccountAsset(transfer_asset->dest_account_id, transfer_asset->asset_id))
+  EXPECT_CALL(*wsv_query,
+              getAccountAsset(transfer_asset->dest_account_id,
+                              transfer_asset->asset_id))
       .WillOnce(Return(dst_wallet));
   EXPECT_CALL(*wsv_query, getAccount(transfer_asset->dest_account_id))
       .WillOnce(Return(account));
-
 
   ASSERT_FALSE(validateAndExecute());
 }
@@ -1166,14 +1166,15 @@ TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
 }
 
 TEST_F(TransferAssetTest, InvalidWhenInsufficientFundsDuringExecute) {
-  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id)).WillOnce(Return(asset));
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
+      .WillOnce(Return(asset));
   EXPECT_CALL(
       *wsv_query,
       getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
       .WillOnce(Return(src_wallet));
-  EXPECT_CALL(
-      *wsv_query,
-      getAccountAsset(transfer_asset->dest_account_id, transfer_asset->asset_id))
+  EXPECT_CALL(*wsv_query,
+              getAccountAsset(transfer_asset->dest_account_id,
+                              transfer_asset->asset_id))
       .WillOnce(Return(dst_wallet));
 
   // More than account
@@ -1202,14 +1203,15 @@ TEST_F(TransferAssetTest, InvalidWhenWrongPrecision) {
 }
 
 TEST_F(TransferAssetTest, InvalidWhenWrongPrecisionDuringExecute) {
-  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id)).WillOnce(Return(asset));
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
+      .WillOnce(Return(asset));
   EXPECT_CALL(
       *wsv_query,
       getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
       .WillOnce(Return(src_wallet));
-  EXPECT_CALL(
-      *wsv_query,
-      getAccountAsset(transfer_asset->dest_account_id, transfer_asset->asset_id))
+  EXPECT_CALL(*wsv_query,
+              getAccountAsset(transfer_asset->dest_account_id,
+                              transfer_asset->asset_id))
       .WillOnce(Return(dst_wallet));
 
   Amount amount(transfer_asset->amount.getIntValue(), 30);
@@ -1220,14 +1222,15 @@ TEST_F(TransferAssetTest, InvalidWhenWrongPrecisionDuringExecute) {
 TEST_F(TransferAssetTest, InvalidWhenAmountOverflow) {
   src_wallet.balance = max_amount;
 
-  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id)).WillOnce(Return(asset));
+  EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
+      .WillOnce(Return(asset));
   EXPECT_CALL(
       *wsv_query,
       getAccountAsset(transfer_asset->src_account_id, transfer_asset->asset_id))
       .WillOnce(Return(src_wallet));
-  EXPECT_CALL(
-      *wsv_query,
-      getAccountAsset(transfer_asset->dest_account_id, transfer_asset->asset_id))
+  EXPECT_CALL(*wsv_query,
+              getAccountAsset(transfer_asset->dest_account_id,
+                              transfer_asset->asset_id))
       .WillOnce(Return(dst_wallet));
 
   // More than account balance
@@ -1424,34 +1427,43 @@ TEST_F(AppendRoleTest, InvalidCaseNoPermissions) {
 }
 
 TEST_F(AppendRoleTest, InvalidCaseNoAccountRole) {
-  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id)).Times(2)
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .Times(2)
       .WillOnce(Return(admin_roles))
       .WillOnce((Return(nonstd::nullopt)));
-  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role)).WillOnce(Return(role_permissions));
-  EXPECT_CALL(*wsv_query, getRolePermissions("master")).WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getRolePermissions("master"))
+      .WillOnce(Return(role_permissions));
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(AppendRoleTest, InvalidCaseNoAccountRoleAndNoPermission) {
-  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id)).Times(2)
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .Times(2)
       .WillOnce(Return(admin_roles))
       .WillOnce((Return(nonstd::nullopt)));
-  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role)).WillOnce(Return(role_permissions));
-  EXPECT_CALL(*wsv_query, getRolePermissions("master")).WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getRolePermissions("master"))
+      .WillOnce(Return(nonstd::nullopt));
   ASSERT_FALSE(validateAndExecute());
 }
 
 TEST_F(AppendRoleTest, InvalidCaseRoleHasNoPermissions) {
-  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id)).Times(2)
+  EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
+      .Times(2)
       .WillOnce(Return(admin_roles))
       .WillOnce((Return(admin_roles)));
-  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role)).Times(2)
-      .WillOnce(Return(role_permissions)).WillOnce(Return(nonstd::nullopt));
-  EXPECT_CALL(*wsv_query, getRolePermissions("master")).WillOnce(Return(role_permissions));
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .Times(2)
+      .WillOnce(Return(role_permissions))
+      .WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv_query, getRolePermissions("master"))
+      .WillOnce(Return(role_permissions));
 
   ASSERT_FALSE(validateAndExecute());
 }
-
 
 class DetachRoleTest : public CommandValidateExecuteTest {
  public:
