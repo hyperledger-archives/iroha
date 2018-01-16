@@ -32,6 +32,12 @@ target_link_libraries(yac_sunny_day_test
     model
     )
 
+addtest(yac_rainy_day_test yac_rainy_day_test.cpp)
+target_link_libraries(yac_rainy_day_test
+        yac
+        model
+        )
+
 addtest(yac_unknown_peer_test yac_unknown_peer_test.cpp)
 target_link_libraries(yac_unknown_peer_test
     yac
