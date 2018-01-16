@@ -29,6 +29,7 @@
 namespace shared_model {
   namespace validation {
 
+    // default value for future_gap field of FieldValidator
     constexpr auto default_future_gap =
         std::chrono::minutes(5) / std::chrono::milliseconds(1);
 
@@ -38,6 +39,10 @@ namespace shared_model {
      */
     class FieldValidator {
      public:
+      /*
+       * @param future_gap - allows to validate transaction even if it came from
+       * future, but not later than future_gap from now
+       */
       FieldValidator(time_t future_gap = default_future_gap)
           : account_id_pattern_(R"([a-z]{1,9}\@[a-z]{1,9})"),
             asset_id_pattern_(R"([a-z]{1,9}\#[a-z]{1,9})"),
