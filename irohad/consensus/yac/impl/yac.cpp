@@ -179,7 +179,22 @@ namespace iroha {
       void Yac::applyReject(nonstd::optional<model::Peer> from,
                             RejectMessage reject) {
         // TODO 01/08/17 Muratov: apply to vote storage IR-497
-        closeRound();
+        auto answer =
+            vote_storage_.store(reject, cluster_order_.getNumberOfPeers());
+        answer | [&](const auto &answer) {
+          auto proposal_hash = getProposalHash(reject.votes).value();
+          auto already_processed =
+              vote_storage_.getProcessingState(proposal_hash);
+
+          if (not already_processed) {
+            answer.reject | [&](const auto &reject) {
+              log_->warn("reject case");
+              // TODO 14/08/17 Muratov: work on reject case IR-497
+            };
+            vote_storage_.markAsProcessedState(proposal_hash);
+          }
+          this->closeRound();
+        };
       }
 
       void Yac::applyVote(nonstd::optional<model::Peer> from,
