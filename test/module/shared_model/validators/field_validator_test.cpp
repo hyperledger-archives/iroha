@@ -57,9 +57,6 @@ class FieldValidatorTest : public ValidatorsTest {
     InitFieldFunction init_func;
     bool value_is_valid;
     std::string expected_message;
-
-    // enables regexp check for expected_message
-    bool regexp;
   };
 
   // Returns string containing field name and test case name for debug output
@@ -156,13 +153,9 @@ class FieldValidatorTest : public ValidatorsTest {
       if (!testcase.value_is_valid) {
         ASSERT_TRUE(!reason.second.empty())
             << testFailMessage(field_name, testcase.name);
-        if (not testcase.regexp)
-          EXPECT_EQ(testcase.expected_message, reason.second.at(0))
-              << testFailMessage(field_name, testcase.name);
-        else
-          ASSERT_THAT(reason.second.at(0),
-                      testing::MatchesRegex(testcase.expected_message))
-              << testFailMessage(field_name, testcase.name);
+        ASSERT_THAT(reason.second.at(0),
+                    testing::MatchesRegex(testcase.expected_message))
+            << testFailMessage(field_name, testcase.name);
       } else {
         EXPECT_TRUE(reason.second.empty())
             << testFailMessage(field_name, testcase.name)
@@ -187,13 +180,11 @@ class FieldValidatorTest : public ValidatorsTest {
                              F field,
                              const V &value,
                              bool valid,
-                             const std::string &message,
-                             bool regexp = false) {
+                             const std::string &message) {
     return {case_name,
             [&, field, value] { this->*field = value; },
             valid,
-            message,
-            regexp};
+            message};
   }
 
   /// Create valid case with "valid" name, and empty message
@@ -235,7 +226,7 @@ class FieldValidatorTest : public ValidatorsTest {
             c("start_with_digit", f("1abs%cdomain")),
             c("domain_start_with_digit", f("abs%c3domain")),
             c("empty_string", ""),
-            c("illegal_char", f("ab++s%cdo()main")),
+            c("illegal_char", f("ab--s%cdo--main")),
             c(f("missing_%c"), "absdomain"),
             c("missing_name", f("%cdomain"))};
   }
@@ -250,13 +241,11 @@ class FieldValidatorTest : public ValidatorsTest {
       {"valid_amount",
        [&] { amount.mutable_value()->set_fourth(100); },
        true,
-       "",
-       false},
+       ""},
       {"zero_amount",
        [&] { amount.mutable_value()->set_fourth(0); },
        false,
-       "Amount must be greater than 0, passed value: 0",
-       false}};
+       "Amount must be greater than 0, passed value: 0"}};
 
   FieldTestCase invalidAddressTestCase(const std::string &case_name,
                                        const std::string &address) {
@@ -270,7 +259,7 @@ class FieldValidatorTest : public ValidatorsTest {
   // so test cases are not exhaustive
   std::vector<FieldTestCase> address_test_cases{
       makeValidCase(&FieldValidatorTest::address_localhost, "182.13.35.1:3040"),
-      invalidAddressTestCase("invalid_ip_address", "182.13.35.1:3040^^"),
+      invalidAddressTestCase("invalid_ip_address", "182.13.35.1:3040--"),
       invalidAddressTestCase("empty_string", "")};
 
   FieldTestCase invalidPublicKeyTestCase(const std::string &case_name,
@@ -297,7 +286,7 @@ class FieldValidatorTest : public ValidatorsTest {
     return {
         makeTestCase("valid_name", field, "admin", true, ""),
         makeInvalidCase("empty_string", field_name, field, ""),
-        makeInvalidCase("illegal_characters", field_name, field, "+math+"),
+        makeInvalidCase("illegal_characters", field_name, field, "-math-"),
         makeInvalidCase("name_too_long", field_name, field, "somelongname")};
   }
 
@@ -333,15 +322,14 @@ class FieldValidatorTest : public ValidatorsTest {
           &FieldValidatorTest::created_time,
           iroha::time::now() + far_future,
           false,
-          "bad timestamp: sent from future, timestamp: [0-9]+, now: [0-9]+",
-          true)};
+          "bad timestamp: sent from future, timestamp: [0-9]+, now: [0-9]+")};
 
   std::vector<FieldTestCase> detail_test_cases{
       makeValidCase(&FieldValidatorTest::detail_key, "happy"),
       makeInvalidCase(
           "empty_string", "key", &FieldValidatorTest::detail_key, ""),
       makeInvalidCase(
-          "illegal_char", "key", &FieldValidatorTest::detail_key, "hi*there")};
+          "illegal_char", "key", &FieldValidatorTest::detail_key, "hi-there")};
 
   /**************************************************************************/
 
