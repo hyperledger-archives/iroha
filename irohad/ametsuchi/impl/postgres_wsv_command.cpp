@@ -122,7 +122,7 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertSignatory(const pubkey_t &signatory) {
       return makeBinaryString(signatory) | [&](const auto &public_key) {
-        return execute("INSERT INTO signatory(public_key) VALUES ("
+        return this->execute("INSERT INTO signatory(public_key) VALUES ("
                        + transaction_.quote(public_key)
                        + ") ON CONFLICT DO NOTHING;");
       };
@@ -131,7 +131,7 @@ namespace iroha {
     bool PostgresWsvCommand::insertAccountSignatory(
         const std::string &account_id, const pubkey_t &signatory) {
       return makeBinaryString(signatory) | [&](const auto &public_key) {
-        return execute(
+        return this->execute(
             "INSERT INTO account_has_signatory(account_id, public_key) VALUES ("
             + transaction_.quote(account_id) + ", "
             + transaction_.quote(public_key) + ");");
@@ -141,7 +141,7 @@ namespace iroha {
     bool PostgresWsvCommand::deleteAccountSignatory(
         const std::string &account_id, const pubkey_t &signatory) {
       return makeBinaryString(signatory) | [&](const auto &public_key) {
-        return execute("DELETE FROM account_has_signatory WHERE account_id = "
+        return this->execute("DELETE FROM account_has_signatory WHERE account_id = "
                        + transaction_.quote(account_id) + " AND public_key = "
                        + transaction_.quote(public_key) + ";");
       };
@@ -150,7 +150,7 @@ namespace iroha {
     bool PostgresWsvCommand::deleteSignatory(const pubkey_t &signatory) {
       return makeBinaryString(signatory) | [&](const auto &public_key) {
         // TODO: implement with other queries
-        return execute("DELETE FROM signatory WHERE public_key = "
+        return this->execute("DELETE FROM signatory WHERE public_key = "
                     + transaction_.quote(public_key)
                     + " AND NOT EXISTS (SELECT 1 FROM account_has_signatory "
                         "WHERE public_key = "
@@ -162,7 +162,7 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertPeer(const model::Peer &peer) {
       return makeBinaryString(peer.pubkey) | [&](const auto &public_key) {
-        return execute("INSERT INTO peer(public_key, address) VALUES ("
+        return this->execute("INSERT INTO peer(public_key, address) VALUES ("
                        + transaction_.quote(public_key) + ", "
                        + transaction_.quote(peer.address) + ");");
       };
@@ -170,7 +170,7 @@ namespace iroha {
 
     bool PostgresWsvCommand::deletePeer(const model::Peer &peer) {
       return makeBinaryString(peer.pubkey) | [&](const auto &public_key) {
-        return execute("DELETE FROM peer WHERE public_key = "
+        return this->execute("DELETE FROM peer WHERE public_key = "
                        + transaction_.quote(public_key) + " AND address = "
                        + transaction_.quote(peer.address) + ";");
       };
