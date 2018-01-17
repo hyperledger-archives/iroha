@@ -12,11 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(shared_model_stateless_validation
-        default_validator.cpp
+
+add_library(shared_model_field_validator
+        field_validator.cpp)
+
+target_link_libraries(shared_model_field_validator
+        schema
+        model_interfaces
         )
+
+add_library(shared_model_stateless_validation
+        default_validator.cpp)
 
 target_link_libraries(shared_model_stateless_validation
         schema
         model_interfaces
+        shared_model_field_validator
         )
+

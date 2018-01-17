@@ -23,6 +23,7 @@ target_link_libraries(bindings
         shared_model_proto_backend
         shared_model_ed25519_sha3
         generator
+        shared_model_field_validator
         )
 
 
