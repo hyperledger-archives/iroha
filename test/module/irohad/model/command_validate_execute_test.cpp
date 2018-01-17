@@ -79,7 +79,6 @@ class CommandValidateExecuteTest : public ::testing::Test {
                 *command, *wsv_query, *wsv_command, creator.account_id);
   }
 
-  // skip validation and execute command
   bool execute() {
     auto executor = factory->getCommandExecutor(command);
     return executor->execute(
@@ -208,6 +207,11 @@ TEST_F(AddAssetQuantityTest, InvalidWhenWrongPrecision) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given AddAssetQuantity
+ * @when command references non-existing account
+ * @then execute fails and returns false
+ */
 TEST_F(AddAssetQuantityTest, InvalidWhenNoAccount) {
   // Account to add does not exist
   EXPECT_CALL(*wsv_query, getAccountRoles(add_asset_quantity->account_id))
@@ -235,6 +239,11 @@ TEST_F(AddAssetQuantityTest, InvalidWhenNoAsset) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given AddAssetQuantity
+ * @when command adds value which overflows account balance
+ * @then execute fails and returns false
+ */
 TEST_F(AddAssetQuantityTest, InvalidWhenAssetAdditionFails) {
   // amount overflows
   add_asset_quantity->amount = max_amount;
@@ -580,6 +589,11 @@ TEST_F(CreateAccountTest, InvalidWhenNameWithSystemSymbols) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given CreateAccountCommand
+ * @when command tries to create account in a non-existing domain
+ * @then execute fails and returns false
+ */
 TEST_F(CreateAccountTest, InvalidWhenNoDomain) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .WillOnce(Return(admin_roles));
@@ -767,6 +781,11 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoKey) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given RemoveSignatory
+ * @when command tries to remove signatory from non-existing account
+ * @then execute fails and returns false
+ */
 TEST_F(RemoveSignatoryTest, InvalidWhenNoAccount) {
   EXPECT_CALL(*wsv_query,
               hasAccountGrantablePermission(
@@ -782,6 +801,11 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoAccount) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given RemoveSignatory
+ * @when command tries to remove signatory from account which does not have any signatories
+ * @then execute fails and returns false
+ */
 TEST_F(RemoveSignatoryTest, InvalidWhenNoSignatories) {
   EXPECT_CALL(*wsv_query,
               hasAccountGrantablePermission(
@@ -797,6 +821,11 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoSignatories) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given RemoveSignatory
+ * @when command tries to remove signatory from non-existing account and it has no signatories
+ * @then execute fails and returns false
+ */
 TEST_F(RemoveSignatoryTest, InvalidWhenNoAccountAndSignatories) {
   EXPECT_CALL(*wsv_query,
               hasAccountGrantablePermission(
@@ -812,6 +841,12 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoAccountAndSignatories) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given RemoveSignatory
+ * @when command tries to remove signatory from creator's account but has no permissions and no grantable permissions
+ *       to do that
+ * @then execute fails and returns false
+ */
 TEST_F(RemoveSignatoryTest, InvalidWhenNoPermissionToRemoveFromSelf) {
   remove_signatory->account_id = creator.account_id;
 
@@ -903,6 +938,11 @@ TEST_F(SetQuorumTest, InvalidWhenNoAccount) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given SetQuorum
+ * @when command tries to set quorum for non-existing account
+ * @then execute fails and returns false
+ */
 TEST_F(SetQuorumTest, InvalidWhenNoAccountButPassedPermissions) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .WillOnce(Return(admin_roles));
@@ -918,6 +958,11 @@ TEST_F(SetQuorumTest, InvalidWhenNoAccountButPassedPermissions) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given SetQuorum
+ * @when command tries to set quorum for account which does not have any signatories
+ * @then execute fails and returns false
+ */
 TEST_F(SetQuorumTest, InvalidWhenNoSignatories) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .WillOnce(Return(admin_roles));
@@ -1090,6 +1135,11 @@ TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAsset) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given TransferAsset
+ * @when command tries to transfer asset from non-existing account
+ * @then execute fails and returns false
+ */
 TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAssetDuringExecute) {
   // No source account asset exists
   EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
@@ -1114,6 +1164,11 @@ TEST_F(TransferAssetTest, InvalidWhenNoSrcAccountAssetDuringExecute) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given TransferAsset
+ * @when command tries to transfer non-existent asset
+ * @then isValid fails and returns false
+ */
 TEST_F(TransferAssetTest, InvalidWhenNoAssetDuringValidation) {
   EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
       .WillOnce(Return(admin_roles));
@@ -1129,6 +1184,11 @@ TEST_F(TransferAssetTest, InvalidWhenNoAssetDuringValidation) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given TransferAsset
+ * @when command tries to transfer non-existent asset
+ * @then execute fails and returns false
+ */
 TEST_F(TransferAssetTest, InvalidWhenNoAssetId) {
   EXPECT_CALL(*wsv_query, getAccountRoles(transfer_asset->dest_account_id))
       .WillOnce(Return(admin_roles));
@@ -1180,6 +1240,11 @@ TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given TransferAsset
+ * @when command tries to transfer amount which is lesson than source balance
+ * @then execute fails and returns false
+ */
 TEST_F(TransferAssetTest, InvalidWhenInsufficientFundsDuringExecute) {
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
       .WillOnce(Return(asset));
@@ -1217,6 +1282,11 @@ TEST_F(TransferAssetTest, InvalidWhenWrongPrecision) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given TransferAsset
+ * @when command tries to transfer amount with wrong precision
+ * @then execute fails and returns false
+ */
 TEST_F(TransferAssetTest, InvalidWhenWrongPrecisionDuringExecute) {
   EXPECT_CALL(*wsv_query, getAsset(transfer_asset->asset_id))
       .WillOnce(Return(asset));
@@ -1234,6 +1304,11 @@ TEST_F(TransferAssetTest, InvalidWhenWrongPrecisionDuringExecute) {
   ASSERT_FALSE(execute());
 }
 
+/**
+ * @given TransferAsset
+ * @when command tries to transfer asset which overflows destination balance
+ * @then execute fails and returns false
+ */
 TEST_F(TransferAssetTest, InvalidWhenAmountOverflow) {
   src_wallet.balance = max_amount;
 
@@ -1441,6 +1516,11 @@ TEST_F(AppendRoleTest, InvalidCaseNoPermissions) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+ * @given AppendRole
+ * @when command tries to append non-existing role
+ * @then execute() fails and returns false
+ */
 TEST_F(AppendRoleTest, InvalidCaseNoAccountRole) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .Times(2)
@@ -1453,6 +1533,11 @@ TEST_F(AppendRoleTest, InvalidCaseNoAccountRole) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+* @given AppendRole
+* @when command tries to append non-existing role and creator does not have any roles
+* @then execute() fails and returns false
+*/
 TEST_F(AppendRoleTest, InvalidCaseNoAccountRoleAndNoPermission) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .Times(2)
@@ -1465,6 +1550,11 @@ TEST_F(AppendRoleTest, InvalidCaseNoAccountRoleAndNoPermission) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+/**
+* @given AppendRole
+* @when command tries to append role, but creator account does not have necessary permission
+* @then execute() fails and returns false
+*/
 TEST_F(AppendRoleTest, InvalidCaseRoleHasNoPermissions) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .Times(2)
