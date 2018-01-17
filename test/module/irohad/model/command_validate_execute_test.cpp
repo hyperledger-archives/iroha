@@ -812,6 +812,21 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoAccountAndSignatories) {
   ASSERT_FALSE(validateAndExecute());
 }
 
+TEST_F(RemoveSignatoryTest, InvalidWhenNoPermissionToRemoveFromSelf) {
+  remove_signatory->account_id = creator.account_id;
+
+  EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
+      .WillOnce(Return(std::vector<std::string>{}));
+  EXPECT_CALL(*wsv_query, getAccountRoles(creator.account_id))
+      .WillOnce(Return(std::vector<std::string>{admin_role}));
+  EXPECT_CALL(
+      *wsv_query,
+      hasAccountGrantablePermission(admin_id, admin_id, can_remove_signatory))
+      .WillOnce(Return(false));
+
+  ASSERT_FALSE(validateAndExecute());
+}
+
 class SetQuorumTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
