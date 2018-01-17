@@ -220,8 +220,7 @@ namespace shared_model {
           reason.second.push_back(std::move(message));
         }
 
-        // First check is necessary due to unsigned types of the timestamps
-        if (now > timestamp && now - timestamp > max_delay) {
+        if (now  > max_delay + timestamp) {
           auto message =
               (boost::format(
                    "bad timestamp: too old, timestamp: %llu, now: %llu")
