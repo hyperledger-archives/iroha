@@ -29,10 +29,6 @@
 namespace shared_model {
   namespace validation {
 
-    // default value for future_gap field of FieldValidator
-    constexpr auto default_future_gap =
-        std::chrono::minutes(5) / std::chrono::milliseconds(1);
-
     /**
      * Class that validates fields of commands, concrete queries, transaction,
      * and query
@@ -220,7 +216,7 @@ namespace shared_model {
           reason.second.push_back(std::move(message));
         }
 
-        if (now  > max_delay + timestamp) {
+        if (now > max_delay + timestamp) {
           auto message =
               (boost::format(
                    "bad timestamp: too old, timestamp: %llu, now: %llu")
@@ -252,6 +248,10 @@ namespace shared_model {
       // max-delay between tx creation and validation
       static constexpr auto max_delay =
           std::chrono::hours(24) / std::chrono::milliseconds(1);
+      // default value for future_gap field of FieldValidator
+      static constexpr auto default_future_gap =
+          std::chrono::minutes(5) / std::chrono::milliseconds(1);
+
       // size of key
       static constexpr auto key_size = 32;
     };
