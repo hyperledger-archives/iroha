@@ -24,7 +24,7 @@
 ServerRunner::ServerRunner(const std::string &address)
     : serverAddress_(address) {}
 
-ServerRunner::~ServerRunner() { toriiServiceHandler_->shutdown(); }
+ServerRunner::~ServerRunner() {}
 
 void ServerRunner::run(std::unique_ptr<torii::CommandService> command_service,
                        std::unique_ptr<torii::QueryService> query_service) {

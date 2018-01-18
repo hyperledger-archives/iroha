@@ -32,7 +32,7 @@ namespace torii {
    * registers async command service
    * @param builder
    */
-  ToriiServiceHandler::ToriiServiceHandler(::grpc::ServerBuilder& builder) {
+  ToriiServiceHandler::ToriiServiceHandler(::grpc::ServerBuilder &builder) {
     builder.RegisterService(&commandAsyncService_);
     builder.RegisterService(&queryAsyncService_);
     completionQueue_ = builder.AddCompletionQueue();
@@ -51,6 +51,10 @@ namespace torii {
     while (completionQueue_->Next(&tag, &ok)) {
       // wait until completion queue shuts down
     }
+
+    torii_owner_->responseSent();
+    status_owner_->responseSent();
+    find_owner_->responseSent();
   }
 
   /**
@@ -58,28 +62,34 @@ namespace torii {
    */
   void ToriiServiceHandler::handleRpcs() {
     // CommandService::Torii()
-    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction,
-                   google::protobuf::Empty>(
+    torii_owner_ = enqueueRequest<prot::CommandService::AsyncService,
+                                  prot::Transaction,
+                                  google::protobuf::Empty>(
         &prot::CommandService::AsyncService::RequestTorii,
-        &ToriiServiceHandler::ToriiHandler, commandAsyncService_);
+        &ToriiServiceHandler::ToriiHandler,
+        commandAsyncService_);
 
-    enqueueRequest<prot::CommandService::AsyncService, prot::TxStatusRequest,
-                   prot::ToriiResponse>(
+    status_owner_ = enqueueRequest<prot::CommandService::AsyncService,
+                                   prot::TxStatusRequest,
+                                   prot::ToriiResponse>(
         &prot::CommandService::AsyncService::RequestStatus,
-        &ToriiServiceHandler::StatusHandler, commandAsyncService_);
+        &ToriiServiceHandler::StatusHandler,
+        commandAsyncService_);
 
     // QueryService::Find()
-    enqueueRequest<prot::QueryService::AsyncService, prot::Query,
-                   prot::QueryResponse>(
+    find_owner_ = enqueueRequest<prot::QueryService::AsyncService,
+                                 prot::Query,
+                                 prot::QueryResponse>(
         &prot::QueryService::AsyncService::RequestFind,
-        &ToriiServiceHandler::QueryFindHandler, queryAsyncService_);
+        &ToriiServiceHandler::QueryFindHandler,
+        queryAsyncService_);
 
     /**
      * tag is a state corresponding to one rpc connection.
      * ok is true if read a regular event, false otherwise (e.g. grpc::Alarm is
      * not a regular event).
      */
-    void* tag;
+    void *tag;
     bool ok;
 
     /**
@@ -90,7 +100,7 @@ namespace torii {
      */
     while (completionQueue_->Next(&tag, &ok)) {
       auto callbackTag =
-          static_cast<network::UntypedCall<ToriiServiceHandler>::CallOwner*>(
+          static_cast<network::UntypedCall<ToriiServiceHandler>::CallOwner *>(
               tag);
       if (ok && callbackTag) {
         /*assert(callbackTag);*/
@@ -108,40 +118,46 @@ namespace torii {
    * then, spawns a new Call instance to serve an another client.
    */
   void ToriiServiceHandler::ToriiHandler(
-      CommandServiceCall<prot::Transaction, google::protobuf::Empty>* call) {
+      CommandServiceCall<prot::Transaction, google::protobuf::Empty> *call) {
     command_service_->ToriiAsync(call->request(), call->response());
     call->sendResponse(grpc::Status::OK);
 
     // Spawn a new Call instance to serve an another client.
-    enqueueRequest<prot::CommandService::AsyncService, prot::Transaction,
-                   google::protobuf::Empty>(
+    torii_owner_ = enqueueRequest<prot::CommandService::AsyncService,
+                                  prot::Transaction,
+                                  google::protobuf::Empty>(
         &prot::CommandService::AsyncService::RequestTorii,
-        &ToriiServiceHandler::ToriiHandler, commandAsyncService_);
+        &ToriiServiceHandler::ToriiHandler,
+        commandAsyncService_);
   }
 
   void ToriiServiceHandler::StatusHandler(
       CommandServiceCall<iroha::protocol::TxStatusRequest,
-                         iroha::protocol::ToriiResponse>* call) {
+                         iroha::protocol::ToriiResponse> *call) {
     command_service_->StatusAsync(call->request(), call->response());
     call->sendResponse(grpc::Status::OK);
 
-    enqueueRequest<prot::CommandService::AsyncService, prot::TxStatusRequest,
-                   iroha::protocol::ToriiResponse>(
+    status_owner_ = enqueueRequest<prot::CommandService::AsyncService,
+                                   prot::TxStatusRequest,
+                                   iroha::protocol::ToriiResponse>(
         &prot::CommandService::AsyncService::RequestStatus,
-        &ToriiServiceHandler::StatusHandler, commandAsyncService_);
+        &ToriiServiceHandler::StatusHandler,
+        commandAsyncService_);
   }
 
   void ToriiServiceHandler::QueryFindHandler(
-      QueryServiceCall<iroha::protocol::Query, iroha::protocol::QueryResponse>*
-          call) {
+      QueryServiceCall<iroha::protocol::Query, iroha::protocol::QueryResponse>
+          *call) {
     query_service_->FindAsync(call->request(), call->response());
     call->sendResponse(grpc::Status::OK);
 
     // Spawn a new Call instance to serve an another client.
-    enqueueRequest<prot::QueryService::AsyncService, prot::Query,
-                   prot::QueryResponse>(
+    find_owner_ = enqueueRequest<prot::QueryService::AsyncService,
+                                 prot::Query,
+                                 prot::QueryResponse>(
         &prot::QueryService::AsyncService::RequestFind,
-        &ToriiServiceHandler::QueryFindHandler, queryAsyncService_);
+        &ToriiServiceHandler::QueryFindHandler,
+        queryAsyncService_);
   }
   void ToriiServiceHandler::assignCommandHandler(
       std::unique_ptr<torii::CommandService> command_service) {

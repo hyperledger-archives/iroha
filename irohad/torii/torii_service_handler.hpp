@@ -34,12 +34,11 @@ namespace torii {
      * requires builder to use same server.
      * @param builder
      */
-    ToriiServiceHandler(::grpc::ServerBuilder& builder);
+    ToriiServiceHandler(::grpc::ServerBuilder &builder);
 
     void assignCommandHandler(
         std::unique_ptr<torii::CommandService> command_service);
-    void assignQueryHandler(
-        std::unique_ptr<torii::QueryService> query_service);
+    void assignQueryHandler(std::unique_ptr<torii::QueryService> query_service);
 
     virtual ~ToriiServiceHandler() override;
 
@@ -47,12 +46,14 @@ namespace torii {
     using CommandServiceCall =
         network::Call<ToriiServiceHandler,
                       iroha::protocol::CommandService::AsyncService,
-                      RequestType, ResponseType>;
+                      RequestType,
+                      ResponseType>;
 
     template <typename RequestType, typename ResponseType>
     using QueryServiceCall =
         network::Call<ToriiServiceHandler,
-                      iroha::protocol::QueryService::AsyncService, RequestType,
+                      iroha::protocol::QueryService::AsyncService,
+                      RequestType,
                       ResponseType>;
 
     /**
@@ -80,22 +81,30 @@ namespace torii {
      * &CommandService::AsyncService::RequestTorii
      * @param rpcHandler - handler of rpc in ServiceHandler.
      */
-    template <typename AsyncService, typename RequestType,
+    template <typename AsyncService,
+              typename RequestType,
               typename ResponseType>
-    void enqueueRequest(
-        network::RequestMethod<AsyncService, RequestType, ResponseType>
-            requester,
-        network::RpcHandler<ToriiServiceHandler, AsyncService, RequestType,
-                            ResponseType>
-            rpcHandler,
-        AsyncService& asyncService) {
+    network::Call<ToriiServiceHandler, AsyncService, RequestType, ResponseType>
+        *enqueueRequest(
+            network::RequestMethod<AsyncService, RequestType, ResponseType>
+                requester,
+            network::RpcHandler<ToriiServiceHandler,
+                                AsyncService,
+                                RequestType,
+                                ResponseType> rpcHandler,
+            AsyncService &asyncService) {
       std::unique_lock<std::mutex> lock(mtx_);
       if (!isShutdown_) {
-        network::Call<ToriiServiceHandler, AsyncService, RequestType,
-                      ResponseType>::enqueueRequest(&asyncService,
-                                                    completionQueue_.get(),
-                                                    requester, rpcHandler);
+        return network::Call<ToriiServiceHandler,
+                             AsyncService,
+                             RequestType,
+                             ResponseType>::enqueueRequest(&asyncService,
+                                                           completionQueue_
+                                                               .get(),
+                                                           requester,
+                                                           rpcHandler);
       }
+      return nullptr;
     }
 
     /**
@@ -104,14 +113,13 @@ namespace torii {
      * then, creates a new Call instance to serve an another client.
      */
     void ToriiHandler(CommandServiceCall<iroha::protocol::Transaction,
-                                         google::protobuf::Empty>*);
+                                         google::protobuf::Empty> *);
 
     void StatusHandler(CommandServiceCall<iroha::protocol::TxStatusRequest,
-                                         iroha::protocol::ToriiResponse>*);
-
+                                          iroha::protocol::ToriiResponse> *);
 
     void QueryFindHandler(QueryServiceCall<iroha::protocol::Query,
-                                           iroha::protocol::QueryResponse>*);
+                                           iroha::protocol::QueryResponse> *);
 
    private:
     iroha::protocol::CommandService::AsyncService commandAsyncService_;
@@ -123,6 +131,13 @@ namespace torii {
 
     std::unique_ptr<torii::CommandService> command_service_;
     std::unique_ptr<torii::QueryService> query_service_;
+
+    CommandServiceCall<iroha::protocol::Transaction, google::protobuf::Empty>
+        *torii_owner_;
+    CommandServiceCall<iroha::protocol::TxStatusRequest,
+                       iroha::protocol::ToriiResponse> *status_owner_;
+    QueryServiceCall<iroha::protocol::Query, iroha::protocol::QueryResponse>
+        *find_owner_;
   };
 }  // namespace torii
 

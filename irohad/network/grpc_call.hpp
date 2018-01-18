@@ -17,8 +17,8 @@ limitations under the License.
 #ifndef NETWORK_GRPC_CALL_HPP
 #define NETWORK_GRPC_CALL_HPP
 
-#include <grpc++/grpc++.h>
 #include <assert.h>
+#include <grpc++/grpc++.h>
 #include <network/grpc_async_service.hpp>
 
 namespace network {
@@ -29,16 +29,17 @@ namespace network {
    */
   template <typename ServiceHandler>
   class UntypedCall {
-  public:
+   public:
     virtual ~UntypedCall() {}
 
     enum class State { RequestCreated, ResponseSent };
 
     /**
      * invokes when state is RequestReceivedTag.
-     * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
+     * @param serviceHandler - an instance that has all rpc handlers. e.g.
+     * CommandService
      */
-    virtual void requestReceived(ServiceHandler* serviceHandler) = 0;
+    virtual void requestReceived(ServiceHandler *serviceHandler) = 0;
 
     /**
      * invokes when state is ResponseSentTag.
@@ -50,14 +51,15 @@ namespace network {
      * container for vtable to work if casts UntypedCall<> from void*
      */
     class CallOwner {
-    public:
-      CallOwner(UntypedCall* call, UntypedCall::State state)
-        : call_(call), state_(state) {}
+     public:
+      CallOwner(UntypedCall *call, UntypedCall::State state)
+          : call_(call), state_(state) {}
 
       /**
        * selects a procedure by state and invokes it by using polymorphism.
        * this is called from ServiceHandler::handleRpcs()
-       * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
+       * @param serviceHandler - an instance that has all rpc handlers. e.g.
+       * CommandService
        */
       void onCompleted(ServiceHandler *serviceHandler) {
         switch (state_) {
@@ -72,8 +74,8 @@ namespace network {
         }
       }
 
-    private:
-      UntypedCall* call_; // owns concrete Call type, works vtable.
+     private:
+      UntypedCall *call_;  // owns concrete Call type, works vtable.
       const UntypedCall::State state_;
     };
   };
@@ -85,34 +87,41 @@ namespace network {
    * @tparam RequestType - type of a request from client
    * @tparam ResponseType - type of a response to client
    */
-  template <typename ServiceHandler, typename AsyncService, typename RequestType, typename ResponseType>
+  template <typename ServiceHandler,
+            typename AsyncService,
+            typename RequestType,
+            typename ResponseType>
   class Call : public UntypedCall<ServiceHandler> {
-  public:
-
-    using RpcHandlerType    = network::RpcHandler<ServiceHandler, AsyncService, RequestType, ResponseType>;
-    using RequestMethodType = network::RequestMethod<AsyncService, RequestType, ResponseType>;
-    using CallType          = Call<ServiceHandler, AsyncService, RequestType, ResponseType>;
-    using UntypedCallType   = UntypedCall<ServiceHandler>;
-    using CallOwnerType     = typename UntypedCallType::CallOwner;
+   public:
+    using RpcHandlerType = network::
+        RpcHandler<ServiceHandler, AsyncService, RequestType, ResponseType>;
+    using RequestMethodType =
+        network::RequestMethod<AsyncService, RequestType, ResponseType>;
+    using CallType =
+        Call<ServiceHandler, AsyncService, RequestType, ResponseType>;
+    using UntypedCallType = UntypedCall<ServiceHandler>;
+    using CallOwnerType = typename UntypedCallType::CallOwner;
 
     Call(RpcHandlerType rpcHandler)
-      : rpcHandler_(rpcHandler), responder_(&ctx_) {}
+        : rpcHandler_(rpcHandler), responder_(&ctx_) {}
 
     virtual ~Call() {}
 
     /**
      * invokes when state is RequestReceivedTag.
      * this method is called by onCompleted() in super class (UntypedCall).
-     * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
+     * @param serviceHandler - an instance that has all rpc handlers. e.g.
+     * CommandService
      */
-    void requestReceived(ServiceHandler* serviceHandler) override {
+    void requestReceived(ServiceHandler *serviceHandler) override {
       (serviceHandler->*rpcHandler_)(this);
     }
 
     /**
      * invokes when state is ResponseSentTag.
      * this method is called by onCompleted() in super class (UntypedCall).
-     * @param serviceHandler - an instance that has all rpc handlers. e.g. CommandService
+     * @param serviceHandler - an instance that has all rpc handlers. e.g.
+     * CommandService
      */
     void responseSent() override {
       // response has been sent and delete the Call instance.
@@ -135,26 +144,36 @@ namespace network {
      * @param requestMethod
      * @param rpcHandler
      */
-    static void enqueueRequest(AsyncService* asyncService,
-                               ::grpc::ServerCompletionQueue* cq,
-                               RequestMethodType requestMethod,
-                               RpcHandlerType rpcHandler) {
+    static CallType *enqueueRequest(AsyncService *asyncService,
+                                    ::grpc::ServerCompletionQueue *cq,
+                                    RequestMethodType requestMethod,
+                                    RpcHandlerType rpcHandler) {
       auto call = new CallType(rpcHandler);
 
-      (asyncService->*requestMethod)(&call->ctx_, &call->request(),
-                                     &call->responder_, cq, cq,
+      (asyncService->*requestMethod)(&call->ctx_,
+                                     &call->request(),
+                                     &call->responder_,
+                                     cq,
+                                     cq,
                                      &call->RequestReceivedTag);
+
+      return call;
     }
 
-  public:
-    auto& request()  { return request_; }
-    auto& response() { return response_; }
+   public:
+    auto &request() {
+      return request_;
+    }
+    auto &response() {
+      return response_;
+    }
 
-  private:
-    CallOwnerType RequestReceivedTag { this, UntypedCallType::State::RequestCreated };
-    CallOwnerType ResponseSentTag { this, UntypedCallType::State::ResponseSent };
+   private:
+    CallOwnerType RequestReceivedTag{this,
+                                     UntypedCallType::State::RequestCreated};
+    CallOwnerType ResponseSentTag{this, UntypedCallType::State::ResponseSent};
 
-  private:
+   private:
     RpcHandlerType rpcHandler_;
     RequestType request_;
     ResponseType response_;
