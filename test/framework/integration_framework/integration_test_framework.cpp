@@ -107,6 +107,12 @@ namespace integration_framework {
     return *this;
   }
 
+  IntegrationTestFramework &IntegrationTestFramework::sendQuery(
+      const iroha::model::Query &qry) {
+    sendQuery(qry, [](const auto &) {});
+    return *this;
+  }
+
   IntegrationTestFramework &IntegrationTestFramework::skipProposal() {
     checkProposal([](const iroha::model::Proposal &) {});
     return *this;

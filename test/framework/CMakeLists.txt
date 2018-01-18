@@ -36,6 +36,7 @@ target_link_libraries(integration_framework
     raw_block_insertion
     keys_manager
     model_generators
+    pb_model_converters
     tbb
     gtest
     gmock

@@ -61,14 +61,27 @@ namespace integration_framework {
 
     std::shared_ptr<TestIrohad> instance_;
 
-    std::string getPostgreCreds() {
+    std::string getRedisHostOrDefault(
+        const std::string &default_host = "localhost") {
+      auto redis_host = std::getenv("IROHA_REDIS_HOST");
+      return redis_host ? redis_host : default_host;
+    }
+
+    size_t getRedisPortOrDefault(size_t default_port = 6379) {
+      auto redis_port = std::getenv("IROHA_REDIS_PORT");
+      return redis_port ? std::stoull(redis_port) : default_port;
+    }
+
+    std::string getPostgreCredsOrDefault(const std::string &default_conn =
+                                             "host=localhost port=5432 "
+                                             "user=postgres "
+                                             "password=mysecretpassword") {
       auto pg_host = std::getenv("IROHA_POSTGRES_HOST");
       auto pg_port = std::getenv("IROHA_POSTGRES_PORT");
       auto pg_user = std::getenv("IROHA_POSTGRES_USER");
       auto pg_pass = std::getenv("IROHA_POSTGRES_PASSWORD");
       if (not pg_host) {
-        return "host=localhost port=5432 user=postgres "
-               "password=mysecretpassword";
+        return default_conn;
       } else {
         std::stringstream ss;
         ss << "host=" << pg_host << " port=" << pg_port << " user=" << pg_user
@@ -79,9 +92,9 @@ namespace integration_framework {
 
     // config area
     const std::string block_store_dir_ = "/tmp/block_store";
-    const std::string redis_host_ = std::getenv("IROHA_REDIS_HOST");
-    const size_t redis_port_ = std::stoull(std::getenv("IROHA_REDIS_PORT"));
-    const std::string pg_conn_ = getPostgreCreds();
+    const std::string redis_host_ = getRedisHostOrDefault();
+    const size_t redis_port_ = getRedisPortOrDefault();
+    const std::string pg_conn_ = getPostgreCredsOrDefault();
     const size_t torii_port_ = 11501;
     const size_t internal_port_ = 10001;
     const size_t max_proposal_size_ = 10;

@@ -20,6 +20,7 @@ target_link_libraries(tx_pipeline_integration_test
     application
     raw_block_insertion
     model_generators
+    integration_framework
     )
 
 addtest(transfer_asset_inter_domain_test transfer_asset_inter_domain_test.cpp)

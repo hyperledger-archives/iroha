@@ -62,6 +62,11 @@ namespace integration_framework {
     IntegrationTestFramework &sendTx(iroha::model::Transaction tx);
 
     template <typename Lambda>
+    IntegrationTestFramework &sendQuery(const iroha::model::Query &qry,
+                                        Lambda validation);
+    IntegrationTestFramework &sendQuery(const iroha::model::Query &qry);
+
+    template <typename Lambda>
     IntegrationTestFramework &checkProposal(Lambda validation);
     IntegrationTestFramework &skipProposal();
 
@@ -126,6 +131,28 @@ namespace integration_framework {
     // check validation function
     return *this;
   }
+
+  template <typename Lambda>
+  IntegrationTestFramework &IntegrationTestFramework::sendQuery(
+      const iroha::model::Query &qry, Lambda validation) {
+    using iroha::operator|;
+    log_->info("send query");
+    // serialize without calling destructor on passed reference
+    auto pb_qry = iroha::model::converters::PbQueryFactory().serialize(
+        std::shared_ptr<const iroha::model::Query>(&qry, [](auto) {}));
+    // send
+    iroha::protocol::QueryResponse pb_response;
+    iroha_instance_->getIrohaInstance()->getQueryService()->FindAsync(
+        *pb_qry, pb_response);
+    // deserialize
+    auto response =
+        iroha::model::converters::PbQueryResponseFactory().deserialize(
+            pb_response);
+    // check validation function
+    validation(**response);
+    return *this;
+  }
+
   template <typename Lambda>
   IntegrationTestFramework &IntegrationTestFramework::checkBlock(
       Lambda validation) {
