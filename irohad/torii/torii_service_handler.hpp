@@ -133,11 +133,11 @@ namespace torii {
     std::unique_ptr<torii::QueryService> query_service_;
 
     CommandServiceCall<iroha::protocol::Transaction, google::protobuf::Empty>
-        *torii_owner_;
+        *torii_last_call_;
     CommandServiceCall<iroha::protocol::TxStatusRequest,
-                       iroha::protocol::ToriiResponse> *status_owner_;
+                       iroha::protocol::ToriiResponse> *status_last_call_;
     QueryServiceCall<iroha::protocol::Query, iroha::protocol::QueryResponse>
-        *find_owner_;
+        *find_last_call_;
   };
 }  // namespace torii
 

@@ -144,10 +144,10 @@ namespace network {
      * @param requestMethod
      * @param rpcHandler
      */
-    static CallType *enqueueRequest(AsyncService *asyncService,
-                                    ::grpc::ServerCompletionQueue *cq,
-                                    RequestMethodType requestMethod,
-                                    RpcHandlerType rpcHandler) {
+    static auto *enqueueRequest(AsyncService *asyncService,
+                                ::grpc::ServerCompletionQueue *cq,
+                                RequestMethodType requestMethod,
+                                RpcHandlerType rpcHandler) {
       auto call = new CallType(rpcHandler);
 
       (asyncService->*requestMethod)(&call->ctx_,
