@@ -237,6 +237,7 @@ namespace iroha {
                                         proposal_hash);
                              this->propagateReject(reject);
                            });
+            vote_storage_.markAsProcessedState(proposal_hash);
           } else {
             from | [&](const auto &from) {
               visit_in_place(answer,
