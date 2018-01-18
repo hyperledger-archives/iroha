@@ -121,60 +121,56 @@ namespace iroha {
     }
 
     bool PostgresWsvCommand::insertSignatory(const pubkey_t &signatory) {
-      return makeBinaryString(signatory) | [&](const auto &public_key) {
-        return this->execute("INSERT INTO signatory(public_key) VALUES ("
-                       + transaction_.quote(public_key)
-                       + ") ON CONFLICT DO NOTHING;");
-      };
+      return execute("INSERT INTO signatory(public_key) VALUES ("
+                     + transaction_.quote(pqxx::binarystring(signatory.data(),
+                                                             signatory.size()))
+                     + ") ON CONFLICT DO NOTHING;");
     }
 
     bool PostgresWsvCommand::insertAccountSignatory(
         const std::string &account_id, const pubkey_t &signatory) {
-      return makeBinaryString(signatory) | [&](const auto &public_key) {
-        return this->execute(
-            "INSERT INTO account_has_signatory(account_id, public_key) VALUES ("
-            + transaction_.quote(account_id) + ", "
-            + transaction_.quote(public_key) + ");");
-      };
-    }
+      return execute(
+          "INSERT INTO account_has_signatory(account_id, public_key) VALUES ("
+          + transaction_.quote(account_id) + ", "
+          + transaction_.quote(
+                pqxx::binarystring(signatory.data(), signatory.size()))
+          + ");");
+    }  // namespace ametsuchi
 
     bool PostgresWsvCommand::deleteAccountSignatory(
         const std::string &account_id, const pubkey_t &signatory) {
-      return makeBinaryString(signatory) | [&](const auto &public_key) {
-        return this->execute("DELETE FROM account_has_signatory WHERE account_id = "
-                       + transaction_.quote(account_id) + " AND public_key = "
-                       + transaction_.quote(public_key) + ";");
-      };
+      return execute("DELETE FROM account_has_signatory WHERE account_id = "
+                     + transaction_.quote(account_id) + " AND public_key = "
+                     + transaction_.quote(pqxx::binarystring(signatory.data(),
+                                                             signatory.size()))
+                     + ";");
     }
 
     bool PostgresWsvCommand::deleteSignatory(const pubkey_t &signatory) {
-      return makeBinaryString(signatory) | [&](const auto &public_key) {
-        // TODO: implement with other queries
-        return this->execute("DELETE FROM signatory WHERE public_key = "
+      pqxx::binarystring public_key(signatory.data(), signatory.size());
+      return execute("DELETE FROM signatory WHERE public_key = "
                     + transaction_.quote(public_key)
                     + " AND NOT EXISTS (SELECT 1 FROM account_has_signatory "
                         "WHERE public_key = "
                     + transaction_.quote(public_key)
                     + ") AND NOT EXISTS (SELECT 1 FROM peer WHERE public_key = "
                     + transaction_.quote(public_key) + ");");
-      };
     }
 
     bool PostgresWsvCommand::insertPeer(const model::Peer &peer) {
-      return makeBinaryString(peer.pubkey) | [&](const auto &public_key) {
-        return this->execute("INSERT INTO peer(public_key, address) VALUES ("
-                       + transaction_.quote(public_key) + ", "
-                       + transaction_.quote(peer.address) + ");");
-      };
+      return execute("INSERT INTO peer(public_key, address) VALUES ("
+                     + transaction_.quote(pqxx::binarystring(
+                           peer.pubkey.data(), peer.pubkey.size()))
+                     + ", " + transaction_.quote(peer.address) + ");");
     }
 
     bool PostgresWsvCommand::deletePeer(const model::Peer &peer) {
-      return makeBinaryString(peer.pubkey) | [&](const auto &public_key) {
-        return this->execute("DELETE FROM peer WHERE public_key = "
-                       + transaction_.quote(public_key) + " AND address = "
-                       + transaction_.quote(peer.address) + ";");
-      };
-    }
+      return execute("DELETE FROM peer WHERE public_key = "
+                     + transaction_.quote(pqxx::binarystring(
+                           peer.pubkey.data(), peer.pubkey.size()))
+                     + " AND address = " + transaction_.quote(peer.address)
+                     + ";");
+    }  // namespace iroha
 
     bool PostgresWsvCommand::insertDomain(const model::Domain &domain) {
       return execute("INSERT INTO domain(domain_id, default_role) VALUES ("
@@ -219,13 +215,5 @@ namespace iroha {
       return true;
     }
 
-    nonstd::optional<pqxx::binarystring> PostgresWsvCommand::makeBinaryString(
-        const blob_t<32> &data) noexcept {
-      try {
-        return pqxx::binarystring(data.data(), data.size());
-      } catch (const std::exception &e) {
-        return nonstd::nullopt;
-      }
-    }
   }  // namespace ametsuchi
 }  // namespace iroha

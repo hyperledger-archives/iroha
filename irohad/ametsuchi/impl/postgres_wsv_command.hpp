@@ -69,7 +69,6 @@ namespace iroha {
 
      private:
       bool execute(const std::string& statement) noexcept;
-      nonstd::optional<pqxx::binarystring> makeBinaryString(const blob_t<32> &data) noexcept;
       size_t default_tx_counter = 0;
 
       pqxx::nontransaction &transaction_;
