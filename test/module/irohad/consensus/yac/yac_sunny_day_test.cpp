@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include <string>
 #include <utility>
+
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 
@@ -131,7 +132,8 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
   delay = wait_seconds * 1000;
   EXPECT_CALL(*timer, deny()).Times(2);
 
-  yac = Yac::create(YacVoteStorage(), network, crypto, timer, my_order.value(), delay);
+  yac = Yac::create(
+      YacVoteStorage(), network, crypto, timer, my_order.value(), delay);
 
   YacHash my_hash("proposal_hash", "block_hash");
   auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 1);
@@ -183,7 +185,8 @@ TEST_F(YacTest, ValidCaseWhenSoloConsensus) {
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(YacVoteStorage(), network, crypto, timer, my_order.value(), delay);
+  yac = Yac::create(
+      YacVoteStorage(), network, crypto, timer, my_order.value(), delay);
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(my_peers.size());
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
@@ -235,7 +238,8 @@ TEST_F(YacTest, ValidCaseWhenVoteAfterCommit) {
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(YacVoteStorage(), network, crypto, timer, my_order.value(), delay);
+  yac = Yac::create(
+      YacVoteStorage(), network, crypto, timer, my_order.value(), delay);
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
