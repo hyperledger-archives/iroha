@@ -138,20 +138,18 @@ namespace integration_framework {
     using iroha::operator|;
     log_->info("send query");
     // serialize without calling destructor on passed reference
-    iroha::model::converters::PbQueryFactory().serialize(
-        std::shared_ptr<const iroha::model::Query>(&qry, [](auto) {}))
-        |
-        [&](const auto &pb_qry) {
-          // send
-          iroha::protocol::QueryResponse pb_response;
-          iroha_instance_->getIrohaInstance()->getQueryService()->FindAsync(
-              pb_qry, pb_response);
-          // deserialize
-          return iroha::model::converters::PbQueryResponseFactory().deserialize(
-              pb_response);
-          // check validation function
-        }
-        | [&](const auto &p) { validation(*p); };
+    auto pb_qry = iroha::model::converters::PbQueryFactory().serialize(
+        std::shared_ptr<const iroha::model::Query>(&qry, [](auto) {}));
+    // send
+    iroha::protocol::QueryResponse pb_response;
+    iroha_instance_->getIrohaInstance()->getQueryService()->FindAsync(
+        *pb_qry, pb_response);
+    // deserialize
+    auto response =
+        iroha::model::converters::PbQueryResponseFactory().deserialize(
+            pb_response);
+    // check validation function
+    validation(**response);
     return *this;
   }
 
