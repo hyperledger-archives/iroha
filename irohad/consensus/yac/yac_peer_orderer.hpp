@@ -44,7 +44,7 @@ namespace iroha {
          * @param hash - hash-object that used as seed of ordering shuffle
          * @return shuffled cluster order
          */
-        virtual nonstd::optional<ClusterOrdering> getOrdering(YacHash hash) = 0;
+        virtual nonstd::optional<ClusterOrdering> getOrdering(const YacHash& hash) = 0;
 
         virtual ~YacPeerOrderer() = default;
       };

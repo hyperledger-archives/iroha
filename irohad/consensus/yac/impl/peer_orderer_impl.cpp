@@ -33,7 +33,7 @@ namespace iroha {
       }
 
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getOrdering(
-          YacHash hash) {
+          const YacHash& hash) {
         return query_->getLedgerPeers() | [&hash](auto peers){
           std::seed_seq seed(hash.block_hash.begin(),hash.block_hash.end());
           std::default_random_engine gen(seed);

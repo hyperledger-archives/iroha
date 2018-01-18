@@ -145,7 +145,7 @@ namespace iroha {
        public:
         MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
 
-        MOCK_METHOD1(getOrdering, nonstd::optional<ClusterOrdering>(YacHash));
+        MOCK_METHOD1(getOrdering, nonstd::optional<ClusterOrdering>(const YacHash&));
 
         MockYacPeerOrderer() = default;
 

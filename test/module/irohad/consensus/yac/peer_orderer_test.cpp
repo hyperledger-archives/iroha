@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/math/distributions/chi_squared.hpp>
+#include <boost/range/adaptors.hpp>
+#include <boost/range/counting_range.hpp>
+#include <boost/range/numeric.hpp>
 #include <iostream>
-#include <cmath>
 #include <unordered_map>
-#include <vector>
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 
+using namespace boost::adaptors;
 using namespace iroha::ametsuchi;
 using namespace iroha::consensus::yac;
 
@@ -86,33 +90,38 @@ TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeFaillCase) {
 
 TEST_F(YacPeerOrdererTest, FairnessTest) {
   // Calculate number of permutations of peers
-  size_t comb = std::tgamma(N_PEERS+1);
-  // Run experiments 30 times for each combination
-  size_t times = comb * 30;
+  double comb = std::tgamma(N_PEERS + 1);
+  // Run experiments N times for each combination
+  double exp_val = 10;
+  int times = comb * exp_val;
   std::unordered_map<std::string, int> histogram;
   EXPECT_CALL(*wsv, getLedgerPeers())
       .Times(times)
       .WillRepeatedly(Return(peers));
-  for (size_t t = 1; t <= times; ++t) {
-    std::string hash_string =   std::to_string(t);
-    auto order = orderer.getOrdering(YacHash(hash_string, hash_string));
-    auto current_peers = order.value().getPeers();
-    std::string res = std::accumulate(current_peers.begin(),
-                                      current_peers.end(),
+
+  auto peers_set =
+      transform(boost::counting_range(1, times + 1), [this](const auto &i) {
+        std::string hash = std::to_string(i);
+        return orderer.getOrdering(YacHash(hash, hash)).value().getPeers();
+      });
+  for (const auto &peers : peers_set) {
+    std::string res = std::accumulate(peers.begin(),
+                                      peers.end(),
                                       std::string(),
                                       [](std::string res, const auto &peer) {
                                         return res + " " + peer.address;
                                       });
     histogram[res]++;
   }
+  // chi square goodness of fit test
+  auto chi_square = boost::accumulate(
+      histogram | map_values, 0.0, [&exp_val](auto stat, const auto &val) {
+        return stat + (val - exp_val) * (val - exp_val) / exp_val;
+      });
+  boost::math::chi_squared chi_dist(comb - 1);
+  auto p = boost::math::cdf(chi_dist, chi_square);
+  // Significance level 0.05 is used
+  ASSERT_LT(0.05, p) << "The distibution is not uniform, p = "
+                     << std::to_string(p);
   ASSERT_EQ(comb, histogram.size());
-
-  // Output historgram, should output uniform distribution
-  std::cout << "The histogram output: " << std::endl;
-  std::for_each(histogram.begin(),
-                histogram.end(),
-                [](const std::pair<std::string, int> &element) {
-                  std::cout << element.first << " :: " << element.second
-                            << std::endl;
-                });
 }
