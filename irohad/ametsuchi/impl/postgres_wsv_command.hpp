@@ -68,7 +68,7 @@ namespace iroha {
           const std::string &permission_id) override;
 
      private:
-      bool execute(const std::string& statement) noexcept;
+      bool execute(const std::string &statement) noexcept;
       size_t default_tx_counter = 0;
 
       pqxx::nontransaction &transaction_;

@@ -57,11 +57,26 @@ namespace iroha {
           const std::string &permission_id) override;
 
      private:
-      nonstd::optional<pqxx::result> execute(const std::string &statement) noexcept;
+      nonstd::optional<pqxx::result> execute(
+          const std::string &statement) noexcept;
+
+      // Transform result into a vector of values
+      template <typename T, typename Operator>
+      std::vector<T> transform(const pqxx::result &result,
+                               Operator &&transform_func) noexcept {
+        std::vector<T> values;
+        values.reserve(result.size());
+        std::transform(result.begin(),
+                       result.end(),
+                       std::back_inserter(values),
+                       transform_func);
+
+        return values;
+      }
+
       pqxx::nontransaction &transaction_;
 
       logger::Logger log_;
-
     };
   }  // namespace ametsuchi
 }  // namespace iroha

@@ -51,37 +51,31 @@ namespace iroha {
     PostgresWsvQuery::getAccountRoles(const std::string &account_id) {
       return execute("SELECT role_id FROM account_has_roles WHERE account_id = "
                      + transaction_.quote(account_id) + ";")
-          | [](const auto &result) {
-              std::vector<std::string> roles;
-              for (const auto &row : result) {
-                roles.emplace_back(row.at("role_id").c_str());
-              }
-              return roles;
+          | [&](const auto &result) {
+              return this->transform<std::string>(result, [](const auto &row) {
+                return row.at("role_id").c_str();
+              });
             };
     }
 
     nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getRolePermissions(const std::string &role_name) {
       return execute(
-                 "SELECT permission_id FROM role_has_permissions WHERE role_id "
+                 "SELECT permission_id FROM role_has_permissions WHERE "
+                 "role_id "
                  "= "
                  + transaction_.quote(role_name) + ";")
-          | [](const auto &result) {
-              std::vector<std::string> permissions;
-              for (const auto &row : result) {
-                permissions.emplace_back(row.at("permission_id").c_str());
-              }
-              return permissions;
+          | [&](const auto &result) {
+              return this->transform<std::string>(result, [](const auto &row) {
+                return row.at("permission_id").c_str();
+              });
             };
     }
 
     nonstd::optional<std::vector<std::string>> PostgresWsvQuery::getRoles() {
-      return execute("SELECT role_id FROM role;") | [](const auto &result) {
-        std::vector<std::string> roles;
-        for (const auto &row : result) {
-          roles.emplace_back(row.at("role_id").c_str());
-        }
-        return roles;
+      return execute("SELECT role_id FROM role;") | [&](const auto &result) {
+        return this->transform<std::string>(
+            result, [](const auto &row) { return row.at("role_id").c_str(); });
       };
     }
 
@@ -136,16 +130,14 @@ namespace iroha {
                  "account_id = "
                  + transaction_.quote(account_id) + ";")
           |
-          [](const auto &result) {
-            std::vector<pubkey_t> signatories;
-            for (const auto &row : result) {
+          [&](const auto &result) {
+            return this->transform<pubkey_t>(result, [&](const auto &row) {
               pqxx::binarystring public_key_str(row.at("public_key"));
               pubkey_t pubkey;
               std::copy(
                   public_key_str.begin(), public_key_str.end(), pubkey.begin());
-              signatories.push_back(pubkey);
-            }
-            return signatories;
+              return pubkey;
+            });
           };
     }
 
@@ -211,8 +203,7 @@ namespace iroha {
     nonstd::optional<std::vector<model::Peer>> PostgresWsvQuery::getPeers() {
       pqxx::result result;
       return execute("SELECT * FROM peer;") | [&](const auto &result) {
-        std::vector<Peer> peers;
-        for (const auto &row : result) {
+        return this->transform<model::Peer>(result, [](const auto &row) {
           model::Peer peer;
           pqxx::binarystring public_key_str(row.at("public_key"));
           pubkey_t pubkey;
@@ -220,9 +211,8 @@ namespace iroha {
               public_key_str.begin(), public_key_str.end(), pubkey.begin());
           peer.pubkey = pubkey;
           row.at("address") >> peer.address;
-          peers.push_back(peer);
-        }
-        return peers;
+          return peer;
+        });
       };
     }
 
