@@ -33,6 +33,7 @@ namespace iroha {
       model::Peer mk_peer(std::string address) {
         model::Peer peer;
         peer.address = address;
+        std::copy(address.begin(), address.end(), peer.pubkey.begin());
         return peer;
       }
 
