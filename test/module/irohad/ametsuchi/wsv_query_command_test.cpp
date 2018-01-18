@@ -377,5 +377,37 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
       ASSERT_FALSE(query->hasAccountGrantablePermission(
           permittee_account.account_id, account.account_id, permission));
     }
+
+    class DeletePeerTest : public WsvQueryCommandTest {
+     public:
+      DeletePeerTest() {
+        peer = model::Peer{"1337"};
+      }
+
+      void SetUp() override {
+        WsvQueryCommandTest::SetUp();
+      }
+      model::Peer peer;
+    };
+
+    /**
+     * @given storage with peer
+     * @when trying to delete existing peer
+     * @then peer is successfully deleted
+     */
+    TEST_F(DeletePeerTest, DeletePeerValidWhenPeerExists) {
+      ASSERT_TRUE(command->insertPeer(peer));
+
+      EXPECT_TRUE(command->deletePeer(peer));
+    }
+
+    /**
+     * @given storage without peer
+     * @when trying to delete non-existing peer
+     * @then deletePeer returns false
+     */
+    TEST_F(DeletePeerTest, DeletePeerInvalidWhenPeerDoesNotExist) {
+      EXPECT_FALSE(command->deletePeer(peer));
+    }
   }  // namespace ametsuchi
 }  // namespace iroha
