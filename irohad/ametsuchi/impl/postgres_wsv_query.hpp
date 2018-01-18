@@ -57,6 +57,7 @@ namespace iroha {
           const std::string &permission_id) override;
 
      private:
+      nonstd::optional<pqxx::result> execute(const std::string &statement) noexcept;
       pqxx::nontransaction &transaction_;
 
       logger::Logger log_;
