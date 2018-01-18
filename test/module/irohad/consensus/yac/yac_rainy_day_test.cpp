@@ -37,13 +37,15 @@ TEST_F(YacTest, InvalidCaseWhenNotReceiveSupermajority) {
       {default_peers.begin(), default_peers.begin() + 4});
   ASSERT_EQ(4, my_peers.size());
 
-  ClusterOrdering my_order(my_peers);
+  auto my_order = ClusterOrdering::create(my_peers);
+  ASSERT_TRUE(my_order.has_value());
 
   // delay preference
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(YacVoteStorage(), network, crypto, timer, my_order, delay);
+  yac = Yac::create(
+      YacVoteStorage(), network, crypto, timer, my_order.value(), delay);
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(my_peers.size());
@@ -57,7 +59,7 @@ TEST_F(YacTest, InvalidCaseWhenNotReceiveSupermajority) {
 
   YacHash hash1("proposal_hash", "block_hash");
   YacHash hash2("proposal_hash", "block_hash2");
-  yac->vote(hash1, my_order);
+  yac->vote(hash1, my_order.value());
 
   for (auto i = 0; i < 2; ++i) {
     yac->on_vote(create_vote(hash1, std::to_string(i)));
@@ -69,7 +71,8 @@ TEST_F(YacTest, InvalidCaseWhenNotReceiveSupermajority) {
 
 /**
  * @given yac consensus
- * @when 2 peers vote for one hash and 2 for another, but yac_crypto does not verify
+ * @when 2 peers vote for one hash and 2 for another, but yac_crypto does not
+ * verify
  * @then reject is not propagated
  */
 TEST_F(YacTest, InvalidCaseWhenDoesNotVerify) {
@@ -77,20 +80,23 @@ TEST_F(YacTest, InvalidCaseWhenDoesNotVerify) {
       {default_peers.begin(), default_peers.begin() + 4});
   ASSERT_EQ(4, my_peers.size());
 
-  ClusterOrdering my_order(my_peers);
+  auto my_order = ClusterOrdering::create(my_peers);
+  ASSERT_TRUE(my_order.has_value());
 
   // delay preference
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(YacVoteStorage(), network, crypto, timer, my_order, delay);
+  yac = Yac::create(
+      YacVoteStorage(), network, crypto, timer, my_order.value(), delay);
 
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
 
   EXPECT_CALL(*timer, deny()).Times(0);
 
   EXPECT_CALL(*crypto, verify(An<CommitMessage>())).Times(0);
-  EXPECT_CALL(*crypto, verify(An<RejectMessage>())).WillRepeatedly(Return(false));
+  EXPECT_CALL(*crypto, verify(An<RejectMessage>()))
+      .WillRepeatedly(Return(false));
   EXPECT_CALL(*crypto, verify(An<VoteMessage>())).WillRepeatedly(Return(false));
 
   YacHash hash1("proposal_hash", "block_hash");
@@ -104,13 +110,13 @@ TEST_F(YacTest, InvalidCaseWhenDoesNotVerify) {
   };
 }
 
-
 /**
  * @given yac consensus with 6 peers
  * @when on_reject happens due to 2 peers vote for one hash and 3 peers vote for
  * another and then last 6th peer votes for any hash, he directly receives
  * reject message, because on_reject already happened
- * @then reject message will be called in total 7 times (peers size + 1 who receives reject directly)
+ * @then reject message will be called in total 7 times (peers size + 1 who
+ * receives reject directly)
  */
 TEST_F(YacTest, ValidCaseWhenReceiveOnVoteAfterReject) {
   size_t peers_number = 6;
@@ -118,13 +124,15 @@ TEST_F(YacTest, ValidCaseWhenReceiveOnVoteAfterReject) {
       {default_peers.begin(), default_peers.begin() + peers_number});
   ASSERT_EQ(peers_number, my_peers.size());
 
-  ClusterOrdering my_order(my_peers);
+  auto my_order = ClusterOrdering::create(my_peers);
+  ASSERT_TRUE(my_order.has_value());
 
   // delay preference
   uint64_t wait_seconds = 10;
   delay = wait_seconds * 1000;
 
-  yac = Yac::create(YacVoteStorage(), network, crypto, timer, my_order, delay);
+  yac = Yac::create(
+      YacVoteStorage(), network, crypto, timer, my_order.value(), delay);
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _))
@@ -145,11 +153,11 @@ TEST_F(YacTest, ValidCaseWhenReceiveOnVoteAfterReject) {
   std::vector<VoteMessage> votes;
   for (size_t i = 0; i < peers_number / 2; ++i) {
     votes.push_back(
-        create_vote(hash1, my_order.getPeers().at(i).pubkey.to_string()));
+        create_vote(hash1, my_order->getPeers().at(i).pubkey.to_string()));
   };
   for (size_t i = peers_number / 2; i < peers_number - 1; ++i) {
     votes.push_back(
-        create_vote(hash2, my_order.getPeers().at(i).pubkey.to_string()));
+        create_vote(hash2, my_order->getPeers().at(i).pubkey.to_string()));
   };
 
   for (const auto &vote : votes) {
@@ -158,5 +166,5 @@ TEST_F(YacTest, ValidCaseWhenReceiveOnVoteAfterReject) {
 
   yac->on_reject(RejectMessage(votes));
   yac->on_vote(
-      create_vote(hash1, my_order.getPeers().back().pubkey.to_string()));
+      create_vote(hash1, my_order->getPeers().back().pubkey.to_string()));
 }

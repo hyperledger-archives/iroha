@@ -187,10 +187,16 @@ namespace iroha {
               vote_storage_.getProcessingState(proposal_hash);
 
           if (not already_processed) {
-            answer.reject | [&](const auto &reject) {
-              log_->warn("reject case");
-              // TODO 14/08/17 Muratov: work on reject case IR-497
-            };
+            visit_in_place(answer,
+                           [&](const RejectMessage &reject) {
+                             log_->warn("reject case");
+                             // TODO 14/08/17 Muratov: work on reject case
+                             // IR-497
+                             this->propagateReject(reject);
+                           },
+                           [&](const CommitMessage &message) {
+                             this->propagateCommit(message);
+                           });
             vote_storage_.markAsProcessedState(proposal_hash);
           }
           this->closeRound();
