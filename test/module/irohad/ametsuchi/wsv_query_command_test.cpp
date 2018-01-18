@@ -400,14 +400,5 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
 
       EXPECT_TRUE(command->deletePeer(peer));
     }
-
-    /**
-     * @given storage without peer
-     * @when trying to delete non-existing peer
-     * @then deletePeer returns false
-     */
-    TEST_F(DeletePeerTest, DeletePeerInvalidWhenPeerDoesNotExist) {
-      EXPECT_FALSE(command->deletePeer(peer));
-    }
   }  // namespace ametsuchi
 }  // namespace iroha
