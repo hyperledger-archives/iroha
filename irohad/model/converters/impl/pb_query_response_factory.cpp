@@ -88,9 +88,10 @@ namespace iroha {
       optional_ptr<model::QueryResponse> PbQueryResponseFactory::deserialize(
           const protocol::QueryResponse &response) const {
         auto p = [](auto &&o) {
+          using ResponseType = decltype(o);
           std::shared_ptr<QueryResponse> result =
-              std::make_shared<std::remove_reference_t<decltype(o)>>(
-                  std::forward<decltype(o)>(o));
+              std::make_shared<std::remove_reference_t<ResponseType>>(
+                  std::forward<ResponseType>(o));
           return result;
         };
         switch (response.response_case()) {

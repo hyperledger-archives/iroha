@@ -43,8 +43,3 @@ target_link_libraries(integration_framework
     )
 
 target_include_directories(integration_framework PUBLIC ${PROJECT_SOURCE_DIR}/test)
-
-addtest(itf_test integration_framework/itf_test.cpp)
-target_link_libraries(itf_test
-    integration_framework
-    )

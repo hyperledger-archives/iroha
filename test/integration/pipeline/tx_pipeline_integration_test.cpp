@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-#include "responses.pb.h"
 #include "datetime/time.hpp"
+#include "framework/integration_framework/integration_test_framework.hpp"
 #include "integration/pipeline/tx_pipeline_integration_test_fixture.hpp"
 #include "model/generators/query_generator.hpp"
+#include "responses.pb.h"
 
 using namespace iroha::model::generators;
 using namespace iroha::model::converters;
@@ -136,4 +137,24 @@ TEST_F(TxPipelineIntegrationTest, GetTransactionsTest) {
   ASSERT_EQ(1, response.transactions_response().transactions().size());
   const auto got_pb_tx = response.transactions_response().transactions()[0];
   ASSERT_EQ(given_tx, *PbTransactionFactory{}.deserialize(got_pb_tx));
+}
+
+/**
+ * @given unsigned empty GetAccount query
+ * AND default-initialized IntegrationTestFramework
+ * @when query is sent to the framework
+ * @then query response is STATELESS_INVALID
+ */
+TEST(PipelineIntegrationTest, SendQueryWithValidation) {
+  iroha::model::GetAccount query;
+  integration_framework::IntegrationTestFramework()
+      .setInitialState()
+      .sendQuery(query,
+                 [](const auto &res) {
+                   auto err_res =
+                       dynamic_cast<const iroha::model::ErrorResponse &>(res);
+                   ASSERT_EQ(iroha::model::ErrorResponse::STATELESS_INVALID,
+                             err_res.reason);
+                 })
+      .done();
 }
