@@ -19,17 +19,6 @@
 
 namespace iroha {
   namespace ametsuchi {
-
-    using std::string;
-
-    using model::Account;
-    using model::AccountAsset;
-    using model::Asset;
-    using model::Domain;
-    using model::Peer;
-    using nonstd::nullopt;
-    using nonstd::optional;
-
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
         : transaction_(transaction), log_(logger::log("PostgresWsvQuery")) {}
 
@@ -79,15 +68,16 @@ namespace iroha {
       };
     }
 
-    optional<Account> PostgresWsvQuery::getAccount(const string &account_id) {
+    nonstd::optional<model::Account> PostgresWsvQuery::getAccount(
+        const std::string &account_id) {
       return execute("SELECT * FROM account WHERE account_id = "
                      + transaction_.quote(account_id) + ";")
-                 | [&](const auto &result) -> optional<Account> {
+                 | [&](const auto &result) -> nonstd::optional<model::Account> {
         if (result.empty()) {
           this->log_->info("Account {} not found", account_id);
-          return nullopt;
+          return nonstd::nullopt;
         }
-        Account account;
+        model::Account account;
         auto row = result.at(0);
         row.at("account_id") >> account.account_id;
         row.at("domain_id") >> account.domain_id;
@@ -106,10 +96,10 @@ namespace iroha {
                                           + detail + "}")
                      + " FROM account WHERE account_id = "
                      + transaction_.quote(account_id) + ";")
-                 | [&](const auto &result) -> optional<std::string> {
+                 | [&](const auto &result) -> nonstd::optional<std::string> {
         if (result.empty()) {
           this->log_->info("Account {} not found", account_id);
-          return nullopt;
+          return nonstd::nullopt;
         }
         auto row = result.at(0);
         std::string res;
@@ -117,14 +107,14 @@ namespace iroha {
 
         // if res is empty, then that key does not exist for this account
         if (res.empty()) {
-          return nullopt;
+          return nonstd::nullopt;
         }
         return res;
       };
     }
 
     nonstd::optional<std::vector<pubkey_t>> PostgresWsvQuery::getSignatories(
-        const string &account_id) {
+        const std::string &account_id) {
       return execute(
                  "SELECT public_key FROM account_has_signatory WHERE "
                  "account_id = "
@@ -141,16 +131,17 @@ namespace iroha {
           };
     }
 
-    optional<Asset> PostgresWsvQuery::getAsset(const string &asset_id) {
+    nonstd::optional<model::Asset> PostgresWsvQuery::getAsset(
+        const std::string &asset_id) {
       pqxx::result result;
       return execute("SELECT * FROM asset WHERE asset_id = "
                      + transaction_.quote(asset_id) + ";")
-                 | [&](const auto &result) -> optional<Asset> {
+                 | [&](const auto &result) -> nonstd::optional<model::Asset> {
         if (result.empty()) {
           this->log_->info("Asset {} not found", asset_id);
-          return nullopt;
+          return nonstd::nullopt;
         }
-        Asset asset;
+        model::Asset asset;
         auto row = result.at(0);
         row.at("asset_id") >> asset.asset_id;
         row.at("domain_id") >> asset.domain_id;
@@ -161,16 +152,17 @@ namespace iroha {
       };
     }
 
-    optional<AccountAsset> PostgresWsvQuery::getAccountAsset(
+    nonstd::optional<model::AccountAsset> PostgresWsvQuery::getAccountAsset(
         const std::string &account_id, const std::string &asset_id) {
       return execute("SELECT * FROM account_has_asset WHERE account_id = "
                      + transaction_.quote(account_id)
                      + " AND asset_id = " + transaction_.quote(asset_id) + ";")
-                 | [&](const auto &result) -> nonstd::optional<AccountAsset> {
+                 | [&](const auto &result)
+                 -> nonstd::optional<model::AccountAsset> {
         if (result.empty()) {
           this->log_->info(
               "Account {} does not have asset {}", account_id, asset_id);
-          return nullopt;
+          return nonstd::nullopt;
         }
         model::AccountAsset asset;
         auto row = result.at(0);
@@ -187,12 +179,12 @@ namespace iroha {
         const std::string &domain_id) {
       return execute("SELECT * FROM domain WHERE domain_id = "
                      + transaction_.quote(domain_id) + ";")
-                 | [&](const auto &result) -> nonstd::optional<Domain> {
+                 | [&](const auto &result) -> nonstd::optional<model::Domain> {
         if (result.empty()) {
           log_->info("Domain {} not found", domain_id);
-          return nullopt;
+          return nonstd::nullopt;
         }
-        Domain domain;
+        model::Domain domain;
         auto row = result.at(0);
         row.at("domain_id") >> domain.domain_id;
         row.at("default_role") >> domain.default_role;
