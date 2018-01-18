@@ -1242,7 +1242,7 @@ TEST_F(TransferAssetTest, InvalidWhenInsufficientFunds) {
 
 /**
  * @given TransferAsset
- * @when command tries to transfer amount which is lesson than source balance
+ * @when command tries to transfer amount which is less than source balance
  * @then execute fails and returns false
  */
 TEST_F(TransferAssetTest, InvalidWhenInsufficientFundsDuringExecute) {
@@ -1257,7 +1257,7 @@ TEST_F(TransferAssetTest, InvalidWhenInsufficientFundsDuringExecute) {
                               transfer_asset->asset_id))
       .WillOnce(Return(dst_wallet));
 
-  // More than account
+  // More than account balance
   transfer_asset->amount = Amount(155, 2);
 
   ASSERT_FALSE(execute());
