@@ -59,7 +59,7 @@ namespace integration_framework {
       instance_->run();
     }
 
-    auto getIrohaInstance() {
+    auto &getIrohaInstance() {
       return instance_;
     }
 
