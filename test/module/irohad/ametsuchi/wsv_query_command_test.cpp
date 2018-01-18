@@ -246,6 +246,15 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
       ASSERT_EQ(R"({"id@domain": {"key": "val2"}})", acc.value().json_data);
     }
 
+    /**
+     * @given database without needed account
+     * @when performing query to retrieve non-existent account
+     * @then get account will return nullopt
+     */
+    TEST_F(AccountTest, GetAccountInvalidWhenNotFound) {
+      EXPECT_FALSE(query->getAccount(""));
+    }
+
     class AccountRoleTest : public WsvQueryCommandTest {
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
