@@ -249,11 +249,21 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
     /**
      * @given database without needed account
      * @when performing query to retrieve non-existent account
-     * @then get account will return nullopt
+     * @then getAccount will return nullopt
      */
     TEST_F(AccountTest, GetAccountInvalidWhenNotFound) {
-      EXPECT_FALSE(query->getAccount(""));
+      EXPECT_FALSE(query->getAccount("invalid account id"));
     }
+
+    /**
+     * @given database without needed account
+     * @when performing query to retrieve non-existent account's details
+     * @then getAccountDetail will return nullopt
+     */
+    TEST_F(AccountTest, GetAccountDetailInvalidWhenNotFound) {
+      EXPECT_FALSE(query->getAccountDetail("invalid account id", "invalid_creator", "invalid_detail"));
+    }
+
 
     class AccountRoleTest : public WsvQueryCommandTest {
       void SetUp() override {
@@ -408,6 +418,28 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
       ASSERT_TRUE(command->insertPeer(peer));
 
       EXPECT_TRUE(command->deletePeer(peer));
+    }
+
+    class GetAssetTest : public WsvQueryCommandTest {};
+
+    /**
+     * @given database without needed asset
+     * @when performing query to retrieve non-existent asset
+     * @then getAsset will return nullopt
+     */
+    TEST_F(GetAssetTest, GetAssetInvalidWhenAssetDoesNotExist) {
+      EXPECT_FALSE(query->getAsset("invalid asset"));
+    }
+
+    class GetDomainTest : public WsvQueryCommandTest {};
+
+    /**
+     * @given database without needed asset
+     * @when performing query to retrieve non-existent asset
+     * @then getAsset will return nullopt
+     */
+    TEST_F(GetDomainTest, GetDomainInvalidWhenDomainDoesNotExist) {
+      EXPECT_FALSE(query->getDomain("invalid domain"));
     }
   }  // namespace ametsuchi
 }  // namespace iroha
