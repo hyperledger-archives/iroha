@@ -35,11 +35,16 @@ namespace shared_model {
      */
     class FieldValidator {
      public:
-      FieldValidator()
+      /*
+       * @param future_gap - allows to validate transaction even if it came from
+       * future, but not later than future_gap from now
+       */
+      FieldValidator(time_t future_gap = default_future_gap)
           : account_id_pattern_(R"([a-z]{1,9}\@[a-z]{1,9})"),
             asset_id_pattern_(R"([a-z]{1,9}\#[a-z]{1,9})"),
             name_pattern_(R"([a-z]{1,9})"),
-            detail_key_pattern_(R"([A-Za-z0-9_]{1,})") {}
+            detail_key_pattern_(R"([A-Za-z0-9_]{1,})"),
+            future_gap_(future_gap) {}
 
       void validateAccountId(
           ReasonsGroupType &reason,
@@ -201,22 +206,22 @@ namespace shared_model {
           ReasonsGroupType &reason,
           const interface::types::TimestampType &timestamp) const {
         iroha::ts64_t now = iroha::time::now();
-        // TODO 06/08/17 Muratov: make future gap for passing timestamp, like
-        // with old timestamps IR-511 #goodfirstissue
 
-        if (now < timestamp) {
+        if (now + future_gap_ < timestamp) {
           auto message = (boost::format("bad timestamp: sent from future, "
                                         "timestamp: %llu, now: %llu")
-                          % timestamp % now)
+                          % timestamp
+                          % now)
                              .str();
           reason.second.push_back(std::move(message));
         }
 
-        if (now - timestamp > max_delay) {
+        if (now > max_delay + timestamp) {
           auto message =
               (boost::format(
                    "bad timestamp: too old, timestamp: %llu, now: %llu")
-               % timestamp % now)
+               % timestamp
+               % now)
                   .str();
           reason.second.push_back(std::move(message));
         }
@@ -238,9 +243,15 @@ namespace shared_model {
       std::regex asset_id_pattern_;
       std::regex name_pattern_;
       std::regex detail_key_pattern_;
+      // gap for future transactions
+      time_t future_gap_;
       // max-delay between tx creation and validation
       static constexpr auto max_delay =
           std::chrono::hours(24) / std::chrono::milliseconds(1);
+      // default value for future_gap field of FieldValidator
+      static constexpr auto default_future_gap =
+          std::chrono::minutes(5) / std::chrono::milliseconds(1);
+
       // size of key
       static constexpr auto key_size = 32;
     };

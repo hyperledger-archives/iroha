@@ -19,6 +19,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include <gmock/gmock-matchers.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <boost/format.hpp>
@@ -40,6 +41,12 @@ class FieldValidatorTest : public ValidatorsTest {
   // Function which initializes field, allows to have one type when dealing
   // with various types of fields
   using InitFieldFunction = std::function<void()>;
+
+  // Gaps for checking transactions from future
+  static auto constexpr nearest_future =
+      std::chrono::minutes(3) / std::chrono::milliseconds(1);
+  static auto constexpr far_future =
+      std::chrono::minutes(30) / std::chrono::milliseconds(1);
 
   /**
    * FieldTestCase is a struct that represents one value of some field,
@@ -146,7 +153,8 @@ class FieldValidatorTest : public ValidatorsTest {
       if (!testcase.value_is_valid) {
         ASSERT_TRUE(!reason.second.empty())
             << testFailMessage(field_name, testcase.name);
-        EXPECT_EQ(testcase.expected_message, reason.second.at(0))
+        ASSERT_THAT(reason.second.at(0),
+                    testing::MatchesRegex(testcase.expected_message))
             << testFailMessage(field_name, testcase.name);
       } else {
         EXPECT_TRUE(reason.second.empty())
@@ -173,8 +181,10 @@ class FieldValidatorTest : public ValidatorsTest {
                              const V &value,
                              bool valid,
                              const std::string &message) {
-    return {
-        case_name, [&, field, value] { this->*field = value; }, valid, message};
+    return {case_name,
+            [&, field, value] { this->*field = value; },
+            valid,
+            message};
   }
 
   /// Create valid case with "valid" name, and empty message
@@ -189,13 +199,14 @@ class FieldValidatorTest : public ValidatorsTest {
                                 const std::string &field_name,
                                 F field,
                                 const std::string &value) {
-    return makeTestCase(case_name,
-                        field,
-                        value,
-                        false,
-                        (boost::format("Wrongly formed %s, passed value: '%s'")
-                         % field_name % value)
-                            .str());
+    return makeTestCase(
+        case_name,
+        field,
+        value,
+        false,
+        (boost::format("Wrongly formed %s, passed value: '%s'") % field_name
+         % value)
+            .str());
   }
 
   /// Generate test cases for id types with name, separator, and domain
@@ -215,7 +226,7 @@ class FieldValidatorTest : public ValidatorsTest {
             c("start_with_digit", f("1abs%cdomain")),
             c("domain_start_with_digit", f("abs%c3domain")),
             c("empty_string", ""),
-            c("illegal_char", f("ab++s%cdo()main")),
+            c("illegal_char", f("ab--s%cdo--main")),
             c(f("missing_%c"), "absdomain"),
             c("missing_name", f("%cdomain"))};
   }
@@ -248,7 +259,7 @@ class FieldValidatorTest : public ValidatorsTest {
   // so test cases are not exhaustive
   std::vector<FieldTestCase> address_test_cases{
       makeValidCase(&FieldValidatorTest::address_localhost, "182.13.35.1:3040"),
-      invalidAddressTestCase("invalid_ip_address", "182.13.35.1:3040^^"),
+      invalidAddressTestCase("invalid_ip_address", "182.13.35.1:3040--"),
       invalidAddressTestCase("empty_string", "")};
 
   FieldTestCase invalidPublicKeyTestCase(const std::string &case_name,
@@ -275,7 +286,7 @@ class FieldValidatorTest : public ValidatorsTest {
     return {
         makeTestCase("valid_name", field, "admin", true, ""),
         makeInvalidCase("empty_string", field_name, field, ""),
-        makeInvalidCase("illegal_characters", field_name, field, "+math+"),
+        makeInvalidCase("illegal_characters", field_name, field, "-math-"),
         makeInvalidCase("name_too_long", field_name, field, "somelongname")};
   }
 
@@ -303,14 +314,22 @@ class FieldValidatorTest : public ValidatorsTest {
                    false,
                    "Counter should be > 0, passed value: 0")};
   std::vector<FieldTestCase> created_time_test_cases{
-      makeValidCase(&FieldValidatorTest::created_time, iroha::time::now())};
+      makeValidCase(&FieldValidatorTest::created_time, iroha::time::now()),
+      makeValidCase(&FieldValidatorTest::created_time,
+                    iroha::time::now() + nearest_future),
+      makeTestCase(
+          "invalid due to far future",
+          &FieldValidatorTest::created_time,
+          iroha::time::now() + far_future,
+          false,
+          "bad timestamp: sent from future, timestamp: [0-9]+, now: [0-9]+")};
 
   std::vector<FieldTestCase> detail_test_cases{
       makeValidCase(&FieldValidatorTest::detail_key, "happy"),
       makeInvalidCase(
           "empty_string", "key", &FieldValidatorTest::detail_key, ""),
       makeInvalidCase(
-          "illegal_char", "key", &FieldValidatorTest::detail_key, "hi*there")};
+          "illegal_char", "key", &FieldValidatorTest::detail_key, "hi-there")};
 
   /**************************************************************************/
 
