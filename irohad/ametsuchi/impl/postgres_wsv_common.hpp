@@ -31,8 +31,10 @@ namespace iroha {
      * @return nonstd::optional with pqxx::result in successful case, or nullopt
      * if exception was caught
      */
-    inline auto makeExecute(pqxx::nontransaction &transaction, logger::Logger &logger) noexcept {
-      return [&](const std::string &statement) noexcept -> nonstd::optional<pqxx::result> {
+    inline auto makeExecute(pqxx::nontransaction &transaction,
+                            logger::Logger &logger) noexcept {
+      return [&](const std::string &statement) noexcept
+          ->nonstd::optional<pqxx::result> {
         try {
           return transaction.exec(statement);
         } catch (const std::exception &e) {
@@ -46,7 +48,8 @@ namespace iroha {
      * Transforms pqxx::result to vector of Ts by applying transform_func
      * @tparam T - type to transform to
      * @tparam Operator - type of transformation function, must return T
-     * @param result - pqxx::result which contains several rows from the database
+     * @param result - pqxx::result which contains several rows from the
+     * database
      * @param transform_func - function which transforms result row to T
      * @return vector of target type
      */
