@@ -18,8 +18,11 @@
 #ifndef IROHA_PROTO_BLOCK_BUILDER_HPP
 #define IROHA_PROTO_BLOCK_BUILDER_HPP
 
+#include "backend/protobuf/block.hpp"
 #include "backend/protobuf/queries/proto_query.hpp"
+#include "backend/protobuf/transaction.hpp"
 #include "block.pb.h"
+
 #include "builders/protobuf/unsigned_proto.hpp"
 #include "interfaces/base/hashable.hpp"
 #include "interfaces/base/signable.hpp"
@@ -62,41 +65,45 @@ namespace shared_model {
 
       NextBuilder<Transactions> transactions(
           const std::vector<w<Transaction>> &transactions) {
-        for (const auto &tx : transactions) {
-          block_.payload().mutable_transactions()->Add(tx->getTransport());
+        for (auto tx : transactions) {
+          iroha::protocol::Transaction proto_tx(tx->getTransport());
+          block_.mutable_payload()->mutable_transactions()->Add(std::move(proto_tx));
         }
         return *this;
       }
 
-      NextBuilder<TxNumber> tx_number(Block::TransactionsNumberType tx_number) {
-        block_.payload().set_tx_number(tx_number);
+      NextBuilder<TxNumber> tx_number(
+          interface::Block::TransactionsNumberType tx_number) {
+        block_.mutable_payload()->set_tx_number(tx_number);
         return *this;
       }
 
       NextBuilder<Height> height(interface::types::HeightType height) {
-        block_.payload().set_height(height);
+        block_.mutable_payload()->set_height(height);
         return *this;
       }
 
       NextBuilder<PrevHash> prev_hash(crypto::Hash hash) {
-        block_.payload().set_prev_block_hash(hash);
+        block_.mutable_payload()->set_prev_block_hash(
+            crypto::toBinaryString(hash));
         return *this;
       }
 
       NextBuilder<CreatedTime> created_time(
           interface::types::TimestampType time) {
-        block_.payload().set_created_time(time);
+        block_.mutable_payload()->set_created_time(time);
         return *this;
       }
 
       NextBuilder<Signatures> signatures(
-          const interface::Signable<Block,
+          const interface::Signable<interface::Block,
                                     iroha::model::Block>::SignatureSetType
               &signatures) {
         for (const auto &signature : signatures) {
           auto sig = block_.add_signatures();
-          sig->set_pubkey(signature->publicKey().blob());
-          sig->set_signature(signature->signedData().blob());
+
+          sig->set_pubkey(crypto::toBinaryString(signature->publicKey()));
+          sig->set_signature(crypto::toBinaryString(signature->signedData()));
         }
         return *this;
       }
