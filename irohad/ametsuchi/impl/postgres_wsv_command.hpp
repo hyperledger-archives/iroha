@@ -19,10 +19,7 @@
 #define IROHA_POSTGRES_WSV_COMMAND_HPP
 
 #include "ametsuchi/wsv_command.hpp"
-
-#include <pqxx/nontransaction>
-
-#include "logger/logger.hpp"
+#include "postgres_wsv_common.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -68,12 +65,18 @@ namespace iroha {
           const std::string &permission_id) override;
 
      private:
-      bool execute(const std::string &statement) noexcept;
-      size_t default_tx_counter = 0;
+      const size_t default_tx_counter = 0;
 
       pqxx::nontransaction &transaction_;
-
       logger::Logger log_;
+
+      using ExecuteType = decltype(makeExecute(transaction_, log_));
+      ExecuteType execute_;
+
+      // temporary solution
+      bool execute(const std::string &statement) noexcept {
+        return execute_(statement).has_value();
+      }
     };
   }  // namespace ametsuchi
 }  // namespace iroha

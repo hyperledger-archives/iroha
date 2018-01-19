@@ -20,13 +20,14 @@
 namespace iroha {
   namespace ametsuchi {
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
-        : transaction_(transaction), log_(logger::log("PostgresWsvQuery")) {}
+        : transaction_(transaction), log_(logger::log("PostgresWsvQuery")), execute_{makeExecute(transaction_, log_)} {
+    }
 
     bool PostgresWsvQuery::hasAccountGrantablePermission(
         const std::string &permitee_account_id,
         const std::string &account_id,
         const std::string &permission_id) {
-      return execute(
+      return execute_(
                  "SELECT * FROM account_has_grantable_permissions WHERE "
                  "permittee_account_id = "
                  + transaction_.quote(permitee_account_id)
@@ -38,10 +39,11 @@ namespace iroha {
 
     nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getAccountRoles(const std::string &account_id) {
-      return execute("SELECT role_id FROM account_has_roles WHERE account_id = "
-                     + transaction_.quote(account_id) + ";")
+      return execute_(
+                 "SELECT role_id FROM account_has_roles WHERE account_id = "
+                 + transaction_.quote(account_id) + ";")
           | [&](const auto &result) {
-              return this->transform<std::string>(result, [](const auto &row) {
+              return transform<std::string>(result, [](const auto &row) {
                 return row.at("role_id").c_str();
               });
             };
@@ -49,32 +51,31 @@ namespace iroha {
 
     nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getRolePermissions(const std::string &role_name) {
-      return execute(
-                 "SELECT permission_id FROM role_has_permissions WHERE "
-                 "role_id "
+      return execute_(
+                 "SELECT permission_id FROM role_has_permissions WHERE role_id "
                  "= "
                  + transaction_.quote(role_name) + ";")
           | [&](const auto &result) {
-              return this->transform<std::string>(result, [](const auto &row) {
+              return transform<std::string>(result, [](const auto &row) {
                 return row.at("permission_id").c_str();
               });
             };
     }
 
     nonstd::optional<std::vector<std::string>> PostgresWsvQuery::getRoles() {
-      return execute("SELECT role_id FROM role;") | [&](const auto &result) {
-        return this->transform<std::string>(
+      return execute_("SELECT role_id FROM role;") | [&](const auto &result) {
+        return transform<std::string>(
             result, [](const auto &row) { return row.at("role_id").c_str(); });
       };
     }
 
     nonstd::optional<model::Account> PostgresWsvQuery::getAccount(
         const std::string &account_id) {
-      return execute("SELECT * FROM account WHERE account_id = "
-                     + transaction_.quote(account_id) + ";")
+      return execute_("SELECT * FROM account WHERE account_id = "
+                      + transaction_.quote(account_id) + ";")
                  | [&](const auto &result) -> nonstd::optional<model::Account> {
         if (result.empty()) {
-          this->log_->info("Account {} not found", account_id);
+          log_->info("Account {} not found", account_id);
           return nonstd::nullopt;
         }
         model::Account account;
@@ -91,14 +92,14 @@ namespace iroha {
         const std::string &account_id,
         const std::string &creator_account_id,
         const std::string &detail) {
-      return execute("SELECT data#>>"
-                     + transaction_.quote("{" + creator_account_id + ", "
-                                          + detail + "}")
-                     + " FROM account WHERE account_id = "
-                     + transaction_.quote(account_id) + ";")
+      return execute_("SELECT data#>>"
+                      + transaction_.quote("{" + creator_account_id + ", "
+                                           + detail + "}")
+                      + " FROM account WHERE account_id = "
+                      + transaction_.quote(account_id) + ";")
                  | [&](const auto &result) -> nonstd::optional<std::string> {
         if (result.empty()) {
-          this->log_->info("Account {} not found", account_id);
+          log_->info("Account {} not found", account_id);
           return nonstd::nullopt;
         }
         auto row = result.at(0);
@@ -115,13 +116,13 @@ namespace iroha {
 
     nonstd::optional<std::vector<pubkey_t>> PostgresWsvQuery::getSignatories(
         const std::string &account_id) {
-      return execute(
+      return execute_(
                  "SELECT public_key FROM account_has_signatory WHERE "
                  "account_id = "
                  + transaction_.quote(account_id) + ";")
           |
           [&](const auto &result) {
-            return this->transform<pubkey_t>(result, [&](const auto &row) {
+            return transform<pubkey_t>(result, [&](const auto &row) {
               pqxx::binarystring public_key_str(row.at("public_key"));
               pubkey_t pubkey;
               std::copy(
@@ -134,11 +135,11 @@ namespace iroha {
     nonstd::optional<model::Asset> PostgresWsvQuery::getAsset(
         const std::string &asset_id) {
       pqxx::result result;
-      return execute("SELECT * FROM asset WHERE asset_id = "
-                     + transaction_.quote(asset_id) + ";")
+      return execute_("SELECT * FROM asset WHERE asset_id = "
+                      + transaction_.quote(asset_id) + ";")
                  | [&](const auto &result) -> nonstd::optional<model::Asset> {
         if (result.empty()) {
-          this->log_->info("Asset {} not found", asset_id);
+          log_->info("Asset {} not found", asset_id);
           return nonstd::nullopt;
         }
         model::Asset asset;
@@ -154,14 +155,13 @@ namespace iroha {
 
     nonstd::optional<model::AccountAsset> PostgresWsvQuery::getAccountAsset(
         const std::string &account_id, const std::string &asset_id) {
-      return execute("SELECT * FROM account_has_asset WHERE account_id = "
-                     + transaction_.quote(account_id)
-                     + " AND asset_id = " + transaction_.quote(asset_id) + ";")
+      return execute_("SELECT * FROM account_has_asset WHERE account_id = "
+                      + transaction_.quote(account_id)
+                      + " AND asset_id = " + transaction_.quote(asset_id) + ";")
                  | [&](const auto &result)
                  -> nonstd::optional<model::AccountAsset> {
         if (result.empty()) {
-          this->log_->info(
-              "Account {} does not have asset {}", account_id, asset_id);
+          log_->info("Account {} does not have asset {}", account_id, asset_id);
           return nonstd::nullopt;
         }
         model::AccountAsset asset;
@@ -177,8 +177,8 @@ namespace iroha {
 
     nonstd::optional<model::Domain> PostgresWsvQuery::getDomain(
         const std::string &domain_id) {
-      return execute("SELECT * FROM domain WHERE domain_id = "
-                     + transaction_.quote(domain_id) + ";")
+      return execute_("SELECT * FROM domain WHERE domain_id = "
+                      + transaction_.quote(domain_id) + ";")
                  | [&](const auto &result) -> nonstd::optional<model::Domain> {
         if (result.empty()) {
           log_->info("Domain {} not found", domain_id);
@@ -194,8 +194,8 @@ namespace iroha {
 
     nonstd::optional<std::vector<model::Peer>> PostgresWsvQuery::getPeers() {
       pqxx::result result;
-      return execute("SELECT * FROM peer;") | [&](const auto &result) {
-        return this->transform<model::Peer>(result, [](const auto &row) {
+      return execute_("SELECT * FROM peer;") | [&](const auto &result) {
+        return transform<model::Peer>(result, [](const auto &row) {
           model::Peer peer;
           pqxx::binarystring public_key_str(row.at("public_key"));
           pubkey_t pubkey;
@@ -206,16 +206,6 @@ namespace iroha {
           return peer;
         });
       };
-    }
-
-    nonstd::optional<pqxx::result> PostgresWsvQuery::execute(
-        const std::string &statement) noexcept {
-      try {
-        return transaction_.exec(statement);
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nonstd::nullopt;
-      }
     }
   }  // namespace ametsuchi
 }  // namespace iroha

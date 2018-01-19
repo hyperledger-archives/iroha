@@ -261,9 +261,9 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
      * @then getAccountDetail will return nullopt
      */
     TEST_F(AccountTest, GetAccountDetailInvalidWhenNotFound) {
-      EXPECT_FALSE(query->getAccountDetail("invalid account id", "invalid_creator", "invalid_detail"));
+      EXPECT_FALSE(query->getAccountDetail(
+          "invalid account id", "invalid_creator", "invalid_detail"));
     }
-
 
     class AccountRoleTest : public WsvQueryCommandTest {
       void SetUp() override {
@@ -434,7 +434,7 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
     class GetDomainTest : public WsvQueryCommandTest {};
 
     /**
-     * @given database without needed asset
+     * @given database without needed domain
      * @when performing query to retrieve non-existent asset
      * @then getAsset will return nullopt
      */
@@ -442,9 +442,9 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
       EXPECT_FALSE(query->getDomain("invalid domain"));
     }
 
-    // Since mocking database is not currently possible, use SetUp to create invalid database
+    // Since mocking database is not currently possible, use SetUp to create
+    // invalid database
     class DatabaseInvalidTest : public WsvQueryCommandTest {
-
       // skip database setup
       void SetUp() override {
         AmetsuchiTest::SetUp();

@@ -21,7 +21,9 @@ namespace iroha {
   namespace ametsuchi {
 
     PostgresWsvCommand::PostgresWsvCommand(pqxx::nontransaction &transaction)
-        : transaction_(transaction), log_(logger::log("PostgresWsvCommand")) {}
+        : transaction_(transaction),
+          log_(logger::log("PostgresWsvCommand")),
+          execute_{makeExecute(transaction_, log_)} {}
 
     bool PostgresWsvCommand::insertRole(const std::string &role_name) {
       return execute("INSERT INTO role(role_id) VALUES ("
@@ -135,7 +137,7 @@ namespace iroha {
           + transaction_.quote(
                 pqxx::binarystring(signatory.data(), signatory.size()))
           + ");");
-    }  // namespace ametsuchi
+    }
 
     bool PostgresWsvCommand::deleteAccountSignatory(
         const std::string &account_id, const pubkey_t &signatory) {
@@ -204,16 +206,5 @@ namespace iroha {
           + "," + transaction_.quote("\"" + val + "\"")
           + ") WHERE account_id=" + transaction_.quote(account_id) + ";");
     }
-
-    bool PostgresWsvCommand::execute(const std::string &statement) noexcept {
-      try {
-        transaction_.exec(statement);
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return false;
-      }
-      return true;
-    }
-
   }  // namespace ametsuchi
 }  // namespace iroha
