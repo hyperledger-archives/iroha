@@ -43,11 +43,11 @@ namespace iroha {
   class Result : public boost::variant<Value<V>, Error<E>> {
     using variant_type = boost::variant<Value<V>, Error<E>>;
     using variant_type::variant_type;
-   public:
 
+   public:
     template <typename ValueMatch, typename ErrorMatch>
     constexpr auto match(ValueMatch &&value_func, ErrorMatch &&error_func) {
-      visit_in_place(*this,
+      return visit_in_place(*this,
                      std::forward<ValueMatch>(value_func),
                      std::forward<ErrorMatch>(error_func));
     };
@@ -61,6 +61,15 @@ namespace iroha {
   template <typename E>
   Error<E> makeError(E &&error) {
     return Error<E>{std::forward<E>(error)};
+  }
+
+  template <typename T, typename E, typename Transform>
+  constexpr auto operator|(Result<T, E> r, Transform &&f) -> decltype(f(std::declval<T>())) {
+    using return_type = decltype(f(std::declval<T>()));
+    return r.match(
+        [&f](const Value<T>& v) {return f(v.value); },
+        [](const Error<E>& e) {return return_type(makeError(e.error)); }
+    );
   }
 }  // namespace iroha
 #endif  // IROHA_RESULT_HPP
