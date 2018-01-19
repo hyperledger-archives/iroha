@@ -178,7 +178,6 @@ namespace iroha {
 
       void Yac::applyReject(nonstd::optional<model::Peer> from,
                             RejectMessage reject) {
-        // TODO 01/08/17 Muratov: apply to vote storage IR-497
         auto answer =
             vote_storage_.store(reject, cluster_order_.getNumberOfPeers());
         answer | [&](const auto &answer) {
@@ -193,7 +192,6 @@ namespace iroha {
                              log_->warn("reject case");
                              // TODO 14/08/17 Muratov: work on reject case
                              // IR-497
-                             this->propagateReject(reject);
                            },
                            [&](const CommitMessage &commit) {
                              notifier_.get_subscriber().on_next(commit);
