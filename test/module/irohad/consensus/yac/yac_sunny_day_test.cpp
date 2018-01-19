@@ -23,9 +23,6 @@
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 
-#include <iostream>
-#include <vector>
-
 using ::testing::Return;
 using ::testing::_;
 using ::testing::An;
@@ -36,8 +33,6 @@ using namespace framework::test_subscriber;
 using namespace std;
 
 TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {
-  cout << "-----------| Start => vote => propagate commit |-----------" << endl;
-
   auto my_peers = std::vector<iroha::model::Peer>(
       {default_peers.begin(), default_peers.begin() + 4});
   ASSERT_EQ(4, my_peers.size());
@@ -71,8 +66,6 @@ TEST_F(YacTest, ValidCaseWhenReceiveSupermajority) {
 }
 
 TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
-  cout << "-----------| Start => vote => receive commit |-----------" << endl;
-
   auto my_peers = std::vector<iroha::model::Peer>(
       {default_peers.begin(), default_peers.begin() + 4});
   ASSERT_EQ(4, my_peers.size());
@@ -89,10 +82,8 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
 
   YacHash my_hash("proposal_hash", "block_hash");
   auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 1);
-  wrapper.subscribe([my_hash](auto val) {
-    ASSERT_EQ(my_hash, val.votes.at(0).hash);
-    cout << "catched" << endl;
-  });
+  wrapper.subscribe(
+      [my_hash](auto val) { ASSERT_EQ(my_hash, val.votes.at(0).hash); });
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
@@ -117,9 +108,6 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommit) {
 }
 
 TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
-  cout << "-----------|Start => vote => receive commit twice|-----------"
-       << endl;
-
   auto my_peers = std::vector<iroha::model::Peer>(
       {default_peers.begin(), default_peers.begin() + 4});
   ASSERT_EQ(4, my_peers.size());
@@ -137,10 +125,8 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
 
   YacHash my_hash("proposal_hash", "block_hash");
   auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 1);
-  wrapper.subscribe([my_hash](auto val) {
-    ASSERT_EQ(my_hash, val.votes.at(0).hash);
-    cout << "catched" << endl;
-  });
+  wrapper.subscribe(
+      [my_hash](auto val) { ASSERT_EQ(my_hash, val.votes.at(0).hash); });
 
   EXPECT_CALL(*network, send_commit(_, _)).Times(0);
   EXPECT_CALL(*network, send_reject(_, _)).Times(0);
@@ -171,10 +157,6 @@ TEST_F(YacTest, ValidCaseWhenReceiveCommitTwice) {
 }
 
 TEST_F(YacTest, ValidCaseWhenSoloConsensus) {
-  cout << "-----------| Start => vote => propagate commit => receive commit "
-          "|-----------"
-       << endl;
-
   auto my_peers = std::vector<iroha::model::Peer>({default_peers.at(0)});
   ASSERT_EQ(1, my_peers.size());
 
@@ -205,10 +187,8 @@ TEST_F(YacTest, ValidCaseWhenSoloConsensus) {
   YacHash my_hash("proposal_hash", "block_hash");
 
   auto wrapper = make_test_subscriber<CallExact>(yac->on_commit(), 1);
-  wrapper.subscribe([my_hash](auto val) {
-    ASSERT_EQ(my_hash, val.votes.at(0).hash);
-    cout << "catched" << endl;
-  });
+  wrapper.subscribe(
+      [my_hash](auto val) { ASSERT_EQ(my_hash, val.votes.at(0).hash); });
 
   yac->vote(my_hash, my_order.value());
 
@@ -224,9 +204,6 @@ TEST_F(YacTest, ValidCaseWhenSoloConsensus) {
 }
 
 TEST_F(YacTest, ValidCaseWhenVoteAfterCommit) {
-  cout << "-----------| Start => receive commit => don't vote |-----------"
-       << endl;
-
   auto my_peers = std::vector<iroha::model::Peer>(
       {default_peers.begin(), default_peers.begin() + 4});
   ASSERT_EQ(4, my_peers.size());
