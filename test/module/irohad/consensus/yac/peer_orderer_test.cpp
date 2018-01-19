@@ -88,11 +88,16 @@ TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeFaillCase) {
   ASSERT_EQ(order, nonstd::nullopt);
 }
 
+/**
+ * @given initial peer list in the ledger
+ * @when calling ordering function on hash ["1" to "N"] k times
+ * @test histogram must be from uniform distibution
+ */
 TEST_F(YacPeerOrdererTest, FairnessTest) {
   // Calculate number of permutations of peers
   double comb = std::tgamma(N_PEERS + 1);
   // Run experiments N times for each combination
-  double exp_val = 10;
+  double exp_val = 30;
   int times = comb * exp_val;
   std::unordered_map<std::string, int> histogram;
   EXPECT_CALL(*wsv, getLedgerPeers())
