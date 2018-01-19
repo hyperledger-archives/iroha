@@ -34,17 +34,17 @@ class ServerRunner {
  public:
   /**
    * Constructor. Initialize a new instance of ServerRunner class.
-   * @param address - the address the server will be bind to in URI form.
+   * @param address - the address the server will be bind to in URI form
    */
   explicit ServerRunner(const std::string &address);
 
   /**
-   * Destructor. Shutdowns server.
+   * Destructor. Shutdown the server.
    */
   ~ServerRunner();
 
   /**
-   * Initialize server and runs main loop.
+   * Initialize the server and run main loop.
    * @param commandService - service for command handler
    * @param queryService - service for query handler
    */
@@ -52,12 +52,12 @@ class ServerRunner {
            std::unique_ptr<torii::QueryService> queryService);
 
   /**
-   * Releases the completion queues and shutdowns server.
+   * Release the completion queues and shutdown the server.
    */
   void shutdown();
 
   /**
-   * Waits for server is ready to handle requests.
+   * Wait until the server is up.
    */
   void waitForServersReady();
 
