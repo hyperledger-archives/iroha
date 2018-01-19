@@ -19,7 +19,8 @@
 #define IROHA_IROHA_INSTANCE_HPP
 
 #include <cstdlib>
-#include "integration/pipeline/tx_pipeline_integration_test_fixture.hpp"
+
+#include "integration/pipeline/test_irohad.hpp"
 #include "main/raw_block_insertion.hpp"
 
 namespace integration_framework {
@@ -54,10 +55,13 @@ namespace integration_framework {
                                                keypair_);
     }
 
-    void run() { instance_->run(); }
+    void run() {
+      instance_->run();
+    }
 
-    // TODO 20/12/2017 muratovv replace with auto return type
-    std::shared_ptr<TestIrohad> getIrohaInstance() { return instance_; }
+    auto &getIrohaInstance() {
+      return instance_;
+    }
 
     std::shared_ptr<TestIrohad> instance_;
 

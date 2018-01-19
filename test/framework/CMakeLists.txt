@@ -38,8 +38,6 @@ target_link_libraries(integration_framework
     model_generators
     pb_model_converters
     tbb
-    gtest
-    gmock
     )
 
 target_include_directories(integration_framework PUBLIC ${PROJECT_SOURCE_DIR}/test)
