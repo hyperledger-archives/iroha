@@ -29,19 +29,16 @@ target_link_libraries(yac_cold_case_test
 addtest(yac_sunny_day_test yac_sunny_day_test.cpp)
 target_link_libraries(yac_sunny_day_test
     yac
-    model
     )
 
 addtest(yac_rainy_day_test yac_rainy_day_test.cpp)
 target_link_libraries(yac_rainy_day_test
         yac
-        model
         )
 
 addtest(yac_unknown_peer_test yac_unknown_peer_test.cpp)
 target_link_libraries(yac_unknown_peer_test
     yac
-    model
     )
 
 addtest(yac_block_storage_test yac_block_storage_test.cpp)

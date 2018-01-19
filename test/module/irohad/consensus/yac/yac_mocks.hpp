@@ -26,6 +26,7 @@
 #include "consensus/yac/yac_gate.hpp"
 #include "consensus/yac/yac_hash_provider.hpp"
 #include "consensus/yac/yac_peer_orderer.hpp"
+#include "common/byteutils.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -33,6 +34,7 @@ namespace iroha {
       model::Peer mk_peer(std::string address) {
         model::Peer peer;
         peer.address = address;
+        // TODO: 19.01.2019 kamil substitute with function, IR-813
         std::copy(address.begin(), address.end(), peer.pubkey.begin());
         return peer;
       }
@@ -40,6 +42,7 @@ namespace iroha {
       VoteMessage create_vote(YacHash hash, std::string pub_key) {
         VoteMessage vote;
         vote.hash = hash;
+        // TODO: 19.01.2019 kamil substitute with function, IR-813
         std::copy(
             pub_key.begin(), pub_key.end(), vote.signature.pubkey.begin());
         return vote;

@@ -71,8 +71,8 @@ TEST_F(YacTest, InvalidCaseWhenNotReceiveSupermajority) {
 
 /**
  * @given yac consensus
- * @when 2 peers vote for one hash and 2 for another, but yac_crypto does not
- * verify
+ * @when 2 peers vote for one hash and 2 for another, but yac_crypto verify
+ * always returns false
  * @then reject is not propagated
  */
 TEST_F(YacTest, InvalidCaseWhenDoesNotVerify) {
