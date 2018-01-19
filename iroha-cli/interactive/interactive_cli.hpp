@@ -29,15 +29,23 @@ namespace iroha_cli {
     class InteractiveCli {
      public:
       /**
-       * @param account_id account id used as transaction or query creator
+       * Interactive command line client
+       * @param account_name registered in Iroha network
+       * @param default_peer_ip default peer ip to send transactions/query
+       * @param default_port default port of peer's Iroha Torii
+       * @param tx_counter synchronized nonce for sending transaction
+       * @param qry_counter synchronized nonce for sending queries
+       * @param provider crypto provider to make signatures
        */
       InteractiveCli(
           const std::string &account_name,
+          const std::string &default_peer_ip,
+          const int &default_port,
           uint64_t tx_counter,
           uint64_t qry_counter,
           const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider);
       /**
-       * Run interactive cli. Print menu and parse command
+       * Run interactive cli. Print menu and parse commands
        */
       void run();
 

@@ -37,6 +37,8 @@ namespace iroha_cli {
        */
       InteractiveQueryCli(
           const std::string &account_id,
+          const std::string &default_peer_ip,
+          const int &default_port,
           uint64_t query_counter,
           const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider);
       /**
@@ -131,6 +133,9 @@ namespace iroha_cli {
       // ------- Query data -----------
       // Creator account id
       std::string creator_;
+      // Default Iroha peer address
+      std::string default_peer_ip;
+      int default_port;
 
       // Local query counter of account creator_
       uint64_t counter_;

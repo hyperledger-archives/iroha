@@ -31,11 +31,17 @@ namespace iroha_cli {
     class InteractiveTransactionCli {
      public:
       /**
-       * @param creator_account - Account of a creator
-       * @param tx_counter - local counter for transaction
+       *
+       * @param creator_account
+       * @param default_peer_ip
+       * @param default_port
+       * @param tx_counter synchronized with Iroha network
+       * @param provider for signing transactions
        */
       InteractiveTransactionCli(
           const std::string &creator_account,
+          const std::string &default_peer_ip,
+          const int &default_port,
           uint64_t tx_counter,
           const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider);
       /**
@@ -166,6 +172,8 @@ namespace iroha_cli {
 
       //  Creator account id
       std::string creator_;
+      std::string default_peer_ip;
+      int default_port;
 
       //  Transaction counter specific for account creator
       uint64_t tx_counter_;
