@@ -141,12 +141,7 @@ nonstd::optional<Identifier> FlatFile::check_consistency(
     std::copy(boost::filesystem::directory_iterator{dump_dir},
               boost::filesystem::directory_iterator{},
               std::back_inserter(ps));
-    std::sort(ps.begin(),
-              ps.end(),
-              [](const boost::filesystem::path &lhs,
-                 const boost::filesystem::path &rhs) {
-                return lhs.compare(rhs) < 0;
-              });
+    std::sort(ps.begin(), ps.end(), std::less<boost::filesystem::path>());
     return ps;
   }();
 
