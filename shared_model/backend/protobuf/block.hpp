@@ -42,7 +42,7 @@ namespace shared_model {
             transactions_([this] {
               std::vector<w<interface::Transaction>> txs;
               for (const auto &tx : proto_->payload().transactions()) {
-                auto tmp = detail::make_polymorphic<proto::Transaction>(tx);
+                auto tmp = detail::makePolymorphic<proto::Transaction>(tx);
                 txs.emplace_back(tmp);
               }
               return txs;
@@ -54,7 +54,7 @@ namespace shared_model {
             signatures_([this] {
               SignatureSetType sigs;
               for (const auto &sig : proto_->signatures()) {
-                auto curr = detail::make_polymorphic<proto::Signature>(sig);
+                auto curr = detail::makePolymorphic<proto::Signature>(sig);
                 sigs.insert(curr);
               }
               return sigs;
@@ -97,8 +97,8 @@ namespace shared_model {
         }
 
         auto sig = proto_->add_signatures();
-        sig->set_pubkey(signature->publicKey().blob());
-        sig->set_signature(signature->signedData().blob());
+        sig->set_pubkey(crypto::toBinaryString(signature->publicKey()));
+        sig->set_signature(crypto::toBinaryString(signature->signedData()));
         signatures_.invalidate();
         return true;
       }
