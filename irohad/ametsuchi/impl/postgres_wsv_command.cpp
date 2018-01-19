@@ -170,7 +170,7 @@ namespace iroha {
                            peer.pubkey.data(), peer.pubkey.size()))
                      + " AND address = " + transaction_.quote(peer.address)
                      + ";");
-    }  // namespace iroha
+    }
 
     bool PostgresWsvCommand::insertDomain(const model::Domain &domain) {
       return execute("INSERT INTO domain(domain_id, default_role) VALUES ("
