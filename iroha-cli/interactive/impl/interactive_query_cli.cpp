@@ -108,11 +108,15 @@ namespace iroha_cli {
       create_result_menu();
     }
 
+    void printMenu(const MenuPoints &menu) {
+      printMenu("Choose query: ", menu);
+    }
+
     void InteractiveQueryCli::run() {
       std::string line;
       bool is_parsing = true;
       current_context_ = MAIN;
-      printMenu("Choose query: ", menu_points_);
+      printMenu(menu_points_);
       // Creating a new query, increment local counter
       ++counter_;
       // Init timestamp for a new query
@@ -223,7 +227,7 @@ namespace iroha_cli {
         // Give up the last query and start a new one
         current_context_ = MAIN;
         printEnd();
-        printMenu("Choose query: ", menu_points_);
+        printMenu(menu_points_);
         // Continue parsing
         return true;
       }
