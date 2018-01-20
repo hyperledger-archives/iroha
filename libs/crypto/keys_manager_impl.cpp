@@ -74,8 +74,8 @@ namespace iroha {
     std::string pub_key;
     std::string priv_key;
 
-    if (!loadFile(account_name_ + ".pub", pub_key)
-        || !loadFile(account_name_ + ".priv", priv_key))
+    if (!loadFile(account_name_ + kPubExt, pub_key)
+        || !loadFile(account_name_ + kPrivExt, priv_key))
       return nonstd::nullopt;
 
     return nonstd::make_optional<iroha::keypair_t>()
@@ -91,8 +91,8 @@ namespace iroha {
     auto seed = iroha::create_seed(pass_phrase);
     auto key_pairs = iroha::create_keypair(seed);
 
-    std::ofstream pub_file(account_name_ + ".pub");
-    std::ofstream priv_file(account_name_ + ".priv");
+    std::ofstream pub_file(account_name_ + kPubExt);
+    std::ofstream priv_file(account_name_ + kPrivExt);
     if (not pub_file or not priv_file) {
       return false;
     }
@@ -101,4 +101,6 @@ namespace iroha {
     return true;
   }
 
+  const std::string KeysManagerImpl::kPubExt = ".pub";
+  const std::string KeysManagerImpl::kPrivExt = ".priv";
 }  // namespace iroha
