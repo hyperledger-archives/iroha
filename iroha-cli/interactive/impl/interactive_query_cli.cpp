@@ -22,9 +22,9 @@
 
 #include "byteutils.hpp"
 #include "client.hpp"
+#include "crypto/keys_manager_impl.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
-#include "crypto/keys_manager_impl.hpp"
 #include "datetime/time.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/converters/json_query_factory.hpp"
@@ -131,6 +131,8 @@ namespace iroha_cli {
           case RESULT:
             is_parsing = parseResult(line);
             break;
+          default:
+            BOOST_ASSERT_MSG(false, "not implemented");
         }
       }
     }
@@ -181,14 +183,15 @@ namespace iroha_cli {
     InteractiveQueryCli::parseGetTransactions(QueryParams params) {
       // Parser definition: hash1 hash2 ...
       GetTransactions::TxHashCollectionType tx_hashes;
-      std::for_each(params.begin(), params.end(), [&tx_hashes](auto const& hex_hash){
-        if (auto opt =
-          iroha::hexstringToArray<GetTransactions::TxHashType::size()>(hex_hash)) {
-          tx_hashes.push_back(*opt);
-        }
-      });
+      std::for_each(
+          params.begin(), params.end(), [&tx_hashes](auto const &hex_hash) {
+            if (auto opt = iroha::hexstringToArray<
+                    GetTransactions::TxHashType::size()>(hex_hash)) {
+              tx_hashes.push_back(*opt);
+            }
+          });
       return generator_.generateGetTransactions(
-        local_time_, creator_, counter_, tx_hashes);
+          local_time_, creator_, counter_, tx_hashes);
     }
 
     std::shared_ptr<iroha::model::Query>
@@ -202,7 +205,8 @@ namespace iroha_cli {
         QueryParams params) {
       auto asset_id = params[0];
       auto query = std::make_shared<GetAssetInfo>(asset_id);
-      //TODO 26/09/17 grimadas: remove duplicated code and move setQueryMetaData calls to private method IR-508 #goodfirstissue
+      // TODO 26/09/17 grimadas: remove duplicated code and move
+      // setQueryMetaData calls to private method IR-508 #goodfirstissue
       generator_.setQueryMetaData(query, local_time_, creator_, counter_);
       return query;
     }
