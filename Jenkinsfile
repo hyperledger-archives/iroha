@@ -44,6 +44,7 @@ pipeline {
                     when { expression { return params.Linux } }
                     steps {
                         script {
+                            def doxygen = load ".jenkinsci/doxygen.groovy"
                             def p_c = docker.image('postgres:9.5').run(""
                                 + " -e POSTGRES_USER=${env.IROHA_POSTGRES_USER}"
                                 + " -e POSTGRES_PASSWORD=${env.IROHA_POSTGRES_PASSWORD}"
@@ -92,30 +93,10 @@ pipeline {
                             sh "cmake --build build --target gcovr"
                             sh "cmake --build build --target cppcheck"
 
-                            // Dockerize
-                            sh "cp ${IROHA_BUILD}/iroha.deb ${IROHA_RELEASE}/iroha.deb"
-
-                            env.TAG = ""
-                            if (env.CHANGE_ID != null) {
-                                env.TAG = env.CHANGE_ID
-                            }
-                            else {
-                                if ( env.BRANCH_NAME == "develop" ) {
-                                    env.TAG = "develop"
-                                }
-                                elif ( env.BRANCH_NAME == "master" ) {
-                                    env.TAG = "latest"
-                                }
-                            }
-
-                            // do it for master or develop branches
-
                             if ( env.BRANCH_NAME == "master" ||
                                  env.BRANCH_NAME == "develop" ) {
-
-                                sh "docker login -u ${DOCKERHUB_USR} -p ${DOCKERHUB_PSW}"
-                                sh "docker build -t hyperledger/iroha-docker:${TAG} ${IROHA_RELEASE}"
-                                sh "docker push hyperledger/iroha-docker:${TAG}"
+                                dockerize.doDockerize()
+                                doxygen.doDoxygen()
                             }
                             
                             // Codecov
