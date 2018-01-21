@@ -54,8 +54,10 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Iroha'
-copyright = u'2018, Soramitsu Co LLC'
-author = u'Nikolay Yushkevich at Soramitsu Co LLC'
+documentation = u'Iroha Documentation'
+description = u'Distributed ledger technology platworm, written in C++'
+copyright = u'Creative Commons Attribution-NonCommercial 3.0 Unported'
+author = u'Nikolay Yushkevich at Soramitsu Co Ltd'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -146,8 +148,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Iroha.tex', u'Iroha Documentation',
-     u'Nikolay Yushkevich at Soramitsu Co LLC', 'manual'),
+    (master_doc, 'Iroha.tex', documentation,
+     description, 'manual'),
 ]
 
 
@@ -156,7 +158,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'iroha', u'Iroha Documentation',
+    (master_doc, 'iroha', documentation,
      [author], 1)
 ]
 
@@ -167,9 +169,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Iroha', u'Iroha Documentation',
-     author, 'Iroha', 'One line description of project.',
-     'Miscellaneous'),
+    (master_doc, project, documentation,
+     author, project, description,
+     'C++'),
 ]
 
 

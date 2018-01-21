@@ -26,11 +26,11 @@ Redis is known for a simple run process. When it is installed in the system, it 
 Run iroha daemon (irohad)
 """""""""""""""""""""""""
 
-There is a list of assumptions which you should review before proceeding:
+There is a list of preconditions which you should meet before proceeding:
 
- * Postgres server is up and running, the port is 5432
- * Redis server is up and running, the port is 6379
- * Iroha daemon binary is built and accessible in your system
+ * Postgres server is up and running
+ * Redis server is up and running
+ * `irohad` Iroha daemon binary is built and accessible in your system
  * The genesis block and configuration files were created
  * Config file uses valid postgres and redis connection settings
  * A keypair for the peer is generated
