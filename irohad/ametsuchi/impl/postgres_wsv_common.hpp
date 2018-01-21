@@ -42,7 +42,7 @@ namespace iroha {
           return nonstd::nullopt;
         }
       };
-    };
+    }
 
     /**
      * Transforms pqxx::result to vector of Ts by applying transform_func
