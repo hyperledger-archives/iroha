@@ -45,6 +45,10 @@ pipeline {
                     steps {
                         script {
                             def doxygen = load ".jenkinsci/doxygen.groovy"
+                            def dockerize = load ".jenkinsci/dockerize.groovy"
+
+                            sh "docker network create ${env.IROHA_NETWORK}"
+
                             def p_c = docker.image('postgres:9.5').run(""
                                 + " -e POSTGRES_USER=${env.IROHA_POSTGRES_USER}"
                                 + " -e POSTGRES_PASSWORD=${env.IROHA_POSTGRES_PASSWORD}"
