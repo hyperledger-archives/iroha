@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -48,29 +48,39 @@ namespace shared_model {
       TemplateProposalBuilder(const TemplateProposalBuilder<Sp> &o)
           : proposal_(o.proposal_) {}
 
+      /**
+       * Make transformation on copied content
+       * @tparam Transformation - callable type for changing the copy
+       * @param t - transform function for proto object
+       * @return new builder with updated state
+       */
+      template <int Fields, typename Transformation>
+      auto transform(Transformation t) const {
+        NextBuilder<Fields> copy = *this;
+        t(copy.proposal_);
+        return copy;
+      }
+
      public:
       TemplateProposalBuilder() = default;
 
-      NextBuilder<Height> height(uint64_t height) {
-        proposal_.set_height(height);
-        return *this;
+      auto height(uint64_t height) const {
+        return transform<Height>(
+            [&](auto &proposal) { proposal.set_height(height); });
       }
 
-      NextBuilder<Transactions> transactions(
-          const std::vector<w<Transaction>> &transactions) {
-        for (const auto &tx : transactions) {
-          proposal_.mutable_transactions()->Add(tx->getTransport());
-        }
-        return *this;
+      auto transactions(const std::vector<w<Transaction>> &transactions) const {
+        return transform<Transactions>([&](auto &proposal) {
+          for (const auto &tx : transactions) {
+            proposal.mutable_transactions()->Add(tx->getTransport());
+          }
+        });
       }
 
-      UnsignedWrapper<Proposal> build() {
+      Proposal build() {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
-        return UnsignedWrapper<Proposal>(
-            Proposal(iroha::ordering::proto::Proposal(proposal_)));
+        return Proposal(iroha::ordering::proto::Proposal(proposal_));
       }
-
-      static const int total = RequiredFields::TOTAL;
     };
 
     using ProposalBuilder = TemplateProposalBuilder<>;

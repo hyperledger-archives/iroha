@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,33 +31,36 @@
 
 #include "transaction.hpp"
 namespace shared_model {
+
   namespace proto {
-    class Proposal FINAL
+    class Proposal final
         : public CopyableProto<interface::Proposal,
                                iroha::ordering::proto::Proposal,
                                Proposal> {
-     public:
+      template <class T>
+      using w = detail::PolymorphicWrapper<T>;
+
+    public:
       template <class ProposalType>
       explicit Proposal(ProposalType &&proposal)
-          : CopyableProto(
-                std::forward<ProposalType>(proposal)),
+          : CopyableProto(std::forward<ProposalType>(proposal)),
             transactions_([this] {
-              std::vector<w<interface::Transaction>> txs;
-              for(const auto& tx: proto_->transactions()){
-                auto tmp = detail::makePolymorphic<proto::Transaction>(tx);
-                txs.emplace_back(tmp);
-              }
-              return txs;
+              return boost::accumulate(proto_->transactions(),
+                                       std::vector<w<interface::Transaction>>{},
+                                       [](auto&& vec, const auto& tx){
+                                         vec.emplace_back(new proto::Transaction(tx));
+                                         return std::forward<decltype(vec)>(vec);
+                                       });
+
             }),
-            blob_([this]{
-              return BlobType(proto_->SerializeAsString());
-            }){}
+            blob_([this] { return makeBlob(*proto_); }) {}
 
       Proposal(const Proposal &o) : Proposal(o.proto_) {}
 
       Proposal(Proposal &&o) noexcept : Proposal(std::move(o.proto_)) {}
 
-      const std::vector<w<interface::Transaction>> &transactions() const override {
+      const std::vector<w<interface::Transaction>> &transactions()
+          const override {
         return *transactions_;
       }
 
@@ -68,9 +71,8 @@ namespace shared_model {
       const BlobType &blob() const override {
         return *blob_;
       }
+
      private:
-      template<class T>
-      using w = detail::PolymorphicWrapper<T>;
 
       // lazy
       template <typename T>
@@ -78,7 +80,6 @@ namespace shared_model {
 
       const Lazy<std::vector<w<interface::Transaction>>> transactions_;
       const Lazy<BlobType> blob_;
-
     };
   }  // namespace proto
 }  // namespace shared_model

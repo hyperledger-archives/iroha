@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,28 +15,24 @@
  * limitations under the License.
  */
 
-
 #ifndef IROHA_SHARED_MODEL_PROPOSAL_HPP
 #define IROHA_SHARED_MODEL_PROPOSAL_HPP
 
-
+#include <boost/range/numeric.hpp>
 #include <vector>
 #include "interfaces/base/primitive.hpp"
-#include "interfaces/transaction.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "interfaces/transaction.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 
 #include "model/proposal.hpp"
 
-
 namespace shared_model {
   namespace interface {
 
-    class Proposal
-            : public Hashable<Proposal, iroha::model::Proposal> {
-    public:
-
-      template<class T>
+    class Proposal : public Hashable<Proposal, iroha::model::Proposal> {
+     public:
+      template <class T>
       using w = detail::PolymorphicWrapper<T>;
 
       /**
@@ -50,12 +46,16 @@ namespace shared_model {
       virtual types::HeightType height() const = 0;
 
       iroha::model::Proposal *makeOldModel() const override {
+        auto txs =
+            boost::accumulate(transactions(),
+                              std::vector<iroha::model::Transaction>{},
+                              [](auto &&vec, const auto &tx) {
+                                std::unique_ptr<iroha::model::Transaction> ptr(
+                                    tx->makeOldModel());
+                                vec.emplace_back(*ptr);
+                                return std::forward<decltype(vec)>(vec);
+                              });
 
-        std::vector<iroha::model::Transaction> txs;
-        for(const auto& tx: transactions()){
-          std::unique_ptr<iroha::model::Transaction> ptr(tx->makeOldModel());
-          txs.push_back(*ptr);
-        }
         auto oldModel = new iroha::model::Proposal(txs);
         oldModel->height = height();
         return oldModel;
@@ -63,22 +63,17 @@ namespace shared_model {
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
-                .init("Proposal")
-                .append("height", std::to_string(height()))
-                .appendAll(transactions(),
-                           [](auto &transaction) { return transaction->toString(); })
-                .finalize();
+            .init("Proposal")
+            .append("height", std::to_string(height()))
+            .append("transactions")
+            .appendAll(
+                transactions(),
+                [](auto &transaction) { return transaction->toString(); })
+            .finalize();
       }
-
-      bool operator==(const ModelType &rhs) const override {
-        return transactions() == rhs.transactions() and height() == rhs.height();
-      }
-
     };
-
-
 
   }  // namespace interface
 }  // namespace shared_model
 
-#endif //IROHA_PROPOSAL_HPP
+#endif  // IROHA_PROPOSAL_HPP
