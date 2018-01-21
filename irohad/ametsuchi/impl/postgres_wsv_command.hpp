@@ -73,7 +73,7 @@ namespace iroha {
       using ExecuteType = decltype(makeExecute(transaction_, log_));
       ExecuteType execute_;
 
-      // temporary solution
+      // TODO: refactor to return Result when it is introduced IR-744
       bool execute(const std::string &statement) noexcept {
         return execute_(statement).has_value();
       }
