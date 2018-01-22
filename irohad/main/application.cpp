@@ -260,13 +260,14 @@ void Irohad::initQueryService() {
  */
 void Irohad::run() {
   // Initializing torii server
+  std::string ip = "0.0.0.0";
   torii_server =
-      std::make_unique<ServerRunner>("0.0.0.0:" + std::to_string(torii_port_));
+      std::make_unique<ServerRunner>(ip + ":" + std::to_string(torii_port_));
 
   // Initializing internal server
   grpc::ServerBuilder builder;
   int port = 0;
-  builder.AddListeningPort("0.0.0.0:" + std::to_string(internal_port_),
+  builder.AddListeningPort(ip + ":" + std::to_string(internal_port_),
                            grpc::InsecureServerCredentials(),
                            &port);
   builder.RegisterService(ordering_init.ordering_gate_transport.get());

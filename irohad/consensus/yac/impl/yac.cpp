@@ -152,6 +152,9 @@ namespace iroha {
 
       // ------|Apply data|------
 
+      const char *kRejectMsg = "reject case";
+      const char *kRejectOnHashMsg = "Reject case on hash {} achieved";
+
       void Yac::applyCommit(nonstd::optional<model::Peer> from,
                             CommitMessage commit) {
         auto answer =
@@ -167,7 +170,7 @@ namespace iroha {
                              notifier_.get_subscriber().on_next(commit);
                            },
                            [&](const RejectMessage &reject) {
-                             log_->warn("reject case");
+                             log_->warn(kRejectMsg);
                              // TODO 14/08/17 Muratov: work on reject case
                              // IR-497
                            });
@@ -189,7 +192,7 @@ namespace iroha {
             vote_storage_.markAsProcessedState(proposal_hash);
             visit_in_place(answer,
                            [&](const RejectMessage &reject) {
-                             log_->warn("reject case");
+                             log_->warn(kRejectMsg);
                              // TODO 14/08/17 Muratov: work on reject case
                              // IR-497
                            },
@@ -234,8 +237,7 @@ namespace iroha {
                            },
                            [&](const RejectMessage &reject) {
                              // propagate reject for all
-                             log_->info("Reject case on hash {} achieved",
-                                        proposal_hash);
+                             log_->info(kRejectOnHashMsg, proposal_hash);
                              this->propagateReject(reject);
                            });
           } else {
@@ -248,8 +250,7 @@ namespace iroha {
                                this->propagateCommitDirectly(from, commit);
                              },
                              [&](const RejectMessage &reject) {
-                               log_->info("Reject case on hash {} achieved",
-                                          proposal_hash);
+                               log_->info(kRejectOnHashMsg, proposal_hash);
                                this->propagateRejectDirectly(from, reject);
                              });
             };

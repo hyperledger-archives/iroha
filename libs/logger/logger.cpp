@@ -17,15 +17,15 @@ limitations under the License.
 #include "logger/logger.hpp"
 
 namespace logger {
+  const std::string end = "\033[0m";
+
   std::string red(const std::string &string) {
     const std::string red_start = "\033[31m";
-    const std::string end = "\033[0m";
     return red_start + string + end;
   }
 
   std::string yellow(const std::string &string) {
     const std::string yellow_start = "\033[33m";
-    const std::string end = "\033[0m";
     return yellow_start + string + end;
   }
 
@@ -33,7 +33,9 @@ namespace logger {
     return yellow("---> " + string);
   }
 
-  std::string input(const std::string &string) { return red("<--- " + string); }
+  std::string input(const std::string &string) {
+    return red("<--- " + string);
+  }
 
   void setGlobalPattern() {
     spdlog::set_pattern("[%H:%M:%S][th: %t][%l] [%n] << %v");
@@ -52,7 +54,7 @@ namespace logger {
     return logger;
   }
 
-  Logger testLog(const std::string &tag){
+  Logger testLog(const std::string &tag) {
     return log(tag);
   }
 
