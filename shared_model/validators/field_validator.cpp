@@ -23,7 +23,7 @@
 namespace shared_model {
   namespace validation {
 
-    FieldValidator::FieldValidator(time_t future_gap = default_future_gap)
+    FieldValidator::FieldValidator(time_t future_gap)
         : account_id_pattern_(R"([a-z]{1,9}\@[a-z]{1,9})"),
           asset_id_pattern_(R"([a-z]{1,9}\#[a-z]{1,9})"),
           name_pattern_(R"([a-z]{1,9})"),
@@ -189,7 +189,7 @@ namespace shared_model {
       }
     }
 
-    void validateCreatedTime(
+    void FieldValidator::validateCreatedTime(
         ReasonsGroupType &reason,
         const interface::types::TimestampType &timestamp) const {
       iroha::ts64_t now = iroha::time::now();
