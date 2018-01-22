@@ -18,12 +18,10 @@
 #ifndef IROHA_SHARED_MODEL_FIELD_VALIDATOR_HPP
 #define IROHA_SHARED_MODEL_FIELD_VALIDATOR_HPP
 
-#include <boost/format.hpp>
 #include <regex>
 
 #include "datetime/time.hpp"
 #include "interfaces/commands/command.hpp"
-#include "validator/address_validator.hpp"
 #include "validators/answer.hpp"
 
 namespace shared_model {
