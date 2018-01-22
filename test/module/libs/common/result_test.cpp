@@ -16,7 +16,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <common/result.hpp>
+#include "common/result.hpp"
 
 using iroha::expected::Error;
 using iroha::expected::Result;
@@ -26,7 +26,7 @@ using iroha::expected::makeValue;
 
 /**
  * @given Result constructed with valid value
- * @when when match function is invoked
+ * @when match function is invoked
  * @then match executes successful case
  */
 TEST(ResultTest, ResultValueConstruction) {
@@ -38,7 +38,7 @@ TEST(ResultTest, ResultValueConstruction) {
 
 /**
  * @given Result constructed with error value
- * @when when match function is invoked
+ * @when match function is invoked
  * @then match executes error case
  */
 TEST(ResultTest, ResultErrorConstruction) {
@@ -49,7 +49,7 @@ TEST(ResultTest, ResultErrorConstruction) {
 
 /**
  * @given Result constructed with the same type of value and error
- * @when when match function is invoked
+ * @when match function is invoked
  * @then match executes successful case
  */
 TEST(ResultTest, ResultSameTypeValueConstruction) {
@@ -60,7 +60,7 @@ TEST(ResultTest, ResultSameTypeValueConstruction) {
 
 /**
  * @given Result constructed with the same type of value and error
- * @when when match function is invoked
+ * @when match function is invoked
  * @then match executes error case
  */
 TEST(ResultTest, ResultSameTypeErrorConstruction) {
@@ -99,7 +99,7 @@ auto error_get_int = []() -> Result<int, std::string> {
 };
 
 /**
- * @given Two functions which return result
+ * @given two functions which return result
  * @when bind operator is used to chain these 2 functions and first one return
  *       error
  * @then result of bind contains error and second function is not invoked
@@ -114,7 +114,7 @@ TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
 }
 
 /**
- * @given Two functions which return different results, but value and error
+ * @given two functions which return different results, but value and error
  *        types can be cast to each other
  * @when bind operator is used to chain these 2 functions
  * @then result type is properly deduced

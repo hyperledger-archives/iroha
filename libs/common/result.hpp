@@ -18,9 +18,9 @@
 #ifndef IROHA_RESULT_HPP
 #define IROHA_RESULT_HPP
 
-#include "visitor.hpp"
+#include "common/visitor.hpp"
 
-/**
+/*
  * Result is a type which represents value or an error, and values and errors
  * are template parametrized. Working with value wrapped in result is done using
  * match() function, which accepts 2 functions: for value and error cases. No
@@ -30,7 +30,7 @@
 namespace iroha {
   namespace expected {
 
-    /**
+    /*
      * Value and error types can be constructed from any value or error, if
      * underlying types are constructible. Example:
      *
@@ -38,6 +38,7 @@ namespace iroha {
      * Value<std::string> v = Value<const char *>("hello");
      * @nocode
      */
+
     template <typename T>
     struct Value {
       T value;
