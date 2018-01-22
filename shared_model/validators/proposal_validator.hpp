@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROPOSAL_VALIDATOR_HPP_HPP
-#define IROHA_PROPOSAL_VALIDATOR_HPP_HPP
+#ifndef IROHA_PROPOSAL_VALIDATOR_HPP
+#define IROHA_PROPOSAL_VALIDATOR_HPP
 
 #include <boost/format.hpp>
 #include <boost/variant/static_visitor.hpp>
@@ -25,6 +25,8 @@
 #include "interfaces/common_objects/types.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "validators/answer.hpp"
+
+// TODO 22/01/2018 x3medima17: write stateless validator IR-836
 
 namespace shared_model {
   namespace validation {
@@ -78,7 +80,8 @@ namespace shared_model {
         std::string prop_reason_name = "Proposal";
         ReasonsGroupType prop_reason(prop_reason_name, GroupedReasons());
 
-        // TODO Write validator
+        // TODO 22/01/2018 x3medima17: add stateless validator IR-837
+
 
         return answer;
       }
