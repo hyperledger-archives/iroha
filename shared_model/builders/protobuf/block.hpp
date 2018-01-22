@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,6 @@
 #define IROHA_PROTO_BLOCK_BUILDER_HPP
 
 #include "backend/protobuf/block.hpp"
-#include "backend/protobuf/queries/proto_query.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "block.pb.h"
 
@@ -76,20 +75,20 @@ namespace shared_model {
      public:
       TemplateBlockBuilder() = default;
 
-      auto transactions(const std::vector<w<Transaction>> &transactions) const {
-        for (auto tx : transactions) {
-          return transform<Transactions>([&](auto &block) {
+      template <class T>
+      auto transactions(const T &transactions) const {
+        return transform<Transactions>([&](auto &block) {
+          for (const auto &tx : transactions) {
             iroha::protocol::Transaction proto_tx(tx->getTransport());
             block.mutable_payload()->mutable_transactions()->Add(
                 std::move(proto_tx));
-          });
-        }
+          }
+        });
       }
 
-      auto tx_number(interface::Block::TransactionsNumberType tx_number) const {
+      auto txNumber(interface::Block::TransactionsNumberType tx_number) const {
         return transform<TxNumber>([&](auto &block) {
           block.mutable_payload()->set_tx_number(tx_number);
-
         });
       }
 
@@ -98,17 +97,15 @@ namespace shared_model {
             [&](auto &block) { block.mutable_payload()->set_height(height); });
       }
 
-      auto prev_hash(crypto::Hash hash) const {
+      auto prevHash(crypto::Hash hash) const {
         return transform<PrevHash>([&](auto &block) {
-
           block.mutable_payload()->set_prev_block_hash(
               crypto::toBinaryString(hash));
         });
       }
 
-      auto created_time(interface::types::TimestampType time) const {
+      auto createdTime(interface::types::TimestampType time) const {
         return transform<CreatedTime>([&](auto &block) {
-
           block.mutable_payload()->set_created_time(time);
         });
       }

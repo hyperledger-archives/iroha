@@ -26,7 +26,7 @@
 #include "utils/polymorphic_wrapper.hpp"
 #include "validators/answer.hpp"
 
-//TODO 22/01/2018 x3medima17: write stateless validator IR-837
+// TODO 22/01/2018 x3medima17: write stateless validator IR-837
 
 namespace shared_model {
   namespace validation {
@@ -64,7 +64,6 @@ namespace shared_model {
         Answer answer;
         std::string prop_reason_name = "Block";
         ReasonsGroupType prop_reason(prop_reason_name, GroupedReasons());
-
 
         return answer;
       }

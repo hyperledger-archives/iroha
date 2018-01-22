@@ -19,5 +19,3 @@
 #include "backend/protobuf/query_responses/proto_query_response.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "backend/protobuf/block.hpp"
-#include "builders/protobuf/block.hpp"
-#include "validators/block_validator.hpp"

@@ -125,11 +125,9 @@ namespace shared_model {
       const Lazy<HashType> prev_hash_;
       const Lazy<SignatureSetType> signatures_;
       const Lazy<const iroha::protocol::Block::Payload &> payload_;
-      const Lazy<
-          const typename Hashable<Block, iroha::model::Block>::BlobType &>
-          payload_blob_;
+      const Lazy<BlobType> payload_blob_;
     };
   }  // namespace proto
 }  // namespace shared_model
 
-#endif  // IROHA_PROPOSAL_HPP
+#endif  // IROHA_SHARED_MODEL_PROTO_BLOCK_HPP
