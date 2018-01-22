@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+#include "backend/protobuf/transaction.hpp"
+#include "builders/protobuf/transaction.hpp"
+#include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "datetime/time.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
 #include "integration/pipeline/tx_pipeline_integration_test_fixture.hpp"
@@ -165,16 +168,22 @@ TEST(PipelineIntegrationTest, SendQueryWithValidation) {
  * @then receive STATELESS_VALIDATION_SUCCESS status on that tx
  */
 TEST(PipelineIntegrationTest, SendTx) {
-  iroha::model::generators::CommandGenerator gen;
+  constexpr auto kUser = "user@test";
+  constexpr auto kAsset = "asset#domain";
+  auto tx = shared_model::proto::TransactionBuilder()
+                .createdTime(iroha::time::now())
+                .creatorAccountId(kUser)
+                .txCounter(1)
+                .addAssetQuantity(kUser, kAsset, "1.0")
+                .build()
+                .signAndAddSignature(
+                    shared_model::crypto::DefaultCryptoAlgorithmType::
+                        generateKeypair());
 
-  iroha::model::Transaction tx;
-  tx.created_ts = iroha::time::now();
-  tx.commands.push_back(gen.generateAddAssetQuantity(
-      "user", "test", iroha::Amount().createFromString("0").value()));
-
-  auto check = [](auto status) {
-    ASSERT_EQ(iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS,
-              status);
+  auto check = [](auto &status) {
+    ASSERT_NO_THROW(
+        boost::get<shared_model::detail::PolymorphicWrapper<
+            shared_model::interface::StatelessValidTxResponse>>(status.get()));
   };
   integration_framework::IntegrationTestFramework()
       .setInitialState()

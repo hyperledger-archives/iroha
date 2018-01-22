@@ -16,6 +16,7 @@
  */
 
 #include "framework/integration_framework/integration_test_framework.hpp"
+#include "model/transaction.hpp"
 
 namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
@@ -75,8 +76,18 @@ namespace integration_framework {
     return *this;
   }
 
+  shared_model::proto::TransactionResponse
+  IntegrationTestFramework::getTxStatus(const std::string &hash) {
+    iroha::protocol::TxStatusRequest request;
+    request.set_tx_hash(hash);
+    iroha::protocol::ToriiResponse response;
+    iroha_instance_->getIrohaInstance()->getCommandService()->StatusAsync(
+        request, response);
+    return shared_model::proto::TransactionResponse(std::move(response));
+  }
+
   IntegrationTestFramework &IntegrationTestFramework::sendTx(
-      iroha::model::Transaction tx) {
+      shared_model::proto::Transaction tx) {
     sendTx(tx, [](auto) {});
     return *this;
   }
