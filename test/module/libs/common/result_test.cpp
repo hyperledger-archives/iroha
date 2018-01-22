@@ -87,6 +87,17 @@ TEST(ResultTest, ResultBindOperatorSuccesfulCase) {
                [](Error<std::string> e) { FAIL() << "Unexpected error case"; });
 }
 
+
+// function which must not be called for test to pass
+auto never_used_negate_int = [](int a) -> Result<int, std::string> {
+  EXPECT_TRUE(false);
+  return makeValue(-1 * a);
+};
+
+auto error_get_int = []() -> Result<int, std::string> {
+  return makeError("first function");
+};
+
 /**
  * @given Two functions which return result
  * @when bind operator is used to chain these 2 functions and first one return
@@ -94,17 +105,7 @@ TEST(ResultTest, ResultBindOperatorSuccesfulCase) {
  * @then result of bind contains error and second function is not invoked
  */
 TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
-  auto get_int = []() -> Result<int, std::string> {
-    return makeError("first function");
-  };
-
-  // we cannot use FAIL, or ASSERTs because compiler fails to match return types
-  auto negate_int = [](int a) -> Result<int, std::string> {
-    EXPECT_TRUE(false);
-    return makeValue(-1 * a);
-  };
-
-  auto result = get_int() | negate_int;
+  auto result = error_get_int() | never_used_negate_int;
 
   result.match([](Value<int> v) { FAIL(); },
                [](Error<std::string> e) {
@@ -119,19 +120,9 @@ TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
  * @then result type is properly deduced
  */
 TEST(ResultTest, ResultBindOperatorCompatibleTypes) {
-  auto get_int = []() -> Result<int, const char *> {
-    return makeError("first function");
-  };
+  auto result = error_get_int() | never_used_negate_int;
 
-  // we cannot use FAIL, or ASSERTs because compiler fails to match return types
-  auto negate_int = [](int a) -> Result<int, std::string> {
-    EXPECT_TRUE(false);
-    return makeValue(-1 * a);
-  };
-
-  auto result = get_int() | negate_int;
-
-  static_assert(std::is_same<decltype(result), decltype(negate_int(1))>::value,
+  static_assert(std::is_same<decltype(result), decltype(never_used_negate_int(1))>::value,
                 "Result type does not match function return type");
 
   result.match([](Value<int> v) { FAIL(); },
