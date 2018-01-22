@@ -154,7 +154,7 @@ namespace iroha_cli {
           {BACK_CODE, "Go back and start a new transaction"});
 
       result_params_descriptions =
-          getCommonParamsMap(default_peer_ip, default_port);
+          getCommonParamsMap(default_peer_ip_, default_port_);
 
       result_params_descriptions.insert({ADD_CMD, {}});
       result_params_descriptions.insert({BACK_CODE, {}});
@@ -174,13 +174,13 @@ namespace iroha_cli {
     InteractiveTransactionCli::InteractiveTransactionCli(
         const std::string &creator_account,
         const std::string &default_peer_ip,
-        const int &default_port,
+        int default_port,
         uint64_t tx_counter,
         const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
         : current_context_(MAIN),
           creator_(creator_account),
-          default_peer_ip(default_peer_ip),
-          default_port(default_port),
+          default_peer_ip_(default_peer_ip),
+          default_port_(default_port),
           tx_counter_(tx_counter),
           provider_(provider) {
       log_ = logger::log("InteractiveTransactionCli");
@@ -462,7 +462,7 @@ namespace iroha_cli {
     bool InteractiveTransactionCli::parseSendToIroha(
         std::vector<std::string> params) {
       auto address = parseIrohaPeerParams(
-          std::move(params), default_peer_ip, default_port);
+          std::move(params), default_peer_ip_, default_port_);
       if (not address.has_value()) {
         return true;
       }

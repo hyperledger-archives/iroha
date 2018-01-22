@@ -36,12 +36,12 @@
 DEFINE_bool(
     new_account,
     false,
-    "Create new account, generate and save locally public/private keys.");
+    "Generate and save locally new public/private keys");
 DEFINE_string(account_name,
               "",
               "Name of the account. Must be unique in iroha network");
-DEFINE_string(pass_phrase, "", "Account pass_phrase");
-DEFINE_string(key_path, ".", "Path to store user keys");
+DEFINE_string(pass_phrase, "", "Account pass-phrase");
+DEFINE_string(key_path, ".", "Path to user keys");
 
 // Iroha peer to connect with
 DEFINE_string(peer_ip, "0.0.0.0", "Address of the Iroha node");
@@ -62,6 +62,7 @@ DEFINE_string(peers_address,
 
 // Run iroha-cli in interactive mode
 DEFINE_bool(interactive, true, "Run iroha-cli in interactive mode");
+
 
 using namespace iroha::protocol;
 using namespace iroha::model::generators;

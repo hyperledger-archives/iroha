@@ -39,8 +39,8 @@ namespace iroha_cli {
              "Transaction was not found in the system."}};
 
     InteractiveStatusCli::InteractiveStatusCli(
-        const std::string &default_peer_ip, const int &default_port)
-        : default_peer_ip(default_peer_ip), default_port(default_port) {
+        const std::string &default_peer_ip, int default_port)
+        : default_peer_ip_(default_peer_ip), default_port_(default_port) {
       createActionsMenu();
       createResultMenu();
     }
@@ -61,7 +61,7 @@ namespace iroha_cli {
       resultHandlers_ = {{SEND_CODE, &InteractiveStatusCli::parseSendToIroha},
                          {SAVE_CODE, &InteractiveStatusCli::parseSaveFile}};
       resultParamsDescriptions_ =
-          getCommonParamsMap(default_peer_ip, default_port);
+          getCommonParamsMap(default_peer_ip_, default_port_);
 
       resultPoints_ = formMenu(resultHandlers_,
                                resultParamsDescriptions_,
@@ -127,7 +127,7 @@ namespace iroha_cli {
     }
 
     bool InteractiveStatusCli::parseSendToIroha(ActionParams line) {
-      auto address = parseIrohaPeerParams(line, default_peer_ip, default_port);
+      auto address = parseIrohaPeerParams(line, default_peer_ip_, default_port_);
       if (not address.has_value()) {
         return true;
       }

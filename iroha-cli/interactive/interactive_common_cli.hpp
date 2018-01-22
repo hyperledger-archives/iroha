@@ -68,7 +68,7 @@ namespace iroha_cli {
      * @return Map with parameters of common commands
      */
     ParamsMap getCommonParamsMap(const std::string &default_ip,
-                                 const int &default_port);
+                                 int default_port);
 
     /**
      * Handle error with empty command
@@ -187,7 +187,7 @@ namespace iroha_cli {
     nonstd::optional<std::pair<std::string, uint16_t>> parseIrohaPeerParams(
         std::vector<std::string> params,
         const std::string &default_ip,
-        const int &default_port);
+        int default_port);
 
     /**
      * Handle parsing routine:

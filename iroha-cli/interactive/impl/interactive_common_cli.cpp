@@ -32,7 +32,7 @@ namespace iroha_cli {
     }
 
     ParamsMap getCommonParamsMap(const std::string &default_ip,
-                                 const int &default_port) {
+                                 int default_port) {
       return {
           // commonParamsMap
           {SAVE_CODE, {"Path to save json file"}},
@@ -94,8 +94,8 @@ namespace iroha_cli {
     nonstd::optional<std::pair<std::string, uint16_t>> parseIrohaPeerParams(
         ParamsDescription params,
         const std::string &default_ip,
-        const int &default_port) {
-      auto address = params[0].empty() ? default_ip : params[0];
+        int default_port) {
+      const auto &address = params[0].empty() ? default_ip : params[0];
       auto port = params[1].empty() ? default_port
                                     : parser::parseValue<uint16_t>(params[1]);
       if (not params.empty() and not port.has_value()) {

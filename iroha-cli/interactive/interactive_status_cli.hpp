@@ -32,7 +32,7 @@ namespace iroha_cli {
     class InteractiveStatusCli {
      public:
       InteractiveStatusCli(const std::string &default_peer_ip,
-                           const int &default_port);
+                           int default_port);
       void run();
 
      private:
@@ -55,8 +55,8 @@ namespace iroha_cli {
 
       const std::string GET_TX_INFO = "get_tx_info";
 
-      std::string default_peer_ip;
-      int default_port;
+      std::string default_peer_ip_;
+      int default_port_;
 
       std::unordered_map<ActionName, ResultHandler> resultHandlers_;
       ParamsMap resultParamsDescriptions_;
