@@ -30,8 +30,8 @@
  * Gflag valigator.
  * Validator for the configuration file path input argument.
  * Path is considered to be valid if it is not empty.
- * @param flag_name - flag name
- * @param path      - file name
+ * @param flag_name - flag name. Must be 'config' in this case
+ * @param path      - file name. Should be path to the config file
  * @return true if argument is valid
  */
 bool validate_config(const char *flag_name, std::string const &path) {
@@ -42,8 +42,8 @@ bool validate_config(const char *flag_name, std::string const &path) {
  * Gflag valigator.
  * Validator for the keypair files path input argument.
  * Path is considered to be valid if it is not empty.
- * @param flag_name - flag name
- * @param path      - file name
+ * @param flag_name - flag name. Must be 'keypair' in this case
+ * @param path      - file name. Should be path to the keypair files
  * @return true if argument is valid
  */
 bool validate_keypair_name(const char *flag_name, std::string const &path) {
