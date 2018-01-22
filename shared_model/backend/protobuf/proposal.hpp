@@ -39,18 +39,20 @@ namespace shared_model {
                                Proposal> {
       template <class T>
       using w = detail::PolymorphicWrapper<T>;
+      using TransactionContainer = std::vector<w<interface::Transaction>>;
 
-    public:
+     public:
       template <class ProposalType>
       explicit Proposal(ProposalType &&proposal)
           : CopyableProto(std::forward<ProposalType>(proposal)),
             transactions_([this] {
-              return boost::accumulate(proto_->transactions(),
-                                       std::vector<w<interface::Transaction>>{},
-                                       [](auto&& vec, const auto& tx){
-                                         vec.emplace_back(new proto::Transaction(tx));
-                                         return std::forward<decltype(vec)>(vec);
-                                       });
+              return boost::accumulate(
+                  proto_->transactions(),
+                  std::vector<w<interface::Transaction>>{},
+                  [](auto &&vec, const auto &tx) {
+                    vec.emplace_back(new proto::Transaction(tx));
+                    return std::forward<decltype(vec)>(vec);
+                  });
 
             }),
             blob_([this] { return makeBlob(*proto_); }) {}
@@ -73,12 +75,11 @@ namespace shared_model {
       }
 
      private:
-
       // lazy
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const Lazy<std::vector<w<interface::Transaction>>> transactions_;
+      const Lazy<TransactionContainer> transactions_;
       const Lazy<BlobType> blob_;
     };
   }  // namespace proto

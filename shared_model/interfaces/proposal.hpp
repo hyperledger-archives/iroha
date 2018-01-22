@@ -76,4 +76,4 @@ namespace shared_model {
   }  // namespace interface
 }  // namespace shared_model
 
-#endif  // IROHA_PROPOSAL_HPP
+#endif  // IROHA_SHARED_MODEL_PROPOSAL_HPP

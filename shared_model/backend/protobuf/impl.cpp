@@ -20,5 +20,3 @@
 #include "backend/protobuf/transaction.hpp"
 #include "backend/protobuf/block.hpp"
 #include "backend/protobuf/proposal.hpp"
-#include "builders/protobuf/proposal.hpp"
-#include "validators/proposal_validator.hpp"
