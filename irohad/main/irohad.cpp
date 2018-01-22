@@ -27,7 +27,7 @@
 #include "logger/logger.hpp"
 
 /**
- * Gflag valigator.
+ * Gflag validator.
  * Validator for the configuration file path input argument.
  * Path is considered to be valid if it is not empty.
  * @param flag_name - flag name. Must be 'config' in this case
@@ -39,10 +39,10 @@ bool validate_config(const char *flag_name, std::string const &path) {
 }
 
 /**
- * Gflag valigator.
+ * Gflag validator.
  * Validator for the keypair files path input argument.
  * Path is considered to be valid if it is not empty.
- * @param flag_name - flag name. Must be 'keypair' in this case
+ * @param flag_name - flag name. Must be 'keypair_name' in this case
  * @param path      - file name. Should be path to the keypair files
  * @return true if argument is valid
  */
