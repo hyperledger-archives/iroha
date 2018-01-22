@@ -119,7 +119,7 @@ namespace shared_model {
               &signatures) const {
         return transform<Signatures>([&](auto &block) {
           for (const auto &signature : signatures) {
-            auto sig = block_.add_signatures();
+            auto sig = block.add_signatures();
             sig->set_pubkey(crypto::toBinaryString(signature->publicKey()));
             sig->set_signature(crypto::toBinaryString(signature->signedData()));
           }
