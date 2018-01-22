@@ -18,11 +18,11 @@
 #include <gtest/gtest.h>
 #include <common/result.hpp>
 
-using iroha::Error;
-using iroha::Result;
-using iroha::Value;
-using iroha::makeError;
-using iroha::makeValue;
+using iroha::expected::Error;
+using iroha::expected::Result;
+using iroha::expected::Value;
+using iroha::expected::makeError;
+using iroha::expected::makeValue;
 
 /**
  * @given Result constructed with valid value
@@ -90,7 +90,7 @@ TEST(ResultTest, ResultBindOperatorSuccesfulCase) {
 /**
  * @given Two functions which return result
  * @when bind operator is used to chain these 2 functions and first one return
- * error
+ *       error
  * @then result of bind contains error and second function is not invoked
  */
 TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
@@ -106,6 +106,36 @@ TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
   };
 
   auto result = get_int() | negate_int;
+
+  result.match([](Value<int> v) { FAIL(); },
+               [&call_counter](Error<std::string> e) {
+                 ASSERT_EQ("first function", e.error);
+                 ASSERT_EQ(0, call_counter);
+               });
+}
+
+/**
+ * @given Two functions which return different results, but value and error
+ *        types can be cast to each other
+ * @when bind operator is used to chain these 2 functions
+ * @then result type is properly deduced
+ */
+TEST(ResultTest, ResultBindOperatorCompatibleTypes) {
+  auto call_counter = 0;
+  auto get_int = []() -> Result<int, const char *> {
+    return makeError("first function");
+  };
+
+  // we cannot use FAIL, or ASSERTs because compiler fails to match return types
+  auto negate_int = [&call_counter](int a) -> Result<int, std::string> {
+    call_counter++;
+    return makeValue(-1 * a);
+  };
+
+  auto result = get_int() | negate_int;
+
+  static_assert(std::is_same<decltype(result), decltype(negate_int(1))>::value,
+                "Result type does not match function return type");
 
   result.match([](Value<int> v) { FAIL(); },
                [&call_counter](Error<std::string> e) {
