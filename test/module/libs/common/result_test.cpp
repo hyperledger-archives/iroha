@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include "common/result.hpp"
+#include <gtest/gtest.h>
 
 using iroha::expected::Error;
 using iroha::expected::Result;
@@ -87,7 +87,6 @@ TEST(ResultTest, ResultBindOperatorSuccesfulCase) {
                [](Error<std::string> e) { FAIL() << "Unexpected error case"; });
 }
 
-
 // function which must not be called for test to pass
 auto never_used_negate_int = [](int a) -> Result<int, std::string> {
   EXPECT_TRUE(false);
@@ -107,10 +106,9 @@ auto error_get_int = []() -> Result<int, std::string> {
 TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
   auto result = error_get_int() | never_used_negate_int;
 
-  result.match([](Value<int> v) { FAIL(); },
-               [](Error<std::string> e) {
-                 ASSERT_EQ("first function", e.error);
-               });
+  result.match(
+      [](Value<int> v) { FAIL(); },
+      [](Error<std::string> e) { ASSERT_EQ("first function", e.error); });
 }
 
 /**
@@ -122,11 +120,35 @@ TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
 TEST(ResultTest, ResultBindOperatorCompatibleTypes) {
   auto result = error_get_int() | never_used_negate_int;
 
-  static_assert(std::is_same<decltype(result), decltype(never_used_negate_int(1))>::value,
-                "Result type does not match function return type");
+  static_assert(
+      std::is_same<decltype(result), decltype(never_used_negate_int(1))>::value,
+      "Result type does not match function return type");
 
-  result.match([](Value<int> v) { FAIL(); },
-               [](Error<std::string> e) {
-                 ASSERT_EQ("first function", e.error);
-               });
+  result.match(
+      [](Value<int> v) { FAIL(); },
+      [](Error<std::string> e) { ASSERT_EQ("first function", e.error); });
+}
+
+/**
+ * @given Result with void value
+ * @when match function is invoked
+ * @then void type is correctly handled by compiler
+ */
+TEST(ResultTest, ResultVoidValue) {
+  Result<void, std::string> result = makeError("error message");
+  result.match(
+      [](Value<void> v) { FAIL(); },
+      [](Error<std::string> e) { ASSERT_EQ("error message", e.error); });
+}
+
+/**
+ * @given Result with void error
+ * @when match function is invoked
+ * @then void type is correctly handled by compiler
+ */
+TEST(ResultTest, ResultVoidError) {
+  Result<int, void> result = makeValue(5);
+  result.match(
+      [](Value<int> v) { ASSERT_EQ(5, v.value); },
+      [](Error<void> e) { FAIL(); });
 }

@@ -48,6 +48,9 @@ namespace iroha {
       }
     };
 
+    template<>
+    struct Value<void> {};
+
     template <typename E>
     struct Error {
       E error;
@@ -56,6 +59,9 @@ namespace iroha {
         return {error};
       }
     };
+
+    template<>
+    struct Error<void> {};
 
     /**
      * Result is a specialization of a variant type with value or error
