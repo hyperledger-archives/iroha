@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_BLOCK_VALIDATOR_HPP_HPP
-#define IROHA_BLOCK_VALIDATOR_HPP_HPP
+#ifndef IROHA_BLOCK_VALIDATOR_HPP
+#define IROHA_BLOCK_VALIDATOR_HPP
 
 #include <boost/format.hpp>
 #include <boost/variant/static_visitor.hpp>
@@ -25,6 +25,8 @@
 #include "interfaces/common_objects/types.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "validators/answer.hpp"
+
+//TODO 22/01/2018 x3medima17: write stateless validator IR-837
 
 namespace shared_model {
   namespace validation {
@@ -45,12 +47,10 @@ namespace shared_model {
           ReasonsGroupType reason;
           reason.first = "Block";
 
-          // TODO write validator
           return reason;
         }
 
        private:
-        // TODO write validator methods
       };
 
      public:
@@ -65,7 +65,6 @@ namespace shared_model {
         std::string prop_reason_name = "Block";
         ReasonsGroupType prop_reason(prop_reason_name, GroupedReasons());
 
-        // TODO Write validator
 
         return answer;
       }

@@ -60,60 +60,77 @@ namespace shared_model {
       TemplateBlockBuilder(const TemplateBlockBuilder<Sp> &o)
           : block_(o.block_) {}
 
+      /**
+       * Make transformation on copied content
+       * @tparam Transformation - callable type for changing the copy
+       * @param t - transform function for proto object
+       * @return new builder with updated state
+       */
+      template <int Fields, typename Transformation>
+      auto transform(Transformation t) const {
+        NextBuilder<Fields> copy = *this;
+        t(copy.block_);
+        return copy;
+      }
+
      public:
       TemplateBlockBuilder() = default;
 
-      NextBuilder<Transactions> transactions(
-          const std::vector<w<Transaction>> &transactions) {
+      auto transactions(const std::vector<w<Transaction>> &transactions) const {
         for (auto tx : transactions) {
-          iroha::protocol::Transaction proto_tx(tx->getTransport());
-          block_.mutable_payload()->mutable_transactions()->Add(std::move(proto_tx));
+          return transform<Transactions>([&](auto &block) {
+            iroha::protocol::Transaction proto_tx(tx->getTransport());
+            block.mutable_payload()->mutable_transactions()->Add(
+                std::move(proto_tx));
+          });
         }
-        return *this;
       }
 
-      NextBuilder<TxNumber> tx_number(
-          interface::Block::TransactionsNumberType tx_number) {
-        block_.mutable_payload()->set_tx_number(tx_number);
-        return *this;
+      auto tx_number(interface::Block::TransactionsNumberType tx_number) const {
+        return transform<TxNumber>([&](auto &block) {
+          block.mutable_payload()->set_tx_number(tx_number);
+
+        });
       }
 
-      NextBuilder<Height> height(interface::types::HeightType height) {
-        block_.mutable_payload()->set_height(height);
-        return *this;
+      auto height(interface::types::HeightType height) const {
+        return transform<Height>(
+            [&](auto &block) { block.mutable_payload()->set_height(height); });
       }
 
-      NextBuilder<PrevHash> prev_hash(crypto::Hash hash) {
-        block_.mutable_payload()->set_prev_block_hash(
-            crypto::toBinaryString(hash));
-        return *this;
+      auto prev_hash(crypto::Hash hash) const {
+        return transform<PrevHash>([&](auto &block) {
+
+          block.mutable_payload()->set_prev_block_hash(
+              crypto::toBinaryString(hash));
+        });
       }
 
-      NextBuilder<CreatedTime> created_time(
-          interface::types::TimestampType time) {
-        block_.mutable_payload()->set_created_time(time);
-        return *this;
+      auto created_time(interface::types::TimestampType time) const {
+        return transform<CreatedTime>([&](auto &block) {
+
+          block.mutable_payload()->set_created_time(time);
+        });
       }
 
-      NextBuilder<Signatures> signatures(
+      auto signatures(
           const interface::Signable<interface::Block,
                                     iroha::model::Block>::SignatureSetType
-              &signatures) {
-        for (const auto &signature : signatures) {
-          auto sig = block_.add_signatures();
-
-          sig->set_pubkey(crypto::toBinaryString(signature->publicKey()));
-          sig->set_signature(crypto::toBinaryString(signature->signedData()));
-        }
-        return *this;
+              &signatures) const {
+        return transform<Signatures>([&](auto &block) {
+          for (const auto &signature : signatures) {
+            auto sig = block_.add_signatures();
+            sig->set_pubkey(crypto::toBinaryString(signature->publicKey()));
+            sig->set_signature(crypto::toBinaryString(signature->signedData()));
+          }
+        });
       }
 
       UnsignedWrapper<Block> build() {
+        // TODO 22/01/2018 x3medima17: add stateless validator IR-837
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
         return UnsignedWrapper<Block>(Block(iroha::protocol::Block(block_)));
       }
-
-      static const int total = RequiredFields::TOTAL;
     };
 
     using BlockBuilder = TemplateBlockBuilder<>;

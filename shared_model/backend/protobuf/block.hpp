@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@
 
 namespace shared_model {
   namespace proto {
-    class Block FINAL : public CopyableProto<interface::Block,
+    class Block final : public CopyableProto<interface::Block,
                                              iroha::protocol::Block,
                                              Block> {
       template <class T>
@@ -61,8 +61,7 @@ namespace shared_model {
             }),
             payload_(detail::makeReferenceGenerator(
                 proto_, &iroha::protocol::Block::payload)),
-            payload_blob_(
-                [this] { return BlobType(payload_->SerializeAsString()); })
+            payload_blob_([this] { return makeBlob(*payload_); })
 
       {}
 
