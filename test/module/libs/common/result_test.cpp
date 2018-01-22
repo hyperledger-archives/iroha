@@ -94,23 +94,21 @@ TEST(ResultTest, ResultBindOperatorSuccesfulCase) {
  * @then result of bind contains error and second function is not invoked
  */
 TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
-  auto call_counter = 0;
   auto get_int = []() -> Result<int, std::string> {
     return makeError("first function");
   };
 
   // we cannot use FAIL, or ASSERTs because compiler fails to match return types
-  auto negate_int = [&call_counter](int a) -> Result<int, std::string> {
-    call_counter++;
+  auto negate_int = [](int a) -> Result<int, std::string> {
+    EXPECT_TRUE(false);
     return makeValue(-1 * a);
   };
 
   auto result = get_int() | negate_int;
 
   result.match([](Value<int> v) { FAIL(); },
-               [&call_counter](Error<std::string> e) {
+               [](Error<std::string> e) {
                  ASSERT_EQ("first function", e.error);
-                 ASSERT_EQ(0, call_counter);
                });
 }
 
@@ -121,14 +119,13 @@ TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
  * @then result type is properly deduced
  */
 TEST(ResultTest, ResultBindOperatorCompatibleTypes) {
-  auto call_counter = 0;
   auto get_int = []() -> Result<int, const char *> {
     return makeError("first function");
   };
 
   // we cannot use FAIL, or ASSERTs because compiler fails to match return types
-  auto negate_int = [&call_counter](int a) -> Result<int, std::string> {
-    call_counter++;
+  auto negate_int = [](int a) -> Result<int, std::string> {
+    EXPECT_TRUE(false);
     return makeValue(-1 * a);
   };
 
@@ -138,8 +135,7 @@ TEST(ResultTest, ResultBindOperatorCompatibleTypes) {
                 "Result type does not match function return type");
 
   result.match([](Value<int> v) { FAIL(); },
-               [&call_counter](Error<std::string> e) {
+               [](Error<std::string> e) {
                  ASSERT_EQ("first function", e.error);
-                 ASSERT_EQ(0, call_counter);
                });
 }
