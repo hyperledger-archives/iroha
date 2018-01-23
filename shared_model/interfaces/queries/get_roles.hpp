@@ -28,17 +28,28 @@ namespace shared_model {
     /**
      * Get all roles in the current system
      */
-    class GetRoles : public Primitive<GetRoles, iroha::model::GetRoles> {
+    class GetRoles :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<GetRoles>
+#else
+        public Primitive<GetRoles, iroha::model::GetRoles>
+#endif
+    {
      public:
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         return new iroha::model::GetRoles;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder().init("GetRoles").finalize();
       }
 
-      bool operator==(const ModelType &rhs) const override { return true; }
+      bool operator==(const ModelType &rhs) const override {
+        return true;
+      }
     };
 
   }  // namespace interface

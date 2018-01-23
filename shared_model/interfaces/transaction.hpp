@@ -34,8 +34,13 @@ namespace shared_model {
      * Transaction class represent well-formed intent from client to change
      * state of ledger.
      */
-    class Transaction
-        : public Signable<Transaction, iroha::model::Transaction> {
+    class Transaction :
+#ifdef DISABLE_BACKWARD
+        public Signable<Transaction>
+#else
+        public Signable<Transaction, iroha::model::Transaction>
+#endif
+    {
      public:
       /**
        * @return creator of transaction
@@ -58,6 +63,7 @@ namespace shared_model {
        */
       virtual const CommandsType &commands() const = 0;
 
+#ifndef DISABLE_BACKWARD
       iroha::model::Transaction *makeOldModel() const override {
         iroha::model::Transaction *oldStyleTransaction =
             new iroha::model::Transaction();
@@ -83,6 +89,7 @@ namespace shared_model {
         return oldStyleTransaction;
       }
 
+#endif
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("Transaction")

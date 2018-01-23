@@ -36,9 +36,13 @@ namespace shared_model {
     /**
      * TransactionResponse is a status of transaction in system
      */
-    class TransactionResponse
-        : public Primitive<TransactionResponse,
-                           iroha::model::TransactionResponse> {
+    class TransactionResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<TransactionResponse>
+#else
+        public Primitive<TransactionResponse, iroha::model::TransactionResponse>
+#endif
+    {
      private:
       /// PolymorphicWrapper shortcut type
       template <typename... Value>
@@ -72,12 +76,15 @@ namespace shared_model {
         return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto response = boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
         response->tx_hash = crypto::toBinaryString(transactionHash());
         return response;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return transactionHash() == rhs.transactionHash()

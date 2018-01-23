@@ -28,9 +28,14 @@ namespace shared_model {
     /**
      * Query for getting transactions of given asset of an account
      */
-    class GetAccountAssetTransactions
-        : public Primitive<GetAccountAssetTransactions,
-                           iroha::model::GetAccountAssetTransactions> {
+    class GetAccountAssetTransactions :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<GetAccountAssetTransactions>
+#else
+        public Primitive<GetAccountAssetTransactions,
+                         iroha::model::GetAccountAssetTransactions>
+#endif
+    {
      public:
       /**
        * @return account_id of requested transactions
@@ -41,12 +46,15 @@ namespace shared_model {
        */
       virtual const types::AccountIdType &assetId() const = 0;
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetAccountAssetTransactions;
         oldModel->account_id = accountId();
         oldModel->asset_id = assetId();
         return oldModel;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

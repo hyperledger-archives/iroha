@@ -39,8 +39,13 @@ namespace shared_model {
      * available in the system.
      * General note: this class is container for QRs but not a base class.
      */
-    class QueryResponse
-        : public Primitive<QueryResponse, iroha::model::QueryResponse> {
+    class QueryResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<QueryResponse>
+#else
+        public Primitive<QueryResponse, iroha::model::QueryResponse>
+#endif
+    {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename... Value>
@@ -77,6 +82,7 @@ namespace shared_model {
         return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto query_response = boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
@@ -84,6 +90,7 @@ namespace shared_model {
         query_response->query_hash = queryHash().makeOldModel<hashType>();
         return query_response;
       }
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return queryHash() == rhs.queryHash() and get() == rhs.get();

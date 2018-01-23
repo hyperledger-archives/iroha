@@ -27,19 +27,27 @@ namespace shared_model {
     /**
      * Get meta data of asset
      */
-    class GetAssetInfo
-        : public Primitive<GetAssetInfo, iroha::model::GetAssetInfo> {
+    class GetAssetInfo :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<GetAssetInfo>
+#else
+        public Primitive<GetAssetInfo, iroha::model::GetAssetInfo>
+#endif
+    {
      public:
       /**
        * @return asset identifier to get asset's information
        */
       virtual const types::AssetIdType &assetId() const = 0;
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetAssetInfo;
         oldModel->asset_id = assetId();
         return oldModel;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

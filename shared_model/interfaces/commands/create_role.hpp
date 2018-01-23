@@ -29,7 +29,13 @@ namespace shared_model {
     /**
      * Create new role in Iroha
      */
-    class CreateRole : public Primitive<CreateRole, iroha::model::CreateRole> {
+    class CreateRole :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<CreateRole>
+#else
+        public Primitive<CreateRole, iroha::model::CreateRole>
+#endif
+    {
      public:
       /**
        * @return Id of the domain to create
@@ -51,6 +57,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::CreateRole;
         oldModel->role_name = roleName();
@@ -58,6 +65,8 @@ namespace shared_model {
                                      rolePermissions().end());
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return roleName() == rhs.roleName()

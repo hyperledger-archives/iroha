@@ -31,8 +31,13 @@ namespace shared_model {
     /**
      * Representation of wallet in system
      */
-    class AccountAsset
-        : public Hashable<AccountAsset, iroha::model::AccountAsset> {
+    class AccountAsset :
+#ifdef DISABLE_BACKWARD
+        public Hashable<AccountAsset>
+#else
+        public Hashable<AccountAsset, iroha::model::AccountAsset>
+#endif
+    {
      public:
       /**
        * @return Identity of user, for fetching data
@@ -72,6 +77,7 @@ namespace shared_model {
             and balance() == rhs.balance();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of account asset.
@@ -87,6 +93,8 @@ namespace shared_model {
         new (&oldModel->balance) OldBalanceType(*p);
         return oldModel;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

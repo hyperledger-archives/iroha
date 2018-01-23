@@ -28,8 +28,13 @@
 
 namespace shared_model {
   namespace interface {
-    class GetTransactions
-        : public Primitive<GetTransactions, iroha::model::GetTransactions> {
+    class GetTransactions :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<GetTransactions>
+#else
+        public Primitive<GetTransactions, iroha::model::GetTransactions>
+#endif
+    {
      public:
       /// type of hashes collection
       using TransactionHashesType = std::vector<Transaction::HashType>;
@@ -39,6 +44,7 @@ namespace shared_model {
        */
       virtual const TransactionHashesType &transactionHashes() const = 0;
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new OldModelType;
         boost::for_each(transactionHashes(), [&oldModel](const auto &hash) {
@@ -48,6 +54,8 @@ namespace shared_model {
         });
         return oldModel;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

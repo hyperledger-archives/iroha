@@ -31,9 +31,14 @@ namespace shared_model {
     /**
      * Container of asset, for fetching data.
      */
-    class TransactionsResponse
-        : public Primitive<TransactionsResponse,
-                           iroha::model::TransactionsResponse> {
+    class TransactionsResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<TransactionsResponse>
+#else
+        public Primitive<TransactionsResponse,
+                         iroha::model::TransactionsResponse>
+#endif
+    {
      public:
       /// Type of a single Transaction
       using TransactionType = detail::PolymorphicWrapper<Transaction>;
@@ -64,6 +69,7 @@ namespace shared_model {
         return transactions() == rhs.transactions();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of transactions response.
@@ -82,6 +88,8 @@ namespace shared_model {
         }());
         return oldModel;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

@@ -31,8 +31,13 @@ namespace shared_model {
     /**
      * Provide response with account
      */
-    class AccountResponse
-        : public Primitive<AccountResponse, iroha::model::AccountResponse> {
+    class AccountResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<AccountResponse>
+#else
+        public Primitive<AccountResponse, iroha::model::AccountResponse>
+#endif
+    {
      public:
       /// Collection of role_id types
       using SetRoleIdType = std::vector<types::RoleIdType>;
@@ -69,6 +74,7 @@ namespace shared_model {
         return account() == rhs.account() and roles() == rhs.roles();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of asset response.
@@ -82,6 +88,8 @@ namespace shared_model {
         new (&oldModel->account) OldAccountType(*p);
         return oldModel;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

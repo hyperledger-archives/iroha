@@ -29,20 +29,27 @@ namespace shared_model {
     /**
      * Get all permissions related to specific role
      */
-    class GetRolePermissions
-        : public Primitive<GetRolePermissions,
-                           iroha::model::GetRolePermissions> {
+    class GetRolePermissions :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<GetRolePermissions>
+#else
+        public Primitive<GetRolePermissions, iroha::model::GetRolePermissions>
+#endif
+    {
      public:
       /**
        * @return role identifier containing requested permissions
        */
       virtual const types::RoleIdType &roleId() const = 0;
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetRolePermissions;
         oldModel->role_id = roleId();
         return oldModel;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

@@ -29,14 +29,20 @@
 namespace shared_model {
   namespace interface {
 
-    /**
-     * Interface provides signatures and adding them to model object
-     * @tparam Model - your new style model
-     * Architecture note: we inherit Signable from Hashable with following
-     * assumption - all Signable objects are signed by hash value.
-     */
+/**
+ * Interface provides signatures and adding them to model object
+ * @tparam Model - your new style model
+ * Architecture note: we inherit Signable from Hashable with following
+ * assumption - all Signable objects are signed by hash value.
+ */
+
+#ifndef DISABLE_BACKWARD
     template <typename Model, typename OldModel>
     class Signable : public Hashable<Model, OldModel> {
+#else
+    template <typename Model>
+    class Signable : public Hashable<Model> {
+#endif
      public:
       /**
        * Hash class for SigWrapper type. It's required since std::unordered_set
@@ -86,10 +92,14 @@ namespace shared_model {
        */
       virtual types::TimestampType createdTime() const = 0;
 
-      /**
-       * @return object payload (everything except signatures)
-       */
+/**
+ * @return object payload (everything except signatures)
+ */
+#ifndef DISABLE_BACKWARD
       virtual const typename Hashable<Model, OldModel>::BlobType &payload()
+#else
+      virtual const typename Hashable<Model>::BlobType &payload()
+#endif
           const = 0;
 
       /**

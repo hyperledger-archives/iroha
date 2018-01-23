@@ -27,8 +27,13 @@ namespace shared_model {
     /**
      * Grant permission to account
      */
-    class TransferAsset
-        : public Primitive<TransferAsset, iroha::model::TransferAsset> {
+    class TransferAsset :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<TransferAsset>
+#else
+        public Primitive<TransferAsset, iroha::model::TransferAsset>
+#endif
+    {
      public:
       /**
        * @return Id of the account from which transfer assets
@@ -65,6 +70,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::TransferAsset;
         oldModel->src_account_id = srcAccountId();
@@ -78,6 +84,8 @@ namespace shared_model {
         oldModel->description = message();
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return srcAccountId() == rhs.srcAccountId()

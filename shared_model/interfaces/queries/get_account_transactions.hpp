@@ -27,20 +27,28 @@ namespace shared_model {
     /**
      * Query for getting transactions of account
      */
-    class GetAccountTransactions
-        : public Primitive<GetAccountTransactions,
-                           iroha::model::GetAccountTransactions> {
+    class GetAccountTransactions :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<GetAccountTransactions>
+#else
+        public Primitive<GetAccountTransactions,
+                         iroha::model::GetAccountTransactions>
+#endif
+    {
      public:
       /**
        * @return account_id of requested transactions
        */
       virtual const types::AccountIdType &accountId() const = 0;
 
+#ifndef DISABLE_BACKWARD
       virtual OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetAccountTransactions;
         oldModel->account_id = accountId();
         return oldModel;
       }
+
+#endif
 
       virtual std::string toString() const override {
         return detail::PrettyStringBuilder()

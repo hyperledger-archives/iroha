@@ -27,7 +27,13 @@ namespace shared_model {
     /**
      * Set quorum of the account
      */
-    class SetQuorum : public Primitive<SetQuorum, iroha::model::SetQuorum> {
+    class SetQuorum :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<SetQuorum>
+#else
+        public Primitive<SetQuorum, iroha::model::SetQuorum>
+#endif
+    {
      public:
       /**
        * @return Id of the account to set quorum
@@ -46,12 +52,14 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::SetQuorum;
         oldModel->account_id = accountId();
         oldModel->new_quorum = newQuorum();
         return oldModel;
       }
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return accountId() == rhs.accountId()

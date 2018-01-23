@@ -28,8 +28,13 @@ namespace shared_model {
     /**
      * Provide response with all roles of the current system
      */
-    class RolesResponse
-        : public Primitive<RolesResponse, iroha::model::RolesResponse> {
+    class RolesResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<RolesResponse>
+#else
+        public Primitive<RolesResponse, iroha::model::RolesResponse>
+#endif
+    {
      public:
       /// type of roles collection
       using RolesIdType = std::vector<types::RoleIdType>;
@@ -57,6 +62,7 @@ namespace shared_model {
         return roles() == rhs.roles();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of roles response.
@@ -66,6 +72,8 @@ namespace shared_model {
         oldModel->roles = roles();
         return oldModel;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

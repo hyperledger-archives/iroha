@@ -28,8 +28,13 @@ namespace shared_model {
     /**
      * Create acccount in Iroha domain
      */
-    class CreateAccount
-        : public Primitive<CreateAccount, iroha::model::CreateAccount> {
+    class CreateAccount :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<CreateAccount>
+#else
+        public Primitive<CreateAccount, iroha::model::CreateAccount>
+#endif
+    {
      public:
       /**
        * @return Name of the account to create in Iroha
@@ -53,6 +58,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::CreateAccount;
         oldModel->account_name = accountName();
@@ -60,6 +66,8 @@ namespace shared_model {
         oldModel->pubkey = pubkey().makeOldModel<decltype(oldModel->pubkey)>();
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return accountName() == rhs.accountName()

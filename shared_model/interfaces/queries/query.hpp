@@ -46,7 +46,13 @@ namespace shared_model {
      * system.
      * General note: this class is container for queries but not a base class.
      */
-    class Query : public Signable<Query, iroha::model::Query> {
+    class Query :
+#ifdef DISABLE_BACKWARD
+        public Signable<Query>
+#else
+        public Signable<Query, iroha::model::Query>
+#endif
+    {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename... Value>
@@ -97,6 +103,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto old_model = boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
@@ -116,6 +123,7 @@ namespace shared_model {
                       });
         return old_model;
       }
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return this->get() == rhs.get();

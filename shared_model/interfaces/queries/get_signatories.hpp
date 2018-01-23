@@ -28,19 +28,27 @@ namespace shared_model {
     /**
      * Query for getting all signatories attached to account
      */
-    class GetSignatories
-        : public Primitive<GetSignatories, iroha::model::GetSignatories> {
+    class GetSignatories :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<GetSignatories>
+#else
+        public Primitive<GetSignatories, iroha::model::GetSignatories>
+#endif
+    {
      public:
       /**
        * @return account_id of requested signatories
        */
       virtual const types::AccountIdType &accountId() const = 0;
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetSignatories;
         oldModel->account_id = accountId();
         return oldModel;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

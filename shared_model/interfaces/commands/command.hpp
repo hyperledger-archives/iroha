@@ -48,7 +48,13 @@ namespace shared_model {
      * Class provides commands container for all commands in system.
      * General note: this class is container for commands, not a base class.
      */
-    class Command : public Hashable<Command, iroha::model::Command> {
+    class Command :
+#ifdef DISABLE_BACKWARD
+        public Hashable<Command>
+#else
+        public Hashable<Command, iroha::model::Command>
+#endif
+    {
      private:
       /// PolymorphicWrapper shortcut type
       template <typename... Value>
@@ -87,10 +93,12 @@ namespace shared_model {
         return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         return boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
       }
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return this->get() == rhs.get();

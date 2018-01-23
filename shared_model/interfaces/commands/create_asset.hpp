@@ -27,8 +27,13 @@ namespace shared_model {
     /**
      * Create asset in Iroha domain
      */
-    class CreateAsset
-        : public Primitive<CreateAsset, iroha::model::CreateAsset> {
+    class CreateAsset :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<CreateAsset>
+#else
+        public Primitive<CreateAsset, iroha::model::CreateAsset>
+#endif
+    {
      public:
       /**
        * @return Asset name to create
@@ -54,6 +59,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::CreateAsset;
         oldModel->asset_name = assetName();
@@ -61,6 +67,8 @@ namespace shared_model {
         oldModel->precision = precision();
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return assetName() == rhs.assetName() and domainId() == rhs.domainId()

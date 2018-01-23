@@ -28,7 +28,13 @@ namespace shared_model {
     /**
      * Add role to account used in Iroha
      */
-    class AppendRole : public Primitive<AppendRole, iroha::model::AppendRole> {
+    class AppendRole :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<AppendRole>
+#else
+        public Primitive<AppendRole, iroha::model::AppendRole>
+#endif
+    {
      public:
       /**
        * @return Account to add the role
@@ -47,12 +53,15 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AppendRole;
         oldModel->role_name = roleName();
         oldModel->account_id = accountId();
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return accountId() == rhs.accountId() and roleName() == rhs.roleName();

@@ -30,7 +30,13 @@ namespace shared_model {
     /**
      * User identity information in the system
      */
-    class Account : public Hashable<Account, iroha::model::Account> {
+    class Account :
+#ifdef DISABLE_BACKWARD
+        public Hashable<Account>
+#else
+        public Hashable<Account, iroha::model::Account>
+#endif
+    {
      public:
       /**
        * @return Identity of user, for fetching data
@@ -65,6 +71,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of account asset response.
@@ -76,6 +83,8 @@ namespace shared_model {
         oldModel->quorum = quorum();
         return oldModel;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

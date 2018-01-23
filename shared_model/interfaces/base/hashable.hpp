@@ -25,10 +25,17 @@
 
 namespace shared_model {
   namespace interface {
+#ifdef DISABLE_BACKWARD
+    template <typename ModelType,
+              typename HashProvider = shared_model::crypto::Sha3_256>
+    class Hashable : public ModelPrimitive<ModelType>
+#else
     template <typename ModelType,
               typename OldModel,
               typename HashProvider = shared_model::crypto::Sha3_256>
-    class Hashable : public Primitive<ModelType, OldModel> {
+    class Hashable : public Primitive<ModelType, OldModel>
+#endif
+    {
      public:
       /// Type of hash
       using HashType = crypto::Hash;
@@ -40,7 +47,9 @@ namespace shared_model {
       /**
        * @return hash of object.
        */
-      virtual const HashType &hash() const { return *hash_; }
+      virtual const HashType &hash() const {
+        return *hash_;
+      }
 
       /**
        * @return blob representation of object

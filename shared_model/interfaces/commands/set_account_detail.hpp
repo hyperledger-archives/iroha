@@ -29,8 +29,13 @@ namespace shared_model {
     /**
      * Set key-value pair of given account
      */
-    class SetAccountDetail
-        : public Primitive<SetAccountDetail, iroha::model::SetAccountDetail> {
+    class SetAccountDetail :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<SetAccountDetail>
+#else
+        public Primitive<SetAccountDetail, iroha::model::SetAccountDetail>
+#endif
+    {
      public:
       /**
        * @return Identity of user to set account detail
@@ -62,6 +67,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new OldModelType;
         oldModel->account_id = accountId();
@@ -69,6 +75,8 @@ namespace shared_model {
         oldModel->value = value();
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return accountId() == rhs.accountId() and key() == rhs.key()

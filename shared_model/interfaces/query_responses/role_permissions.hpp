@@ -28,9 +28,14 @@ namespace shared_model {
     /**
      * Response with all permissions related to role
      */
-    class RolePermissionsResponse
-        : public Primitive<RolePermissionsResponse,
-                           iroha::model::RolePermissionsResponse> {
+    class RolePermissionsResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<RolePermissionsResponse>
+#else
+        public Primitive<RolePermissionsResponse,
+                         iroha::model::RolePermissionsResponse>
+#endif
+    {
      public:
       /// type of role permissions collection
       using PermissionNameCollectionType =
@@ -61,6 +66,7 @@ namespace shared_model {
         return rolePermissions() == rhs.rolePermissions();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of role permissions response.
@@ -70,6 +76,8 @@ namespace shared_model {
         oldModel->role_permissions = rolePermissions();
         return oldModel;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

@@ -25,7 +25,13 @@
 namespace shared_model {
   namespace interface {
 
-    class Proposal : public Hashable<Proposal, iroha::model::Proposal> {
+    class Proposal :
+#ifdef DISABLE_BACKWARD
+        public Hashable<Proposal>
+#else
+        public Hashable<Proposal, iroha::model::Proposal>
+#endif
+    {
       /// Type of a single Transaction
       using TransactionType = detail::PolymorphicWrapper<Transaction>;
 
@@ -42,6 +48,7 @@ namespace shared_model {
        */
       virtual types::HeightType &height() const = 0;
 
+#ifndef DISABLE_BACKWARD
       iroha::model::Proposal *makeOldModel() const override {
         std::vector<iroha::model::Transaction> txs;
         std::for_each(
@@ -53,6 +60,8 @@ namespace shared_model {
         oldStyleProposal->height = height();
         return oldStyleProposal;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

@@ -30,19 +30,26 @@ namespace shared_model {
      * @tparam Model - concrete model error response
      */
     template <typename Model>
-    class AbstractErrorResponse
-        : public Primitive<Model, iroha::model::ErrorResponse> {
+    class AbstractErrorResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<Model>
+#else
+        public Primitive<Model, iroha::model::ErrorResponse>
+#endif
+    {
      private:
       /**
        * @return string representation of error reason
        */
       virtual std::string reason() const = 0;
 
+#ifndef DISABLE_BACKWARD
       /**
        * @return old model error reason
        */
       virtual iroha::model::ErrorResponse::Reason oldModelReason() const = 0;
 
+#endif
      public:
       // ------------------------| Primitive override |-------------------------
 
@@ -50,13 +57,18 @@ namespace shared_model {
         return detail::PrettyStringBuilder().init(reason()).finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       iroha::model::ErrorResponse *makeOldModel() const override {
         auto error_response = new iroha::model::ErrorResponse();
         error_response->reason = oldModelReason();
         return error_response;
       }
 
-      bool operator==(const Model &rhs) const override { return true; }
+#endif
+
+      bool operator==(const Model &rhs) const override {
+        return true;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

@@ -34,11 +34,14 @@ namespace shared_model {
         return "StatefulValidTxResponse";
       }
 
+#ifndef DISABLE_BACKWARD
       iroha::model::TransactionResponse::Status oldModelStatus()
           const override {
         return iroha::model::TransactionResponse::Status::
             STATEFUL_VALIDATION_SUCCESS;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

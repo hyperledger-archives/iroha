@@ -36,8 +36,13 @@ namespace shared_model {
      * QueryErrorResponse interface container for all concrete error responses
      * possible achieved in the system.
      */
-    class ErrorQueryResponse
-        : public Primitive<ErrorQueryResponse, iroha::model::ErrorResponse> {
+    class ErrorQueryResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<ErrorQueryResponse>
+#else
+        public Primitive<ErrorQueryResponse, iroha::model::ErrorResponse>
+#endif
+    {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename... Value>
@@ -68,10 +73,12 @@ namespace shared_model {
         return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         return boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
       }
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return get() == rhs.get();

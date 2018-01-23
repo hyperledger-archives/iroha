@@ -28,8 +28,13 @@ namespace shared_model {
     /**
      * Add new signatory to account
      */
-    class AddSignatory
-        : public Primitive<AddSignatory, iroha::model::AddSignatory> {
+    class AddSignatory :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<AddSignatory>
+#else
+        public Primitive<AddSignatory, iroha::model::AddSignatory>
+#endif
+    {
      public:
       /**
        * @return New signatory is identified with public key
@@ -48,12 +53,15 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AddSignatory;
         oldModel->pubkey = pubkey().makeOldModel<decltype(oldModel->pubkey)>();
         oldModel->account_id = accountId();
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return pubkey() == rhs.pubkey() and accountId() == rhs.accountId();

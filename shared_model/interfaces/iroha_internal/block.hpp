@@ -26,7 +26,13 @@
 namespace shared_model {
   namespace interface {
 
-    class Block : public Signable<Block, iroha::model::Block> {
+    class Block :
+#ifdef DISABLE_BACKWARD
+        public Signable<Block>
+#else
+        public Signable<Block, iroha::model::Block>
+#endif
+    {
      public:
       /**
        * @return block number in the ledger
@@ -57,6 +63,7 @@ namespace shared_model {
        */
       virtual const TransactionsCollectionType &transactions() const = 0;
 
+#ifndef DISABLE_BACKWARD
       iroha::model::Block *makeOldModel() const override {
         iroha::model::Block *oldStyleBlock = new iroha::model::Block();
         oldStyleBlock->height = height();
@@ -79,6 +86,7 @@ namespace shared_model {
                       });
         return oldStyleBlock;
       }
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

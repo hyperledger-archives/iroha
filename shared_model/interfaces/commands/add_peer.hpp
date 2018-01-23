@@ -28,7 +28,13 @@ namespace shared_model {
     /**
      * Add new peer to Iroha
      */
-    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
+    class AddPeer :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<AddPeer>
+#else
+        public Primitive<AddPeer, iroha::model::AddPeer>
+#endif
+    {
      public:
       /**
        * @return Peer key, acts like peer identifier
@@ -50,6 +56,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AddPeer;
         oldModel->address = peerAddress();
@@ -57,6 +64,7 @@ namespace shared_model {
             peerKey().makeOldModel<decltype(oldModel->peer_key)>();
         return oldModel;
       }
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return peerKey() == rhs.peerKey()

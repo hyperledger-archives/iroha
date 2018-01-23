@@ -29,9 +29,14 @@ namespace shared_model {
     /**
      * Subtract amount of asset from an account
      */
-    class SubtractAssetQuantity
-        : public Primitive<SubtractAssetQuantity,
-                           iroha::model::SubtractAssetQuantity> {
+    class SubtractAssetQuantity :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<SubtractAssetQuantity>
+#else
+        public Primitive<SubtractAssetQuantity,
+                         iroha::model::SubtractAssetQuantity>
+#endif
+    {
      public:
       /**
        * @return Identity of user to subtract quantity from
@@ -55,6 +60,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::SubtractAssetQuantity;
         using OldAmountType = iroha::Amount;
@@ -66,6 +72,8 @@ namespace shared_model {
         oldModel->asset_id = assetId();
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return accountId() == rhs.accountId() and assetId() == rhs.assetId()

@@ -29,7 +29,13 @@ namespace shared_model {
     /**
      * Representation of valuable goods in the system
      */
-    class Asset : public Hashable<Asset, iroha::model::Asset> {
+    class Asset :
+#ifdef DISABLE_BACKWARD
+        public Hashable<Asset>
+#else
+        public Hashable<Asset, iroha::model::Asset>
+#endif
+    {
      public:
       /**
        * @return Identity of asset
@@ -69,6 +75,7 @@ namespace shared_model {
             and precision() == rhs.precision();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of account asset response.
@@ -80,6 +87,7 @@ namespace shared_model {
         oldModel->precision = precision();
         return oldModel;
       }
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

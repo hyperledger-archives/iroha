@@ -27,8 +27,13 @@ namespace shared_model {
     /**
      * Grant permission to the account
      */
-    class GrantPermission
-        : public Primitive<GrantPermission, iroha::model::GrantPermission> {
+    class GrantPermission :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<GrantPermission>
+#else
+        public Primitive<GrantPermission, iroha::model::GrantPermission>
+#endif
+    {
      public:
       /**
        * @return Id of the account to whom grant permission
@@ -47,12 +52,15 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GrantPermission;
         oldModel->account_id = accountId();
         oldModel->permission_name = permissionName();
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return accountId() == rhs.accountId()

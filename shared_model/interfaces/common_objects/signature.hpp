@@ -31,7 +31,13 @@ namespace shared_model {
     /**
      * Class represents signature of high-level domain objects.
      */
-    class Signature : public Primitive<Signature, iroha::model::Signature> {
+    class Signature :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<Signature>
+#else
+        public Primitive<Signature, iroha::model::Signature>
+#endif
+    {
      public:
       /**
        * Type of public key
@@ -58,6 +64,7 @@ namespace shared_model {
             and signedData() == rhs.signedData();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         iroha::model::Signature *oldStyleSignature =
             new iroha::model::Signature();
@@ -69,6 +76,8 @@ namespace shared_model {
                 publicKey().toString());
         return oldStyleSignature;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

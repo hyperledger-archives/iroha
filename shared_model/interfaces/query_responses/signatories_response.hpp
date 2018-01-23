@@ -29,14 +29,18 @@ namespace shared_model {
     /**
      * Container of asset, for fetching data.
      */
-    class SignatoriesResponse
-        : public Primitive<SignatoriesResponse,
-                           iroha::model::SignatoriesResponse> {
+    class SignatoriesResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<SignatoriesResponse>
+#else
+        public Primitive<SignatoriesResponse, iroha::model::SignatoriesResponse>
+#endif
+    {
      public:
       /**
        * @return All public keys attached to account
        */
-      virtual const types::PublicKeyCollectionType& keys() const = 0;
+      virtual const types::PublicKeyCollectionType &keys() const = 0;
 
       /**
        * Stringify the data.
@@ -56,6 +60,7 @@ namespace shared_model {
         return keys() == rhs.keys();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of signatories response.
@@ -69,6 +74,8 @@ namespace shared_model {
         });
         return oldModel;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

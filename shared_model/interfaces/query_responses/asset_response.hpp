@@ -31,8 +31,13 @@ namespace shared_model {
     /**
      * Provide response with asset
      */
-    class AssetResponse
-        : public Primitive<AssetResponse, iroha::model::AssetResponse> {
+    class AssetResponse :
+#ifdef DISABLE_BACKWARD
+        public ModelPrimitive<AssetResponse>
+#else
+        public Primitive<AssetResponse, iroha::model::AssetResponse>
+#endif
+    {
      public:
       /**
        * @return Attached asset
@@ -57,6 +62,7 @@ namespace shared_model {
         return asset() == rhs.asset();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of asset response.
@@ -70,6 +76,8 @@ namespace shared_model {
         new (&oldModel->asset) OldAssetType(*p);
         return oldModel;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model
