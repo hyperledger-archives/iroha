@@ -24,16 +24,28 @@ using iroha::expected::Value;
 using iroha::expected::makeError;
 using iroha::expected::makeValue;
 
+constexpr auto error_case_message = "Unexpected error case";
+constexpr auto value_case_message = "Unexpected value case";
+constexpr auto first_function_call_message = "first function";
+constexpr auto error_message = "error message";
+
+// Function which returns function which when invoked, fails the test
+template <typename T>
+auto makeFailCase(const std::string &error_message) {
+  return [&error_message](T t) { FAIL() << error_message; };
+}
+
+// Function which, when invoked successfully passes test
+auto correct = [](auto t) { SUCCEED(); };
+
 /**
  * @given Result constructed with valid value
  * @when match function is invoked
- * @then match executes successful case
+ * @then match executes value case
  */
 TEST(ResultTest, ResultValueConstruction) {
   Result<int, std::string> result = makeValue(5);
-  result.match(
-      [](Value<int> value) { SUCCEED(); },
-      [](Error<std::string> error) { FAIL() << "Unexpected error case"; });
+  result.match(correct, makeFailCase<Error<std::string>>(error_case_message));
 }
 
 /**
@@ -43,8 +55,7 @@ TEST(ResultTest, ResultValueConstruction) {
  */
 TEST(ResultTest, ResultErrorConstruction) {
   Result<int, std::string> result = makeError("error message");
-  result.match([](Value<int> value) { FAIL() << "Unexpected success case"; },
-               [](Error<std::string> error) { SUCCEED(); });
+  result.match(makeFailCase<Value<int>>(value_case_message), correct);
 }
 
 /**
@@ -54,8 +65,7 @@ TEST(ResultTest, ResultErrorConstruction) {
  */
 TEST(ResultTest, ResultSameTypeValueConstruction) {
   Result<int, int> result = makeValue(5);
-  result.match([](Value<int> value) { SUCCEED(); },
-               [](Error<int> error) { FAIL() << "Unexpected error case"; });
+  result.match(correct, makeFailCase<Error<int>>(error_case_message));
 }
 
 /**
@@ -65,8 +75,7 @@ TEST(ResultTest, ResultSameTypeValueConstruction) {
  */
 TEST(ResultTest, ResultSameTypeErrorConstruction) {
   Result<int, int> result = makeError(10);
-  result.match([](Value<int> value) { FAIL() << "Unexpected success case"; },
-               [](Error<int> error) { SUCCEED(); });
+  result.match(makeFailCase<Value<int>>(value_case_message), correct);
 }
 
 /**
@@ -84,7 +93,7 @@ TEST(ResultTest, ResultBindOperatorSuccesfulCase) {
   auto result = get_int() | negate_int;
 
   result.match([](Value<int> v) { ASSERT_EQ(-10, v.value); },
-               [](Error<std::string> e) { FAIL() << "Unexpected error case"; });
+               makeFailCase<Error<std::string>>(error_case_message));
 }
 
 // function which must not be called for test to pass
@@ -94,7 +103,7 @@ auto never_used_negate_int = [](int a) -> Result<int, std::string> {
 };
 
 auto error_get_int = []() -> Result<int, std::string> {
-  return makeError("first function");
+  return makeError(first_function_call_message);
 };
 
 /**
@@ -106,9 +115,10 @@ auto error_get_int = []() -> Result<int, std::string> {
 TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
   auto result = error_get_int() | never_used_negate_int;
 
-  result.match(
-      [](Value<int> v) { FAIL(); },
-      [](Error<std::string> e) { ASSERT_EQ("first function", e.error); });
+  result.match(makeFailCase<Value<int>>(value_case_message),
+               [](Error<std::string> e) {
+                 ASSERT_EQ(first_function_call_message, e.error);
+               });
 }
 
 /**
@@ -124,9 +134,10 @@ TEST(ResultTest, ResultBindOperatorCompatibleTypes) {
       std::is_same<decltype(result), decltype(never_used_negate_int(1))>::value,
       "Result type does not match function return type");
 
-  result.match(
-      [](Value<int> v) { FAIL(); },
-      [](Error<std::string> e) { ASSERT_EQ("first function", e.error); });
+  result.match(makeFailCase<Value<int>>(value_case_message),
+               [](Error<std::string> e) {
+                 ASSERT_EQ(first_function_call_message, e.error);
+               });
 }
 
 /**
@@ -135,10 +146,9 @@ TEST(ResultTest, ResultBindOperatorCompatibleTypes) {
  * @then void type is correctly handled by compiler
  */
 TEST(ResultTest, ResultVoidValue) {
-  Result<void, std::string> result = makeError("error message");
-  result.match(
-      [](Value<void> v) { FAIL(); },
-      [](Error<std::string> e) { ASSERT_EQ("error message", e.error); });
+  Result<void, std::string> result = makeError(error_message);
+  result.match(makeFailCase<Value<void>>(value_case_message),
+               [](Error<std::string> e) { ASSERT_EQ(error_message, e.error); });
 }
 
 /**
@@ -148,7 +158,6 @@ TEST(ResultTest, ResultVoidValue) {
  */
 TEST(ResultTest, ResultVoidError) {
   Result<int, void> result = makeValue(5);
-  result.match(
-      [](Value<int> v) { ASSERT_EQ(5, v.value); },
-      [](Error<void> e) { FAIL(); });
+  result.match([](Value<int> v) { ASSERT_EQ(5, v.value); },
+               makeFailCase<Error<void>>(error_case_message));
 }
