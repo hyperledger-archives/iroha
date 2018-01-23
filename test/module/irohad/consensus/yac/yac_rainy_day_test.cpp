@@ -19,10 +19,10 @@
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 
-using ::testing::Return;
 using ::testing::_;
 using ::testing::An;
 using ::testing::AtLeast;
+using ::testing::Return;
 
 using namespace iroha::consensus::yac;
 using namespace framework::test_subscriber;

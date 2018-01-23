@@ -44,7 +44,6 @@ namespace iroha {
     const std::string can_read_assets = "CanReadAssets";
     const std::string can_get_roles = "CanGetRoles";
 
-
     const std::string can_get_my_account = "CanGetMyAccount";
     const std::string can_get_all_accounts = "CanGetAllAccounts";
     const std::string can_get_domain_accounts = "CanGetDomainAccounts";
@@ -57,7 +56,7 @@ namespace iroha {
     const std::string can_get_all_acc_ast = "CanGetAllAccountAssets";
     const std::string can_get_domain_acc_ast = "CanGetDomainAccountAssets";
     const std::string can_get_my_acc_detail = "CanGetMyAccountDetail";
-      const std::string can_get_all_acc_detail = "CanGetAllAccountDetail";
+    const std::string can_get_all_acc_detail = "CanGetAllAccountDetail";
     const std::string can_get_domain_acc_detail = "CanGetDomainAccountDetail";
 
     const std::string can_get_my_acc_txs = "CanGetMyAccountTransactions";

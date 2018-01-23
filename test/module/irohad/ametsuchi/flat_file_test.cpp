@@ -181,7 +181,8 @@ TEST_F(BlStore_Test, GetDeniedBlock) {
   auto id = 1u;
   bl_store->add(id, block);
 
-  auto filename = boost::filesystem::path{block_store_path} / FlatFile::id_to_name(id);
+  auto filename =
+      boost::filesystem::path{block_store_path} / FlatFile::id_to_name(id);
 
   using perms = boost::filesystem::perms;
 

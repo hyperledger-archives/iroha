@@ -41,8 +41,7 @@ namespace iroha {
           : block_store(std::move(block_store)),
             index(std::move(index)),
             pg_lazy(std::move(pg_lazy)),
-            pg_nontx(std::move(pg_nontx)) {
-      }
+            pg_nontx(std::move(pg_nontx)) {}
 
       std::unique_ptr<FlatFile> block_store;
       std::unique_ptr<cpp_redis::client> index;
@@ -52,16 +51,18 @@ namespace iroha {
 
     class StorageImpl : public Storage {
      protected:
-      static nonstd::optional<ConnectionContext>
-      initConnections(std::string block_store_dir,
-                      std::string redis_host,
-                      std::size_t redis_port,
-                      std::string postgres_options);
+      static nonstd::optional<ConnectionContext> initConnections(
+          std::string block_store_dir,
+          std::string redis_host,
+          std::size_t redis_port,
+          std::string postgres_options);
 
      public:
       static std::shared_ptr<StorageImpl> create(
-          std::string block_store_dir, std::string redis_host,
-          std::size_t redis_port, std::string postgres_connection);
+          std::string block_store_dir,
+          std::string redis_host,
+          std::size_t redis_port,
+          std::string postgres_connection);
 
       std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
 
@@ -78,7 +79,6 @@ namespace iroha {
       std::shared_ptr<BlockQuery> getBlockQuery() const override;
 
      protected:
-
       StorageImpl(std::string block_store_dir,
                   std::string redis_host,
                   std::size_t redis_port,

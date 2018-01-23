@@ -20,8 +20,8 @@
 
 #include <model/command.hpp>
 #include <string>
-#include "common/types.hpp"
 #include "amount/amount.hpp"
+#include "common/types.hpp"
 
 namespace iroha {
   namespace model {
@@ -51,7 +51,8 @@ namespace iroha {
       AddAssetQuantity() {}
 
       AddAssetQuantity(const std::string &account_id,
-                       const std::string &asset_id, Amount amount)
+                       const std::string &asset_id,
+                       Amount amount)
           : account_id(account_id), asset_id(asset_id), amount(amount) {}
     };
   }  // namespace model

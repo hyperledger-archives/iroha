@@ -37,15 +37,15 @@ namespace torii {
      * @param tx
      * @return grpc::Status - returns connection is success or not.
      */
-    grpc::Status Torii(const iroha::protocol::Transaction& tx);
+    grpc::Status Torii(const iroha::protocol::Transaction &tx);
 
     /**
      * @param tx
      * @param response returns ToriiResponse if succeeded
      * @return grpc::Status - returns connection is success or not.
      */
-    grpc::Status Status(const iroha::protocol::TxStatusRequest& tx,
-                        iroha::protocol::ToriiResponse& response);
+    grpc::Status Status(const iroha::protocol::TxStatusRequest &tx,
+                        iroha::protocol::ToriiResponse &response);
 
    private:
     grpc::ClientContext context_;
@@ -64,11 +64,12 @@ namespace torii {
      * @param ip
      * @param port
      */
-    CommandAsyncClient(const std::string& ip, const int port);
+    CommandAsyncClient(const std::string &ip, const int port);
 
     ~CommandAsyncClient();
 
-    using ToriiCallback = std::function<void(google::protobuf::Empty& response)>;
+    using ToriiCallback =
+        std::function<void(google::protobuf::Empty &response)>;
     using StatusCallback = std::function<void(iroha::protocol::ToriiResponse)>;
 
     /**
@@ -77,16 +78,16 @@ namespace torii {
      * @param callback
      * @return grpc::Status
      */
-    grpc::Status Torii(const iroha::protocol::Transaction& tx,
-                       const ToriiCallback& callback);
+    grpc::Status Torii(const iroha::protocol::Transaction &tx,
+                       const ToriiCallback &callback);
 
     /**
      * @param tx_request contains hash of requested tx
      * @param callback processes obtained response
      * @return grpc::Status
      */
-    grpc::Status Status(const iroha::protocol::TxStatusRequest& tx_request,
-                        const StatusCallback& callback);
+    grpc::Status Status(const iroha::protocol::TxStatusRequest &tx_request,
+                        const StatusCallback &callback);
 
    private:
     /**

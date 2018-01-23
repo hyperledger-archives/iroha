@@ -43,7 +43,9 @@ namespace iroha {
                    bool(ametsuchi::WsvQuery &, ametsuchi::WsvCommand &));
 
       MOCK_CONST_METHOD1(Equals, bool(const Command &));
-      bool operator==(const Command &rhs) const override { return Equals(rhs); }
+      bool operator==(const Command &rhs) const override {
+        return Equals(rhs);
+      }
 
       MOCK_CONST_METHOD1(NotEquals, bool(const Command &));
       bool operator!=(const Command &rhs) const override {

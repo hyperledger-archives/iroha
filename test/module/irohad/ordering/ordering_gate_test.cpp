@@ -47,15 +47,16 @@ class MockOrderingGateTransportGrpcService
 
 class OrderingGateTest : public ::testing::Test {
  public:
-  OrderingGateTest():
-    fake_service{std::make_shared<MockOrderingGateTransportGrpcService>()} {}
+  OrderingGateTest()
+      : fake_service{std::make_shared<MockOrderingGateTransportGrpcService>()} {
+  }
 
   void SetUp() override {
     thread = std::thread([this] {
       grpc::ServerBuilder builder;
       int port = 0;
       builder.AddListeningPort(
-           "0.0.0.0:0", grpc::InsecureServerCredentials(), &port);
+          "0.0.0.0:0", grpc::InsecureServerCredentials(), &port);
 
       builder.RegisterService(fake_service.get());
 
@@ -84,7 +85,6 @@ class OrderingGateTest : public ::testing::Test {
   }
 
   std::unique_ptr<grpc::Server> server;
-
 
   std::shared_ptr<OrderingGateTransportGrpc> transport;
   std::shared_ptr<OrderingGateImpl> gate_impl;

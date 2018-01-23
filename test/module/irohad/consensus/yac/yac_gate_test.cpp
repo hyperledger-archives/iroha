@@ -32,10 +32,10 @@ using namespace framework::test_subscriber;
 #include <iostream>
 using namespace std;
 
-using ::testing::Return;
 using ::testing::_;
 using ::testing::An;
 using ::testing::AtLeast;
+using ::testing::Return;
 
 class YacGateTest : public ::testing::Test {
  public:

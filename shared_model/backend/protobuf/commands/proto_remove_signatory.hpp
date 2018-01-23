@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 #ifndef IROHA_PROTO_REMOVE_SIGNATORY_HPP
 #define IROHA_PROTO_REMOVE_SIGNATORY_HPP
 
@@ -24,9 +23,10 @@
 namespace shared_model {
   namespace proto {
 
-    class RemoveSignatory final : public CopyableProto<interface::RemoveSignatory,
-                                                       iroha::protocol::Command,
-                                                       RemoveSignatory> {
+    class RemoveSignatory final
+        : public CopyableProto<interface::RemoveSignatory,
+                               iroha::protocol::Command,
+                               RemoveSignatory> {
      public:
       template <typename CommandType>
       explicit RemoveSignatory(CommandType &&command)
@@ -38,8 +38,7 @@ namespace shared_model {
                   remove_signatory_->public_key());
             }) {}
 
-      RemoveSignatory(const RemoveSignatory &o)
-          : RemoveSignatory(o.proto_) {}
+      RemoveSignatory(const RemoveSignatory &o) : RemoveSignatory(o.proto_) {}
 
       RemoveSignatory(RemoveSignatory &&o) noexcept
           : RemoveSignatory(std::move(o.proto_)) {}

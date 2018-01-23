@@ -24,8 +24,7 @@ namespace iroha {
   namespace model {
     namespace generators {
       Block BlockGenerator::generateGenesisBlock(
-          ts64_t created_ts,
-          const std::vector<Transaction>& transactions) {
+          ts64_t created_ts, const std::vector<Transaction> &transactions) {
         Block block{};
         block.created_ts = created_ts;
         block.height = 1;

@@ -35,8 +35,7 @@ namespace shared_model {
 
       AppendRole(const AppendRole &o) : AppendRole(o.proto_) {}
 
-      AppendRole(AppendRole &&o) noexcept
-          : AppendRole(std::move(o.proto_)) {}
+      AppendRole(AppendRole &&o) noexcept : AppendRole(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
         return append_role_->account_id();

@@ -89,6 +89,6 @@ namespace iroha {
     auto visitor = make_visitor(visitors...);
     return boost::apply_visitor(visitor, std::forward<TVariant>(variant));
   }
-}
+}  // namespace iroha
 
 #endif  // IROHA_VISITOR_HPP

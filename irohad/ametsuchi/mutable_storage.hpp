@@ -30,7 +30,6 @@ namespace iroha {
      */
     class MutableStorage {
      public:
-
       /**
        * Applies a block to current mutable state
        * using logic specified in function
@@ -46,9 +45,9 @@ namespace iroha {
        * @return True if block was successfully applied, false otherwise.
        */
       virtual bool apply(const model::Block &block,
-                         std::function<bool(const model::Block &, WsvQuery &,
-                                            const hash256_t &)>
-                             function) = 0;
+                         std::function<bool(const model::Block &,
+                                            WsvQuery &,
+                                            const hash256_t &)> function) = 0;
 
       virtual ~MutableStorage() = default;
     };

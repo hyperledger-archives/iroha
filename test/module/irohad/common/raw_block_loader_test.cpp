@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include "main/raw_block_loader.hpp"
+#include <gtest/gtest.h>
 
 #include "framework/test_block_generator.hpp"
 #include "model/converters/json_block_factory.hpp"
@@ -44,4 +44,3 @@ TEST(BlockLoaderTest, BlockLoaderWhenParseBlock) {
   ASSERT_TRUE(new_block.has_value());
   ASSERT_EQ(block, new_block.value());
 }
-

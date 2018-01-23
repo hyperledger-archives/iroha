@@ -33,7 +33,6 @@ namespace shared_model {
      */
     class FieldValidator {
      public:
-
       FieldValidator(time_t future_gap = default_future_gap);
 
       void validateAccountId(

@@ -47,7 +47,9 @@ namespace shared_model {
         return create_asset_->domain_id();
       }
 
-      const PrecisionType &precision() const override { return *precision_; }
+      const PrecisionType &precision() const override {
+        return *precision_;
+      }
 
      private:
       // lazy
