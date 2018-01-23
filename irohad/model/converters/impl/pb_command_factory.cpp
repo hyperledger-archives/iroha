@@ -26,7 +26,8 @@ namespace iroha {
       PbCommandFactory::PbCommandFactory() {
         boost::assign::insert(pb_role_map_)
             // Can Get My Account Detail
-            (protocol::RolePermission::can_get_my_acc_detail, can_get_my_acc_detail)
+            (protocol::RolePermission::can_get_my_acc_detail,
+             can_get_my_acc_detail)
             // Can Get My Account Assets
             (protocol::RolePermission::can_get_my_acc_ast, can_get_my_acc_ast)
             // Can Get My Signatories
@@ -66,7 +67,8 @@ namespace iroha {
             // Can add asset quantity
             (protocol::RolePermission::can_add_asset_qty, can_add_asset_qty)
             // Can subtract asset quantity
-            (protocol::RolePermission::can_subtract_asset_qty, can_subtract_asset_qty)
+            (protocol::RolePermission::can_subtract_asset_qty,
+             can_subtract_asset_qty)
             // Can append role
             (protocol::RolePermission::can_append_role, can_append_role)
             // Can append role
@@ -142,23 +144,29 @@ namespace iroha {
       }
 
       // subtract asset quantity
-      protocol::SubtractAssetQuantity PbCommandFactory::serializeSubtractAssetQuantity(
-        const model::SubtractAssetQuantity &subtract_asset_quantity) {
+      protocol::SubtractAssetQuantity
+      PbCommandFactory::serializeSubtractAssetQuantity(
+          const model::SubtractAssetQuantity &subtract_asset_quantity) {
         protocol::SubtractAssetQuantity pb_subtract_asset_quantity;
-        pb_subtract_asset_quantity.set_account_id(subtract_asset_quantity.account_id);
-        pb_subtract_asset_quantity.set_asset_id(subtract_asset_quantity.asset_id);
+        pb_subtract_asset_quantity.set_account_id(
+            subtract_asset_quantity.account_id);
+        pb_subtract_asset_quantity.set_asset_id(
+            subtract_asset_quantity.asset_id);
         auto amount = pb_subtract_asset_quantity.mutable_amount();
         amount->CopyFrom(serializeAmount(subtract_asset_quantity.amount));
         return pb_subtract_asset_quantity;
       }
 
-      model::SubtractAssetQuantity PbCommandFactory::deserializeSubtractAssetQuantity(
-        const protocol::SubtractAssetQuantity &pb_subtract_asset_quantity) {
+      model::SubtractAssetQuantity
+      PbCommandFactory::deserializeSubtractAssetQuantity(
+          const protocol::SubtractAssetQuantity &pb_subtract_asset_quantity) {
         model::SubtractAssetQuantity subtract_asset_quantity;
-        subtract_asset_quantity.account_id = pb_subtract_asset_quantity.account_id();
-        subtract_asset_quantity.asset_id = pb_subtract_asset_quantity.asset_id();
+        subtract_asset_quantity.account_id =
+            pb_subtract_asset_quantity.account_id();
+        subtract_asset_quantity.asset_id =
+            pb_subtract_asset_quantity.asset_id();
         subtract_asset_quantity.amount =
-          deserializeAmount(pb_subtract_asset_quantity.amount());
+            deserializeAmount(pb_subtract_asset_quantity.amount());
 
         return subtract_asset_quantity;
       }
@@ -489,9 +497,9 @@ namespace iroha {
         // -----|SubtractAssetQuantity|-----
         if (instanceof <model::SubtractAssetQuantity>(command)) {
           auto serialized = commandFactory.serializeSubtractAssetQuantity(
-            static_cast<const model::SubtractAssetQuantity &>(command));
+              static_cast<const model::SubtractAssetQuantity &>(command));
           cmd.set_allocated_subtract_asset_quantity(
-            new protocol::SubtractAssetQuantity(serialized));
+              new protocol::SubtractAssetQuantity(serialized));
         }
 
         // -----|AddPeer|-----
@@ -618,7 +626,8 @@ namespace iroha {
         // -----|SubtractAssetQuantity|-----
         if (command.has_subtract_asset_quantity()) {
           auto pb_command = command.subtract_asset_quantity();
-          auto cmd = commandFactory.deserializeSubtractAssetQuantity(pb_command);
+          auto cmd =
+              commandFactory.deserializeSubtractAssetQuantity(pb_command);
           val = std::make_shared<model::SubtractAssetQuantity>(cmd);
         }
 

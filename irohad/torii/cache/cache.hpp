@@ -31,7 +31,9 @@ namespace iroha {
         return MAX_HANDLER_MAP_SIZE_HIGH;
       }
 
-      uint32_t getIndexSizeLowImpl() const { return MAX_HANDLER_MAP_SIZE_LOW; }
+      uint32_t getIndexSizeLowImpl() const {
+        return MAX_HANDLER_MAP_SIZE_LOW;
+      }
 
       uint32_t getCacheItemCountImpl() const {
         return (uint32_t)handler_map_.size();
@@ -63,14 +65,14 @@ namespace iroha {
       std::list<KeyType> handler_map_index_;
 
       /**
-      * Protection from handler map overflow.
-      * TODO 27/10/2017 luckychess Values are quite random and should be tuned
-      * for better performance and may be even move to config IR-579
-      */
+       * Protection from handler map overflow.
+       * TODO 27/10/2017 luckychess Values are quite random and should be tuned
+       * for better performance and may be even move to config IR-579
+       */
       const uint32_t MAX_HANDLER_MAP_SIZE_HIGH = 20000;
       const uint32_t MAX_HANDLER_MAP_SIZE_LOW = 10000;
     };
-  }
-}
+  }  // namespace cache
+}  // namespace iroha
 
 #endif  // IROHA_CACHE_HPP

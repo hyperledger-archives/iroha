@@ -133,8 +133,8 @@ int main(int argc, char *argv[]) {
               std::istream_iterator<std::string>(),
               std::back_inserter(peers_address));
     // Generate genesis block
-    auto transaction = TransactionGenerator()
-      .generateGenesisTransaction(0, std::move(peers_address));
+    auto transaction = TransactionGenerator().generateGenesisTransaction(
+        0, std::move(peers_address));
     auto block = generator.generateGenesisBlock(0, {transaction});
 
     // Convert to json
@@ -164,7 +164,8 @@ int main(int argc, char *argv[]) {
           FLAGS_name);
       return EXIT_FAILURE;
     }
-    // TODO 13/09/17 grimadas: Init counters from Iroha, or read from disk? IR-334
+    // TODO 13/09/17 grimadas: Init counters from Iroha, or read from disk?
+    // IR-334
     InteractiveCli interactiveCli(
         FLAGS_name,
         0,

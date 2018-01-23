@@ -23,16 +23,16 @@
 namespace shared_model {
   namespace proto {
 
-    class GrantPermission final : public CopyableProto<interface::GrantPermission,
-                                                       iroha::protocol::Command,
-                                                       GrantPermission>  {
+    class GrantPermission final
+        : public CopyableProto<interface::GrantPermission,
+                               iroha::protocol::Command,
+                               GrantPermission> {
      public:
       template <typename CommandType>
       explicit GrantPermission(CommandType &&command)
           : CopyableProto(std::forward<CommandType>(command)),
             grant_permission_(detail::makeReferenceGenerator(
-                proto_, &iroha::protocol::Command::grant_permission)) {
-      }
+                proto_, &iroha::protocol::Command::grant_permission)) {}
 
       GrantPermission(const GrantPermission &o) : GrantPermission(o.proto_) {}
 

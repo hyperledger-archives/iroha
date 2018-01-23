@@ -34,9 +34,8 @@ namespace iroha {
           std::shared_ptr<model::CommandExecutorFactory> command_executors);
 
       bool apply(const model::Transaction &transaction,
-                 std::function<bool(const model::Transaction &,
-                                    WsvQuery &)>
-                 function) override;
+                 std::function<bool(const model::Transaction &, WsvQuery &)>
+                     function) override;
 
       ~TemporaryWsvImpl() override;
 

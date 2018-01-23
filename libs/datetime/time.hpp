@@ -44,7 +44,7 @@ namespace iroha {
     }
 
     using time_t = decltype(iroha::time::now());
-  }
-}
+  }  // namespace time
+}  // namespace iroha
 
 #endif  // IROHA_TIME_H

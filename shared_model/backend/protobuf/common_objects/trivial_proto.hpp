@@ -67,7 +67,9 @@ namespace shared_model {
         return new Impl(Proto(*proto_));
       }
 
-      const Proto &getTransport() const { return *proto_; }
+      const Proto &getTransport() const {
+        return *proto_;
+      }
 
      protected:
       detail::ReferenceHolder<Proto> proto_;

@@ -79,7 +79,9 @@ namespace iroha_cli {
       return line;
     }
 
-    void printEnd() { std::cout << "--------------------" << std::endl; }
+    void printEnd() {
+      std::cout << "--------------------" << std::endl;
+    }
 
     nonstd::optional<std::pair<std::string, uint16_t>> parseIrohaPeerParams(
         ParamsDescription params) {
@@ -125,10 +127,8 @@ namespace iroha_cli {
     size_t addMenuPoint(std::vector<std::string> &menu_points,
                         const std::string &description,
                         const std::string &command_short_name) {
-      menu_points.push_back(
-          std::to_string(menu_points.size() + 1) + ". " + description + " ("
-          + command_short_name
-          + ")");
+      menu_points.push_back(std::to_string(menu_points.size() + 1) + ". "
+                            + description + " (" + command_short_name + ")");
       return menu_points.size();
     }
   }  // namespace interactive

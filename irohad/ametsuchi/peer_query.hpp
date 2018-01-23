@@ -18,10 +18,10 @@
 #ifndef IROHA_PEER_QUERY_HPP
 #define IROHA_PEER_QUERY_HPP
 
-#include <vector>
 #include <memory>
-#include "model/peer.hpp"
+#include <vector>
 #include "ametsuchi/wsv_query.hpp"
+#include "model/peer.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -31,7 +31,6 @@ namespace iroha {
      */
     class PeerQuery {
      public:
-
       /**
        * Fetch peers stored in ledger
        * @return list of peers in insertion to ledger order
@@ -39,9 +38,8 @@ namespace iroha {
       virtual nonstd::optional<std::vector<model::Peer>> getLedgerPeers() = 0;
 
       virtual ~PeerQuery() = default;
-
     };
 
   }  // namespace ametsuchi
 }  // namespace iroha
-#endif //IROHA_PEER_QUERY_HPP
+#endif  // IROHA_PEER_QUERY_HPP

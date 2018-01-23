@@ -33,10 +33,10 @@ constexpr int Port = 50051;
 
 constexpr size_t TimesFind = 1;
 
-using ::testing::Return;
-using ::testing::A;
 using ::testing::_;
+using ::testing::A;
 using ::testing::AtLeast;
+using ::testing::Return;
 
 using namespace iroha::network;
 using namespace iroha::validation;

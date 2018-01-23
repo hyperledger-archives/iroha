@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "torii/processor/query_processor_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/queries/responses/error_response.hpp"
 
 namespace iroha {
@@ -45,5 +45,5 @@ namespace iroha {
     QueryProcessorImpl::queryNotifier() {
       return subject_.get_observable();
     }
-  }
-}
+  }  // namespace torii
+}  // namespace iroha

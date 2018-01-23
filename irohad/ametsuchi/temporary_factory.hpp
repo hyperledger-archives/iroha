@@ -38,6 +38,6 @@ namespace iroha {
       virtual ~TemporaryFactory() = default;
     };
 
-  } // namespace ametsuchi
-} // namespace iroha
-#endif //IROHA_TEMPORARY_FACTORY_HPP
+  }  // namespace ametsuchi
+}  // namespace iroha
+#endif  // IROHA_TEMPORARY_FACTORY_HPP

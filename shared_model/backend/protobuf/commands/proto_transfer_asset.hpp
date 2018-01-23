@@ -25,7 +25,7 @@ namespace shared_model {
 
     class TransferAsset final : public CopyableProto<interface::TransferAsset,
                                                      iroha::protocol::Command,
-                                                     TransferAsset>{
+                                                     TransferAsset> {
      public:
       template <typename CommandType>
       explicit TransferAsset(CommandType &&command)
@@ -35,13 +35,14 @@ namespace shared_model {
             amount_(
                 [this] { return proto::Amount(transfer_asset_->amount()); }) {}
 
-      TransferAsset(const TransferAsset &o)
-          : TransferAsset(o.proto_) {}
+      TransferAsset(const TransferAsset &o) : TransferAsset(o.proto_) {}
 
       TransferAsset(TransferAsset &&o) noexcept
           : TransferAsset(std::move(o.proto_)) {}
 
-      const interface::Amount &amount() const override { return *amount_; }
+      const interface::Amount &amount() const override {
+        return *amount_;
+      }
 
       const interface::types::AssetIdType &assetId() const override {
         return transfer_asset_->asset_id();

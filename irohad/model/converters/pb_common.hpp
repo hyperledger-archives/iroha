@@ -31,8 +31,8 @@ namespace iroha {
       // amount
       protocol::Amount serializeAmount(iroha::Amount iroha_amount);
       iroha::Amount deserializeAmount(protocol::Amount pb_amount);
-    }
-  }
+    }  // namespace converters
+  }    // namespace model
 
   /**
    * Calculate hash from protobuf model object
@@ -44,6 +44,6 @@ namespace iroha {
   hash256_t hash(const T &pb) {
     return sha3_256(pb.payload().SerializeAsString());
   }
-}
+}  // namespace iroha
 
 #endif  // IROHA_PB_COMMON_HPP

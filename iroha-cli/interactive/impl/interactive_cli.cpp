@@ -63,11 +63,17 @@ namespace iroha_cli {
       }
     }
 
-    void InteractiveCli::startQuery() { query_cli_.run(); }
+    void InteractiveCli::startQuery() {
+      query_cli_.run();
+    }
 
-    void InteractiveCli::startTx() { tx_cli_.run(); }
+    void InteractiveCli::startTx() {
+      tx_cli_.run();
+    }
 
-    void InteractiveCli::startTxStatusRequest() { statusCli_.run(); }
+    void InteractiveCli::startTxStatusRequest() {
+      statusCli_.run();
+    }
 
     void InteractiveCli::run() {
       std::cout << "Welcome to Iroha-Cli. " << std::endl;

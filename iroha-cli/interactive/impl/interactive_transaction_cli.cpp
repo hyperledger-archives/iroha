@@ -241,9 +241,7 @@ namespace iroha_cli {
       auto create_account = parser::parseValue<bool>(params[8]);
 
       if (not(read_self and edit_self and read_all and transfer_receive
-              and asset_create
-              and create_domain
-              and roles
+              and asset_create and create_domain and roles
               and create_account)) {
         std::cout << "Wrong format for permission" << std::endl;
         return nullptr;
