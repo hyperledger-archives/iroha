@@ -29,7 +29,10 @@ namespace iroha {
     explicit KeysManagerImpl(const std::string &account_name);
 
     nonstd::optional<iroha::keypair_t> loadKeys() override;
+    nonstd::optional<iroha::keypair_t> loadKeys(
+        const std::string &pass_phrase) override;
 
+    bool createKeys() override;
     bool createKeys(const std::string &pass_phrase) override;
 
     static const std::string kPubExt;
@@ -50,6 +53,8 @@ namespace iroha {
      * @return true, if no problem with file reading
      */
     bool loadFile(const std::string &filename, std::string &res);
+
+    bool store(const std::string &pub, const std::string &priv);
 
     std::string account_name_;
     logger::Logger log_;

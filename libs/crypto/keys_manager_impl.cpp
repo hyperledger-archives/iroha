@@ -20,7 +20,9 @@
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "logger/logger.hpp"
 
+#include <algorithm>
 #include <fstream>
+#include <random>
 #include <utility>
 
 using iroha::operator|;
@@ -36,10 +38,41 @@ namespace iroha {
    * @return keypair on success, otherwise nullopt
    */
   template <typename T, typename V>
-  auto deserializeKeypairField(T iroha::keypair_t::*field, const V &value) {
+  auto deserializeKeypairField(T keypair_t::*field, const V &value) {
     return [=](auto keypair) mutable {
-      return iroha::hexstringToArray<T::size()>(value)
-          | iroha::assignObjectField(keypair, field);
+      return hexstringToArray<T::size()>(value)
+          | assignObjectField(keypair, field);
+    };
+  }
+
+  std::string encrypt(const privkey_t &privkey,
+                      const std::string &pass_phrase) {
+    std::string ciphertext(privkey.size(), '\0');
+    const auto pass_size = std::max(1ul, pass_phrase.size());
+
+    for (auto i = 0u; i < privkey.size(); i++) {
+      ciphertext[i] = privkey[i] ^ pass_phrase[i % pass_size];
+    }
+    return ciphertext;
+  }
+
+  auto deserializedEncrypted(const std::string &s,
+                             const std::string &pass_phrase) {
+    constexpr auto size = privkey_t::size();
+    auto decryption = [=](auto binstr) {
+      std::string key(binstr.size(), '\0');
+      const auto pass_size = std::max(1ul, pass_phrase.size());
+
+      for (auto i = 0u; i < binstr.size(); i++) {
+        key[i] = binstr[i] ^ pass_phrase[i % pass_size];
+      }
+      return nonstd::make_optional(key);
+    };
+
+    return [=](auto keypair) mutable {
+      return hexstringToBytestring(s) | decryption
+          | stringToBlob<
+                 size> | assignObjectField(keypair, &keypair_t::privkey);
     };
   }
 
@@ -47,12 +80,11 @@ namespace iroha {
       : account_name_(std::move(account_name)),
         log_(logger::log("KeysManagerImpl")) {}
 
-  bool KeysManagerImpl::validate(const iroha::keypair_t &keypair) const {
+  bool KeysManagerImpl::validate(const keypair_t &keypair) const {
     std::string test = "12345";
-    auto sig = iroha::sign(
-        iroha::sha3_256(test).to_string(), keypair.pubkey, keypair.privkey);
-    if (not iroha::verify(
-            iroha::sha3_256(test).to_string(), keypair.pubkey, sig)) {
+    auto sig =
+        sign(sha3_256(test).to_string(), keypair.pubkey, keypair.privkey);
+    if (not verify(sha3_256(test).to_string(), keypair.pubkey, sig)) {
       log_->error("key validation failed");
       return false;
     }
@@ -70,7 +102,7 @@ namespace iroha {
     return true;
   }
 
-  nonstd::optional<iroha::keypair_t> KeysManagerImpl::loadKeys() {
+  nonstd::optional<keypair_t> KeysManagerImpl::loadKeys() {
     std::string pub_key;
     std::string priv_key;
 
@@ -78,27 +110,69 @@ namespace iroha {
         || !loadFile(account_name_ + kPrivExt, priv_key))
       return nonstd::nullopt;
 
-    return nonstd::make_optional<iroha::keypair_t>()
-        | deserializeKeypairField(&iroha::keypair_t::pubkey, pub_key)
-        | deserializeKeypairField(&iroha::keypair_t::privkey, priv_key) |
+    return nonstd::make_optional<keypair_t>()
+        | deserializeKeypairField(&keypair_t::pubkey, pub_key)
+        | deserializeKeypairField(&keypair_t::privkey, priv_key) |
         [this](auto keypair) {
           return this->validate(keypair) ? nonstd::make_optional(keypair)
                                          : nonstd::nullopt;
         };
   }
 
-  bool KeysManagerImpl::createKeys(const std::string &pass_phrase) {
-    auto seed = iroha::create_seed(pass_phrase);
-    auto key_pairs = iroha::create_keypair(seed);
+  nonstd::optional<keypair_t> KeysManagerImpl::loadKeys(
+      const std::string &pass_phrase) {
+    std::string pub_key;
+    std::string priv_key;
 
+    if (!loadFile(account_name_ + kPubExt, pub_key)
+        || !loadFile(account_name_ + kPrivExt, priv_key))
+      return nonstd::nullopt;
+
+    return nonstd::make_optional<keypair_t>()
+        | deserializeKeypairField(&keypair_t::pubkey, pub_key)
+        | deserializedEncrypted(priv_key, pass_phrase) | [this](auto keypair) {
+            return this->validate(keypair) ? nonstd::make_optional(keypair)
+                                           : nonstd::nullopt;
+          };
+  }
+
+  keypair_t generate() {
+    blob_t<32> seed;
+    std::generate(seed.begin(), seed.end(), [] {
+      static std::random_device rd;
+      static std::uniform_int_distribution<> dist;
+      return dist(rd);
+    });
+
+    return create_keypair(seed);
+  }
+
+  bool KeysManagerImpl::createKeys() {
+    auto key_pairs = generate();
+
+    auto pub = key_pairs.pubkey.to_hexstring();
+    auto priv = key_pairs.privkey.to_hexstring();
+    return store(pub, priv);
+  }
+
+  bool KeysManagerImpl::createKeys(const std::string &pass_phrase) {
+    auto key_pairs = generate();
+
+    auto pub = key_pairs.pubkey.to_hexstring();
+    auto priv = bytestringToHexstring(encrypt(key_pairs.privkey, pass_phrase));
+    return store(pub, priv);
+  }
+
+  bool KeysManagerImpl::store(const std::string &pub, const std::string &priv) {
     std::ofstream pub_file(account_name_ + kPubExt);
     std::ofstream priv_file(account_name_ + kPrivExt);
     if (not pub_file or not priv_file) {
       return false;
     }
-    pub_file << key_pairs.pubkey.to_hexstring();
-    priv_file << key_pairs.privkey.to_hexstring();
-    return true;
+
+    pub_file << pub;
+    priv_file << priv;
+    return pub_file.good() && priv_file.good();
   }
 
   const std::string KeysManagerImpl::kPubExt = ".pub";

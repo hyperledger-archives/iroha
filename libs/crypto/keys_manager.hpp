@@ -38,12 +38,27 @@ namespace iroha {
     virtual nonstd::optional<iroha::keypair_t> loadKeys() = 0;
 
     /**
-     * Create keys and associate with account
-     * @param account_name
-     * @param pass_phrase
+     * Create keys a new keypair and store it encrypted on disk
+     * @param pass_phrase is password for the keys
      * @return false if create account failed
      */
     virtual bool createKeys(const std::string &pass_phrase) = 0;
+
+    /**
+     * Load encrypted keys associated with the manager, then validate loaded
+     * keypair by signing and verifying signature of test message
+     * @param pass_phrase is the key for decryption
+     * @return nullopt if no keypair found locally, or verification failure
+     */
+    virtual nonstd::optional<iroha::keypair_t> loadKeys(
+        const std::string &pass_phrase) = 0;
+
+    /**
+     * Create a new keypair and store it as is on disk
+     * @param pass_phrase is password for the keys
+     * @return false if create account failed
+     */
+    virtual bool createKeys() = 0;
   };
 
 }  // namespace iroha
