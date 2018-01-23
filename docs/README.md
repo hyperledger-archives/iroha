@@ -1,6 +1,6 @@
 # Iroha reStructuredTest documentation
 
-The purpose of this documentation is to convey design and architecure aspects of Iroha ledger in a sctructured approach, as well as operational side: how-tos, guides, and examples. Docs are accessible via ReadTheDocs website, and can be generated to a lot of formats, available in Sphinx. In order to contribute, one should to be familiar with [reStructuredTest](docutils.sourceforge.net/rst.html) syntax, and follow principles described in this file.
+The purpose of this documentation is to convey design and architecture aspects of Iroha ledger in a structured approach, as well as operational side: how-tos, guides, and examples. Docs are accessible via ReadTheDocs website, and can be generated to a lot of formats, available in Sphinx. In order to contribute, one should to be familiar with [reStructuredTest](docutils.sourceforge.net/rst.html) syntax, and follow principles described in this file.
 
 ## Principles
 
@@ -24,7 +24,7 @@ The purpose of this documentation is to convey design and architecure aspects of
 
 After that, the documentation is generated in html format in `_build` folder. You can check another formats on Sphinx website or just by typing `make`.
 
-### Contributors
+## Contributors
 
 The docs are supported by following contributors ([emoji key](https://github.com/kentcdodds/all-contributors#emoji-key)):
 

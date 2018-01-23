@@ -11,7 +11,7 @@ Generally, people want to run Iroha locally in order to try out the API and expl
 Local environment
 ----------------
 
-By local environment, it is meant to have daemon process and the components(Redis and Postgres) deployed without any containers. This might be helpful in cases when messing up with Docker is not preferred — generally a quick exploration of the features.
+By local environment, it is meant to have daemon process and the components (Redis and Postgres) deployed without any containers. This might be helpful in cases when messing up with Docker is not preferred — generally a quick exploration of the features.
 
 Run postgres server
 """""""""""""""""""
@@ -21,7 +21,7 @@ In order to run postgres server locally, you should check postgres `website <htt
 Run redis server
 """"""""""""""""
 
-Redis is known for a simple run process. When it is installed in the system, it enough to execute `redis-server` binary without arguments. Just in case, check their `website <https://redis.io/topics/quickstart>`__.
+Redis is known for a simple run process. When it is installed in the system, it is enough to execute `redis-server` binary without arguments. Just in case, check their `website <https://redis.io/topics/quickstart>`__.
 
 Run iroha daemon (irohad)
 """""""""""""""""""""""""
@@ -68,7 +68,7 @@ In order to run Iroha peer as a single instance in Docker, you should pull the i
 
 .. code-block:: shell
 
-    docker pull hyperledger/Iroha-docker:latest
+    docker pull hyperledger/iroha-docker:latest
 
 .. Hint:: Use *latest* tag for latest stable release, and *develop* for latest development version  
 
@@ -169,7 +169,7 @@ Anyone can reuse existing Ansible Playbook in order to create a network of peers
 Prerequisites
 """""""""""""
 
- * One ore more <virtual> machines with a linux distributive installed. 
+ * One ore more <virtual> machines with a Linux distributive installed.
  * SSH access to those machines
  * Ansible installed on a local machine
 
@@ -206,7 +206,7 @@ Step-by-step guide
 
 9. Wait until playbook finishes and then Iroha network is ready and up.
 
-Cheking iroha status
+Checking Iroha peer status
 """"""""""""""""""""
 
 1. SSH into any of your machines
@@ -244,4 +244,4 @@ Create genesis block by generating it via `iroha-cli` or manually, as it is desc
 Not having a keypair for a peer
 -------------------------------
 
-In order to create a keypair for an account or a peer, use iroha-cli binary by passing the name of the peer with -new_account option.
+In order to create a keypair for an account or a peer, use iroha-cli binary by passing the name of the peer with `--new_account` option.

@@ -11,7 +11,7 @@ Install Prerequisites
 Development environment
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-In order to contribute to the codebase of Hyperledger Iroha, one should meet following requirements:
+In order to contribute to the codebase of Hyperledger Iroha, one should meet the following requirements:
 
 :Operating system: Linux or macOS
 :Compiler: GCC5.4+ or clang
