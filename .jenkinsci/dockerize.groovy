@@ -5,7 +5,7 @@ def doDockerize() {
     sh "cp ${IROHA_BUILD}/iroha.deb ${IROHA_RELEASE}/iroha.deb"
 
     env.TAG = ""
-    if (env.CHANGE_ID != null) {s
+    if (env.CHANGE_ID != null) {
         env.TAG = env.CHANGE_ID
     }
     else {
