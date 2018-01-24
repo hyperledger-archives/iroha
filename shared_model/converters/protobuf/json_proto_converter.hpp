@@ -20,7 +20,7 @@
 
 #include <google/protobuf/util/json_util.h>
 #include <string>
-#include "backend/protobuf/commands/proto_command.hpp"
+#include "backend/protobuf/block.hpp"
 #include "commands.pb.h"
 
 namespace shared_model {
@@ -71,6 +71,22 @@ namespace shared_model {
         if (tx) {
           return shared_model::proto::Transaction(
               iroha::protocol::Transaction(tx.value()));
+        } else {
+          return boost::none;
+        }
+      }
+      /**
+       * Converts json into block shared model object
+       * @param json is the json string containing block
+       * @return optional of shared model transaction object containing the
+       * object if conversion was successful and none otherwise
+       */
+      boost::optional<shared_model::proto::Block> jsonToBlock(
+          std::string json) {
+        auto block = jsonToModel<iroha::protocol::Block>(json);
+        if (block) {
+          return shared_model::proto::Block(
+              iroha::protocol::Block(block.value()));
         } else {
           return boost::none;
         }

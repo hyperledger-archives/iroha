@@ -22,6 +22,10 @@
 
 using namespace shared_model::converters::protobuf;
 
+/**
+ * creates sample transaction
+ * @return tx shared model object
+ */
 shared_model::proto::Transaction generateTransaction() {
   shared_model::interface::types::CounterType tx_counter = 1;
   std::string creator_account_id = "admin@test";
@@ -36,6 +40,26 @@ shared_model::proto::Transaction generateTransaction() {
       iroha::protocol::Transaction(proto_tx));
 }
 
+/**
+ * creates sample block containing several txs
+ * @return block shared model object
+ */
+shared_model::proto::Block generateBlock() {
+  size_t tx_number = 10;
+  iroha::protocol::Block block;
+  for (size_t i = 0; i < tx_number; i++) {
+    auto tx = generateTransaction();
+    block.mutable_payload()->add_transactions()->CopyFrom(tx.getTransport());
+  }
+
+  return shared_model::proto::Block(iroha::protocol::Block(block));
+}
+
+/**
+ * @given sample transaction shared model object
+ * @when tranasaction is converted to json and then converted back to shared model object
+ * @then original and obtained objects are equal
+ */
 TEST(JsonProtoConverterTest, JsonToProtoTxTest) {
   auto orig_tx = generateTransaction();
   auto json = modelToJson(orig_tx);
@@ -44,4 +68,19 @@ TEST(JsonProtoConverterTest, JsonToProtoTxTest) {
   ASSERT_TRUE(obtained_tx);
   ASSERT_EQ(orig_tx.getTransport().SerializeAsString(),
             obtained_tx.value().getTransport().SerializeAsString());
+}
+
+/**
+ * @given sample block shared model object
+ * @when block is converted to json and then converted back to shared model object
+ * @then original and obtained objects are equal
+ */
+TEST(JsonProtoConverterTest, JsonToProtoBlockTest) {
+  auto orig_block = generateBlock();
+  auto json = modelToJson(orig_block);
+
+  auto obtained_block = jsonToBlock(json);
+  ASSERT_TRUE(obtained_block);
+  ASSERT_EQ(orig_block.getTransport().SerializeAsString(),
+            obtained_block.value().getTransport().SerializeAsString());
 }
