@@ -1395,8 +1395,8 @@ class AddPeerTest : public CommandValidateExecuteTest {
     CommandValidateExecuteTest::SetUp();
 
     add_peer = std::make_shared<AddPeer>();
-    add_peer->address = "iroha_node:10001";
-    add_peer->peer_key.fill(4);
+    add_peer->peer.address = "iroha_node:10001";
+    add_peer->peer.pubkey.fill(4);
 
     command = add_peer;
     role_permissions = {can_add_peer};

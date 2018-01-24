@@ -18,7 +18,7 @@
 #ifndef IROHA_PEER_HPP
 #define IROHA_PEER_HPP
 
-#include <common/types.hpp>
+#include "common/types.hpp"
 
 namespace iroha {
   namespace model {
@@ -30,9 +30,7 @@ namespace iroha {
       /**
        * IP address of peer for connection
        */
-      std::string address{};
-
-      using AddressType = decltype(address);
+      AddressType address{};
 
       /**
        * Public key of peer
@@ -48,7 +46,13 @@ namespace iroha {
         } else {
           return false;
         }
-      };
+      }
+
+      Peer() = default;
+
+      Peer(const AddressType &address, const pubkey_t &pubkey)
+          : address(address), pubkey(pubkey) {}
+
     };
   }
 }

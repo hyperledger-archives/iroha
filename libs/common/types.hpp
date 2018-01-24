@@ -289,5 +289,8 @@ namespace iroha {
     return typeid(Base) == typeid(ptr);
   }
 
+  // Peer address
+  using AddressType = std::string;
+
 }  // namespace iroha
 #endif  // IROHA_COMMON_TYPES_HPP

@@ -24,6 +24,7 @@
 
 #include "block.pb.h"
 #include "commands.pb.h"
+#include "primitive.pb.h"
 
 #include "amount/amount.hpp"
 #include "builders/protobuf/helpers.hpp"
@@ -123,8 +124,11 @@ namespace shared_model {
                    const interface::types::PubkeyType &peer_key) const {
         return addCommand([&](auto proto_command) {
           auto command = proto_command->mutable_add_peer();
-          command->set_address(address);
-          command->set_peer_key(crypto::toBinaryString(peer_key));
+
+          iroha::protocol::Peer *peer = new iroha::protocol::Peer();
+          peer->set_address(address);
+          peer->set_peer_key(crypto::toBinaryString(peer_key));
+          command->set_allocated_peer(peer);
         });
       }
 

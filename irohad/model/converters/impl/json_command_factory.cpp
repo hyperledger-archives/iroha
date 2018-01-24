@@ -19,6 +19,7 @@
 
 #include <model/commands/set_account_detail.hpp>
 #include <regex>
+
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
@@ -29,7 +30,6 @@
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/transfer_asset.hpp"
-
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
 #include "model/commands/detach_role.hpp"
@@ -162,15 +162,14 @@ namespace iroha {
       Document JsonCommandFactory::serializeAddPeer(
           std::shared_ptr<Command> command) {
         auto add_peer = static_cast<AddPeer *>(command.get());
-
         Document document;
         auto &allocator = document.GetAllocator();
 
         document.SetObject();
         document.AddMember("command_type", "AddPeer", allocator);
-        document.AddMember("address", add_peer->address, allocator);
+        document.AddMember("address", add_peer->peer.address, allocator);
         document.AddMember(
-            "peer_key", add_peer->peer_key.to_hexstring(), allocator);
+            "peer_key", add_peer->peer.pubkey.to_hexstring(), allocator);
 
         return document;
       }
@@ -178,9 +177,10 @@ namespace iroha {
       optional_ptr<Command> JsonCommandFactory::deserializeAddPeer(
           const Value &document) {
         auto des = makeFieldDeserializer(document);
-        return make_optional_ptr<AddPeer>()
-            | des.String(&AddPeer::peer_key, "peer_key")
-            | des.String(&AddPeer::address, "address") | toCommand;
+        auto peer = make_optional_ptr<Peer>()
+            | des.String(&Peer::pubkey, "peer_key")
+            | des.String(&Peer::address, "address");
+        return std::shared_ptr<Command>(new AddPeer(**peer));
       }
 
       // AddSignatory

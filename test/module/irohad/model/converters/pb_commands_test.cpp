@@ -84,7 +84,7 @@ TEST(CommandTest, subtract_asset_quantity) {
 
 TEST(CommandTest, add_peer) {
   auto orig_addPeer = iroha::model::AddPeer();
-  orig_addPeer.address = "10.90.129.23";
+  orig_addPeer.peer.address = "10.90.129.23";
 
   auto factory = iroha::model::converters::PbCommandFactory();
 
@@ -94,7 +94,7 @@ TEST(CommandTest, add_peer) {
   ASSERT_EQ(orig_addPeer, serial_addPeer);
   command_converter_test(orig_addPeer);
 
-  orig_addPeer.address = "134";
+  orig_addPeer.peer.address = "134";
   ASSERT_NE(serial_addPeer, orig_addPeer);
 }
 

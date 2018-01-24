@@ -20,6 +20,7 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "interfaces/common_objects/peer.hpp"
 #include "model/commands/add_peer.hpp"
 
 namespace shared_model {
@@ -31,36 +32,28 @@ namespace shared_model {
     class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
      public:
       /**
-       * @return Peer key, acts like peer identifier
+       * @return Peer
        */
-      virtual const types::PubkeyType &peerKey() const = 0;
-
-      /// Type of peer address
-      using AddressType = std::string;
-      /**
-       * @return New peer's address
-       */
-      virtual const AddressType &peerAddress() const = 0;
+      virtual const interface::Peer &peer() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("AddPeer")
-            .append(peerKey().toString())
-            .append("peer_address", peerAddress())
+            .append("peer_address", peer().address())
+            .append("pubkey", peer().pubkey().toString())
             .finalize();
       }
 
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AddPeer;
-        oldModel->address = peerAddress();
-        oldModel->peer_key =
-            peerKey().makeOldModel<decltype(oldModel->peer_key)>();
+        oldModel->peer.address = peer().address();
+        oldModel->peer.pubkey =
+            peer().pubkey().makeOldModel<decltype(oldModel->peer.pubkey)>();
         return oldModel;
       }
 
       bool operator==(const ModelType &rhs) const override {
-        return peerKey() == rhs.peerKey()
-            and peerAddress() == rhs.peerAddress();
+        return peer() == rhs.peer();
       }
     };
   }  // namespace interface

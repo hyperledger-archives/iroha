@@ -271,8 +271,8 @@ TEST_F(AmetsuchiTest, PeerTest) {
 
   Transaction txn;
   AddPeer addPeer;
-  addPeer.peer_key.at(0) = 1;
-  addPeer.address = "192.168.0.1:50051";
+  addPeer.peer.pubkey.at(0) = 1;
+  addPeer.peer.address = "192.168.0.1:50051";
   txn.commands.push_back(std::make_shared<AddPeer>(addPeer));
 
   Block block;
@@ -283,8 +283,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
   auto peers = wsv->getPeers();
   ASSERT_TRUE(peers);
   ASSERT_EQ(peers->size(), 1);
-  ASSERT_EQ(peers->at(0).pubkey, addPeer.peer_key);
-  ASSERT_EQ(peers->at(0).address, addPeer.address);
+  ASSERT_EQ(peers->at(0), addPeer.peer);
 }
 
 TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
@@ -650,7 +649,7 @@ Block getBlock() {
   Transaction txn;
   txn.creator_account_id = "admin1";
   AddPeer add_peer;
-  add_peer.address = "192.168.0.0";
+  add_peer.peer.address = "192.168.0.0";
   txn.commands.push_back(std::make_shared<AddPeer>(add_peer));
   Block block;
   block.transactions.push_back(txn);

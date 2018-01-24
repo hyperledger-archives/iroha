@@ -29,8 +29,7 @@ namespace iroha {
     namespace generators {
       class CommandGenerator {
        public:
-        std::shared_ptr<Command> generateAddPeer(const std::string &address,
-                                                 const pubkey_t &key);
+        std::shared_ptr<Command> generateAddPeer(const Peer &peer);
 
         std::shared_ptr<Command> generateAddSignatory(
             const std::string &account_id, const pubkey_t &key);

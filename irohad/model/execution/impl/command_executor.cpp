@@ -399,12 +399,8 @@ namespace iroha {
                                   ametsuchi::WsvCommand &commands,
                                   const std::string &creator_account_id) {
       auto add_peer = static_cast<const AddPeer &>(command);
-
-      Peer peer;
-      peer.address = add_peer.address;
-      peer.pubkey = add_peer.peer_key;
       // Will return false if peer is not unique
-      return commands.insertPeer(peer);
+      return commands.insertPeer(add_peer.peer);
     }
 
     bool AddPeerExecutor::hasPermissions(

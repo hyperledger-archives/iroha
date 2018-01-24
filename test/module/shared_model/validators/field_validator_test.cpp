@@ -29,6 +29,7 @@
 #include "module/shared_model/validators/validators_fixture.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "validators/field_validator.hpp"
+#include "backend/protobuf/common_objects/peer.hpp"
 
 using namespace shared_model;
 
@@ -70,7 +71,7 @@ class FieldValidatorTest : public ValidatorsTest {
  public:
   FieldValidatorTest() {
     for (const auto &field :
-         {"peer_key", "public_key", "main_pubkey", "pubkey"}) {
+         {"public_key", "main_pubkey", "pubkey"}) {
       field_validators.insert(makeTransformValidator(
           field,
           &FieldValidator::validatePubkey,
@@ -174,6 +175,19 @@ class FieldValidatorTest : public ValidatorsTest {
 
   /************************** TEST CASES ***************************/
 
+  /// Make message for wrong formed field
+  std::string makeMessageWrongField(const std::string &field_name,
+                                    const std::string &value) {
+    return (boost::format("Wrongly formed %s, passed value: '%s'") % field_name
+        % value).str();
+  }
+
+  /// Make message for wrong key size
+  std::string makeMessageWrongKeySize(const std::string &public_key) {
+    return (boost::format("Public key has wrong size, passed size: %d")
+        % public_key.size()).str();
+  }
+
   /// Create test case with field assignment initialization function
   template <typename F, typename V>
   FieldTestCase makeTestCase(const std::string &case_name,
@@ -204,9 +218,7 @@ class FieldValidatorTest : public ValidatorsTest {
         field,
         value,
         false,
-        (boost::format("Wrongly formed %s, passed value: '%s'") % field_name
-         % value)
-            .str());
+        makeMessageWrongField(field_name, value));
   }
 
   /// Generate test cases for id types with name, separator, and domain
@@ -247,20 +259,31 @@ class FieldValidatorTest : public ValidatorsTest {
        false,
        "Amount must be greater than 0, passed value: 0"}};
 
-  FieldTestCase invalidAddressTestCase(const std::string &case_name,
-                                       const std::string &address) {
-    return makeInvalidCase(case_name,
-                           "peer address",
-                           &FieldValidatorTest::address_localhost,
-                           address);
+  /// Make test case for invalid peer address
+  FieldTestCase makeInvalidAddressTestCase(const std::string &case_name,
+                                           const std::string &address,
+                                           const std::string &pubkey) {
+    return {case_name,
+          [&, address, pubkey] {
+            this->peer.set_address(address);
+            this->peer.set_peer_key(pubkey);
+          },
+          false,
+          makeMessageWrongField("peer address", address)};
   }
 
-  // Address validation test is handled in libs/validator,
-  // so test cases are not exhaustive
-  std::vector<FieldTestCase> address_test_cases{
-      makeValidCase(&FieldValidatorTest::address_localhost, "182.13.35.1:3040"),
-      invalidAddressTestCase("invalid_ip_address", "182.13.35.1:3040--"),
-      invalidAddressTestCase("empty_string", "")};
+  /// Make test case for invalid peer public key
+  FieldTestCase makeInvalidPubkeyTestCase(const std::string &case_name,
+                                           const std::string &address,
+                                           const std::string &pubkey) {
+    return {case_name,
+            [&, address, pubkey] {
+              this->peer.set_address(address);
+              this->peer.set_peer_key(pubkey);
+            },
+            false,
+            makeMessageWrongKeySize(pubkey)};
+  }
 
   FieldTestCase invalidPublicKeyTestCase(const std::string &case_name,
                                          const std::string &public_key) {
@@ -269,15 +292,24 @@ class FieldValidatorTest : public ValidatorsTest {
         &FieldValidatorTest::public_key,
         public_key,
         false,
-        (boost::format("Public key has wrong size, passed size: %d")
-         % public_key.size())
-            .str());
+        makeMessageWrongKeySize(public_key));
   }
 
   std::vector<FieldTestCase> public_key_test_cases{
       makeValidCase(&FieldValidatorTest::public_key, std::string(32, '0')),
       invalidPublicKeyTestCase("invalid_key_length", std::string(64, '0')),
       invalidPublicKeyTestCase("empty_string", "")};
+
+  std::vector<FieldTestCase> peer_test_cases{
+      {"valid_peer",
+       [&] { peer.set_address("182.13.35.1:3040"); peer.set_peer_key(std::string(32, '0')); },
+       true,
+       ""},
+      makeInvalidAddressTestCase("invalid_peer_address", "182.13.35.1:3040xx", std::string(32, '0')),
+      makeInvalidAddressTestCase("invalid_peer_address_empty", "", std::string(32, '0')),
+      makeInvalidPubkeyTestCase("invalid_peer_pubkey_length", "182.13.35.1:3040", std::string(64, '0')),
+      makeInvalidPubkeyTestCase("invalid_peer_pubkey_empty", "182.13.35.1:3040", "")
+  };
 
   /// Generate test cases for name types
   template <typename F>
@@ -381,10 +413,11 @@ class FieldValidatorTest : public ValidatorsTest {
                              &FieldValidatorTest::amount,
                              [](auto &&x) { return proto::Amount(x); },
                              amount_test_cases),
-      makeValidator("address",
-                    &FieldValidator::validatePeerAddress,
-                    &FieldValidatorTest::address_localhost,
-                    address_test_cases),
+      makeTransformValidator("peer",
+                             &FieldValidator::validatePeer,
+                             &FieldValidatorTest::peer,
+                             [](auto &&x) { return proto::Peer(x); },
+                             peer_test_cases),
       makeValidator("account_name",
                     &FieldValidator::validateAccountName,
                     &FieldValidatorTest::account_name,
@@ -409,7 +442,8 @@ class FieldValidatorTest : public ValidatorsTest {
       makeValidator("created_time",
                     &FieldValidator::validateCreatedTime,
                     &FieldValidatorTest::created_time,
-                    created_time_test_cases)};
+                    created_time_test_cases)
+  };
 };
 
 /**
