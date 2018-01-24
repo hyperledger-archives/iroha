@@ -34,6 +34,7 @@ namespace shared_model {
      public:
       template <class T>
       using w = detail::PolymorphicWrapper<T>;
+      using TransactionContainer = std::vector<w<interface::Transaction>>;
 
       /**
        * @return transactions
@@ -44,6 +45,11 @@ namespace shared_model {
        * @return the height
        */
       virtual types::HeightType height() const = 0;
+
+      /**
+       * @return created time
+       */
+      virtual types::TimestampType created_time() const = 0;
 
       iroha::model::Proposal *makeOldModel() const override {
         auto txs =

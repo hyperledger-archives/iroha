@@ -33,11 +33,12 @@ namespace shared_model {
      private:
       template <class T>
       using w = detail::PolymorphicWrapper<T>;
+      using TransactionContainer = std::vector<w<Transaction>>;
 
       template <int>
       friend class TemplateProposalBuilder;
 
-      enum RequiredFields { Transactions, Height, TOTAL };
+      enum RequiredFields { Transactions, Height, CreatedTime, TOTAL };
 
       template <int s>
       using NextBuilder = TemplateProposalBuilder<S | (1 << s)>;
@@ -64,17 +65,23 @@ namespace shared_model {
      public:
       TemplateProposalBuilder() = default;
 
-      auto height(uint64_t height) const {
+      auto height(const interface::types::HeightType height) const {
         return transform<Height>(
             [&](auto &proposal) { proposal.set_height(height); });
       }
 
-      auto transactions(const std::vector<w<Transaction>> &transactions) const {
+      auto transactions(const TransactionContainer &transactions) const {
         return transform<Transactions>([&](auto &proposal) {
           for (const auto &tx : transactions) {
             proposal.mutable_transactions()->Add(tx->getTransport());
           }
         });
+      }
+
+      auto createdTime(
+          const interface::types::TimestampType created_time) const {
+        return transform<CreatedTime>(
+            [&](auto &proposal) { proposal.set_created_time(created_time); });
       }
 
       Proposal build() {

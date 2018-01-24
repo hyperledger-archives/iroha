@@ -28,6 +28,7 @@
 #include "block.pb.h"
 #include "ordering.pb.h"
 #include "utils/lazy_initializer.hpp"
+#include "interfaces/common_objects/types.hpp"
 
 #include "transaction.hpp"
 namespace shared_model {
@@ -66,7 +67,11 @@ namespace shared_model {
         return *transactions_;
       }
 
-      uint64_t height() const override {
+      interface::types::TimestampType created_time() const override {
+        return proto_->created_time();
+      }
+
+      interface::types::HeightType height() const override {
         return proto_->height();
       }
 
