@@ -25,8 +25,6 @@
 #include "model/queries/get_asset_info.hpp"
 #include "model/queries/get_roles.hpp"
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
-
 #ifndef IROHA_QUERY_GENERATOR_HPP
 #define IROHA_QUERY_GENERATOR_HPP
 namespace iroha {
