@@ -15,37 +15,10 @@
 # limitations under the License.
 #
 
-add_subdirectory(backend_proto)
-add_subdirectory(bindings)
-add_subdirectory(converters)
-add_subdirectory(validators)
-
-AddTest(lazy_test
-    lazy_test.cpp
-    )
-target_link_libraries(lazy_test
-    boost
+AddTest(json_proto_converter_test
+    json_proto_converter_test.cpp
     )
 
-AddTest(crypto_usage_test
-    crypto_usage_test.cpp
-    )
-target_link_libraries(crypto_usage_test
-    shared_model_ed25519_sha3
-    logger
-    )
-
-AddTest(blob_test
-    cryptography/blob_test.cpp
-    )
-target_link_libraries(blob_test
-    boost
-    optional
-    )
-
-AddTest(reference_holder_test
-    reference_holder_test.cpp
-    )
-target_link_libraries(reference_holder_test
-    boost
+target_link_libraries(json_proto_converter_test
+    shared_model_proto_backend
     )
