@@ -87,6 +87,10 @@ namespace iroha_cli {
           case RESULT:
             isParsing = parseResult(line.value());
             break;
+          default:
+            // shouldn't get here
+            BOOST_ASSERT_MSG(false, "not implemented");
+            break;
         }
       }
     }
@@ -127,7 +131,8 @@ namespace iroha_cli {
     }
 
     bool InteractiveStatusCli::parseSendToIroha(ActionParams line) {
-      auto address = parseIrohaPeerParams(line, default_peer_ip_, default_port_);
+      auto address =
+          parseIrohaPeerParams(line, default_peer_ip_, default_port_);
       if (not address.has_value()) {
         return true;
       }
