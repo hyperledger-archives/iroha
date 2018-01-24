@@ -20,20 +20,17 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/queries/get_account_assets.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Query for get all account's assets and balance
      */
-    class GetAccountAssets :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<GetAccountAssets>
-#else
-        public Primitive<GetAccountAssets, iroha::model::GetAccountAssets>
-#endif
-    {
+    class GetAccountAssets : public PRIMITIVE(GetAccountAssets) {
      public:
       /**
        * @return account identifier

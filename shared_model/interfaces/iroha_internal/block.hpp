@@ -20,19 +20,16 @@
 
 #include "interfaces/base/signable.hpp"
 #include "interfaces/transaction.hpp"
-#include "model/block.hpp"
 #include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/block.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
 
-    class Block :
-#ifdef DISABLE_BACKWARD
-        public Signable<Block>
-#else
-        public Signable<Block, iroha::model::Block>
-#endif
-    {
+    class Block : public SIGNABLE(Block) {
      public:
       /**
        * @return block number in the ledger

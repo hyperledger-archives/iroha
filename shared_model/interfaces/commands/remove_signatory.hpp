@@ -20,20 +20,17 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/remove_signatory.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Remove signatory from the account
      */
-    class RemoveSignatory :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<RemoveSignatory>
-#else
-        public Primitive<RemoveSignatory, iroha::model::RemoveSignatory>
-#endif
-    {
+    class RemoveSignatory : public PRIMITIVE(RemoveSignatory) {
      public:
       /**
        * @return account from which remove signatory

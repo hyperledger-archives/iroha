@@ -19,6 +19,7 @@
 #define IROHA_MODEL_CRYPTO_PROVIDER_IMPL_HPP
 
 #include "model_crypto_provider.hpp"
+#include "sha3_hash.hpp"
 
 namespace iroha {
   namespace model {

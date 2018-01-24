@@ -33,10 +33,13 @@
 #include "interfaces/queries/get_roles.hpp"
 #include "interfaces/queries/get_signatories.hpp"
 #include "interfaces/queries/get_transactions.hpp"
-#include "model/query.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
 #include "utils/visitor_apply_for_all.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/query.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -46,13 +49,7 @@ namespace shared_model {
      * system.
      * General note: this class is container for queries but not a base class.
      */
-    class Query :
-#ifdef DISABLE_BACKWARD
-        public Signable<Query>
-#else
-        public Signable<Query, iroha::model::Query>
-#endif
-    {
+    class Query : public SIGNABLE(Query) {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename... Value>

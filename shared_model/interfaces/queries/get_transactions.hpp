@@ -18,7 +18,9 @@
 #ifndef IROHA_SHARED_MODEL_GET_TRANSACTIONS_HPP
 #define IROHA_SHARED_MODEL_GET_TRANSACTIONS_HPP
 
+#ifndef DISABLE_BACKWARD
 #include "model/queries/get_transactions.hpp"
+#endif
 
 #include <boost/range/algorithm/for_each.hpp>
 
@@ -28,13 +30,7 @@
 
 namespace shared_model {
   namespace interface {
-    class GetTransactions :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<GetTransactions>
-#else
-        public Primitive<GetTransactions, iroha::model::GetTransactions>
-#endif
-    {
+    class GetTransactions : public PRIMITIVE(GetTransactions) {
      public:
       /// type of hashes collection
       using TransactionHashesType = std::vector<Transaction::HashType>;

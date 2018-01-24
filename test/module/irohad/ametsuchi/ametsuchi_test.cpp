@@ -16,13 +16,12 @@
  */
 
 #include <gtest/gtest.h>
-#include <boost/range/combine.hpp>
 #include <boost/range/algorithm/for_each.hpp>
+#include <boost/range/combine.hpp>
 
 #include <model/commands/create_role.hpp>
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "common/byteutils.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "framework/test_subscriber.hpp"
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
@@ -35,6 +34,7 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/converters/pb_block_factory.hpp"
 #include "model/permissions.hpp"
+#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
 using namespace iroha::ametsuchi;

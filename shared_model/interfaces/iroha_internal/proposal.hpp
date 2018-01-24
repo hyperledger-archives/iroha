@@ -15,23 +15,21 @@
  * limitations under the License.
  */
 
-#include "interfaces/base/hashable.hpp"
-#include "interfaces/transaction.hpp"
-#include "model/proposal.hpp"
-#include "utils/string_builder.hpp"
-
 #ifndef IROHA_SHARED_MODEL_PROPOSAL_HPP
 #define IROHA_SHARED_MODEL_PROPOSAL_HPP
+
+#include "interfaces/base/hashable.hpp"
+#include "interfaces/transaction.hpp"
+#include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/proposal.hpp"
+#endif
+
 namespace shared_model {
   namespace interface {
 
-    class Proposal :
-#ifdef DISABLE_BACKWARD
-        public Hashable<Proposal>
-#else
-        public Hashable<Proposal, iroha::model::Proposal>
-#endif
-    {
+    class Proposal : public HASHABLE(Proposal) {
       /// Type of a single Transaction
       using TransactionType = detail::PolymorphicWrapper<Transaction>;
 

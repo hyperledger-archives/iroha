@@ -20,20 +20,17 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/queries/get_asset_info.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Get meta data of asset
      */
-    class GetAssetInfo :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<GetAssetInfo>
-#else
-        public Primitive<GetAssetInfo, iroha::model::GetAssetInfo>
-#endif
-    {
+    class GetAssetInfo : public PRIMITIVE(GetAssetInfo) {
      public:
       /**
        * @return asset identifier to get asset's information

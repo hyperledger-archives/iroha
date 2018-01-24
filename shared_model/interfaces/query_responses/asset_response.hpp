@@ -22,22 +22,19 @@
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/asset.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "model/queries/responses/asset_response.hpp"
 #include "utils/string_builder.hpp"
 #include "utils/visitor_apply_for_all.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/queries/responses/asset_response.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Provide response with asset
      */
-    class AssetResponse :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<AssetResponse>
-#else
-        public Primitive<AssetResponse, iroha::model::AssetResponse>
-#endif
-    {
+    class AssetResponse : public PRIMITIVE(AssetResponse) {
      public:
       /**
        * @return Attached asset

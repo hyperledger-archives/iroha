@@ -19,8 +19,11 @@
 #define IROHA_ABSTRACT_TX_RESPONSE_HPP
 
 #include "interfaces/base/primitive.hpp"
-#include "model/transaction_response.hpp"
 #include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/transaction_response.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -29,13 +32,8 @@ namespace shared_model {
      * @tparam Model - concrete model transaction response
      */
     template <typename Model>
-    class AbstractTxResponse :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<Model>
-#else
-        public Primitive<Model, iroha::model::TransactionResponse>
-#endif
-    {
+    class AbstractTxResponse
+        : public PRIMITIVE_WITH_OLD(Model, iroha::model::TransactionResponse) {
      private:
       /**
        * @return string representation of class name

@@ -29,6 +29,12 @@
 namespace shared_model {
   namespace interface {
 
+#ifdef DISABLE_BACKWARD
+#define SIGNABLE(Model) Signable<Model>
+#else
+#define SIGNABLE(Model) Signable<Model, iroha::model::Model>
+#endif
+
 /**
  * Interface provides signatures and adding them to model object
  * @tparam Model - your new style model

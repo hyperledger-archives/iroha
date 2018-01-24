@@ -18,12 +18,12 @@
 #include <gtest/gtest.h>
 #include "ametsuchi/block_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/create_role.hpp"
 #include "model/commands/set_account_detail.hpp"
 #include "model/permissions.hpp"
+#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
 using namespace iroha::ametsuchi;
@@ -105,7 +105,6 @@ class KVTest : public AmetsuchiTest {
   std::string account_name1 = "user1";
   std::string account_name2 = "user2";
 };
-
 
 /**
  * @given empty in account1

@@ -21,23 +21,19 @@
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/account_asset.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "model/queries/responses/account_detail_response.hpp"
 #include "utils/string_builder.hpp"
 #include "utils/visitor_apply_for_all.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/queries/responses/account_detail_response.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Provide response with account asset
      */
-    class AccountDetailResponse :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<AccountDetailResponse>
-#else
-        public Primitive<AccountDetailResponse,
-                         iroha::model::AccountDetailResponse>
-#endif
-    {
+    class AccountDetailResponse : public PRIMITIVE(AccountDetailResponse) {
      public:
       /// Detail
       using DetailType = std::string;

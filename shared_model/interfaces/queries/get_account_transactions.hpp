@@ -15,26 +15,22 @@
  * limitations under the License.
  */
 
-#include "interfaces/base/primitive.hpp"
-#include "interfaces/common_objects/types.hpp"
-#include "model/queries/get_transactions.hpp"
-
 #ifndef IROHA_SHARED_MODEL_GET_ACCOUNT_TRANSACTIONS_HPP
 #define IROHA_SHARED_MODEL_GET_ACCOUNT_TRANSACTIONS_HPP
+
+#include "interfaces/base/primitive.hpp"
+#include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/queries/get_transactions.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Query for getting transactions of account
      */
-    class GetAccountTransactions :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<GetAccountTransactions>
-#else
-        public Primitive<GetAccountTransactions,
-                         iroha::model::GetAccountTransactions>
-#endif
-    {
+    class GetAccountTransactions : public PRIMITIVE(GetAccountTransactions) {
      public:
       /**
        * @return account_id of requested transactions

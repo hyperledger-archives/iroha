@@ -21,7 +21,10 @@
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/amount.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/subtract_asset_quantity.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -29,14 +32,7 @@ namespace shared_model {
     /**
      * Subtract amount of asset from an account
      */
-    class SubtractAssetQuantity :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<SubtractAssetQuantity>
-#else
-        public Primitive<SubtractAssetQuantity,
-                         iroha::model::SubtractAssetQuantity>
-#endif
-    {
+    class SubtractAssetQuantity : public PRIMITIVE(SubtractAssetQuantity) {
      public:
       /**
        * @return Identity of user to subtract quantity from

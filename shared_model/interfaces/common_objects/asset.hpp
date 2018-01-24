@@ -20,8 +20,11 @@
 
 #include "interfaces/base/hashable.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "model/asset.hpp"
 #include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/asset.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -29,13 +32,7 @@ namespace shared_model {
     /**
      * Representation of valuable goods in the system
      */
-    class Asset :
-#ifdef DISABLE_BACKWARD
-        public Hashable<Asset>
-#else
-        public Hashable<Asset, iroha::model::Asset>
-#endif
-    {
+    class Asset : public HASHABLE(Asset) {
      public:
       /**
        * @return Identity of asset

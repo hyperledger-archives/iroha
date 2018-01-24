@@ -20,20 +20,17 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/grant_permission.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Grant permission to the account
      */
-    class GrantPermission :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<GrantPermission>
-#else
-        public Primitive<GrantPermission, iroha::model::GrantPermission>
-#endif
-    {
+    class GrantPermission : public PRIMITIVE(GrantPermission) {
      public:
       /**
        * @return Id of the account to whom grant permission

@@ -30,7 +30,10 @@
 #include "interfaces/query_responses/roles_response.hpp"
 #include "interfaces/query_responses/signatories_response.hpp"
 #include "interfaces/query_responses/transactions_response.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/query_response.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -39,13 +42,7 @@ namespace shared_model {
      * available in the system.
      * General note: this class is container for QRs but not a base class.
      */
-    class QueryResponse :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<QueryResponse>
-#else
-        public Primitive<QueryResponse, iroha::model::QueryResponse>
-#endif
-    {
+    class QueryResponse : public PRIMITIVE(QueryResponse) {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename... Value>

@@ -20,17 +20,14 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/queries/get_account.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
-    class GetAccount :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<GetAccount>
-#else
-        public Primitive<GetAccount, iroha::model::GetAccount>
-#endif
-    {
+    class GetAccount : public PRIMITIVE(GetAccount) {
      public:
       /**
        * @return Identity of user, for fetching data

@@ -25,8 +25,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/commands/transfer_asset.hpp"
+#include "model/sha3_hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -82,9 +82,7 @@ namespace iroha {
                 [](const auto &cmd) { return bool(cmd); });
 
       boost::accumulate(
-          transfers,
-          UserAssetsType{},
-          [&](auto &&acc, const auto &cmd) {
+          transfers, UserAssetsType{}, [&](auto &&acc, const auto &cmd) {
             for (const auto &id : {cmd->src_account_id, cmd->dest_account_id}) {
               this->indexAccountIdHeight(id, height);
             }

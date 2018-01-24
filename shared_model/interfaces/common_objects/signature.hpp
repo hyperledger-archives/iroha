@@ -22,8 +22,11 @@
 #include "cryptography/public_key.hpp"
 #include "cryptography/signed.hpp"
 #include "interfaces/base/primitive.hpp"
-#include "model/signature.hpp"
 #include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/signature.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -31,13 +34,7 @@ namespace shared_model {
     /**
      * Class represents signature of high-level domain objects.
      */
-    class Signature :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<Signature>
-#else
-        public Primitive<Signature, iroha::model::Signature>
-#endif
-    {
+    class Signature : public PRIMITIVE(Signature) {
      public:
       /**
        * Type of public key

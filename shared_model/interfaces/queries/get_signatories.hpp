@@ -20,7 +20,10 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/queries/get_signatories.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -28,13 +31,7 @@ namespace shared_model {
     /**
      * Query for getting all signatories attached to account
      */
-    class GetSignatories :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<GetSignatories>
-#else
-        public Primitive<GetSignatories, iroha::model::GetSignatories>
-#endif
-    {
+    class GetSignatories : public PRIMITIVE(GetSignatories) {
      public:
       /**
        * @return account_id of requested signatories

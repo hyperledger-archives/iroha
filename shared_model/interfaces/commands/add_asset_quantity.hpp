@@ -21,7 +21,10 @@
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/amount.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/add_asset_quantity.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -29,13 +32,7 @@ namespace shared_model {
     /**
      * Add amount of asset to an account
      */
-    class AddAssetQuantity :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<AddAssetQuantity>
-#else
-        public Primitive<AddAssetQuantity, iroha::model::AddAssetQuantity>
-#endif
-    {
+    class AddAssetQuantity : public PRIMITIVE(AddAssetQuantity) {
      public:
       /**
        * @return Identity of user, that add quantity

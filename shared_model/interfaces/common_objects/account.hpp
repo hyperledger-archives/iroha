@@ -21,8 +21,11 @@
 #include "cryptography/hash.hpp"
 #include "interfaces/base/hashable.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "model/account.hpp"
 #include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/account.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -30,13 +33,7 @@ namespace shared_model {
     /**
      * User identity information in the system
      */
-    class Account :
-#ifdef DISABLE_BACKWARD
-        public Hashable<Account>
-#else
-        public Hashable<Account, iroha::model::Account>
-#endif
-    {
+    class Account : public HASHABLE(Account) {
      public:
       /**
        * @return Identity of user, for fetching data

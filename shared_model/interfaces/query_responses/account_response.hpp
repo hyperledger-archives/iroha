@@ -22,22 +22,19 @@
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/account.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "model/queries/responses/account_response.hpp"
 #include "utils/string_builder.hpp"
 #include "utils/visitor_apply_for_all.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/queries/responses/account_response.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Provide response with account
      */
-    class AccountResponse :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<AccountResponse>
-#else
-        public Primitive<AccountResponse, iroha::model::AccountResponse>
-#endif
-    {
+    class AccountResponse : public PRIMITIVE(AccountResponse) {
      public:
       /// Collection of role_id types
       using SetRoleIdType = std::vector<types::RoleIdType>;

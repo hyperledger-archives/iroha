@@ -20,20 +20,17 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/create_asset.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Create asset in Iroha domain
      */
-    class CreateAsset :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<CreateAsset>
-#else
-        public Primitive<CreateAsset, iroha::model::CreateAsset>
-#endif
-    {
+    class CreateAsset : public PRIMITIVE(CreateAsset) {
      public:
       /**
        * @return Asset name to create

@@ -20,7 +20,10 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/add_peer.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -28,13 +31,7 @@ namespace shared_model {
     /**
      * Add new peer to Iroha
      */
-    class AddPeer :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<AddPeer>
-#else
-        public Primitive<AddPeer, iroha::model::AddPeer>
-#endif
-    {
+    class AddPeer : public PRIMITIVE(AddPeer) {
      public:
       /**
        * @return Peer key, acts like peer identifier

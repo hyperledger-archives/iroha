@@ -21,7 +21,10 @@
 #include "interfaces/base/hashable.hpp"
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/queries/get_roles.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -29,13 +32,7 @@ namespace shared_model {
     /**
      * Get all permissions related to specific role
      */
-    class GetRolePermissions :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<GetRolePermissions>
-#else
-        public Primitive<GetRolePermissions, iroha::model::GetRolePermissions>
-#endif
-    {
+    class GetRolePermissions : public PRIMITIVE(GetRolePermissions) {
      public:
       /**
        * @return role identifier containing requested permissions

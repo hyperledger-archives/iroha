@@ -36,13 +36,9 @@ namespace shared_model {
      * QueryErrorResponse interface container for all concrete error responses
      * possible achieved in the system.
      */
-    class ErrorQueryResponse :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<ErrorQueryResponse>
-#else
-        public Primitive<ErrorQueryResponse, iroha::model::ErrorResponse>
-#endif
-    {
+    class ErrorQueryResponse
+        : public PRIMITIVE_WITH_OLD(ErrorQueryResponse,
+                                    iroha::model::ErrorResponse) {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename... Value>

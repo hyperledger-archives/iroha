@@ -20,22 +20,18 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "model/queries/responses/roles_response.hpp"
 #include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/queries/responses/roles_response.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Response with all permissions related to role
      */
-    class RolePermissionsResponse :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<RolePermissionsResponse>
-#else
-        public Primitive<RolePermissionsResponse,
-                         iroha::model::RolePermissionsResponse>
-#endif
-    {
+    class RolePermissionsResponse : public PRIMITIVE(RolePermissionsResponse) {
      public:
       /// type of role permissions collection
       using PermissionNameCollectionType =

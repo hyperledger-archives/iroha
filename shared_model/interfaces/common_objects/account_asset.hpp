@@ -22,8 +22,11 @@
 #include "interfaces/base/hashable.hpp"
 #include "interfaces/common_objects/amount.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "model/account_asset.hpp"
 #include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/account_asset.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -31,13 +34,7 @@ namespace shared_model {
     /**
      * Representation of wallet in system
      */
-    class AccountAsset :
-#ifdef DISABLE_BACKWARD
-        public Hashable<AccountAsset>
-#else
-        public Hashable<AccountAsset, iroha::model::AccountAsset>
-#endif
-    {
+    class AccountAsset : public HASHABLE(AccountAsset) {
      public:
       /**
        * @return Identity of user, for fetching data

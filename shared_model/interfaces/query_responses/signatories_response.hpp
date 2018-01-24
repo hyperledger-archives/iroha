@@ -20,22 +20,19 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "model/queries/responses/signatories_response.hpp"
 #include "utils/string_builder.hpp"
 #include "utils/visitor_apply_for_all.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/queries/responses/signatories_response.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Container of asset, for fetching data.
      */
-    class SignatoriesResponse :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<SignatoriesResponse>
-#else
-        public Primitive<SignatoriesResponse, iroha::model::SignatoriesResponse>
-#endif
-    {
+    class SignatoriesResponse : public PRIMITIVE(SignatoriesResponse) {
      public:
       /**
        * @return All public keys attached to account

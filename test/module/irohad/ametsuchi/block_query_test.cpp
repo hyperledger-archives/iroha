@@ -19,8 +19,8 @@
 #include <boost/optional.hpp>
 #include "ametsuchi/impl/redis_block_index.hpp"
 #include "ametsuchi/impl/redis_block_query.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "framework/test_subscriber.hpp"
+#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
 using namespace iroha::ametsuchi;
@@ -73,8 +73,9 @@ class BlockQueryTest : public AmetsuchiTest {
     block2.transactions.push_back(txn2_2);
 
     for (const auto &b : {block1, block2}) {
-      file->add(b.height, iroha::stringToBytes(converters::jsonToString(
-          converters::JsonBlockFactory().serialize(b))));
+      file->add(b.height,
+                iroha::stringToBytes(converters::jsonToString(
+                    converters::JsonBlockFactory().serialize(b))));
       index->index(b);
       blocks_total++;
     }
@@ -225,8 +226,7 @@ TEST_F(BlockQueryTest, GetTransactionsWithInvalidTxAndValidTx) {
  * @then nothing is returned
  */
 TEST_F(BlockQueryTest, GetNonExistentBlock) {
-  auto wrapper = make_test_subscriber<CallExact>(
-      blocks->getBlocks(1000, 1), 0);
+  auto wrapper = make_test_subscriber<CallExact>(blocks->getBlocks(1000, 1), 0);
   wrapper.subscribe();
   ASSERT_TRUE(wrapper.validate());
 }
@@ -238,8 +238,7 @@ TEST_F(BlockQueryTest, GetNonExistentBlock) {
  * @then returned exactly 1 block
  */
 TEST_F(BlockQueryTest, GetExactlyOneBlock) {
-  auto wrapper = make_test_subscriber<CallExact>(
-      blocks->getBlocks(1, 1), 1);
+  auto wrapper = make_test_subscriber<CallExact>(blocks->getBlocks(1, 1), 1);
   wrapper.subscribe();
   ASSERT_TRUE(wrapper.validate());
 }
@@ -251,8 +250,7 @@ TEST_F(BlockQueryTest, GetExactlyOneBlock) {
  * @then no blocks returned
  */
 TEST_F(BlockQueryTest, GetBlocks_Count0) {
-  auto wrapper = make_test_subscriber<CallExact>(
-      blocks->getBlocks(1, 0), 0);
+  auto wrapper = make_test_subscriber<CallExact>(blocks->getBlocks(1, 0), 0);
   wrapper.subscribe();
   ASSERT_TRUE(wrapper.validate());
 }
@@ -264,8 +262,7 @@ TEST_F(BlockQueryTest, GetBlocks_Count0) {
  * @then no blocks returned
  */
 TEST_F(BlockQueryTest, GetZeroBlock) {
-  auto wrapper = make_test_subscriber<CallExact>(
-      blocks->getBlocks(0, 1), 0);
+  auto wrapper = make_test_subscriber<CallExact>(blocks->getBlocks(0, 1), 0);
   wrapper.subscribe();
   ASSERT_TRUE(wrapper.validate());
 }
@@ -277,20 +274,21 @@ TEST_F(BlockQueryTest, GetZeroBlock) {
  * @then returned all blocks (2)
  */
 TEST_F(BlockQueryTest, GetBlocksFrom1) {
-  auto wrapper = make_test_subscriber<CallExact>(
-      blocks->getBlocksFrom(1), blocks_total);
+  auto wrapper =
+      make_test_subscriber<CallExact>(blocks->getBlocksFrom(1), blocks_total);
   size_t counter = 1;
   wrapper.subscribe([&counter](Block b) {
     // wrapper returns blocks 1 and 2
-    ASSERT_EQ(b.height, counter++)
-        << "block height: " << b.height << "counter: " << counter;
+    ASSERT_EQ(b.height, counter++) << "block height: " << b.height
+                                   << "counter: " << counter;
   });
   ASSERT_TRUE(wrapper.validate());
 }
 
 /**
  * @given block store with 2 blocks totally containing 3 txs created by
- * user1@test AND 1 tx created by user2@test. Block #1 is filled with trash data (NOT JSON).
+ * user1@test AND 1 tx created by user2@test. Block #1 is filled with trash data
+ * (NOT JSON).
  * @when read block #1
  * @then get no blocks
  */
@@ -305,8 +303,8 @@ TEST_F(BlockQueryTest, GetBlockButItIsNotJSON) {
   block_file << content;
   block_file.close();
 
-  auto wrapper = make_test_subscriber<CallExact>(
-      blocks->getBlocks(block_n, 1), 0);
+  auto wrapper =
+      make_test_subscriber<CallExact>(blocks->getBlocks(block_n, 1), 0);
   wrapper.subscribe();
 
   ASSERT_TRUE(wrapper.validate());
@@ -314,7 +312,8 @@ TEST_F(BlockQueryTest, GetBlockButItIsNotJSON) {
 
 /**
  * @given block store with 2 blocks totally containing 3 txs created by
- * user1@test AND 1 tx created by user2@test. Block #1 is filled with trash data (NOT JSON).
+ * user1@test AND 1 tx created by user2@test. Block #1 is filled with trash data
+ * (NOT JSON).
  * @when read block #1
  * @then get no blocks
  */
@@ -332,8 +331,8 @@ TEST_F(BlockQueryTest, GetBlockButItIsInvalidBlock) {
   block_file << content;
   block_file.close();
 
-  auto wrapper = make_test_subscriber<CallExact>(
-      blocks->getBlocks(block_n, 1), 0);
+  auto wrapper =
+      make_test_subscriber<CallExact>(blocks->getBlocks(block_n, 1), 0);
   wrapper.subscribe();
 
   ASSERT_TRUE(wrapper.validate());
@@ -346,14 +345,12 @@ TEST_F(BlockQueryTest, GetBlockButItIsInvalidBlock) {
  * @then last 2 blocks returned with correct height
  */
 TEST_F(BlockQueryTest, GetTop2Blocks) {
-  size_t blocks_n = 2; // top 2 blocks
-  auto wrapper = make_test_subscriber<CallExact>(
-      blocks->getTopBlocks(blocks_n), blocks_n);
+  size_t blocks_n = 2;  // top 2 blocks
+  auto wrapper =
+      make_test_subscriber<CallExact>(blocks->getTopBlocks(blocks_n), blocks_n);
 
   size_t counter = blocks_total - blocks_n + 1;
-  wrapper.subscribe([&counter](Block b) {
-    ASSERT_EQ(b.height, counter++);
-  });
+  wrapper.subscribe([&counter](Block b) { ASSERT_EQ(b.height, counter++); });
 
   ASSERT_TRUE(wrapper.validate());
 }

@@ -22,20 +22,17 @@
 #include <set>
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/create_role.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Create new role in Iroha
      */
-    class CreateRole :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<CreateRole>
-#else
-        public Primitive<CreateRole, iroha::model::CreateRole>
-#endif
-    {
+    class CreateRole : public PRIMITIVE(CreateRole) {
      public:
       /**
        * @return Id of the domain to create

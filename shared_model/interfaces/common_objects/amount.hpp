@@ -32,13 +32,7 @@ namespace shared_model {
     /**
      * Representation of fixed point number
      */
-    class Amount :
-#ifdef DISABLE_BACKWARD
-        public Hashable<Amount>
-#else
-        public Hashable<Amount, iroha::Amount>
-#endif
-    {
+    class Amount : public HASHABLE_WITH_OLD(Amount, iroha::Amount) {
      public:
       /**
        * Gets integer representation value, which ignores precision

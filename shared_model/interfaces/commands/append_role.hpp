@@ -20,7 +20,10 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/append_role.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -28,13 +31,7 @@ namespace shared_model {
     /**
      * Add role to account used in Iroha
      */
-    class AppendRole :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<AppendRole>
-#else
-        public Primitive<AppendRole, iroha::model::AppendRole>
-#endif
-    {
+    class AppendRole : public PRIMITIVE(AppendRole) {
      public:
       /**
        * @return Account to add the role

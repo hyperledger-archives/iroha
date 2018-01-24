@@ -21,20 +21,17 @@
 #include "interfaces/base/hashable.hpp"
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/queries/get_roles.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Get all roles in the current system
      */
-    class GetRoles :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<GetRoles>
-#else
-        public Primitive<GetRoles, iroha::model::GetRoles>
-#endif
-    {
+    class GetRoles : public PRIMITIVE(GetRoles) {
      public:
 #ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {

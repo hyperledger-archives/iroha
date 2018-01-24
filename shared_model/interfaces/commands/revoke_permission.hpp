@@ -20,20 +20,17 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/revoke_permission.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Revoke permission from account
      */
-    class RevokePermission :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<RevokePermission>
-#else
-        public Primitive<RevokePermission, iroha::model::RevokePermission>
-#endif
-    {
+    class RevokePermission : public PRIMITIVE(RevokePermission) {
      public:
       /**
        * @return account from which revoke permission

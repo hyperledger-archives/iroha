@@ -21,24 +21,20 @@
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/transaction.hpp"
-#include "model/queries/responses/transactions_response.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
 #include "utils/visitor_apply_for_all.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/queries/responses/transactions_response.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Container of asset, for fetching data.
      */
-    class TransactionsResponse :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<TransactionsResponse>
-#else
-        public Primitive<TransactionsResponse,
-                         iroha::model::TransactionsResponse>
-#endif
-    {
+    class TransactionsResponse : public PRIMITIVE(TransactionsResponse) {
      public:
       /// Type of a single Transaction
       using TransactionType = detail::PolymorphicWrapper<Transaction>;

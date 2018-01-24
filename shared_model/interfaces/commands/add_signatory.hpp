@@ -20,7 +20,10 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/add_signatory.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -28,13 +31,7 @@ namespace shared_model {
     /**
      * Add new signatory to account
      */
-    class AddSignatory :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<AddSignatory>
-#else
-        public Primitive<AddSignatory, iroha::model::AddSignatory>
-#endif
-    {
+    class AddSignatory : public PRIMITIVE(AddSignatory) {
      public:
       /**
        * @return New signatory is identified with public key

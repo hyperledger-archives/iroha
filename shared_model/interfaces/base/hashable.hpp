@@ -23,6 +23,13 @@
 #include "interfaces/base/primitive.hpp"
 #include "utils/lazy_initializer.hpp"
 
+#ifdef DISABLE_BACKWARD
+#define HASHABLE_WITH_OLD(Model, OldModel) Hashable<Model>
+#else
+#define HASHABLE_WITH_OLD(Model, OldModel) Hashable<Model, OldModel>
+#endif
+#define HASHABLE(Model) HASHABLE_WITH_OLD(Model, iroha::model::Model)
+
 namespace shared_model {
   namespace interface {
 #ifdef DISABLE_BACKWARD

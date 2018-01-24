@@ -20,20 +20,17 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/transfer_asset.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Grant permission to account
      */
-    class TransferAsset :
-#ifdef DISABLE_BACKWARD
-        public ModelPrimitive<TransferAsset>
-#else
-        public Primitive<TransferAsset, iroha::model::TransferAsset>
-#endif
-    {
+    class TransferAsset : public PRIMITIVE(TransferAsset) {
      public:
       /**
        * @return Id of the account from which transfer assets

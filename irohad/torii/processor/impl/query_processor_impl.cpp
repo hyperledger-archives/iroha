@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "model/queries/responses/error_response.hpp"
+#include "model/sha3_hash.hpp"
 
 namespace iroha {
   namespace torii {
