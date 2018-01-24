@@ -18,9 +18,9 @@
 #ifndef IROHA_PROTO_ADD_PEER_HPP
 #define IROHA_PROTO_ADD_PEER_HPP
 
+#include "backend/protobuf/common_objects/peer.hpp"
 #include "interfaces/commands/add_peer.hpp"
 #include "interfaces/common_objects/peer.hpp"
-#include "backend/protobuf/common_objects/peer.hpp"
 
 namespace shared_model {
   namespace proto {
@@ -34,14 +34,11 @@ namespace shared_model {
           : CopyableProto(std::forward<CommandType>(command)),
             add_peer_(detail::makeReferenceGenerator(
                 proto_, &iroha::protocol::Command::add_peer)),
-            peer_([this] {
-              return proto::Peer(add_peer_->peer());
-            }) {}
+            peer_([this] { return proto::Peer(add_peer_->peer()); }) {}
 
       AddPeer(const AddPeer &o) : AddPeer(o.proto_) {}
 
-      AddPeer(AddPeer &&o) noexcept
-          : AddPeer(std::move(o.proto_)) {}
+      AddPeer(AddPeer &&o) noexcept : AddPeer(std::move(o.proto_)) {}
 
       const interface::Peer &peer() const override {
         return *peer_;

@@ -18,7 +18,6 @@
 #include <gtest/gtest.h>
 #include "commands.pb.h"
 #include "model/commands/add_asset_quantity.hpp"
-#include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
 #include "model/commands/append_role.hpp"
@@ -31,6 +30,7 @@
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
 #include "model/commands/set_quorum.hpp"
+#include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/transfer_asset.hpp"
 
 #include "model/converters/pb_command_factory.hpp"
@@ -69,7 +69,7 @@ TEST(CommandTest, add_asset_quantity) {
 TEST(CommandTest, subtract_asset_quantity) {
   auto orig_command = iroha::model::SubtractAssetQuantity();
   orig_command.account_id = "23";
-  iroha::Amount amount(50,1);
+  iroha::Amount amount(50, 1);
 
   orig_command.amount = amount;
   orig_command.asset_id = "23";

@@ -25,25 +25,32 @@
 
 namespace shared_model {
   namespace proto {
-    class Peer final : public CopyableProto<interface::Peer,
-                                              iroha::protocol::Peer,
-                                              Peer> {
+    class Peer final
+        : public CopyableProto<interface::Peer, iroha::protocol::Peer, Peer> {
      public:
-      template<typename PeerType>
+      template <typename PeerType>
       explicit Peer(PeerType &&peer)
           : CopyableProto(std::forward<PeerType>(peer)),
-            public_key_([this] { return interface::types::PubkeyType(proto_->peer_key()); }),
+            public_key_([this] {
+              return interface::types::PubkeyType(proto_->peer_key());
+            }),
             blob_([this] { return makeBlob(*proto_); }) {}
 
       Peer(const Peer &o) : Peer(o.proto_) {}
 
       Peer(Peer &&o) noexcept : Peer(std::move(o.proto_)) {}
 
-      const interface::types::AddressType &address() const override { return proto_->address(); }
+      const interface::types::AddressType &address() const override {
+        return proto_->address();
+      }
 
-      const interface::types::PubkeyType &pubkey() const override { return *public_key_; }
+      const interface::types::PubkeyType &pubkey() const override {
+        return *public_key_;
+      }
 
-      const BlobType &blob() const override { return *blob_; }
+      const BlobType &blob() const override {
+        return *blob_;
+      }
 
      private:
       // lazy
@@ -57,4 +64,4 @@ namespace shared_model {
 
   }  // namespace proto
 }  // namespace shared_model
-#endif //IROHA_PROTO_PEER_HPP
+#endif  // IROHA_PROTO_PEER_HPP

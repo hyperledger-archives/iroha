@@ -35,8 +35,7 @@ namespace iroha {
 
       AddPeer() {}
 
-      AddPeer(const Peer &peer)
-          : peer(peer) {}
+      AddPeer(const Peer &peer) : peer(peer) {}
     };
   }  // namespace model
 }  // namespace iroha

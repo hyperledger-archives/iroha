@@ -89,8 +89,7 @@ namespace iroha {
             const Amount &amount);
 
         std::shared_ptr<Command> generateAppendRole(
-            const std::string &account_id,
-            const std::string &role_name);
+            const std::string &account_id, const std::string &role_name);
       };
     }  // namespace generators
   }    // namespace model

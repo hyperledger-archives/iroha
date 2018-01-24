@@ -19,8 +19,8 @@
 #define IROHA_SHARED_MODEL_PEER_HPP
 
 #include "common/types.hpp"
-#include "model/peer.hpp"
 #include "interfaces/base/hashable.hpp"
+#include "model/peer.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -28,8 +28,7 @@ namespace shared_model {
     /**
      * Peer is Model, which contains information about network participants
      */
-    class Peer
-        : public Hashable<Peer, iroha::model::Peer> {
+    class Peer : public Hashable<Peer, iroha::model::Peer> {
      public:
       /**
        * @return Peer address, for fetching data
@@ -76,4 +75,4 @@ namespace shared_model {
   }
 }
 
-#endif //IROHA_PEER_HPP
+#endif  // IROHA_PEER_HPP

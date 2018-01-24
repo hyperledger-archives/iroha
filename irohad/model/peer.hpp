@@ -40,8 +40,7 @@ namespace iroha {
       using KeyType = decltype(pubkey);
 
       bool operator==(const Peer &obj) const {
-        if (address == obj.address &&
-            pubkey == obj.pubkey) {
+        if (address == obj.address && pubkey == obj.pubkey) {
           return true;
         } else {
           return false;
@@ -52,13 +51,12 @@ namespace iroha {
 
       Peer(const AddressType &address, const pubkey_t &pubkey)
           : address(address), pubkey(pubkey) {}
-
     };
   }
 }
 
 namespace std {
-  template<>
+  template <>
   struct hash<iroha::model::Peer> {
     std::size_t operator()(const iroha::model::Peer &obj) const {
       return std::hash<std::string>()(obj.address + obj.pubkey.to_string());

@@ -16,8 +16,8 @@
  */
 
 #include <gtest/gtest.h>
-#include <boost/range/combine.hpp>
 #include <boost/range/algorithm/for_each.hpp>
+#include <boost/range/combine.hpp>
 
 #include <model/commands/create_role.hpp>
 #include "ametsuchi/impl/storage_impl.hpp"

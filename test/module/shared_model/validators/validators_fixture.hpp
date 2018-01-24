@@ -168,9 +168,9 @@ class ValidatorsTest : public ::testing::Test {
   decltype(iroha::time::now()) created_time;
 
   // List all used fields in commands
-  std::unordered_map<
-      std::string,
-      std::function<void(const google::protobuf::Reflection *,
+  std::unordered_map<std::string,
+                     std::function<void(
+                         const google::protobuf::Reflection *,
                          google::protobuf::Message *,
                          const google::protobuf::FieldDescriptor *)>>
       field_setters;

@@ -98,9 +98,8 @@ namespace shared_model {
         }
       }
 
-      void validatePeerAddress(
-          ReasonsGroupType &reason,
-          const std::string &address) const {
+      void validatePeerAddress(ReasonsGroupType &reason,
+                               const std::string &address) const {
         if (not(iroha::validator::isValidIpV4(address)
                 or iroha::validator::isValidHostname(address))) {
           auto message =
