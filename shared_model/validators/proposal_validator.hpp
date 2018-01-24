@@ -77,9 +77,6 @@ namespace shared_model {
       Answer validate(
           detail::PolymorphicWrapper<interface::Proposal> prop) const {
         Answer answer;
-        std::string prop_reason_name = "Proposal";
-        ReasonsGroupType prop_reason(prop_reason_name, GroupedReasons());
-
         // TODO 22/01/2018 x3medima17: add stateless validator IR-837
 
 

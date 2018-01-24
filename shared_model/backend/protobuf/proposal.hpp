@@ -48,7 +48,7 @@ namespace shared_model {
             transactions_([this] {
               return boost::accumulate(
                   proto_->transactions(),
-                  std::vector<w<interface::Transaction>>{},
+                  TransactionContainer{},
                   [](auto &&vec, const auto &tx) {
                     vec.emplace_back(new proto::Transaction(tx));
                     return std::forward<decltype(vec)>(vec);
@@ -61,7 +61,7 @@ namespace shared_model {
 
       Proposal(Proposal &&o) noexcept : Proposal(std::move(o.proto_)) {}
 
-      const std::vector<w<interface::Transaction>> &transactions()
+      const TransactionContainer &transactions()
           const override {
         return *transactions_;
       }
