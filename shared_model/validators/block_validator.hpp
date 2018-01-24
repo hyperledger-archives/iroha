@@ -45,7 +45,6 @@ namespace shared_model {
         ReasonsGroupType operator()(
             const detail::PolymorphicWrapper<interface::Block> &block) const {
           ReasonsGroupType reason;
-          reason.first = "Block";
 
           return reason;
         }
@@ -62,8 +61,6 @@ namespace shared_model {
       Answer validate(
           detail::PolymorphicWrapper<interface::Block> block) const {
         Answer answer;
-        std::string prop_reason_name = "Block";
-        ReasonsGroupType prop_reason(prop_reason_name, GroupedReasons());
 
         return answer;
       }

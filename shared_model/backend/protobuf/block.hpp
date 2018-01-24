@@ -47,7 +47,7 @@ namespace shared_model {
               }
               return txs;
             }),
-            blob_([this] { return BlobType(proto_->SerializeAsString()); }),
+            blob_([this] { return makeBlob(*proto_); }),
             prev_hash_([this] {
               return HashType(proto_->payload().prev_block_hash());
             }),
