@@ -20,6 +20,7 @@
 
 #include "common/types.hpp"
 #include "interfaces/base/hashable.hpp"
+#include "interfaces/common_objects/types.hpp"
 #include "model/peer.hpp"
 
 namespace shared_model {
@@ -33,7 +34,7 @@ namespace shared_model {
       /**
        * @return Peer address, for fetching data
        */
-      virtual const types::AddressType &address() const = 0;
+      virtual const interface::types::AddressType &address() const = 0;
 
       /**
        * @return Public key, for fetching data

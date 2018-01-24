@@ -20,15 +20,15 @@
 
 #include <responses.pb.h>
 #include <model/account_asset.hpp>
+#include <nonstd/optional.hpp>
 #include "model/queries/responses/account_assets_response.hpp"
 #include "model/queries/responses/account_detail_response.hpp"
 #include "model/queries/responses/account_response.hpp"
-#include <nonstd/optional.hpp>
+#include "model/queries/responses/asset_response.hpp"
 #include "model/queries/responses/error_response.hpp"
+#include "model/queries/responses/roles_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
-#include "model/queries/responses/roles_response.hpp"
-#include "model/queries/responses/asset_response.hpp"
 
 namespace iroha {
   namespace model {
@@ -62,9 +62,10 @@ namespace iroha {
             const protocol::AccountAssetResponse &account_asset_response) const;
 
         protocol::AccountDetailResponse serializeAccountDetailResponse(
-          const model::AccountDetailResponse &accountDetailResponse) const;
+            const model::AccountDetailResponse &accountDetailResponse) const;
         model::AccountDetailResponse deserializeAccountDetailResponse(
-          const protocol::AccountDetailResponse &account_detail_response) const;
+            const protocol::AccountDetailResponse &account_detail_response)
+            const;
 
         protocol::SignatoriesResponse serializeSignatoriesResponse(
             const model::SignatoriesResponse &signatoriesResponse) const;
@@ -94,8 +95,8 @@ namespace iroha {
         protocol::ErrorResponse serializeErrorResponse(
             const model::ErrorResponse &errorResponse) const;
       };
-    }
-  }
-}
+    }  // namespace converters
+  }    // namespace model
+}  // namespace iroha
 
 #endif  // IROHA_PB_QUERY_RESPONSE_FACTORY_HPP

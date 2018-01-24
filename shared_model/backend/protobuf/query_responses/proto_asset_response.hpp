@@ -43,7 +43,9 @@ namespace shared_model {
 
       AssetResponse(AssetResponse &&o) : AssetResponse(std::move(o.proto_)) {}
 
-      const Asset &asset() const override { return *asset_; }
+      const Asset &asset() const override {
+        return *asset_;
+      }
 
      private:
       template <typename T>

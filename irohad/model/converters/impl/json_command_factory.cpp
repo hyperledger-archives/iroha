@@ -17,7 +17,6 @@
 
 #include "model/converters/json_command_factory.hpp"
 
-#include <model/commands/set_account_detail.hpp>
 #include <regex>
 
 #include "model/commands/add_asset_quantity.hpp"
@@ -32,6 +31,7 @@
 #include "model/commands/grant_permission.hpp"
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
+#include "model/commands/set_account_detail.hpp"
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/transfer_asset.hpp"

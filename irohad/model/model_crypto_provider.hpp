@@ -72,6 +72,6 @@ namespace iroha {
        */
       virtual void sign(Query &query) const = 0;
     };
-  }
-}
+  }  // namespace model
+}  // namespace iroha
 #endif  // IROHA_MODEL_CRYPTO_PROVIDER_HPP

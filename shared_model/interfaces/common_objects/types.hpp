@@ -36,6 +36,8 @@ namespace shared_model {
       using PrecisionType = uint8_t;
       /// Type of height (for Block, Proposal etc)
       using HeightType = uint64_t;
+      /// Type of peer address
+      using AddressType = iroha::AddressType;
       /// Type of public key
       using PubkeyType = crypto::PublicKey;
       /// Type of public keys' collection

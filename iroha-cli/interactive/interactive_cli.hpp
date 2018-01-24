@@ -20,8 +20,8 @@
 
 #include "crypto/keys_manager_impl.hpp"
 #include "interactive/interactive_query_cli.hpp"
-#include "interactive/interactive_transaction_cli.hpp"
 #include "interactive/interactive_status_cli.hpp"
+#include "interactive/interactive_transaction_cli.hpp"
 
 namespace iroha_cli {
   namespace interactive {

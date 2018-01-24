@@ -52,8 +52,8 @@ namespace iroha {
       Peer(const AddressType &address, const pubkey_t &pubkey)
           : address(address), pubkey(pubkey) {}
     };
-  }
-}
+  }  // namespace model
+}  // namespace iroha
 
 namespace std {
   template <>
@@ -62,5 +62,5 @@ namespace std {
       return std::hash<std::string>()(obj.address + obj.pubkey.to_string());
     }
   };
-}
+}  // namespace std
 #endif  // IROHA_PEER_H

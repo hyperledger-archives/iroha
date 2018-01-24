@@ -246,6 +246,25 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
       ASSERT_EQ(R"({"id@domain": {"key": "val2"}})", acc.value().json_data);
     }
 
+    /**
+     * @given database without needed account
+     * @when performing query to retrieve non-existent account
+     * @then getAccount will return nullopt
+     */
+    TEST_F(AccountTest, GetAccountInvalidWhenNotFound) {
+      EXPECT_FALSE(query->getAccount("invalid account id"));
+    }
+
+    /**
+     * @given database without needed account
+     * @when performing query to retrieve non-existent account's details
+     * @then getAccountDetail will return nullopt
+     */
+    TEST_F(AccountTest, GetAccountDetailInvalidWhenNotFound) {
+      EXPECT_FALSE(query->getAccountDetail(
+          "invalid account id", "invalid_creator", "invalid_detail"));
+    }
+
     class AccountRoleTest : public WsvQueryCommandTest {
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
@@ -376,6 +395,80 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
 
       ASSERT_FALSE(query->hasAccountGrantablePermission(
           permittee_account.account_id, account.account_id, permission));
+    }
+
+    class DeletePeerTest : public WsvQueryCommandTest {
+     public:
+      DeletePeerTest() {
+        peer = model::Peer();
+      }
+
+      void SetUp() override {
+        WsvQueryCommandTest::SetUp();
+      }
+      model::Peer peer;
+    };
+
+    /**
+     * @given storage with peer
+     * @when trying to delete existing peer
+     * @then peer is successfully deleted
+     */
+    TEST_F(DeletePeerTest, DeletePeerValidWhenPeerExists) {
+      ASSERT_TRUE(command->insertPeer(peer));
+
+      EXPECT_TRUE(command->deletePeer(peer));
+    }
+
+    class GetAssetTest : public WsvQueryCommandTest {};
+
+    /**
+     * @given database without needed asset
+     * @when performing query to retrieve non-existent asset
+     * @then getAsset will return nullopt
+     */
+    TEST_F(GetAssetTest, GetAssetInvalidWhenAssetDoesNotExist) {
+      EXPECT_FALSE(query->getAsset("invalid asset"));
+    }
+
+    class GetDomainTest : public WsvQueryCommandTest {};
+
+    /**
+     * @given database without needed domain
+     * @when performing query to retrieve non-existent asset
+     * @then getAsset will return nullopt
+     */
+    TEST_F(GetDomainTest, GetDomainInvalidWhenDomainDoesNotExist) {
+      EXPECT_FALSE(query->getDomain("invalid domain"));
+    }
+
+    // Since mocking database is not currently possible, use SetUp to create
+    // invalid database
+    class DatabaseInvalidTest : public WsvQueryCommandTest {
+      // skip database setup
+      void SetUp() override {
+        AmetsuchiTest::SetUp();
+        postgres_connection = std::make_unique<pqxx::lazyconnection>(pgopt_);
+        try {
+          postgres_connection->activate();
+        } catch (const pqxx::broken_connection &e) {
+          FAIL() << "Connection to PostgreSQL broken: " << e.what();
+        }
+        wsv_transaction =
+            std::make_unique<pqxx::nontransaction>(*postgres_connection);
+
+        command = std::make_unique<PostgresWsvCommand>(*wsv_transaction);
+        query = std::make_unique<PostgresWsvQuery>(*wsv_transaction);
+      }
+    };
+
+    /**
+     * @given not set up database
+     * @when performing query to retrieve information from nonexisting tables
+     * @then query will return nullopt
+     */
+    TEST_F(DatabaseInvalidTest, QueryInvalidWhenDatabaseInvalid) {
+      EXPECT_FALSE(query->getAccount("some account"));
     }
   }  // namespace ametsuchi
 }  // namespace iroha

@@ -23,8 +23,7 @@ namespace iroha {
   namespace ametsuchi {
 
     PeerQueryWsv::PeerQueryWsv(std::shared_ptr<WsvQuery> wsv)
-        : wsv_(std::move(wsv)) {
-    }
+        : wsv_(std::move(wsv)) {}
 
     nonstd::optional<std::vector<model::Peer>> PeerQueryWsv::getLedgerPeers() {
       return wsv_->getPeers();

@@ -44,6 +44,6 @@ namespace iroha {
       virtual ~MutableFactory() = default;
     };
 
-  } // namespace ametsuchi
-} // namespace iroha
-#endif //IROHA_MUTABLE_FACTORY_HPP
+  }  // namespace ametsuchi
+}  // namespace iroha
+#endif  // IROHA_MUTABLE_FACTORY_HPP

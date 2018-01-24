@@ -20,15 +20,19 @@ limitations under the License.
 
 namespace torii {
 
-  using iroha::protocol::Transaction;
   using iroha::protocol::ToriiResponse;
+  using iroha::protocol::Transaction;
 
   CommandSyncClient::CommandSyncClient(std::string ip, int port)
       : stub_(iroha::protocol::CommandService::NewStub(
             grpc::CreateChannel(ip + ":" + std::to_string(port),
                                 grpc::InsecureChannelCredentials()))) {}
 
-  CommandSyncClient::~CommandSyncClient() { completionQueue_.Shutdown(); }
+  CommandSyncClient::~CommandSyncClient() {
+    completionQueue_.Shutdown();
+  }
+
+  const char *kQueueNextError = "CompletionQueue::Next() returns error";
 
   /**
    * requests tx to a torii server and returns response (blocking, sync)
@@ -36,51 +40,52 @@ namespace torii {
    * @param response - returns ToriiResponse if succeeded
    * @return grpc::Status - returns connection is success or not.
    */
-  grpc::Status CommandSyncClient::Torii(const Transaction& tx) {
+  grpc::Status CommandSyncClient::Torii(const Transaction &tx) {
     auto rpc = stub_->AsyncTorii(&context_, tx, &completionQueue_);
 
     using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
 
     google::protobuf::Empty empty;
-    rpc->Finish(&empty, &status_, (void*)static_cast<int>(State::ResponseSent));
+    rpc->Finish(
+        &empty, &status_, (void *)static_cast<int>(State::ResponseSent));
 
-    void* got_tag;
+    void *got_tag;
     bool ok = false;
 
     /**
      * pulls a new rpc response. If no response, blocks this thread.
      */
     if (!completionQueue_.Next(&got_tag, &ok)) {
-      throw std::runtime_error("CompletionQueue::Next() returns error");
+      throw std::runtime_error(kQueueNextError);
     }
 
-    assert(got_tag == (void*)static_cast<int>(State::ResponseSent));
+    assert(got_tag == (void *)static_cast<int>(State::ResponseSent));
     assert(ok);
 
     return status_;
   }
 
   grpc::Status CommandSyncClient::Status(
-      const iroha::protocol::TxStatusRequest& request,
-      iroha::protocol::ToriiResponse& response) {
+      const iroha::protocol::TxStatusRequest &request,
+      iroha::protocol::ToriiResponse &response) {
     auto rpc = stub_->AsyncStatus(&context_, request, &completionQueue_);
 
     using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
 
-    rpc->Finish(&response, &status_,
-                (void*)static_cast<int>(State::ResponseSent));
+    rpc->Finish(
+        &response, &status_, (void *)static_cast<int>(State::ResponseSent));
 
-    void* got_tag;
+    void *got_tag;
     bool ok = false;
 
     /**
      * pulls a new rpc response. If no response, blocks this thread.
      */
     if (!completionQueue_.Next(&got_tag, &ok)) {
-      throw std::runtime_error("CompletionQueue::Next() returns error");
+      throw std::runtime_error(kQueueNextError);
     }
 
-    assert(got_tag == (void*)static_cast<int>(State::ResponseSent));
+    assert(got_tag == (void *)static_cast<int>(State::ResponseSent));
     assert(ok);
 
     return status_;
@@ -123,29 +128,29 @@ namespace torii {
    * @return grpc::Status
    */
   grpc::Status CommandAsyncClient::Torii(
-      const Transaction& tx,
-      const std::function<void(google::protobuf::Empty& response)>& callback) {
+      const Transaction &tx,
+      const std::function<void(google::protobuf::Empty &response)> &callback) {
     auto call = new ToriiAsyncClientCall;
     call->callback = callback;
     call->responseReader =
         stub_->AsyncTorii(&call->context, tx, &completionQueue_);
-    call->responseReader->Finish(&call->response, &call->status, (void*)call);
+    call->responseReader->Finish(&call->response, &call->status, (void *)call);
     return call->status;
   }
 
-/**
- * @param tx_request contains hash of requested tx
- * @param callback callback to process obtained status
- * @return grpc::Status determining if connection was successful
- */
+  /**
+   * @param tx_request contains hash of requested tx
+   * @param callback callback to process obtained status
+   * @return grpc::Status determining if connection was successful
+   */
   grpc::Status CommandAsyncClient::Status(
-      const iroha::protocol::TxStatusRequest& tx_request,
-      const StatusCallback& callback) {
+      const iroha::protocol::TxStatusRequest &tx_request,
+      const StatusCallback &callback) {
     auto call = new StatusAsyncClientCall;
     call->callback = callback;
     call->responseReader =
         stub_->AsyncStatus(&call->context, tx_request, &completionQueue_);
-    call->responseReader->Finish(&call->response, &call->status, (void*)call);
+    call->responseReader->Finish(&call->response, &call->status, (void *)call);
     return call->status;
   }
 
@@ -154,7 +159,7 @@ namespace torii {
    * @param ip
    * @param port
    */
-  CommandAsyncClient::CommandAsyncClient(const std::string& ip, const int port)
+  CommandAsyncClient::CommandAsyncClient(const std::string &ip, const int port)
       : stub_(iroha::protocol::CommandService::NewStub(
             grpc::CreateChannel(ip + ":" + std::to_string(port),
                                 grpc::InsecureChannelCredentials()))) {
@@ -175,7 +180,7 @@ namespace torii {
      * server.
      * ok - true if a regular event, otherwise false (e.g. grpc::Alarm)
      */
-    void* got_tag;
+    void *got_tag;
     bool ok = false;
 
     /**
@@ -186,14 +191,14 @@ namespace torii {
       if (!got_tag || !ok) {
         break;
       }
-      auto call = static_cast<AsyncClientCall*>(got_tag);
+      auto call = static_cast<AsyncClientCall *>(got_tag);
 
-      if (ToriiAsyncClientCall* torii_call =
-              dynamic_cast<ToriiAsyncClientCall*>(call)) {
+      if (ToriiAsyncClientCall *torii_call =
+              dynamic_cast<ToriiAsyncClientCall *>(call)) {
         torii_call->callback(torii_call->response);
       }
-      if (StatusAsyncClientCall* status_call =
-              dynamic_cast<StatusAsyncClientCall*>(call)) {
+      if (StatusAsyncClientCall *status_call =
+              dynamic_cast<StatusAsyncClientCall *>(call)) {
         status_call->callback(status_call->response);
       }
       delete call;

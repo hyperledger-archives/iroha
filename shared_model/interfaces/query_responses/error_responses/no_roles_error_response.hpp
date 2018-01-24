@@ -30,7 +30,9 @@ namespace shared_model {
     class NoRolesErrorResponse
         : public AbstractErrorResponse<NoRolesErrorResponse> {
      private:
-      std::string reason() const override { return "NoRolesErrorResponse"; }
+      std::string reason() const override {
+        return "NoRolesErrorResponse";
+      }
 
       iroha::model::ErrorResponse::Reason oldModelReason() const override {
         return iroha::model::ErrorResponse::Reason::NO_ROLES;

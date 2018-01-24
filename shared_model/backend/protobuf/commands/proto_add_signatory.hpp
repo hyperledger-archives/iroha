@@ -24,7 +24,7 @@ namespace shared_model {
   namespace proto {
     class AddSignatory final : public CopyableProto<interface::AddSignatory,
                                                     iroha::protocol::Command,
-                                                    AddSignatory>  {
+                                                    AddSignatory> {
      public:
       template <typename CommandType>
       explicit AddSignatory(CommandType &&command)

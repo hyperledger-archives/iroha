@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROTO_PEER_HPP
-#define IROHA_PROTO_PEER_HPP
+#ifndef IROHA_SHARED_MODEL_PROTO_PEER_HPP
+#define IROHA_SHARED_MODEL_PROTO_PEER_HPP
 
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
+#include "backend/protobuf/util.hpp"
 #include "interfaces/common_objects/peer.hpp"
 #include "responses.pb.h"
 #include "utils/lazy_initializer.hpp"
-#include "utils/reference_holder.hpp"
 
 namespace shared_model {
   namespace proto {

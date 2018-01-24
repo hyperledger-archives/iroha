@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-
 #ifndef IROHA_PROTO_CREATE_ROLE_HPP
 #define IROHA_PROTO_CREATE_ROLE_HPP
 
-#include "interfaces/commands/create_role.hpp"
 #include <boost/range/numeric.hpp>
+#include "interfaces/commands/create_role.hpp"
 
 namespace shared_model {
   namespace proto {
@@ -46,8 +45,7 @@ namespace shared_model {
 
       CreateRole(const CreateRole &o) : CreateRole(o.proto_) {}
 
-      CreateRole(CreateRole &&o) noexcept
-          : CreateRole(std::move(o.proto_)) {}
+      CreateRole(CreateRole &&o) noexcept : CreateRole(std::move(o.proto_)) {}
 
       const interface::types::RoleIdType &roleName() const override {
         return create_role_->role_name();
@@ -64,7 +62,7 @@ namespace shared_model {
       const Lazy<const iroha::protocol::CreateRole &> create_role_;
       const Lazy<PermissionsType> role_permissions_;
     };
-  }     // namespace proto
+  }  // namespace proto
 }  // namespace shared_model
 
 #endif  // IROHA_PROTO_CREATE_ROLE_HPP

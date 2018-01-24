@@ -44,8 +44,7 @@ namespace iroha {
 
       RemoveSignatory() {}
 
-      RemoveSignatory(const std::string &account_id,
-                      const pubkey_t &pubkey)
+      RemoveSignatory(const std::string &account_id, const pubkey_t &pubkey)
           : account_id(account_id), pubkey(pubkey) {}
     };
   }  // namespace model

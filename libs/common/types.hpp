@@ -185,7 +185,8 @@ namespace iroha {
    */
   template <typename T, typename Transform>
   auto operator|(T t, Transform f) -> typename std::
-      enable_if<std::is_same<decltype(f(*t)), void>::value>::type {
+      enable_if<
+      std::is_same<decltype(f(*t)), void>::value>::type {
     if (t) {
       f(*t);
     }

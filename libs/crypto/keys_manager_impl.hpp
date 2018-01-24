@@ -32,6 +32,9 @@ namespace iroha {
 
     bool createKeys(const std::string &pass_phrase) override;
 
+    static const std::string kPubExt;
+    static const std::string kPrivExt;
+
    private:
     /**
      * Check if keypair provides valid signature

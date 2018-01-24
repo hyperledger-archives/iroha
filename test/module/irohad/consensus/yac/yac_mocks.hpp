@@ -20,6 +20,7 @@
 
 #include <gmock/gmock.h>
 
+#include "common/byteutils.hpp"
 #include "consensus/yac/cluster_order.hpp"
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/yac.hpp"
@@ -33,12 +34,15 @@ namespace iroha {
       model::Peer mk_peer(std::string address) {
         model::Peer peer;
         peer.address = address;
+        // TODO: 19.01.2019 kamil substitute with function, IR-813
+        std::copy(address.begin(), address.end(), peer.pubkey.begin());
         return peer;
       }
 
       VoteMessage create_vote(YacHash hash, std::string pub_key) {
         VoteMessage vote;
         vote.hash = hash;
+        // TODO: 19.01.2019 kamil substitute with function, IR-813
         std::copy(
             pub_key.begin(), pub_key.end(), vote.signature.pubkey.begin());
         return vote;
@@ -141,7 +145,8 @@ namespace iroha {
        public:
         MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
 
-        MOCK_METHOD1(getOrdering, nonstd::optional<ClusterOrdering>(YacHash));
+        MOCK_METHOD1(getOrdering,
+                     nonstd::optional<ClusterOrdering>(const YacHash &));
 
         MockYacPeerOrderer() = default;
 
@@ -203,8 +208,12 @@ namespace iroha {
           timer = std::make_shared<MockTimer>();
           auto ordering = ClusterOrdering::create(default_peers);
           ASSERT_TRUE(ordering.has_value());
-          yac = Yac::create(
-              YacVoteStorage(), network, crypto, timer, ordering.value(), delay);
+          yac = Yac::create(YacVoteStorage(),
+                            network,
+                            crypto,
+                            timer,
+                            ordering.value(),
+                            delay);
           network->subscribe(yac);
         };
 

@@ -152,6 +152,9 @@ namespace iroha {
 
       // ------|Apply data|------
 
+      const char *kRejectMsg = "reject case";
+      const char *kRejectOnHashMsg = "Reject case on hash {} achieved";
+
       void Yac::applyCommit(nonstd::optional<model::Peer> from,
                             CommitMessage commit) {
         auto answer =
@@ -161,16 +164,16 @@ namespace iroha {
           auto already_processed =
               vote_storage_.getProcessingState(proposal_hash);
           if (not already_processed) {
+            vote_storage_.markAsProcessedState(proposal_hash);
             visit_in_place(answer,
                            [&](const CommitMessage &commit) {
                              notifier_.get_subscriber().on_next(commit);
                            },
                            [&](const RejectMessage &reject) {
-                             log_->warn("reject case");
+                             log_->warn(kRejectMsg);
                              // TODO 14/08/17 Muratov: work on reject case
                              // IR-497
                            });
-            vote_storage_.markAsProcessedState(proposal_hash);
           }
           this->closeRound();
         };
@@ -178,8 +181,28 @@ namespace iroha {
 
       void Yac::applyReject(nonstd::optional<model::Peer> from,
                             RejectMessage reject) {
-        // TODO 01/08/17 Muratov: apply to vote storage IR-497
-        closeRound();
+        auto answer =
+            vote_storage_.store(reject, cluster_order_.getNumberOfPeers());
+        answer | [&](const auto &answer) {
+          auto proposal_hash = getProposalHash(reject.votes).value();
+          auto already_processed =
+              vote_storage_.getProcessingState(proposal_hash);
+
+          if (not already_processed) {
+            vote_storage_.markAsProcessedState(proposal_hash);
+            visit_in_place(answer,
+                           [&](const RejectMessage &reject) {
+                             log_->warn(kRejectMsg);
+                             // TODO 14/08/17 Muratov: work on reject case
+                             // IR-497
+                           },
+                           [&](const CommitMessage &commit) {
+                             notifier_.get_subscriber().on_next(commit);
+                             this->propagateCommit(commit);
+                           });
+          }
+          this->closeRound();
+        };
       }
 
       void Yac::applyVote(nonstd::optional<model::Peer> from,
@@ -203,17 +226,18 @@ namespace iroha {
               vote_storage_.getProcessingState(proposal_hash);
 
           if (not already_processed) {
+            vote_storage_.markAsProcessedState(proposal_hash);
             visit_in_place(answer,
                            [&](const CommitMessage &commit) {
                              // propagate for all
                              log_->info("Propagate commit {} to whole network",
                                         vote.hash.block_hash);
+                             notifier_.get_subscriber().on_next(commit);
                              this->propagateCommit(commit);
                            },
                            [&](const RejectMessage &reject) {
                              // propagate reject for all
-                             log_->info("Reject case on hash {} achieved",
-                                        proposal_hash);
+                             log_->info(kRejectOnHashMsg, proposal_hash);
                              this->propagateReject(reject);
                            });
           } else {
@@ -226,8 +250,7 @@ namespace iroha {
                                this->propagateCommitDirectly(from, commit);
                              },
                              [&](const RejectMessage &reject) {
-                               log_->info("Reject case on hash {} achieved",
-                                          proposal_hash);
+                               log_->info(kRejectOnHashMsg, proposal_hash);
                                this->propagateRejectDirectly(from, reject);
                              });
             };

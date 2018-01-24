@@ -40,7 +40,9 @@ namespace shared_model {
       /**
        * @return hash of object.
        */
-      virtual const HashType &hash() const { return *hash_; }
+      virtual const HashType &hash() const {
+        return *hash_;
+      }
 
       /**
        * @return blob representation of object

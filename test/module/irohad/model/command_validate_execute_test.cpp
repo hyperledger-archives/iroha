@@ -846,8 +846,7 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoAccountAndSignatories) {
 /**
  * @given RemoveSignatory
  * @when command tries to remove signatory from creator's account but has no
- * permissions and no grantable permissions
- *       to do that
+ * permissions and no grantable permissions to do that
  * @then execute fails and returns false
  */
 TEST_F(RemoveSignatoryTest, InvalidWhenNoPermissionToRemoveFromSelf) {
@@ -1538,11 +1537,11 @@ TEST_F(AppendRoleTest, InvalidCaseNoAccountRole) {
 }
 
 /**
-* @given AppendRole
-* @when command tries to append non-existing role and creator does not have any
-* roles
-* @then execute() fails and returns false
-*/
+ * @given AppendRole
+ * @when command tries to append non-existing role and creator does not have any
+ * roles
+ * @then execute() fails and returns false
+ */
 TEST_F(AppendRoleTest, InvalidCaseNoAccountRoleAndNoPermission) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .Times(2)
@@ -1557,8 +1556,7 @@ TEST_F(AppendRoleTest, InvalidCaseNoAccountRoleAndNoPermission) {
 
 /**
 * @given AppendRole
-* @when command tries to append role, but creator account does not have
-* necessary permission
+* @when command tries to append role, but creator account does not have* necessary permission
 * @then execute() fails and returns false
 */
 TEST_F(AppendRoleTest, InvalidCaseRoleHasNoPermissions) {

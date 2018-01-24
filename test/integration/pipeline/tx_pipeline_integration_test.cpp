@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-#include "responses.pb.h"
 #include "datetime/time.hpp"
 #include "integration/pipeline/tx_pipeline_integration_test_fixture.hpp"
 #include "model/generators/query_generator.hpp"
+#include "responses.pb.h"
 
 using namespace iroha::model::generators;
 using namespace iroha::model::converters;
@@ -74,7 +74,8 @@ class TxPipelineIntegrationTest : public TxPipelineIntegrationTestFixture {
 };
 
 TEST_F(TxPipelineIntegrationTest, TxPipelineTest) {
-  //TODO 19/12/17 motxx - Rework integration test using shared model (IR-715 comment)
+  // TODO 19/12/17 motxx - Rework integration test using shared model (IR-715
+  // comment)
   // generate test command
   auto cmd =
       iroha::model::generators::CommandGenerator().generateAddAssetQuantity(
@@ -100,7 +101,8 @@ TEST_F(TxPipelineIntegrationTest, TxPipelineTest) {
  * @then Validate the transaction
  */
 TEST_F(TxPipelineIntegrationTest, GetTransactionsTest) {
-  //TODO 19/12/17 motxx - Rework integration test using shared model (IR-715 comment)
+  // TODO 19/12/17 motxx - Rework integration test using shared model (IR-715
+  // comment)
   const auto CREATOR_ACCOUNT_ID = "admin@test";
   // send some transaction
   const auto cmd =
@@ -123,7 +125,7 @@ TEST_F(TxPipelineIntegrationTest, GetTransactionsTest) {
 
   auto query =
       iroha::model::generators::QueryGenerator().generateGetTransactions(
-        iroha::time::now(), CREATOR_ACCOUNT_ID, 1, {given_tx_hash});
+          iroha::time::now(), CREATOR_ACCOUNT_ID, 1, {given_tx_hash});
   provider.sign(*query);
 
   const auto pb_query = PbQueryFactory{}.serialize(query);

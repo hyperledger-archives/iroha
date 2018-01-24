@@ -18,6 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_TRANSACTION_VALIDATOR_HPP
 #define IROHA_SHARED_MODEL_TRANSACTION_VALIDATOR_HPP
 
+#include <boost/format.hpp>
 #include <boost/variant/static_visitor.hpp>
 
 #include "interfaces/transaction.hpp"

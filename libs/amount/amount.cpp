@@ -80,7 +80,8 @@ namespace iroha {
 
   Amount &Amount::operator=(const Amount &other) {
     // check for self-assignment
-    if (&other == this) return *this;
+    if (&other == this)
+      return *this;
     value_ = other.value_;
     precision_ = other.precision_;
     return *this;
@@ -123,9 +124,13 @@ namespace iroha {
     return Amount(value, precision);
   }
 
-  uint256_t Amount::getIntValue() { return value_; }
+  uint256_t Amount::getIntValue() {
+    return value_;
+  }
 
-  uint8_t Amount::getPrecision() { return precision_; }
+  uint8_t Amount::getPrecision() {
+    return precision_;
+  }
 
   std::vector<uint64_t> Amount::to_uint64s() {
     std::vector<uint64_t> array(4);
