@@ -21,24 +21,24 @@
 #include "converters/pb_transaction_factory.hpp"
 
 namespace iroha {
-// TODO: remove factories
-    const static model::converters::PbTransactionFactory tx_factory;
-    const static model::converters::PbBlockFactory block_factory;
-    const static model::converters::PbQueryFactory query_factory;
+  // TODO: 24.01.2018 @victordrobny: remove factories IR-850
+  const static model::converters::PbTransactionFactory tx_factory;
+  const static model::converters::PbBlockFactory block_factory;
+  const static model::converters::PbQueryFactory query_factory;
 
-    hash256_t hash(const model::Transaction &tx) {
-        auto &&pb_dat = tx_factory.serialize(tx);
-        return hash(pb_dat);
-    }
+  hash256_t hash(const model::Transaction &tx) {
+    auto &&pb_dat = tx_factory.serialize(tx);
+    return hash(pb_dat);
+  }
 
-    hash256_t hash(const model::Block &block) {
-        auto &&pb_dat = block_factory.serialize(block);
-        return hash(pb_dat);
-    }
+  hash256_t hash(const model::Block &block) {
+    auto &&pb_dat = block_factory.serialize(block);
+    return hash(pb_dat);
+  }
 
-    hash256_t hash(const model::Query &query) {
-        std::shared_ptr<const model::Query> qptr(&query, [](auto) {});
-        auto &&pb_dat = query_factory.serialize(qptr);
-        return hash(*pb_dat);
-    }
+  hash256_t hash(const model::Query &query) {
+    std::shared_ptr<const model::Query> qptr(&query, [](auto) {});
+    auto &&pb_dat = query_factory.serialize(qptr);
+    return hash(*pb_dat);
+  }
 }

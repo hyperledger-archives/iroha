@@ -17,8 +17,8 @@ add_library(model_interfaces
     )
 
 target_link_libraries(model_interfaces
-    ${model_LIBRARY}
-    ${shared_model_ed25519_sha3_LIBRARY}
+    old_model
+    shared_model_ed25519_sha3
     optional
     rxcpp
     ${Boost_LIBRARIES}

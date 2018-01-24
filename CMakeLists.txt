@@ -86,12 +86,9 @@ if(PACKAGE_TGZ OR PACKAGE_ZIP OR PACKAGE_RPM OR PACKAGE_DEB)
   include(cmake/release.cmake)
 endif()
 
-set(SHARED_MODEL_DISABLE_COMPATIBILITY FALSE)
+set(SHARED_MODEL_DISABLE_COMPATIBILITY TRUE)
 if (SHARED_MODEL_DISABLE_COMPATIBILITY)
     add_definitions(-DDISABLE_BACKWARD)
-    set(shared_model_ed25519_sha3_LIBRARY shared_model_ed25519_sha3)
-else()
-    set(model_LIBRARY model)
 endif()
 
 add_subdirectory(schema)

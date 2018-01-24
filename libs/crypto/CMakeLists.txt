@@ -21,6 +21,9 @@ add_library(keys_manager
     )
 
 target_link_libraries(keys_manager
+#    logger
     optional
     cryptography
+    pb_model_converters
+#    ${Boost_LIBRARIES}
     )
