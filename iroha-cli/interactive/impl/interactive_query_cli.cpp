@@ -185,8 +185,9 @@ namespace iroha_cli {
       GetTransactions::TxHashCollectionType tx_hashes;
       std::for_each(
           params.begin(), params.end(), [&tx_hashes](auto const &hex_hash) {
-            if (auto opt = iroha::hexstringToArray<
-                    GetTransactions::TxHashType::size()>(hex_hash)) {
+            if (auto opt = iroha::
+                    hexstringToArray<GetTransactions::TxHashType::size()>(
+                        hex_hash)) {
               tx_hashes.push_back(*opt);
             }
           });
