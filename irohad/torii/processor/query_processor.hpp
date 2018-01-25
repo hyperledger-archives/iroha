@@ -18,10 +18,11 @@
 #ifndef IROHA_QUERY_PROCESSOR_HPP
 #define IROHA_QUERY_PROCESSOR_HPP
 
-#include <model/client.hpp>
-#include <model/query.hpp>
-#include <model/query_response.hpp>
 #include <rxcpp/rx.hpp>
+
+#include "model/client.hpp"
+#include "model/query.hpp"
+#include "model/query_response.hpp"
 
 namespace iroha {
   namespace torii {

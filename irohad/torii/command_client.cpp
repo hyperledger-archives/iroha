@@ -11,12 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <block.pb.h>
+#include <thread>
+
 #include <grpc++/grpc++.h>
 #include <network/grpc_call.hpp>
-#include <thread>
-#include <torii/command_client.hpp>
-#include <torii/torii_service_handler.hpp>
+
+#include "block.pb.h"
+#include "torii/command_client.hpp"
+#include "torii/torii_service_handler.hpp"
 
 namespace torii {
 
