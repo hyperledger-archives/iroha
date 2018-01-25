@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,10 +53,10 @@ namespace shared_model {
         T result;
         auto status =
             google::protobuf::util::JsonStringToMessage(json, &result);
-        if (not status.ok()) {
-          return boost::none;
+        if (status.ok()) {
+          return result;
         }
-        return result;
+        return boost::none;
       }
 
       /**
@@ -71,9 +71,8 @@ namespace shared_model {
         if (tx) {
           return shared_model::proto::Transaction(
               iroha::protocol::Transaction(tx.value()));
-        } else {
-          return boost::none;
         }
+        return boost::none;
       }
       /**
        * Converts json into block shared model object
@@ -87,9 +86,8 @@ namespace shared_model {
         if (block) {
           return shared_model::proto::Block(
               iroha::protocol::Block(block.value()));
-        } else {
-          return boost::none;
         }
+        return boost::none;
       }
 
     }  // namespace protobuf
