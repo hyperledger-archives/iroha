@@ -29,14 +29,14 @@ namespace shared_model {
 
       /**
        * Converts protobuf model object into json string
-       * @tparam T is the type of converting command
-       * @param command is the command to be converted
+       * @tparam T is the type of converting message
+       * @param message is the message to be converted
        * @return json string
        */
       template <typename T>
-      std::string modelToJson(T command) {
+      std::string modelToJson(T message) {
         std::string result;
-        google::protobuf::util::MessageToJsonString(command.getTransport(),
+        google::protobuf::util::MessageToJsonString(message.getTransport(),
                                                     &result);
         return result;
       }
