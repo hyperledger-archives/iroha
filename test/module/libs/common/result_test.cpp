@@ -24,10 +24,10 @@ using iroha::expected::Value;
 using iroha::expected::makeError;
 using iroha::expected::makeValue;
 
-constexpr auto error_case_message = "Unexpected error case";
-constexpr auto value_case_message = "Unexpected value case";
-constexpr auto first_function_call_message = "first function";
-constexpr auto error_message = "error message";
+constexpr auto kErrorCaseMessage = "Unexpected error case";
+constexpr auto kValueCaseMessage = "Unexpected value case";
+constexpr auto kFirstFunctionCallMessage = "first function";
+constexpr auto kErrorMessage = "error message";
 
 // Function which returns function which when invoked, fails the test
 template <typename T>
@@ -45,7 +45,7 @@ auto correct = [](auto t) { SUCCEED(); };
  */
 TEST(ResultTest, ResultValueConstruction) {
   Result<int, std::string> result = makeValue(5);
-  result.match(correct, makeFailCase<Error<std::string>>(error_case_message));
+  result.match(correct, makeFailCase<Error<std::string>>(kErrorCaseMessage));
 }
 
 /**
@@ -55,7 +55,7 @@ TEST(ResultTest, ResultValueConstruction) {
  */
 TEST(ResultTest, ResultErrorConstruction) {
   Result<int, std::string> result = makeError("error message");
-  result.match(makeFailCase<Value<int>>(value_case_message), correct);
+  result.match(makeFailCase<Value<int>>(kValueCaseMessage), correct);
 }
 
 /**
@@ -65,7 +65,7 @@ TEST(ResultTest, ResultErrorConstruction) {
  */
 TEST(ResultTest, ResultSameTypeValueConstruction) {
   Result<int, int> result = makeValue(5);
-  result.match(correct, makeFailCase<Error<int>>(error_case_message));
+  result.match(correct, makeFailCase<Error<int>>(kErrorCaseMessage));
 }
 
 /**
@@ -75,7 +75,7 @@ TEST(ResultTest, ResultSameTypeValueConstruction) {
  */
 TEST(ResultTest, ResultSameTypeErrorConstruction) {
   Result<int, int> result = makeError(10);
-  result.match(makeFailCase<Value<int>>(value_case_message), correct);
+  result.match(makeFailCase<Value<int>>(kValueCaseMessage), correct);
 }
 
 /**
@@ -93,7 +93,7 @@ TEST(ResultTest, ResultBindOperatorSuccesfulCase) {
   auto result = get_int() | negate_int;
 
   result.match([](Value<int> v) { ASSERT_EQ(-10, v.value); },
-               makeFailCase<Error<std::string>>(error_case_message));
+               makeFailCase<Error<std::string>>(kErrorCaseMessage));
 }
 
 // function which must not be called for test to pass
@@ -103,7 +103,7 @@ auto never_used_negate_int = [](int a) -> Result<int, std::string> {
 };
 
 auto error_get_int = []() -> Result<int, std::string> {
-  return makeError(first_function_call_message);
+  return makeError(kFirstFunctionCallMessage);
 };
 
 /**
@@ -115,9 +115,9 @@ auto error_get_int = []() -> Result<int, std::string> {
 TEST(ResultTest, ResultBindOperatorErrorFirstFunction) {
   auto result = error_get_int() | never_used_negate_int;
 
-  result.match(makeFailCase<Value<int>>(value_case_message),
+  result.match(makeFailCase<Value<int>>(kValueCaseMessage),
                [](Error<std::string> e) {
-                 ASSERT_EQ(first_function_call_message, e.error);
+                 ASSERT_EQ(kFirstFunctionCallMessage, e.error);
                });
 }
 
@@ -134,9 +134,9 @@ TEST(ResultTest, ResultBindOperatorCompatibleTypes) {
       std::is_same<decltype(result), decltype(never_used_negate_int(1))>::value,
       "Result type does not match function return type");
 
-  result.match(makeFailCase<Value<int>>(value_case_message),
+  result.match(makeFailCase<Value<int>>(kValueCaseMessage),
                [](Error<std::string> e) {
-                 ASSERT_EQ(first_function_call_message, e.error);
+                 ASSERT_EQ(kFirstFunctionCallMessage, e.error);
                });
 }
 
@@ -146,9 +146,9 @@ TEST(ResultTest, ResultBindOperatorCompatibleTypes) {
  * @then void type is correctly handled by compiler
  */
 TEST(ResultTest, ResultVoidValue) {
-  Result<void, std::string> result = makeError(error_message);
-  result.match(makeFailCase<Value<void>>(value_case_message),
-               [](Error<std::string> e) { ASSERT_EQ(error_message, e.error); });
+  Result<void, std::string> result = makeError(kErrorMessage);
+  result.match(makeFailCase<Value<void>>(kValueCaseMessage),
+               [](Error<std::string> e) { ASSERT_EQ(kErrorMessage, e.error); });
 }
 
 /**
@@ -159,5 +159,5 @@ TEST(ResultTest, ResultVoidValue) {
 TEST(ResultTest, ResultVoidError) {
   Result<int, void> result = makeValue(5);
   result.match([](Value<int> v) { ASSERT_EQ(5, v.value); },
-               makeFailCase<Error<void>>(error_case_message));
+               makeFailCase<Error<void>>(kErrorCaseMessage));
 }
