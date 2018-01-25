@@ -70,7 +70,7 @@ namespace shared_model {
         auto tx = jsonToModel<iroha::protocol::Transaction>(json);
         if (tx) {
           return shared_model::proto::Transaction(
-              iroha::protocol::Transaction(tx.value()));
+              std::move(tx.value()));
         }
         return boost::none;
       }
@@ -85,7 +85,7 @@ namespace shared_model {
         auto block = jsonToModel<iroha::protocol::Block>(json);
         if (block) {
           return shared_model::proto::Block(
-              iroha::protocol::Block(block.value()));
+              std::move(block.value()));
         }
         return boost::none;
       }

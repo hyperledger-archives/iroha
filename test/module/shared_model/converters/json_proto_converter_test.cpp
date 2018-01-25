@@ -37,7 +37,7 @@ shared_model::proto::Transaction generateTransaction() {
   payload.set_created_time(123);
 
   return shared_model::proto::Transaction(
-      iroha::protocol::Transaction(proto_tx));
+      std::move(proto_tx));
 }
 
 /**
@@ -52,7 +52,7 @@ shared_model::proto::Block generateBlock() {
     block.mutable_payload()->add_transactions()->CopyFrom(tx.getTransport());
   }
 
-  return shared_model::proto::Block(iroha::protocol::Block(block));
+  return shared_model::proto::Block(std::move(block));
 }
 
 /**
