@@ -54,7 +54,6 @@ namespace shared_model {
                     vec.emplace_back(new proto::Transaction(tx));
                     return std::forward<decltype(vec)>(vec);
                   });
-
             }),
             blob_([this] { return makeBlob(*proto_); }) {}
 
