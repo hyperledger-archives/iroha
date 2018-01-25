@@ -45,8 +45,8 @@ namespace shared_model {
         auto oldModel = new OldModelType;
         boost::for_each(transactionHashes(), [&oldModel](const auto &hash) {
           oldModel->tx_hashes.push_back(
-              hash.template makeOldModel<iroha::model::GetTransactions::
-                                             TxHashType>());
+              hash.template makeOldModel<
+                  iroha::model::GetTransactions::TxHashType>());
         });
         return oldModel;
       }

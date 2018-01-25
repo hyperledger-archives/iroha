@@ -53,9 +53,13 @@ namespace iroha {
         pgopt_ = ss.str();
         redishost_ = rd_host;
         redisport_ = std::stoull(rd_port);
-        log->info("host={}, port={}, user={}, password={}", pg_host, pg_port,
-                  pg_user, pg_pass);
+        log->info("host={}, port={}, user={}, password={}",
+                  pg_host,
+                  pg_port,
+                  pg_user,
+                  pg_pass);
       }
+
      protected:
       virtual void SetUp() {
         connection = std::make_shared<pqxx::lazyconnection>(pgopt_);

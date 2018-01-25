@@ -76,5 +76,5 @@ namespace iroha {
 
       query.signature = Signature{signature, keypair_.pubkey};
     }
-  }
-}
+  }  // namespace model
+}  // namespace iroha

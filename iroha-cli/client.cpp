@@ -37,13 +37,14 @@ namespace iroha_cli {
     // Send to iroha:
     response.status = command_client_.Torii(pb_tx);
 
-    //TODO 12/10/2017 neewy implement return of real transaction status IR-494
+    // TODO 12/10/2017 neewy implement return of real transaction status IR-494
     response.answer = TxStatus::OK;
 
     return response;
   }
 
-  CliClient::Response<iroha::protocol::ToriiResponse> CliClient::getTxStatus(std::string tx_hash) {
+  CliClient::Response<iroha::protocol::ToriiResponse> CliClient::getTxStatus(
+      std::string tx_hash) {
     CliClient::Response<iroha::protocol::ToriiResponse> response;
     // Send to iroha:
     iroha::protocol::TxStatusRequest statusRequest;
@@ -67,4 +68,4 @@ namespace iroha_cli {
     return response;
   }
 
-} // namespace iroha_cli
+}  // namespace iroha_cli

@@ -37,20 +37,21 @@ namespace shared_model {
             rolesResponse_(detail::makeReferenceGenerator(
                 proto_, &iroha::protocol::QueryResponse::roles_response)),
             roles_([this] {
-              return boost::accumulate(
-                  rolesResponse_->roles(),
-                  RolesIdType{},
-                  [](auto &&roles, const auto &role) {
-                    roles.emplace_back(role);
-                    return std::move(roles);
-                  });
+              return boost::accumulate(rolesResponse_->roles(),
+                                       RolesIdType{},
+                                       [](auto &&roles, const auto &role) {
+                                         roles.emplace_back(role);
+                                         return std::move(roles);
+                                       });
             }) {}
 
       RolesResponse(const RolesResponse &o) : RolesResponse(o.proto_) {}
 
       RolesResponse(RolesResponse &&o) : RolesResponse(std::move(o.proto_)) {}
 
-      const RolesIdType &roles() const override { return *roles_; }
+      const RolesIdType &roles() const override {
+        return *roles_;
+      }
 
      private:
       template <typename T>

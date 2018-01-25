@@ -16,8 +16,8 @@
  */
 
 #include "model/converters/pb_query_response_factory.hpp"
-#include "model/converters/pb_transaction_factory.hpp"
 #include "model/converters/pb_common.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha {
   namespace model {
@@ -43,8 +43,9 @@ namespace iroha {
         if (instanceof <model::AccountDetailResponse>(*query_response)) {
           response = nonstd::make_optional<protocol::QueryResponse>();
           response->mutable_account_detail_response()->CopyFrom(
-            serializeAccountDetailResponse(
-              static_cast<model::AccountDetailResponse &>(*query_response)));
+              serializeAccountDetailResponse(
+                  static_cast<model::AccountDetailResponse &>(
+                      *query_response)));
         }
         if (instanceof <model::AccountResponse>(*query_response)) {
           response = nonstd::make_optional<protocol::QueryResponse>();
@@ -111,7 +112,7 @@ namespace iroha {
         protocol::AccountResponse pb_response;
         pb_response.mutable_account()->CopyFrom(
             serializeAccount(accountResponse.account));
-        for (auto role : accountResponse.roles){
+        for (auto role : accountResponse.roles) {
           pb_response.add_account_roles(role);
         }
         return pb_response;
@@ -153,7 +154,8 @@ namespace iroha {
         pb_account_asset->set_account_id(
             accountAssetResponse.acct_asset.account_id);
         auto pb_amount = pb_account_asset->mutable_balance();
-        pb_amount->CopyFrom(serializeAmount(accountAssetResponse.acct_asset.balance));
+        pb_amount->CopyFrom(
+            serializeAmount(accountAssetResponse.acct_asset.balance));
         return pb_response;
       }
 
@@ -172,7 +174,7 @@ namespace iroha {
 
       protocol::AccountDetailResponse
       PbQueryResponseFactory::serializeAccountDetailResponse(
-        const model::AccountDetailResponse &accountDetailResponse) const {
+          const model::AccountDetailResponse &accountDetailResponse) const {
         protocol::AccountDetailResponse pb_response;
         pb_response.set_detail(accountDetailResponse.detail);
         return pb_response;
@@ -180,14 +182,14 @@ namespace iroha {
 
       model::AccountDetailResponse
       PbQueryResponseFactory::deserializeAccountDetailResponse(
-        const protocol::AccountDetailResponse &account_detail_response) const {
+          const protocol::AccountDetailResponse &account_detail_response)
+          const {
         model::AccountDetailResponse res;
         res.detail = account_detail_response.detail();
         return res;
       }
 
-
-        protocol::SignatoriesResponse
+      protocol::SignatoriesResponse
       PbQueryResponseFactory::serializeSignatoriesResponse(
           const model::SignatoriesResponse &signatoriesResponse) const {
         protocol::SignatoriesResponse pb_response;
@@ -241,7 +243,8 @@ namespace iroha {
       model::RolesResponse PbQueryResponseFactory::deserializeRolesResponse(
           const protocol::RolesResponse &response) const {
         model::RolesResponse res{};
-        std::copy(response.roles().begin(), response.roles().end(),
+        std::copy(response.roles().begin(),
+                  response.roles().end(),
                   res.roles.begin());
         return res;
       }
@@ -260,7 +263,8 @@ namespace iroha {
       PbQueryResponseFactory::deserializeRolePermissionsResponse(
           const protocol::RolePermissionsResponse &response) const {
         model::RolePermissionsResponse res;
-        std::copy(response.permissions().begin(), response.permissions().end(),
+        std::copy(response.permissions().begin(),
+                  response.permissions().end(),
                   res.role_permissions.begin());
         return res;
       }

@@ -60,8 +60,8 @@ namespace torii {
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
     std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
     std::shared_ptr<iroha::ametsuchi::Storage> storage_;
-    std::shared_ptr<iroha::cache::Cache<std::string,
-                                        iroha::protocol::ToriiResponse>>
+    std::shared_ptr<
+        iroha::cache::Cache<std::string, iroha::protocol::ToriiResponse>>
         cache_;
   };
 

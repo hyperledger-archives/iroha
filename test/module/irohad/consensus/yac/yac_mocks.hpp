@@ -20,13 +20,13 @@
 
 #include <gmock/gmock.h>
 
+#include "common/byteutils.hpp"
 #include "consensus/yac/cluster_order.hpp"
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/yac.hpp"
 #include "consensus/yac/yac_gate.hpp"
 #include "consensus/yac/yac_hash_provider.hpp"
 #include "consensus/yac/yac_peer_orderer.hpp"
-#include "common/byteutils.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -145,7 +145,8 @@ namespace iroha {
        public:
         MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
 
-        MOCK_METHOD1(getOrdering, nonstd::optional<ClusterOrdering>(const YacHash&));
+        MOCK_METHOD1(getOrdering,
+                     nonstd::optional<ClusterOrdering>(const YacHash &));
 
         MockYacPeerOrderer() = default;
 
@@ -207,8 +208,12 @@ namespace iroha {
           timer = std::make_shared<MockTimer>();
           auto ordering = ClusterOrdering::create(default_peers);
           ASSERT_TRUE(ordering.has_value());
-          yac = Yac::create(
-              YacVoteStorage(), network, crypto, timer, ordering.value(), delay);
+          yac = Yac::create(YacVoteStorage(),
+                            network,
+                            crypto,
+                            timer,
+                            ordering.value(),
+                            delay);
           network->subscribe(yac);
         };
 

@@ -20,6 +20,7 @@
 
 #include <atomic>
 #include "crypto/keys_manager_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "datetime/time.hpp"
 #include "framework/test_subscriber.hpp"
 #include "main/application.hpp"

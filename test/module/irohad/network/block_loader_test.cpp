@@ -33,8 +33,8 @@ using namespace iroha::ametsuchi;
 using namespace iroha::model;
 using namespace framework::test_subscriber;
 
-using testing::Return;
 using testing::A;
+using testing::Return;
 
 class BlockLoaderTest : public testing::Test {
  public:

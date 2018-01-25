@@ -25,9 +25,9 @@
 namespace iroha {
   namespace torii {
 
-    using validation::StatelessValidator;
     using model::TransactionResponse;
     using network::PeerCommunicationService;
+    using validation::StatelessValidator;
 
     TransactionProcessorImpl::TransactionProcessorImpl(
         std::shared_ptr<PeerCommunicationService> pcs,
@@ -50,7 +50,7 @@ namespace iroha {
 
       // move commited txs from proposal to candidate map
       pcs_->on_commit().subscribe([this](
-          rxcpp::observable<model::Block> blocks) {
+                                      rxcpp::observable<model::Block> blocks) {
         blocks.subscribe(
             // on next..
             [this](model::Block block) {

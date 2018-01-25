@@ -181,10 +181,8 @@ class FieldValidatorTest : public ValidatorsTest {
                              const V &value,
                              bool valid,
                              const std::string &message) {
-    return {case_name,
-            [&, field, value] { this->*field = value; },
-            valid,
-            message};
+    return {
+        case_name, [&, field, value] { this->*field = value; }, valid, message};
   }
 
   /// Create valid case with "valid" name, and empty message
@@ -199,14 +197,13 @@ class FieldValidatorTest : public ValidatorsTest {
                                 const std::string &field_name,
                                 F field,
                                 const std::string &value) {
-    return makeTestCase(
-        case_name,
-        field,
-        value,
-        false,
-        (boost::format("Wrongly formed %s, passed value: '%s'") % field_name
-         % value)
-            .str());
+    return makeTestCase(case_name,
+                        field,
+                        value,
+                        false,
+                        (boost::format("Wrongly formed %s, passed value: '%s'")
+                         % field_name % value)
+                            .str());
   }
 
   /// Generate test cases for id types with name, separator, and domain

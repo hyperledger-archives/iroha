@@ -19,6 +19,14 @@
 
 namespace iroha {
   namespace ametsuchi {
+
+    const std::string kRoleId = "role_id";
+    const char *kAccountNotFound = "Account {} not found";
+    const std::string kPublicKey = "public_key";
+    const std::string kAssetId = "asset_id";
+    const std::string kAccountId = "account_id";
+    const std::string kDomainId = "domain_id";
+
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
         : transaction_(transaction),
           log_(logger::log("PostgresWsvQuery")),
@@ -45,7 +53,7 @@ namespace iroha {
                  + transaction_.quote(account_id) + ";")
           | [&](const auto &result) {
               return transform<std::string>(result, [](const auto &row) {
-                return row.at("role_id").c_str();
+                return row.at(kRoleId).c_str();
               });
             };
     }
@@ -66,7 +74,7 @@ namespace iroha {
     nonstd::optional<std::vector<std::string>> PostgresWsvQuery::getRoles() {
       return execute_("SELECT role_id FROM role;") | [&](const auto &result) {
         return transform<std::string>(
-            result, [](const auto &row) { return row.at("role_id").c_str(); });
+            result, [](const auto &row) { return row.at(kRoleId).c_str(); });
       };
     }
 
@@ -76,13 +84,13 @@ namespace iroha {
                       + transaction_.quote(account_id) + ";")
                  | [&](const auto &result) -> nonstd::optional<model::Account> {
         if (result.empty()) {
-          log_->info("Account {} not found", account_id);
+          log_->info(kAccountNotFound, account_id);
           return nonstd::nullopt;
         }
         model::Account account;
         auto row = result.at(0);
-        row.at("account_id") >> account.account_id;
-        row.at("domain_id") >> account.domain_id;
+        row.at(kAccountId) >> account.account_id;
+        row.at(kDomainId) >> account.domain_id;
         row.at("quorum") >> account.quorum;
         row.at("data") >> account.json_data;
         return account;
@@ -100,7 +108,7 @@ namespace iroha {
                       + transaction_.quote(account_id) + ";")
                  | [&](const auto &result) -> nonstd::optional<std::string> {
         if (result.empty()) {
-          log_->info("Account {} not found", account_id);
+          log_->info(kAccountNotFound, account_id);
           return nonstd::nullopt;
         }
         auto row = result.at(0);
@@ -124,7 +132,7 @@ namespace iroha {
           |
           [&](const auto &result) {
             return transform<pubkey_t>(result, [&](const auto &row) {
-              pqxx::binarystring public_key_str(row.at("public_key"));
+              pqxx::binarystring public_key_str(row.at(kPublicKey));
               pubkey_t pubkey;
               std::copy(
                   public_key_str.begin(), public_key_str.end(), pubkey.begin());
@@ -145,8 +153,8 @@ namespace iroha {
         }
         model::Asset asset;
         auto row = result.at(0);
-        row.at("asset_id") >> asset.asset_id;
-        row.at("domain_id") >> asset.domain_id;
+        row.at(kAssetId) >> asset.asset_id;
+        row.at(kDomainId) >> asset.domain_id;
         int32_t precision;
         row.at("precision") >> precision;
         asset.precision = precision;
@@ -167,8 +175,8 @@ namespace iroha {
         }
         model::AccountAsset asset;
         auto row = result.at(0);
-        row.at("account_id") >> asset.account_id;
-        row.at("asset_id") >> asset.asset_id;
+        row.at(kAccountId) >> asset.account_id;
+        row.at(kAssetId) >> asset.asset_id;
         std::string amount_str;
         row.at("amount") >> amount_str;
         asset.balance = Amount::createFromString(amount_str).value();
@@ -187,7 +195,7 @@ namespace iroha {
         }
         model::Domain domain;
         auto row = result.at(0);
-        row.at("domain_id") >> domain.domain_id;
+        row.at(kDomainId) >> domain.domain_id;
         row.at("default_role") >> domain.default_role;
         return domain;
       };
@@ -198,7 +206,7 @@ namespace iroha {
       return execute_("SELECT * FROM peer;") | [&](const auto &result) {
         return transform<model::Peer>(result, [](const auto &row) {
           model::Peer peer;
-          pqxx::binarystring public_key_str(row.at("public_key"));
+          pqxx::binarystring public_key_str(row.at(kPublicKey));
           pubkey_t pubkey;
           std::copy(
               public_key_str.begin(), public_key_str.end(), pubkey.begin());

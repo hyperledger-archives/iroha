@@ -83,12 +83,16 @@ namespace iroha {
       }
 
      private:
-      const T &constUnderlying() const { return static_cast<const T &>(*this); }
-      T &underlying() { return static_cast<T &>(*this); }
+      const T &constUnderlying() const {
+        return static_cast<const T &>(*this);
+      }
+      T &underlying() {
+        return static_cast<T &>(*this);
+      }
 
       std::mutex add_item_mutex_;
     };
-  }
-}
+  }  // namespace cache
+}  // namespace iroha
 
 #endif  // IROHA_ABSTRACT_CACHE_HPP

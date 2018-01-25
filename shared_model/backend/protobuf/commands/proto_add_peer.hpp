@@ -38,8 +38,7 @@ namespace shared_model {
 
       AddPeer(const AddPeer &o) : AddPeer(o.proto_) {}
 
-      AddPeer(AddPeer &&o) noexcept
-          : AddPeer(std::move(o.proto_)) {}
+      AddPeer(AddPeer &&o) noexcept : AddPeer(std::move(o.proto_)) {}
 
       const AddressType &peerAddress() const override {
         return add_peer_->address();

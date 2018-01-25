@@ -33,7 +33,7 @@ namespace iroha {
       virtual bool validate(const model::Transaction &transaction) const = 0;
       virtual bool validate(const model::Query &query) const = 0;
     };
-  }
-}
+  }  // namespace validation
+}  // namespace iroha
 
 #endif  // IROHA_STATELESS_VALIDATOR_HPP

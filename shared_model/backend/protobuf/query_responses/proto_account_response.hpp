@@ -55,9 +55,13 @@ namespace shared_model {
       AccountResponse(AccountResponse &&o)
           : AccountResponse(std::move(o.proto_)) {}
 
-      const interface::Account &account() const override { return *account_; }
+      const interface::Account &account() const override {
+        return *account_;
+      }
 
-      const SetRoleIdType &roles() const override { return *accountRoles_; }
+      const SetRoleIdType &roles() const override {
+        return *accountRoles_;
+      }
 
      private:
       template <typename T>

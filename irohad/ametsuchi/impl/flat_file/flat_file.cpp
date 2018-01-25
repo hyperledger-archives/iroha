@@ -86,7 +86,8 @@ bool FlatFile::add(Identifier id, const std::vector<uint8_t> &block) {
 }
 
 nonstd::optional<std::vector<uint8_t>> FlatFile::get(Identifier id) const {
-  const auto filename = boost::filesystem::path{dump_dir_} / FlatFile::id_to_name(id);
+  const auto filename =
+      boost::filesystem::path{dump_dir_} / FlatFile::id_to_name(id);
   if (not boost::filesystem::exists(filename)) {
     log_->info("get({}) file not found", id);
     return nonstd::nullopt;

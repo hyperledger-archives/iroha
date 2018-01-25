@@ -37,16 +37,14 @@ namespace iroha {
             block_loader_(std::move(block_loader)),
             delay_(delay) {
         log_ = logger::log("YacGate");
-        block_creator_->on_block().subscribe([this](auto block) {
-          this->vote(block);
-        });
+        block_creator_->on_block().subscribe(
+            [this](auto block) { this->vote(block); });
       }
 
       void YacGateImpl::vote(model::Block block) {
         auto hash = hash_provider_->makeHash(block);
-        log_->info("vote for block ({}, {})",
-                   hash.proposal_hash,
-                   hash.block_hash);
+        log_->info(
+            "vote for block ({}, {})", hash.proposal_hash, hash.block_hash);
         auto order = orderer_->getOrdering(hash);
         if (not order.has_value()) {
           log_->error("ordering doesn't provide peers => pass round");

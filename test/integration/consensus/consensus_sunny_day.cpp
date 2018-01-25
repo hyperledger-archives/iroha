@@ -22,8 +22,8 @@
 #include "consensus/yac/transport/impl/network_impl.hpp"
 #include "framework/test_subscriber.hpp"
 
-using ::testing::Return;
 using ::testing::An;
+using ::testing::Return;
 
 using namespace iroha::model;
 using namespace iroha::consensus::yac;
@@ -70,12 +70,8 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     auto order = ClusterOrdering::create(default_peers);
     ASSERT_TRUE(order);
 
-    yac = Yac::create(YacVoteStorage(),
-                      network,
-                      crypto,
-                      timer,
-                      order.value(),
-                      delay);
+    yac = Yac::create(
+        YacVoteStorage(), network, crypto, timer, order.value(), delay);
     network->subscribe(yac);
 
     std::mutex mtx;

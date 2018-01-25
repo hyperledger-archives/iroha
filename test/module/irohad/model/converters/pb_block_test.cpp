@@ -17,6 +17,7 @@
 
 #include <gtest/gtest.h>
 #include "commands.pb.h"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/block.hpp"
 #include "model/converters/pb_block_factory.hpp"
 #include "model/sha3_hash.hpp"

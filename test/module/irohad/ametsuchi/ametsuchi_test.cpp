@@ -247,7 +247,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   // Block store tests
   validateCalls(
       blocks->getBlocks(1, 2),
-      [ i = 0, hashes = {block1hash, block2hash} ](auto eachBlock) mutable {
+      [i = 0, hashes = {block1hash, block2hash}](auto eachBlock) mutable {
         EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
         ++i;
       },
@@ -398,7 +398,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
 
   // Block store tests
   validateCalls(blocks->getBlocks(1, 3),
-                [ i = 0, hashes = {block1hash, block2hash, block3hash} ](
+                [i = 0, hashes = {block1hash, block2hash, block3hash}](
                     auto eachBlock) mutable {
                   EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
                   ++i;

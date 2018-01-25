@@ -69,8 +69,10 @@ namespace iroha {
 
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
       std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;
-      std::shared_ptr<ordering::OrderingGateTransportGrpc> ordering_gate_transport;
-      std::shared_ptr<ordering::OrderingServiceTransportGrpc> ordering_service_transport;
+      std::shared_ptr<ordering::OrderingGateTransportGrpc>
+          ordering_gate_transport;
+      std::shared_ptr<ordering::OrderingServiceTransportGrpc>
+          ordering_service_transport;
     };
   }  // namespace network
 }  // namespace iroha

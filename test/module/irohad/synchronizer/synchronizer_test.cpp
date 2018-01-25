@@ -31,9 +31,9 @@ using namespace iroha::validation;
 using namespace iroha::network;
 using namespace framework::test_subscriber;
 
-using ::testing::Return;
 using ::testing::_;
 using ::testing::DefaultValue;
+using ::testing::Return;
 
 class SynchronizerTest : public ::testing::Test {
  public:

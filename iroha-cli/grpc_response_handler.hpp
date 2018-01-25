@@ -18,10 +18,10 @@
 #ifndef IROHA_CLI_GRPC_RESPONSE_HANDLER_HPP
 #define IROHA_CLI_GRPC_RESPONSE_HANDLER_HPP
 
-#include "query_response_handler.hpp"
-#include "transaction_response_handler.hpp"
 #include "client.hpp"
 #include "logger/logger.hpp"
+#include "query_response_handler.hpp"
+#include "transaction_response_handler.hpp"
 
 namespace iroha_cli {
   class GrpcResponseHandler {
@@ -37,6 +37,7 @@ namespace iroha_cli {
      * @param response
      */
     void handle(CliClient::Response<iroha::protocol::QueryResponse> response);
+
    private:
     TransactionResponseHandler tx_handler_;
     QueryResponseHandler query_handler_;

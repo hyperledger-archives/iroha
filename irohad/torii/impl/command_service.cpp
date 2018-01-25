@@ -30,52 +30,54 @@ namespace torii {
       : pb_factory_(pb_factory),
         tx_processor_(txProcessor),
         storage_(storage),
-        cache_(std::make_shared<iroha::cache::
-                                    Cache<std::string,
-                                          iroha::protocol::ToriiResponse>>()) {
+        cache_(std::make_shared<
+               iroha::cache::Cache<std::string,
+                                   iroha::protocol::ToriiResponse>>()) {
     // Notifier for all clients
-    tx_processor_->transactionNotifier().subscribe([this](
-        std::shared_ptr<iroha::model::TransactionResponse> iroha_response) {
-      // Find response in cache
-      auto res = cache_->findItem(iroha_response->tx_hash);
-      if (not res) {
-        iroha::protocol::ToriiResponse response;
-        response.set_tx_hash(iroha_response->tx_hash);
-        response.set_tx_status(iroha::protocol::NOT_RECEIVED);
-        cache_->addItem(iroha_response->tx_hash, response);
-        return;
-      }
-      switch (iroha_response->current_status) {
-        case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
-          res->set_tx_status(
-              iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
-          break;
-        case iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS:
-          res->set_tx_status(
-              iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
-          break;
-        case iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED:
-          res->set_tx_status(
-              iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED);
-          break;
-        case iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS:
-          res->set_tx_status(
-              iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
-          break;
-        case iroha::model::TransactionResponse::COMMITTED:
-          res->set_tx_status(iroha::protocol::TxStatus::COMMITTED);
-          break;
-        case iroha::model::TransactionResponse::IN_PROGRESS:
-          res->set_tx_status(iroha::protocol::TxStatus::IN_PROGRESS);
-          break;
-        case iroha::model::TransactionResponse::NOT_RECEIVED:
-        default:
-          res->set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
-          break;
-      }
+    tx_processor_->transactionNotifier().subscribe(
+        [this](
+            std::shared_ptr<iroha::model::TransactionResponse> iroha_response) {
+          // Find response in cache
+          auto res = cache_->findItem(iroha_response->tx_hash);
+          if (not res) {
+            iroha::protocol::ToriiResponse response;
+            response.set_tx_hash(iroha_response->tx_hash);
+            response.set_tx_status(iroha::protocol::NOT_RECEIVED);
+            cache_->addItem(iroha_response->tx_hash, response);
+            return;
+          }
+          switch (iroha_response->current_status) {
+            case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
+              res->set_tx_status(
+                  iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
+              break;
+            case iroha::model::TransactionResponse::
+                STATELESS_VALIDATION_SUCCESS:
+              res->set_tx_status(
+                  iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
+              break;
+            case iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED:
+              res->set_tx_status(
+                  iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED);
+              break;
+            case iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS:
+              res->set_tx_status(
+                  iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
+              break;
+            case iroha::model::TransactionResponse::COMMITTED:
+              res->set_tx_status(iroha::protocol::TxStatus::COMMITTED);
+              break;
+            case iroha::model::TransactionResponse::IN_PROGRESS:
+              res->set_tx_status(iroha::protocol::TxStatus::IN_PROGRESS);
+              break;
+            case iroha::model::TransactionResponse::NOT_RECEIVED:
+            default:
+              res->set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
+              break;
+          }
 
-      cache_->addItem(iroha_response->tx_hash, *res);
-    });
+          cache_->addItem(iroha_response->tx_hash, *res);
+        });
   }
 
   void CommandService::ToriiAsync(iroha::protocol::Transaction const &request,

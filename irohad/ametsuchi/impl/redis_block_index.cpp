@@ -89,14 +89,14 @@ namespace iroha {
 
             auto ids = {account_id, cmd->src_account_id, cmd->dest_account_id};
             // flat map accounts to unindexed keys
-            auto unindexed =
-                ids | boost::adaptors::transformed([&](const auto &id) {
-                  return boost::str(account_id_height_asset_id_ % id % height
-                                    % cmd->asset_id);
-                })
+            auto unindexed = ids
+                | boost::adaptors::transformed([&](const auto &id) {
+                               return boost::str(account_id_height_asset_id_
+                                                 % id % height % cmd->asset_id);
+                             })
                 | boost::adaptors::filtered([&](const auto &key) {
-                    return acc[key].insert(index).second;
-                  });
+                               return acc[key].insert(index).second;
+                             });
             boost::for_each(unindexed, [&](const auto &key) {
               client_.rpush(key, {index});
             });

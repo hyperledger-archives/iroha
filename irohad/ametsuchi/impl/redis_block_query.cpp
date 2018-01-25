@@ -174,7 +174,7 @@ namespace iroha {
           [this, tx_hashes](auto subscriber) {
             std::for_each(tx_hashes.begin(),
                           tx_hashes.end(),
-                          [ that = this, &subscriber ](auto tx_hash) {
+                          [that = this, &subscriber](auto tx_hash) {
                             subscriber.on_next(
                                 that->getTxByHashSync(tx_hash.to_string()));
                           });

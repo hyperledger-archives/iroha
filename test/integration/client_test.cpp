@@ -38,10 +38,10 @@
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
-using ::testing::Return;
-using ::testing::A;
 using ::testing::_;
+using ::testing::A;
 using ::testing::AtLeast;
+using ::testing::Return;
 
 using namespace iroha::ametsuchi;
 using namespace iroha::network;
