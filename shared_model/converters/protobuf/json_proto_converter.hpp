@@ -49,7 +49,7 @@ namespace shared_model {
        * conversion was successful and none otherwise
        */
       template <typename T>
-      boost::optional<T> jsonToModel(std::string json) {
+      boost::optional<T> jsonToProto(std::string json) {
         T result;
         auto status =
             google::protobuf::util::JsonStringToMessage(json, &result);
@@ -60,32 +60,17 @@ namespace shared_model {
       }
 
       /**
-       * Converts json into transaction shared model object
-       * @param json is the json string containing transaction
-       * @return optional of shared model transaction object, containing the
+       * Converts json into arbitrary transaction shared model object
+       * @tparam T type of shared model object converted from json
+       * @param json is the json string containing protobuf object
+       * @return optional of shared model object, containing the
        * object if conversion was successful and none otherwise
        */
-      boost::optional<shared_model::proto::Transaction> jsonToTransaction(
-          std::string json) {
-        auto tx = jsonToModel<iroha::protocol::Transaction>(json);
+      template <typename T>
+      boost::optional<T> jsonToModel(std::string json) {
+        auto tx = jsonToProto<typename T::TransportType>(json);
         if (tx) {
-          return shared_model::proto::Transaction(
-              std::move(tx.value()));
-        }
-        return boost::none;
-      }
-      /**
-       * Converts json into block shared model object
-       * @param json is the json string containing block
-       * @return optional of shared model transaction object containing the
-       * object if conversion was successful and none otherwise
-       */
-      boost::optional<shared_model::proto::Block> jsonToBlock(
-          std::string json) {
-        auto block = jsonToModel<iroha::protocol::Block>(json);
-        if (block) {
-          return shared_model::proto::Block(
-              std::move(block.value()));
+          return T(std::move(tx.value()));
         }
         return boost::none;
       }

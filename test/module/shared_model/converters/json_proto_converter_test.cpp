@@ -36,8 +36,7 @@ shared_model::proto::Transaction generateTransaction() {
   payload.set_creator_account_id(creator_account_id);
   payload.set_created_time(123);
 
-  return shared_model::proto::Transaction(
-      std::move(proto_tx));
+  return shared_model::proto::Transaction(std::move(proto_tx));
 }
 
 /**
@@ -57,14 +56,15 @@ shared_model::proto::Block generateBlock() {
 
 /**
  * @given sample transaction shared model object
- * @when transaction is converted to json and then converted back to shared model object
+ * @when transaction is converted to json and then converted back to shared
+ * model object
  * @then original and obtained objects are equal
  */
 TEST(JsonProtoConverterTest, JsonToProtoTxTest) {
   auto orig_tx = generateTransaction();
   auto json = modelToJson(orig_tx);
 
-  auto obtained_tx = jsonToTransaction(json);
+  auto obtained_tx = jsonToModel<shared_model::proto::Transaction>(json);
   ASSERT_TRUE(obtained_tx);
   ASSERT_EQ(orig_tx.getTransport().SerializeAsString(),
             obtained_tx.value().getTransport().SerializeAsString());
@@ -78,33 +78,22 @@ TEST(JsonProtoConverterTest, JsonToProtoTxTest) {
 TEST(JsonProtoConverterTest, InvalidJsonToProtoTx) {
   std::string json = "not json string";
 
-  auto obtained_tx = jsonToTransaction(json);
+  auto obtained_tx = jsonToModel<shared_model::proto::Transaction>(json);
   ASSERT_FALSE(obtained_tx);
 }
 
 /**
  * @given sample block shared model object
- * @when block is converted to json and then converted back to shared model object
+ * @when block is converted to json and then converted back to shared model
+ * object
  * @then original and obtained objects are equal
  */
 TEST(JsonProtoConverterTest, JsonToProtoBlockTest) {
   auto orig_block = generateBlock();
   auto json = modelToJson(orig_block);
 
-  auto obtained_block = jsonToBlock(json);
+  auto obtained_block = jsonToModel<shared_model::proto::Block>(json);
   ASSERT_TRUE(obtained_block);
   ASSERT_EQ(orig_block.getTransport().SerializeAsString(),
             obtained_block.value().getTransport().SerializeAsString());
-}
-
-/**
- * @given invalid json string
- * @when json is converted to shared model object
- * @then none is returned
- */
-TEST(JsonProtoConverterTest, InvalidJsonToProtoBlock) {
-  std::string json = "not json string";
-
-  auto obtained_tx = jsonToBlock(json);
-  ASSERT_FALSE(obtained_tx);
 }
