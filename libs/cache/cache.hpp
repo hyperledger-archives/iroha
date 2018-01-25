@@ -20,7 +20,7 @@
 
 #include <unordered_map>
 
-#include "abstract_cache.hpp"
+#include "cache/abstract_cache.hpp"
 
 namespace iroha {
   namespace cache {
