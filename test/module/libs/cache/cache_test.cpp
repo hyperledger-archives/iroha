@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-#include "torii/cache/cache.hpp"
-#include <endpoint.pb.h>
 #include <gtest/gtest.h>
+
+#include "cache/cache.hpp"
+#include "endpoint.pb.h"
 
 using namespace iroha::cache;
 using namespace iroha::protocol;
