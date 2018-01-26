@@ -30,7 +30,9 @@ namespace iroha {
       /**
        * IP address of peer for connection
        */
-      AddressType address{};
+      std::string address{};
+
+      using AddressType = decltype(address);
 
       /**
        * Public key of peer
@@ -49,7 +51,7 @@ namespace iroha {
 
       Peer() = default;
 
-      Peer(const AddressType &address, const pubkey_t &pubkey)
+      Peer(const AddressType &address, const KeyType &pubkey)
           : address(address), pubkey(pubkey) {}
     };
   }  // namespace model

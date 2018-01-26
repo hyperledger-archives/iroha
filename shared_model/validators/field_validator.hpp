@@ -43,10 +43,7 @@ namespace shared_model {
                            const interface::types::AssetIdType &asset_id) const;
 
       void validatePeer(ReasonsGroupType &reason,
-                        const interface::Peer &peer) const {
-        validatePeerAddress(reason, peer.address());
-        validatePubkey(reason, peer.pubkey());
-      }
+                        const interface::Peer &peer) const;
 
       void validateAmount(ReasonsGroupType &reason,
                           const interface::Amount &amount) const;

@@ -68,6 +68,25 @@ namespace iroha {
         }
       };
 
+      template <>
+      struct Convert<Peer> {
+        template <typename T>
+        nonstd::optional<Peer> operator()(T &&x) {
+          auto des = makeFieldDeserializer(x);
+          auto address = des.String("address");
+          auto pubkey = des.String("peer_key");
+
+          if (not address.has_value() or not pubkey.has_value()) {
+            return nonstd::nullopt;
+          }
+
+          return nonstd::make_optional<Peer>(
+              {address.value(),
+               iroha::hexstringToArray<iroha::pubkey_t::size()>(pubkey.value())
+                   .value()});
+        }
+      };
+
       JsonCommandFactory::JsonCommandFactory() {
         serializers_ = {
             {typeid(AddAssetQuantity),
@@ -165,9 +184,14 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "AddPeer", allocator);
-        document.AddMember("address", add_peer->peer.address, allocator);
-        document.AddMember(
+
+        Value peer;
+        peer.SetObject();
+        peer.AddMember("address", add_peer->peer.address, allocator);
+        peer.AddMember(
             "peer_key", add_peer->peer.pubkey.to_hexstring(), allocator);
+
+        document.AddMember("peer", peer, allocator);
 
         return document;
       }
@@ -175,10 +199,8 @@ namespace iroha {
       optional_ptr<Command> JsonCommandFactory::deserializeAddPeer(
           const Value &document) {
         auto des = makeFieldDeserializer(document);
-        auto peer = make_optional_ptr<Peer>()
-            | des.String(&Peer::pubkey, "peer_key")
-            | des.String(&Peer::address, "address");
-        return std::shared_ptr<Command>(new AddPeer(**peer));
+        return make_optional_ptr<AddPeer>() | des.Object(&AddPeer::peer, "peer")
+            | toCommand;
       }
 
       // AddSignatory

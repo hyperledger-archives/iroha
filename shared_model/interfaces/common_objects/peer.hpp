@@ -27,7 +27,7 @@ namespace shared_model {
   namespace interface {
 
     /**
-     * Peer is Model, which contains information about network participants
+     * Representation of a network participant.
      */
     class Peer : public Hashable<Peer, iroha::model::Peer> {
      public:
@@ -73,7 +73,7 @@ namespace shared_model {
         return oldModel;
       }
     };
-  }
-}
+  }  // namespace interface
+}  // namespace shared_model
 
-#endif  // IROHA_PEER_HPP
+#endif  // IROHA_SHARED_MODEL_PEER_HPP

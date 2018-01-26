@@ -1555,10 +1555,11 @@ TEST_F(AppendRoleTest, InvalidCaseNoAccountRoleAndNoPermission) {
 }
 
 /**
-* @given AppendRole
-* @when command tries to append role, but creator account does not have* necessary permission
-* @then execute() fails and returns false
-*/
+ * @given AppendRole
+ * @when command tries to append role, but creator account does not have
+ * necessary permission
+ * @then execute() fails and returns false
+ */
 TEST_F(AppendRoleTest, InvalidCaseRoleHasNoPermissions) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .Times(2)

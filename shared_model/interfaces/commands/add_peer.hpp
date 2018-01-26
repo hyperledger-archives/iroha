@@ -32,6 +32,7 @@ namespace shared_model {
     class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
      public:
       /**
+       * Return peer to be added by the command.
        * @return Peer
        */
       virtual const interface::Peer &peer() const = 0;

@@ -54,6 +54,12 @@ namespace shared_model {
       }
     }
 
+    void FieldValidator::validatePeer(ReasonsGroupType &reason,
+                                      const interface::Peer &peer) const {
+      validatePeerAddress(reason, peer.address());
+      validatePubkey(reason, peer.pubkey());
+    }
+
     void FieldValidator::validateAmount(ReasonsGroupType &reason,
                                         const interface::Amount &amount) const {
       if (amount.intValue() <= 0) {
@@ -197,8 +203,7 @@ namespace shared_model {
       if (now + future_gap_ < timestamp) {
         auto message = (boost::format("bad timestamp: sent from future, "
                                       "timestamp: %llu, now: %llu")
-                        % timestamp
-                        % now)
+                        % timestamp % now)
                            .str();
         reason.second.push_back(std::move(message));
       }
@@ -206,8 +211,7 @@ namespace shared_model {
       if (now > max_delay + timestamp) {
         auto message =
             (boost::format("bad timestamp: too old, timestamp: %llu, now: %llu")
-             % timestamp
-             % now)
+             % timestamp % now)
                 .str();
         reason.second.push_back(std::move(message));
       }

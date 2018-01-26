@@ -65,4 +65,4 @@ namespace shared_model {
 
   }  // namespace proto
 }  // namespace shared_model
-#endif  // IROHA_PROTO_PEER_HPP
+#endif  // IROHA_SHARED_MODEL_PROTO_PEER_HPP

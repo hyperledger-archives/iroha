@@ -177,20 +177,15 @@ namespace iroha {
       protocol::AddPeer PbCommandFactory::serializeAddPeer(
           const model::AddPeer &add_peer) {
         protocol::AddPeer pb_add_peer;
-        protocol::Peer *peer = new protocol::Peer();
-        peer->set_address(add_peer.peer.address);
-        peer->set_peer_key(add_peer.peer.pubkey.data(),
-                           add_peer.peer.pubkey.size());
-        pb_add_peer.set_allocated_peer(peer);
+        auto peer = pb_add_peer.mutable_peer();
+        peer->CopyFrom(serializePeer(add_peer.peer));
         return pb_add_peer;
       }
+
       model::AddPeer PbCommandFactory::deserializeAddPeer(
           const protocol::AddPeer &pb_add_peer) {
         model::AddPeer add_peer;
-        add_peer.peer.address = pb_add_peer.peer().address();
-        std::copy(pb_add_peer.peer().peer_key().begin(),
-                  pb_add_peer.peer().peer_key().end(),
-                  add_peer.peer.pubkey.begin());
+        add_peer.peer = deserializePeer(pb_add_peer.peer());
 
         return add_peer;
       }

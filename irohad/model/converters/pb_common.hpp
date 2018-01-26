@@ -31,6 +31,10 @@ namespace iroha {
       // amount
       protocol::Amount serializeAmount(iroha::Amount iroha_amount);
       iroha::Amount deserializeAmount(protocol::Amount pb_amount);
+
+      // peer
+      protocol::Peer serializePeer(iroha::model::Peer iroha_peer);
+      iroha::model::Peer deserializePeer(protocol::Peer pb_peer);
     }  // namespace converters
   }    // namespace model
 

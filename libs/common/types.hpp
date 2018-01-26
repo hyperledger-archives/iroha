@@ -184,8 +184,7 @@ namespace iroha {
    * @return monadic value, which can be of another type
    */
   template <typename T, typename Transform>
-  auto operator|(T t, Transform f) -> typename std::
-      enable_if<
+  auto operator|(T t, Transform f) -> typename std::enable_if<
       std::is_same<decltype(f(*t)), void>::value>::type {
     if (t) {
       f(*t);
@@ -303,9 +302,6 @@ namespace iroha {
   inline bool instanceof (const T &ptr) {
     return typeid(Base) == typeid(ptr);
   }
-
-  // Peer address
-  using AddressType = std::string;
 
 }  // namespace iroha
 #endif  // IROHA_COMMON_TYPES_HPP
