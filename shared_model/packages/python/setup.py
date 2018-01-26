@@ -7,6 +7,7 @@ import subprocess
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
+import shutil
 
 def dir_up(dir,level):
     if level == 0:
@@ -61,7 +62,18 @@ class CMakeBuild(build_ext):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
-        # subprocess.check_call()
+        shutil.copy(self.build_temp+"/shared_model/bindings/iroha.py", extdir+"/")
+
+        pwd = os.getcwd()
+        os.chdir(extdir)
+        gen_proto = "protoc --proto_path={}/schema --python_out=. block.proto primitive.proto commands.proto queries.proto responses.proto endpoint.proto".format(IROHA_HOME)
+        subprocess.check_call(gen_proto.split())
+        gen_py = "python -m grpc_tools.protoc --proto_path={}/schema --python_out=. --grpc_python_out=. endpoint.proto yac.proto ordering.proto loader.proto".format(IROHA_HOME)
+        subprocess.check_call(gen_py.split())
+        os.chdir(pwd)
+
+
+# subprocess.check_call()
 
 
 setup(
