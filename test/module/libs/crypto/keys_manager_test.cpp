@@ -112,12 +112,7 @@ TEST_F(KeyManager, LoadInaccessiblePrikey) {
   ASSERT_FALSE(manager.loadKeys());
 }
 
-TEST_F(KeyManager, CreateInaccessiblePubkey) {
-  KeysManagerImpl manager = KeysManagerImpl(nonexistent);
-  ASSERT_FALSE(manager.createKeys(passphrase));
-}
-
-TEST_F(KeyManager, CreateInaccessiblePrikey) {
+TEST_F(KeyManager, CreateKeypairInNonexistentDir) {
   KeysManagerImpl manager = KeysManagerImpl(nonexistent);
   ASSERT_FALSE(manager.createKeys(passphrase));
 }
