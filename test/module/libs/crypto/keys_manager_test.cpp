@@ -56,7 +56,7 @@ class KeyManager : public ::testing::Test {
       "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"s;
   KeysManagerImpl manager = KeysManagerImpl(filepath);
   const std::string passphrase = "test";
-  const std::string inexistent = "/tmp/path/that/does/not/exist/100/percent";
+  const std::string nonexistent = "/tmp/path/that/does/not/exist/100/percent";
 };
 
 TEST_F(KeyManager, LoadNonExistentKeyFile) {
@@ -113,11 +113,11 @@ TEST_F(KeyManager, LoadInaccessiblePrikey) {
 }
 
 TEST_F(KeyManager, CreateInaccessiblePubkey) {
-  KeysManagerImpl manager = KeysManagerImpl(inexistent);
+  KeysManagerImpl manager = KeysManagerImpl(nonexistent);
   ASSERT_FALSE(manager.createKeys(passphrase));
 }
 
 TEST_F(KeyManager, CreateInaccessiblePrikey) {
-  KeysManagerImpl manager = KeysManagerImpl(inexistent);
+  KeysManagerImpl manager = KeysManagerImpl(nonexistent);
   ASSERT_FALSE(manager.createKeys(passphrase));
 }
