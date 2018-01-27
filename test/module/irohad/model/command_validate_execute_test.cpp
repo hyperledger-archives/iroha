@@ -74,15 +74,21 @@ class CommandValidateExecuteTest : public ::testing::Test {
 
   bool validateAndExecute() {
     auto executor = factory->getCommandExecutor(command);
-    return executor->validate(*command, *wsv_query, creator.account_id)
-        and executor->execute(
-                *command, *wsv_query, *wsv_command, creator.account_id);
+    if (executor->validate(*command, *wsv_query, creator.account_id)) {
+      auto result = executor->execute(
+          *command, *wsv_query, *wsv_command, creator.account_id);
+      return result.match([](expected::Value<void> v) { return true; },
+                          [](expected::Error<std::string> e) { return false; });
+    }
+    return false;
   }
 
   bool execute() {
     auto executor = factory->getCommandExecutor(command);
-    return executor->execute(
+    auto result = executor->execute(
         *command, *wsv_query, *wsv_command, creator.account_id);
+    return result.match([](expected::Value<void> v) { return true; },
+                        [](expected::Error<std::string> e) { return false; });
   }
 
   Amount max_amount{

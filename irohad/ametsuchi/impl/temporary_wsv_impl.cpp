@@ -42,8 +42,14 @@ namespace iroha {
       auto execute_command = [this, &tx_creator](auto command) {
         auto executor = command_executors_->getCommandExecutor(command);
         auto account = wsv_->getAccount(tx_creator).value();
-        return executor->validate(*command, *wsv_, tx_creator)
-            && executor->execute(*command, *wsv_, *executor_, tx_creator);
+        if (!executor->validate(*command, *wsv_, tx_creator)) {
+          return false;
+        }
+        auto result =
+            executor->execute(*command, *wsv_, *executor_, tx_creator);
+        return result.match(
+            [](expected::Value<void> &v) { return true; },
+            [this](expected::Error<std::string> &e) { return false; });
       };
 
       transaction_->exec("SAVEPOINT savepoint_;");
@@ -57,7 +63,7 @@ namespace iroha {
         transaction_->exec("ROLLBACK TO SAVEPOINT savepoint_;");
       }
       return result;
-    }
+    }  // namespace ametsuchi
 
     TemporaryWsvImpl::~TemporaryWsvImpl() {
       transaction_->exec("ROLLBACK;");

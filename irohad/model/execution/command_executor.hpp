@@ -22,6 +22,9 @@
 #include "ametsuchi/wsv_query.hpp"
 #include "logger/logger.hpp"
 #include "model/command.hpp"
+#include "common/result.hpp"
+
+using ExecutionResult = iroha::expected::Result<void, std::string>;
 
 namespace iroha {
   namespace model {
@@ -50,7 +53,7 @@ namespace iroha {
        * @param commands - world state view command interface
        * @return true, if execution is successful
        */
-      virtual bool execute(const Command &command,
+      virtual ExecutionResult execute(const Command &command,
                            ametsuchi::WsvQuery &queries,
                            ametsuchi::WsvCommand &commands,
                            const std::string &creator_account_id) = 0;
@@ -85,7 +88,7 @@ namespace iroha {
     class AppendRoleExecutor : public CommandExecutor {
      public:
       AppendRoleExecutor();
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -103,7 +106,7 @@ namespace iroha {
     class DetachRoleExecutor : public CommandExecutor {
      public:
       DetachRoleExecutor();
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -121,7 +124,7 @@ namespace iroha {
     class CreateRoleExecutor : public CommandExecutor {
      public:
       CreateRoleExecutor();
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -139,7 +142,7 @@ namespace iroha {
     class GrantPermissionExecutor : public CommandExecutor {
      public:
       GrantPermissionExecutor();
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -157,7 +160,7 @@ namespace iroha {
     class RevokePermissionExecutor : public CommandExecutor {
      public:
       RevokePermissionExecutor();
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -176,7 +179,7 @@ namespace iroha {
      public:
       AddAssetQuantityExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -195,7 +198,7 @@ namespace iroha {
      public:
       SubtractAssetQuantityExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -214,7 +217,7 @@ namespace iroha {
      public:
       AddPeerExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -233,7 +236,7 @@ namespace iroha {
      public:
       AddSignatoryExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -252,7 +255,7 @@ namespace iroha {
      public:
       CreateAccountExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -271,7 +274,7 @@ namespace iroha {
      public:
       CreateAssetExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -290,7 +293,7 @@ namespace iroha {
      public:
       CreateDomainExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -309,7 +312,7 @@ namespace iroha {
      public:
       RemoveSignatoryExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -328,7 +331,7 @@ namespace iroha {
      public:
       SetAccountDetailExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -347,7 +350,7 @@ namespace iroha {
      public:
       SetQuorumExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;
@@ -366,7 +369,7 @@ namespace iroha {
      public:
       TransferAssetExecutor();
 
-      bool execute(const Command &command,
+      ExecutionResult execute(const Command &command,
                    ametsuchi::WsvQuery &queries,
                    ametsuchi::WsvCommand &commands,
                    const std::string &creator_account_id) override;

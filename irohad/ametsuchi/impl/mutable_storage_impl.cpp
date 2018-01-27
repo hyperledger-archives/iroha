@@ -51,8 +51,12 @@ namespace iroha {
             function) {
       auto execute_transaction = [this](auto &transaction) {
         auto execute_command = [this, &transaction](auto command) {
-          return command_executors_->getCommandExecutor(command)->execute(
-              *command, *wsv_, *executor_, transaction.creator_account_id);
+          auto result =
+              command_executors_->getCommandExecutor(command)->execute(
+                  *command, *wsv_, *executor_, transaction.creator_account_id);
+          return result.match(
+              [](expected::Value<void> v) { return true; },
+              [](expected::Error<std::string> e) { return false; });
         };
         return std::all_of(transaction.commands.begin(),
                            transaction.commands.end(),
