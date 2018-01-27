@@ -1,15 +1,15 @@
 // Overall pipeline looks like the following
-//               |----Debug
-//   |--Linux----|----Release
-//   | 
+//               
+//   |--Linux-----|----Debug
+//   |            |----Release 
 //   |    OR
 //   |           
-//-- |--ARM------|----Debug
-//   |           |----Release
+//-- |--Linux ARM-|----Debug
+//   |            |----Release
 //   |    OR
 //   |
-//   |--MacOS----|----Debug
-//   |           |----Release
+//   |--MacOS-----|----Debug
+//   |            |----Release
 properties([parameters([
     choice(choices: 'Debug\nRelease', description: '', name: 'BUILD_TYPE'),
     booleanParam(defaultValue: true, description: '', name: 'Linux'),
@@ -23,7 +23,7 @@ pipeline {
         SONAR_TOKEN = credentials('SONAR_TOKEN')
         CODECOV_TOKEN = credentials('CODECOV_TOKEN')
         DOCKERHUB = credentials('DOCKERHUB')
-        DOCKER_IMAGE = 'hyperledger/iroha-docker-develop:v1'        
+        DOCKER_IMAGE = 'hyperledger/iroha-docker-develop:v1'
 
         IROHA_NETWORK = "iroha-${GIT_COMMIT}"
         IROHA_POSTGRES_HOST = "pg-${GIT_COMMIT}"
@@ -66,7 +66,8 @@ pipeline {
                                 + " -e IROHA_POSTGRES_PASSWORD=${env.IROHA_POSTGRES_PASSWORD}"
                                 + " -e IROHA_REDIS_HOST=${env.IROHA_REDIS_HOST}" 
                                 + " -e IROHA_REDIS_PORT=${env.IROHA_REDIS_PORT}" 
-                                + " --network=${env.IROHA_NETWORK}") {
+                                + " --network=${env.IROHA_NETWORK}"
+                                + " -v /var/jenkins/ccache:/tmp/ccache") {
 
                             def scmVars = checkout scm
                             env.IROHA_VERSION = "0x${scmVars.GIT_COMMIT}"
