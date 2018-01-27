@@ -41,6 +41,8 @@ option(ENABLE_LIBS_PACKAGING "Enable libs packaging" ON)
 option(SWIG_PYTHON  "Generate Swig Python bindings"  OFF)
 option(SWIG_JAVA    "Generate Swig Java bindings"    OFF)
 option(SWIG_CSHARP  "Generate Swig C# bindings"      OFF)
+option(SHARED_MODEL_DISABLE_COMPATIBILITY "Disable backward compatibility in shared model" OFF)
+
 
 if (NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Debug)
@@ -87,7 +89,6 @@ if(PACKAGE_TGZ OR PACKAGE_ZIP OR PACKAGE_RPM OR PACKAGE_DEB)
   include(cmake/release.cmake)
 endif()
 
-option(SHARED_MODEL_DISABLE_COMPATIBILITY OFF)
 if(SHARED_MODEL_DISABLE_COMPATIBILITY)
     add_definitions(-DDISABLE_BACKWARD)
 endif()
