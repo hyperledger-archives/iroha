@@ -184,9 +184,7 @@ TEST_F(BlStore_Test, GetDeniedBlock) {
   auto filename =
       boost::filesystem::path{block_store_path} / FlatFile::id_to_name(id);
 
-  using perms = boost::filesystem::perms;
-
-  boost::filesystem::permissions(filename.string().data(), perms::no_perms);
+  boost::filesystem::remove(filename);
   auto res = bl_store->get(id);
   ASSERT_FALSE(res);
 }
@@ -231,10 +229,9 @@ TEST_F(BlStore_Test, WriteDeniedFolder) {
   auto bl_store = std::move(*store);
   auto id = 1u;
 
-  using perms = boost::filesystem::perms;
   auto path = boost::filesystem::path(block_store_path);
 
-  boost::filesystem::permissions(path, perms::owner_read | perms::owner_exe);
+  boost::filesystem::remove(path);
   auto res = bl_store->add(id, block);
   ASSERT_FALSE(res);
 }
