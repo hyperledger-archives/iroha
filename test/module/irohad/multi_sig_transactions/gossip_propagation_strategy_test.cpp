@@ -19,6 +19,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <boost/range/irange.hpp>
 #include <iterator>
 #include <memory>
 #include <numeric>
@@ -142,4 +143,47 @@ TEST(GossipPropagationStrategyTest, EmptyEmitting) {
 TEST(GossipPropagationStrategyTest, ErrorEmitting) {
   auto emitted = subscribe_and_emit(nonstd::nullopt, 1ms, 1, 13);
   ASSERT_EQ(emitted.size(), 0);
+}
+
+/**
+ * @given list of peers and
+ *        strategy that emits two peers
+ * @when strategy emits more than peers available
+ * @then ensure that there's been emitted peers
+ */
+TEST(GossipPropagationStrategyTest, MultipleSubsEmission) {
+  auto peers_size = 10, amount = 2, take = 10;
+  constexpr auto threads = 10;
+  std::vector<std::string> peersId;
+  PropagationData peers = generate(peersId, peers_size);
+
+  std::thread ths[threads];
+  PropagationData result[threads];
+  auto range = boost::irange(0, threads);
+
+  auto query = std::make_shared<MockPeerQuery>();
+  EXPECT_CALL(*query, getLedgerPeers()).WillRepeatedly(testing::Return(peers));
+  GossipPropagationStrategy strategy(query, 1ms, amount);
+
+  std::for_each(
+      range.begin(), range.end(), [=, &result, &ths, &strategy](auto i) {
+        auto &res = result[i];
+        ths[i] = std::thread(
+            [=, &res](auto &strategy) {
+              auto subscriber = rxcpp::make_subscriber<Peers>([&res](auto v) {
+                std::copy(v.begin(), v.end(), std::back_inserter(res));
+              });
+              strategy.emitter().take(take).as_blocking().subscribe(subscriber);
+            },
+            std::ref(strategy));
+      });
+
+  std::for_each(range.begin(), range.end(), [&ths](auto i) { ths[i].join(); });
+  std::for_each(range.begin(), range.end(), [&](auto i) {
+    std::for_each(
+        result[i].begin(), result[i].end(), [&peersId](const auto &v) {
+          ASSERT_NE(std::find(peersId.begin(), peersId.end(), v.address),
+                    peersId.end());
+        });
+  });
 }

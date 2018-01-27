@@ -20,6 +20,7 @@
 
 #include <boost/optional.hpp>
 #include <chrono>
+#include <mutex>
 #include <rxcpp/rx.hpp>
 #include "ametsuchi/peer_query.hpp"
 #include "multi_sig_transactions/mst_propagation_strategy.hpp"
@@ -46,6 +47,8 @@ namespace iroha {
                               std::chrono::milliseconds period,
                               uint32_t amount);
 
+    ~GossipPropagationStrategy();
+
     // ------------------| PropagationStrategy override |------------------
 
     rxcpp::observable<PropagationData> emitter() override;
@@ -57,11 +60,13 @@ namespace iroha {
      * Cache of peer provider's data
      */
     PropagationData last_data;
-    rxcpp::observable<PropagationData> emitent;
     /**
      * Queue that contains non-emitted indexes of peers
      */
     std::vector<size_t> non_visited;
+    rxcpp::observable<PropagationData> emitent;
+
+    std::mutex m;
 
     /**
      * Fill a queue with a random ordered list of peers
