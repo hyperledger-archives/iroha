@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
-#include <model/commands/transfer_asset.hpp>
-
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/redis_block_index.hpp"
+#include "model/commands/transfer_asset.hpp"
 
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 
@@ -40,7 +38,8 @@ namespace iroha {
           executor_(std::make_unique<PostgresWsvCommand>(*transaction_)),
           block_index_(std::make_unique<RedisBlockIndex>(*index_)),
           command_executors_(std::move(command_executors)),
-          committed(false) {
+          committed(false),
+          log_(logger::log("MutableStorage")) {
       index_->multi();
       transaction_->exec("BEGIN;");
     }
@@ -56,7 +55,10 @@ namespace iroha {
                   *command, *wsv_, *executor_, transaction.creator_account_id);
           return result.match(
               [](expected::Value<void> v) { return true; },
-              [](expected::Error<iroha::model::ExecutionError> e) { return false; });
+              [&](expected::Error<iroha::model::ExecutionError> e) {
+                log_->error(e.error.toString());
+                return false;
+              });
         };
         return std::all_of(transaction.commands.begin(),
                            transaction.commands.end(),

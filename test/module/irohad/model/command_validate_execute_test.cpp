@@ -50,10 +50,6 @@ using namespace iroha::model;
 
 class CommandValidateExecuteTest : public ::testing::Test {
  public:
-  CommandValidateExecuteTest() {
-    spdlog::set_level(spdlog::level::off);
-  }
-
   void SetUp() override {
     factory = CommandExecutorFactory::create().value();
 
@@ -78,7 +74,9 @@ class CommandValidateExecuteTest : public ::testing::Test {
       auto result = executor->execute(
           *command, *wsv_query, *wsv_command, creator.account_id);
       return result.match([](expected::Value<void> v) { return true; },
-                          [](expected::Error<iroha::model::ExecutionError> e) { return false; });
+                          [](expected::Error<iroha::model::ExecutionError> e) {
+                            return false;
+                          });
     }
     return false;
   }
@@ -87,8 +85,9 @@ class CommandValidateExecuteTest : public ::testing::Test {
     auto executor = factory->getCommandExecutor(command);
     auto result = executor->execute(
         *command, *wsv_query, *wsv_command, creator.account_id);
-    return result.match([](expected::Value<void> v) { return true; },
-                        [](expected::Error<iroha::model::ExecutionError> e) { return false; });
+    return result.match(
+        [](expected::Value<void> v) { return true; },
+        [](expected::Error<iroha::model::ExecutionError> e) { return false; });
   }
 
   Amount max_amount{

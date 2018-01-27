@@ -30,7 +30,8 @@ namespace iroha {
           transaction_(std::move(transaction)),
           wsv_(std::make_unique<PostgresWsvQuery>(*transaction_)),
           executor_(std::make_unique<PostgresWsvCommand>(*transaction_)),
-          command_executors_(std::move(command_executors)) {
+          command_executors_(std::move(command_executors)),
+          log_(logger::log("TemporaryWSV")) {
       transaction_->exec("BEGIN;");
     }
 
@@ -49,7 +50,10 @@ namespace iroha {
             executor->execute(*command, *wsv_, *executor_, tx_creator);
         return result.match(
             [](expected::Value<void> &v) { return true; },
-            [this](expected::Error<iroha::model::ExecutionError> &e) { return false; });
+            [this](expected::Error<iroha::model::ExecutionError> &e) {
+              log_->error(e.error.toString());
+              return false;
+            });
       };
 
       transaction_->exec("SAVEPOINT savepoint_;");

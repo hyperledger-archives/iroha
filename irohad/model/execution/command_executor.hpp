@@ -23,7 +23,6 @@
 #include "ametsuchi/wsv_command.hpp"
 #include "ametsuchi/wsv_query.hpp"
 #include "common/result.hpp"
-#include "logger/logger.hpp"
 #include "model/command.hpp"
 
 namespace iroha {
