@@ -30,9 +30,9 @@ namespace iroha {
     struct Command {
       virtual ~Command() = default;
 
-      virtual bool operator==(const Command& rhs) const = 0;
+      virtual bool operator==(const Command &rhs) const = 0;
 
-      virtual bool operator!=(const Command& rhs) const;
+      virtual bool operator!=(const Command &rhs) const;
     };
   }  // namespace model
 }  // namespace iroha

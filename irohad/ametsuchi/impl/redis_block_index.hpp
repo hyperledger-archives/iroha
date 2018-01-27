@@ -50,9 +50,9 @@ namespace iroha {
        * @param commands in the transaction
        */
       void indexAccountAssets(const std::string &account_id,
-                             const std::string &height,
-                             const std::string &index,
-                             const model::Transaction::CommandsType &commands);
+                              const std::string &height,
+                              const std::string &index,
+                              const model::Transaction::CommandsType &commands);
 
       cpp_redis::client &client_;
       /// format strings for index keys

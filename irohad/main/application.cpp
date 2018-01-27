@@ -28,6 +28,9 @@ using namespace iroha::torii;
 using namespace iroha::model::converters;
 using namespace iroha::consensus::yac;
 
+/**
+ * Configuring iroha daemon
+ */
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &redis_host,
                size_t redis_port,
@@ -52,24 +55,33 @@ Irohad::Irohad(const std::string &block_store_dir,
       keypair(keypair) {
   log_ = logger::log("IROHAD");
   log_->info("created");
+  // Initializing storage at this point in order to insert genesis block before
+  // initialization of iroha deamon
   initStorage();
 }
 
 Irohad::~Irohad() {
+  // Shutting down services used by internal server
   if (internal_server) {
     internal_server->Shutdown();
   }
+  // Shutting down torii server
   if (torii_server) {
     torii_server->shutdown();
   }
+  // Waiting until internal server thread dies
   if (internal_thread.joinable()) {
     internal_thread.join();
   }
+  // Waiting until torii server thread dies
   if (server_thread.joinable()) {
     server_thread.join();
   }
 }
 
+/**
+ * Initializing iroha daemon
+ */
 void Irohad::init() {
   initProtoFactories();
   initPeerQuery();
@@ -88,8 +100,16 @@ void Irohad::init() {
   initQueryService();
 }
 
-void Irohad::dropStorage() { storage->dropStorage(); }
+/**
+ * Dropping iroha daemon storage
+ */
+void Irohad::dropStorage() {
+  storage->dropStorage();
+}
 
+/**
+ * Initializing iroha daemon storage
+ */
 void Irohad::initStorage() {
   storage =
       StorageImpl::create(block_store_dir_, redis_host_, redis_port_, pg_conn_);
@@ -97,6 +117,9 @@ void Irohad::initStorage() {
   log_->info("[Init] => storage", logger::logBool(storage));
 }
 
+/**
+ * Creating transaction, query and query response factories
+ */
 void Irohad::initProtoFactories() {
   pb_tx_factory = std::make_shared<PbTransactionFactory>();
   pb_query_factory = std::make_shared<PbQueryFactory>();
@@ -105,18 +128,27 @@ void Irohad::initProtoFactories() {
   log_->info("[Init] => converters");
 }
 
+/**
+ * Initializing peer query interface
+ */
 void Irohad::initPeerQuery() {
   wsv = std::make_shared<ametsuchi::PeerQueryWsv>(storage->getWsvQuery());
 
   log_->info("[Init] => peer query");
 }
 
+/**
+ * Initializing crypto provider
+ */
 void Irohad::initCryptoProvider() {
   crypto_verifier = std::make_shared<ModelCryptoProviderImpl>(keypair);
 
   log_->info("[Init] => crypto provider");
 }
 
+/**
+ * Initializing validators
+ */
 void Irohad::initValidators() {
   stateless_validator =
       std::make_shared<StatelessValidatorImpl>(crypto_verifier);
@@ -126,6 +158,9 @@ void Irohad::initValidators() {
   log_->info("[Init] => validators");
 }
 
+/**
+ * Initializing ordering gate
+ */
 void Irohad::initOrderingGate() {
   ordering_gate =
       ordering_init.initOrderingGate(wsv, max_proposal_size_, proposal_delay_);
@@ -133,6 +168,9 @@ void Irohad::initOrderingGate() {
              logger::logBool(ordering_gate));
 }
 
+/**
+ * Initializing iroha verified proposal creator and block creator
+ */
 void Irohad::initSimulator() {
   simulator = std::make_shared<Simulator>(ordering_gate,
                                           stateful_validator,
@@ -143,6 +181,9 @@ void Irohad::initSimulator() {
   log_->info("[Init] => init simulator");
 }
 
+/**
+ * Initializing block loader
+ */
 void Irohad::initBlockLoader() {
   block_loader = loader_init.initBlockLoader(
       wsv, storage->getBlockQuery(), crypto_verifier);
@@ -150,18 +191,19 @@ void Irohad::initBlockLoader() {
   log_->info("[Init] => block loader");
 }
 
+/**
+ * Initializing consensus gate
+ */
 void Irohad::initConsensusGate() {
-  consensus_gate =
-      yac_init.initConsensusGate(wsv,
-                                 simulator,
-                                 block_loader,
-                                 keypair,
-                                 vote_delay_,
-                                 load_delay_);
+  consensus_gate = yac_init.initConsensusGate(
+      wsv, simulator, block_loader, keypair, vote_delay_, load_delay_);
 
   log_->info("[Init] => consensus gate");
 }
 
+/**
+ * Initializing synchronizer
+ */
 void Irohad::initSynchronizer() {
   synchronizer = std::make_shared<SynchronizerImpl>(
       consensus_gate, chain_validator, storage, block_loader);
@@ -169,6 +211,9 @@ void Irohad::initSynchronizer() {
   log_->info("[Init] => synchronizer");
 }
 
+/**
+ * Initializing peer communication service
+ */
 void Irohad::initPeerCommunicationService() {
   pcs = std::make_shared<PeerCommunicationServiceImpl>(ordering_gate,
                                                        synchronizer);
@@ -189,14 +234,16 @@ void Irohad::initMstProcessor() {
   // TODO: @l4l magics should be fixed with options in cli branch
   //            check #661 for details
   auto mst_propagation = std::make_shared<GossipPropagationStrategy>(
-      wsv, std::chrono::seconds(5) /*emitting period*/,
-      2 /*amount per once*/);
+      wsv, std::chrono::seconds(5) /*emitting period*/, 2 /*amount per once*/);
   auto mst_time = std::make_shared<MstTimeProviderImpl>();
-  mst_processor = std::make_shared<FairMstProcessor>(mst_transport, mst_storage,
-                                                     mst_propagation, mst_time);
+  mst_processor = std::make_shared<FairMstProcessor>(
+      mst_transport, mst_storage, mst_propagation, mst_time);
   log_->info("[Init] => MST processor");
 }
 
+/**
+ * Initializing transaction command service
+ */
 void Irohad::initTransactionCommandService() {
   auto tx_processor = std::make_shared<TransactionProcessorImpl>(
       pcs, stateless_validator, mst_processor);
@@ -207,6 +254,9 @@ void Irohad::initTransactionCommandService() {
   log_->info("[Init] => command service");
 }
 
+/**
+ * Initializing query command service
+ */
 void Irohad::initQueryService() {
   auto query_processing_factory = std::make_unique<QueryProcessingFactory>(
       storage->getWsvQuery(), storage->getBlockQuery());
@@ -220,24 +270,33 @@ void Irohad::initQueryService() {
   log_->info("[Init] => query service");
 }
 
+/**
+ * Run iroha deamon
+ */
 void Irohad::run() {
+  // Initializing torii server
+  std::string ip = "0.0.0.0";
   torii_server =
-      std::make_unique<ServerRunner>("0.0.0.0:" + std::to_string(torii_port_));
+      std::make_unique<ServerRunner>(ip + ":" + std::to_string(torii_port_));
 
+  // Initializing internal server
   grpc::ServerBuilder builder;
   int port = 0;
-  builder.AddListeningPort("0.0.0.0:" + std::to_string(internal_port_),
+  builder.AddListeningPort(ip + ":" + std::to_string(internal_port_),
                            grpc::InsecureServerCredentials(),
                            &port);
   builder.RegisterService(ordering_init.ordering_gate_transport.get());
   builder.RegisterService(ordering_init.ordering_service_transport.get());
   builder.RegisterService(yac_init.consensus_network.get());
   builder.RegisterService(loader_init.service.get());
+  // Run internal server
   internal_server = builder.BuildAndStart();
+  // Run torii server
   server_thread = std::thread([this] {
     torii_server->run(std::move(command_service), std::move(query_service));
   });
   log_->info("===> iroha initialized");
+  // Wait until servers shutdown
   torii_server->waitForServersReady();
   internal_server->Wait();
 }

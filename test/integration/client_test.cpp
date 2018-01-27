@@ -22,8 +22,8 @@
 
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
-#include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
+#include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
 #include "main/server_runner.hpp"
@@ -81,8 +81,8 @@ class ClientServerTest : public testing::Test {
           .WillRepeatedly(Return(mst_expired_notifier.get_observable()));
 
       auto tx_processor =
-          std::make_shared<iroha::torii::TransactionProcessorImpl>(pcsMock,
-                                                                   svMock, mst);
+          std::make_shared<iroha::torii::TransactionProcessorImpl>(
+              pcsMock, svMock, mst);
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
       auto command_service = std::make_unique<torii::CommandService>(

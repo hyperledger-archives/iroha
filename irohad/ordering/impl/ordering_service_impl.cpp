@@ -75,6 +75,8 @@ namespace iroha {
                    .subscribe([this](auto) { this->updateTimer(); });
     }
 
-    OrderingServiceImpl::~OrderingServiceImpl() { handle.unsubscribe(); }
+    OrderingServiceImpl::~OrderingServiceImpl() {
+      handle.unsubscribe();
+    }
   }  // namespace ordering
 }  // namespace iroha

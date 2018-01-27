@@ -27,7 +27,9 @@ namespace shared_model {
      */
     class UnknownTxResponse : public AbstractTxResponse<UnknownTxResponse> {
      private:
-      std::string className() const override { return "UnknownTxResponse"; }
+      std::string className() const override {
+        return "UnknownTxResponse";
+      }
 
       iroha::model::TransactionResponse::Status oldModelStatus()
           const override {

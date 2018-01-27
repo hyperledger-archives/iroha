@@ -42,10 +42,10 @@ constexpr int Port = 50051;
 constexpr size_t TimesToriiBlocking = 5;
 constexpr size_t TimesToriiNonBlocking = 5;
 
+using ::testing::_;
 using ::testing::A;
 using ::testing::AtLeast;
 using ::testing::Return;
-using ::testing::_;
 
 using namespace iroha::network;
 using namespace iroha::validation;

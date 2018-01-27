@@ -19,21 +19,25 @@ limitations under the License.
 
 namespace network {
 
-  template <typename ServiceHandler, typename AsyncService, typename RequestType, typename ResponseType>
+  template <typename ServiceHandler,
+            typename AsyncService,
+            typename RequestType,
+            typename ResponseType>
   class Call;
 
   /**
    * interface of handling rpcs in a service.
    */
   class GrpcAsyncService {
-  public:
+   public:
     virtual ~GrpcAsyncService() {}
 
     /**
      * handles incoming RPCs.
      * 1. Create a Call instance that handles a rpc.
      * 2. Execute CompletionQueue::Next() and gets current status with tag.
-     * 3. Handle a rpc associated with the tag. For polymorphism, cast the tag with UntypedCall.
+     * 3. Handle a rpc associated with the tag. For polymorphism, cast the tag
+     * with UntypedCall.
      * 4. Back to 2
      */
     virtual void handleRpcs() = 0;
@@ -50,22 +54,29 @@ namespace network {
    * e.g. iroha::protocol::AsyncService::RequestTorii
    *
    * AsyncService - e.g. iroha::protocol::CommandService::AsyncService
-   * RequestType  - e.g. Transaction   in rpc Torii (Transaction) returns (ToriiResponse)
-   * ResponseType - e.g. ToriiResponse in rpc Torii (Transaction) returns (ToriiResponse)
+   * RequestType  - e.g. Transaction   in rpc Torii (Transaction) returns
+   * (ToriiResponse) ResponseType - e.g. ToriiResponse in rpc Torii
+   * (Transaction) returns (ToriiResponse)
    */
   template <typename AsyncService, typename RequestType, typename ResponseType>
-  using RequestMethod = void (AsyncService::*)(
-    ::grpc::ServerContext*, RequestType*,
-    ::grpc::ServerAsyncResponseWriter<ResponseType>*,
-    ::grpc::CompletionQueue*, ::grpc::ServerCompletionQueue*, void*);
+  using RequestMethod =
+      void (AsyncService::*)(::grpc::ServerContext *,
+                             RequestType *,
+                             ::grpc::ServerAsyncResponseWriter<ResponseType> *,
+                             ::grpc::CompletionQueue *,
+                             ::grpc::ServerCompletionQueue *,
+                             void *);
 
   /**
    * to refer a method that extracts request and response from Call instance
    * and creates a new Call instance to serve new clients.
    */
-  template <typename ServiceHandler, typename AsyncService, typename RequestType, typename ResponseType>
+  template <typename ServiceHandler,
+            typename AsyncService,
+            typename RequestType,
+            typename ResponseType>
   using RpcHandler = void (ServiceHandler::*)(
-    Call<ServiceHandler, AsyncService, RequestType, ResponseType>*);
+      Call<ServiceHandler, AsyncService, RequestType, ResponseType> *);
 
 }  // namespace network
 

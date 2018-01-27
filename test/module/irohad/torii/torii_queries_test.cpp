@@ -16,9 +16,9 @@ limitations under the License.
 
 #include <generator/generator.hpp>
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/torii/torii_mocks.hpp"
-#include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
 // to compare pb amount and iroha amount

@@ -18,3 +18,5 @@
 #include "backend/protobuf/commands/proto_command.hpp"
 #include "backend/protobuf/query_responses/proto_query_response.hpp"
 #include "backend/protobuf/transaction.hpp"
+#include "backend/protobuf/block.hpp"
+#include "backend/protobuf/proposal.hpp"

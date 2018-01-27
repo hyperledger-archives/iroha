@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include "ordering/impl/ordering_service_transport_grpc.hpp"
 #include "main/impl/ordering_init.hpp"
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
 
 namespace iroha {
   namespace network {
@@ -45,8 +45,10 @@ namespace iroha {
           std::make_shared<iroha::ordering::OrderingGateTransportGrpc>(
               network_address);
 
-      ordering_service_transport = std::make_shared<ordering::OrderingServiceTransportGrpc>();
-      ordering_service = createService(wsv, max_size, delay_milliseconds, ordering_service_transport);
+      ordering_service_transport =
+          std::make_shared<ordering::OrderingServiceTransportGrpc>();
+      ordering_service = createService(
+          wsv, max_size, delay_milliseconds, ordering_service_transport);
       ordering_service_transport->subscribe(ordering_service);
       ordering_gate = createGate(ordering_gate_transport);
       return ordering_gate;

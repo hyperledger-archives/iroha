@@ -39,13 +39,12 @@ namespace shared_model {
                 proto_,
                 &iroha::protocol::QueryResponse::transactions_response)),
             transactions_([this] {
-              return boost::accumulate(
-                  transactionResponse_->transactions(),
-                  TransactionsCollectionType{},
-                  [](auto &&txs, const auto &tx) {
-                    txs.emplace_back(new Transaction(tx));
-                    return std::move(txs);
-                  });
+              return boost::accumulate(transactionResponse_->transactions(),
+                                       TransactionsCollectionType{},
+                                       [](auto &&txs, const auto &tx) {
+                                         txs.emplace_back(new Transaction(tx));
+                                         return std::move(txs);
+                                       });
             }) {}
 
       TransactionsResponse(const TransactionsResponse &o)

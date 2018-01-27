@@ -53,8 +53,8 @@ namespace iroha {
         }
       };
     };
-  }
-}
+  }  // namespace model
+}  // namespace iroha
 
 namespace std {
   template <>
@@ -63,5 +63,5 @@ namespace std {
       return std::hash<std::string>()(obj.address + obj.pubkey.to_string());
     }
   };
-}
+}  // namespace std
 #endif  // IROHA_PEER_H

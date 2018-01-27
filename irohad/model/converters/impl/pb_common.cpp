@@ -35,7 +35,10 @@ namespace iroha {
 
       iroha::Amount deserializeAmount(protocol::Amount pb_amount) {
         auto value = pb_amount.value();
-        return {value.first(), value.second(), value.third(), value.fourth(),
+        return {value.first(),
+                value.second(),
+                value.third(),
+                value.fourth(),
                 static_cast<uint8_t>(pb_amount.precision())};
       }
     }  // namespace converters

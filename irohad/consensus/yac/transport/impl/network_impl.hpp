@@ -39,7 +39,6 @@ namespace iroha {
                           public proto::Yac::Service,
                           network::AsyncGrpcClient<google::protobuf::Empty> {
        public:
-
         NetworkImpl();
         void subscribe(
             std::shared_ptr<YacNetworkNotifications> handler) override;
@@ -78,7 +77,6 @@ namespace iroha {
             ::google::protobuf::Empty *response) override;
 
        private:
-
         /**
          * Create GRPC connection for given peer if it does not exist in
          * peers map

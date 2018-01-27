@@ -53,11 +53,11 @@ namespace iroha {
       virtual bool insertAccountRole(const std::string &account_id,
                                      const std::string &role_name) = 0;
       /**
-        * Unbind account and role
-        * @param account_id
-        * @param role_name
-        * @return true if delete successful
-        */
+       * Unbind account and role
+       * @param account_id
+       * @param role_name
+       * @return true if delete successful
+       */
       virtual bool deleteAccountRole(const std::string &account_id,
                                      const std::string &role_name) = 0;
 

@@ -19,8 +19,8 @@
 
 #include <grpc++/grpc++.h>
 
-#include "consensus/yac/transport/yac_pb_converters.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
+#include "consensus/yac/transport/yac_pb_converters.hpp"
 
 using ::testing::_;
 using ::testing::InvokeWithoutArgs;
@@ -30,6 +30,8 @@ namespace iroha {
     namespace yac {
       class YacNetworkTest : public ::testing::Test {
        public:
+        static constexpr auto default_ip = "0.0.0.0";
+        static constexpr auto default_address = "0.0.0.0:0";
         void SetUp() override {
           notifications = std::make_shared<MockYacNetworkNotifications>();
 
@@ -42,15 +44,14 @@ namespace iroha {
 
           grpc::ServerBuilder builder;
           int port = 0;
-          builder.AddListeningPort("0.0.0.0:0",
-                                   grpc::InsecureServerCredentials(),
-                                   &port);
+          builder.AddListeningPort(
+              default_address, grpc::InsecureServerCredentials(), &port);
           builder.RegisterService(network.get());
           server = builder.BuildAndStart();
           ASSERT_TRUE(server);
           ASSERT_NE(port, 0);
 
-          peer = mk_peer("0.0.0.0:" + std::to_string(port));
+          peer = mk_peer(std::string(default_ip) + ":" + std::to_string(port));
         }
 
         void TearDown() override {
@@ -83,6 +84,6 @@ namespace iroha {
         std::unique_lock<std::mutex> lock(mtx);
         cv.wait_for(lock, std::chrono::milliseconds(100));
       }
-    } // namespace yac
-  } // namespace consensus
-} // namespace iroha
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha

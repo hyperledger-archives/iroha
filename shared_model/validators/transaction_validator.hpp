@@ -18,6 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_TRANSACTION_VALIDATOR_HPP
 #define IROHA_SHARED_MODEL_TRANSACTION_VALIDATOR_HPP
 
+#include <boost/format.hpp>
 #include <boost/variant/static_visitor.hpp>
 
 #include "interfaces/transaction.hpp"
@@ -42,7 +43,7 @@ namespace shared_model {
           const detail::PolymorphicWrapper<interface::AddAssetQuantity> &aaq)
           const {
         ReasonsGroupType reason;
-        reason.first = "AddAssetQuantity";
+        addInvalidCommand(reason, "AddAssetQuantity");
 
         validator_.validateAccountId(reason, aaq->accountId());
         validator_.validateAssetId(reason, aaq->assetId());
@@ -54,7 +55,7 @@ namespace shared_model {
       ReasonsGroupType operator()(
           const detail::PolymorphicWrapper<interface::AddPeer> &ap) const {
         ReasonsGroupType reason;
-        reason.first = "AddPeer";
+        addInvalidCommand(reason, "AddPeer");
 
         validator_.validatePubkey(reason, ap->peerKey());
         validator_.validatePeerAddress(reason, ap->peerAddress());
@@ -65,7 +66,7 @@ namespace shared_model {
       ReasonsGroupType operator()(
           const detail::PolymorphicWrapper<interface::AddSignatory> &as) const {
         ReasonsGroupType reason;
-        reason.first = "AddSignatory";
+        addInvalidCommand(reason, "AddSignatory");
 
         validator_.validateAccountId(reason, as->accountId());
         validator_.validatePubkey(reason, as->pubkey());
@@ -76,7 +77,7 @@ namespace shared_model {
       ReasonsGroupType operator()(
           const detail::PolymorphicWrapper<interface::AppendRole> &ar) const {
         ReasonsGroupType reason;
-        reason.first = "AppendRole";
+        addInvalidCommand(reason, "AppendRole");
 
         validator_.validateAccountId(reason, ar->accountId());
         validator_.validateRoleId(reason, ar->roleName());
@@ -88,7 +89,7 @@ namespace shared_model {
           const detail::PolymorphicWrapper<interface::CreateAccount> &ca)
           const {
         ReasonsGroupType reason;
-        reason.first = "CreateAccount";
+        addInvalidCommand(reason, "CreateAccount");
 
         validator_.validatePubkey(reason, ca->pubkey());
         validator_.validateAccountName(reason, ca->accountName());
@@ -99,7 +100,7 @@ namespace shared_model {
       ReasonsGroupType operator()(
           const detail::PolymorphicWrapper<interface::CreateAsset> &ca) const {
         ReasonsGroupType reason;
-        reason.first = "CreateAsset";
+        addInvalidCommand(reason, "CreateAsset");
 
         validator_.validateAssetName(reason, ca->assetName());
         validator_.validateDomainId(reason, ca->domainId());
@@ -111,7 +112,7 @@ namespace shared_model {
       ReasonsGroupType operator()(
           const detail::PolymorphicWrapper<interface::CreateDomain> &cd) const {
         ReasonsGroupType reason;
-        reason.first = "CreateDomain";
+        addInvalidCommand(reason, "CreateDomain");
 
         validator_.validateDomainId(reason, cd->domainId());
 
@@ -121,7 +122,7 @@ namespace shared_model {
       ReasonsGroupType operator()(
           const detail::PolymorphicWrapper<interface::CreateRole> &cr) const {
         ReasonsGroupType reason;
-        reason.first = "CreateRole";
+        addInvalidCommand(reason, "CreateRole");
 
         validator_.validateRoleId(reason, cr->roleName());
         validator_.validatePermissions(reason, cr->rolePermissions());
@@ -132,7 +133,7 @@ namespace shared_model {
       ReasonsGroupType operator()(
           const detail::PolymorphicWrapper<interface::DetachRole> &dr) const {
         ReasonsGroupType reason;
-        reason.first = "DetachRole";
+        addInvalidCommand(reason, "DetachRole");
 
         validator_.validateAccountId(reason, dr->accountId());
         validator_.validateRoleId(reason, dr->roleName());
@@ -144,7 +145,7 @@ namespace shared_model {
           const detail::PolymorphicWrapper<interface::GrantPermission> &gp)
           const {
         ReasonsGroupType reason;
-        reason.first = "GrantPermission";
+        addInvalidCommand(reason, "GrantPermission");
 
         validator_.validateAccountId(reason, gp->accountId());
 
@@ -155,7 +156,7 @@ namespace shared_model {
           const detail::PolymorphicWrapper<interface::RemoveSignatory> &rs)
           const {
         ReasonsGroupType reason;
-        reason.first = "RemoveSignatory";
+        addInvalidCommand(reason, "RemoveSignatory");
 
         validator_.validateAccountId(reason, rs->accountId());
         validator_.validatePubkey(reason, rs->pubkey());
@@ -166,7 +167,7 @@ namespace shared_model {
           const detail::PolymorphicWrapper<interface::RevokePermission> &rp)
           const {
         ReasonsGroupType reason;
-        reason.first = "RevokePermission";
+        addInvalidCommand(reason, "RevokePermission");
 
         validator_.validateAccountId(reason, rp->accountId());
         validator_.validatePermission(reason, rp->permissionName());
@@ -178,7 +179,7 @@ namespace shared_model {
           const detail::PolymorphicWrapper<interface::SetAccountDetail> &sad)
           const {
         ReasonsGroupType reason;
-        reason.first = "SetAccountDetail";
+        addInvalidCommand(reason, "SetAccountDetail");
 
         validator_.validateAccountId(reason, sad->accountId());
         validator_.validateAccountDetailKey(reason, sad->key());
@@ -189,7 +190,7 @@ namespace shared_model {
       ReasonsGroupType operator()(
           const detail::PolymorphicWrapper<interface::SetQuorum> &sq) const {
         ReasonsGroupType reason;
-        reason.first = "SetQuorum";
+        addInvalidCommand(reason, "SetQuorum");
 
         validator_.validateAccountId(reason, sq->accountId());
         validator_.validateQuorum(reason, sq->newQuorum());
@@ -201,7 +202,7 @@ namespace shared_model {
           const detail::PolymorphicWrapper<interface::SubtractAssetQuantity>
               &saq) const {
         ReasonsGroupType reason;
-        reason.first = "SubtractAssetQuantity";
+        addInvalidCommand(reason, "SubtractAssetQuantity");
 
         validator_.validateAccountId(reason, saq->accountId());
         validator_.validateAssetId(reason, saq->assetId());
@@ -214,7 +215,7 @@ namespace shared_model {
           const detail::PolymorphicWrapper<interface::TransferAsset> &ta)
           const {
         ReasonsGroupType reason;
-        reason.first = "TransferAsset";
+        addInvalidCommand(reason, "TransferAsset");
 
         validator_.validateAccountId(reason, ta->srcAccountId());
         validator_.validateAccountId(reason, ta->destAccountId());
@@ -226,6 +227,15 @@ namespace shared_model {
 
      private:
       FieldValidator validator_;
+      mutable int command_counter{0};
+
+      // adds command to a reason, appends and increments counter
+      void addInvalidCommand(ReasonsGroupType &reason,
+                             const std::string &command_name) const {
+        reason.first =
+            (boost::format("%d %s") % command_counter % command_name).str();
+        command_counter++;
+      }
     };
 
     /**
@@ -279,7 +289,6 @@ namespace shared_model {
       }
 
      private:
-      Answer answer_;
       FieldValidator field_validator_;
       CommandValidator command_validator_;
     };

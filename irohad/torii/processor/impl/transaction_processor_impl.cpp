@@ -53,7 +53,8 @@ namespace iroha {
       });
 
       // move commited txs from proposal to candidate map
-      pcs_->on_commit().subscribe([this](auto &&blocks) {
+      pcs_->on_commit().subscribe([this](
+                                      rxcpp::observable<model::Block> blocks) {
         blocks.subscribe(
             // on next..
             [this](auto &&block) {

@@ -143,21 +143,18 @@ namespace shared_model {
         });
       }
 
-      auto getAccountDetail(
-          const interface::types::AccountIdType &account_id,
-          const interface::types::DetailType &detail) {
+      auto getAccountDetail(const interface::types::AccountIdType &account_id,
+                            const interface::types::DetailType &detail) {
         return queryField([&](auto proto_query) {
-          auto query =
-              proto_query->mutable_get_account_detail();
+          auto query = proto_query->mutable_get_account_detail();
           query->set_account_id(account_id);
           query->set_detail(detail);
         });
       }
 
       auto getRoles() const {
-        return queryField([&](auto proto_query) {
-          proto_query->mutable_get_roles();
-        });
+        return queryField(
+            [&](auto proto_query) { proto_query->mutable_get_roles(); });
       }
 
       auto getAssetInfo(const interface::types::AssetIdType &asset_id) const {

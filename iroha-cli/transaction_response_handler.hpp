@@ -18,7 +18,6 @@
 #ifndef IROHA_CLI_TRANSACTION_RESPONSE_HANDLER_HPP
 #define IROHA_CLI_TRANSACTION_RESPONSE_HANDLER_HPP
 
-
 #include "client.hpp"
 #include "logger/logger.hpp"
 namespace iroha_cli {
@@ -30,6 +29,7 @@ namespace iroha_cli {
      * @param status of transaction
      */
     void handle(const CliClient::TxStatus status) const;
+
    private:
     std::shared_ptr<spdlog::logger> log_;
   };

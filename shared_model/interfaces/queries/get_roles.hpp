@@ -38,7 +38,9 @@ namespace shared_model {
         return detail::PrettyStringBuilder().init("GetRoles").finalize();
       }
 
-      bool operator==(const ModelType &rhs) const override { return true; }
+      bool operator==(const ModelType &rhs) const override {
+        return true;
+      }
     };
 
   }  // namespace interface

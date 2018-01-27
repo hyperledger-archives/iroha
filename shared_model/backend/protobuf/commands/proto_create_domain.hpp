@@ -24,8 +24,8 @@ namespace shared_model {
   namespace proto {
 
     class CreateDomain final : public CopyableProto<interface::CreateDomain,
-                                             iroha::protocol::Command,
-                                             CreateDomain> {
+                                                    iroha::protocol::Command,
+                                                    CreateDomain> {
      public:
       template <typename CommandType>
       explicit CreateDomain(CommandType &&command)

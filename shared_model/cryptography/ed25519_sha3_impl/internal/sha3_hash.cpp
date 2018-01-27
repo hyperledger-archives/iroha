@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 #include <ed25519/ed25519/sha256.h>
 #include <ed25519/ed25519/sha512.h>
 #include "common/types.hpp"
@@ -48,13 +47,15 @@ namespace iroha {
 
   hash256_t sha3_256(const std::string &msg) {
     hash256_t h;
-    sha3_256(h.data(), reinterpret_cast<const uint8_t *>(msg.data()), msg.size());
+    sha3_256(
+        h.data(), reinterpret_cast<const uint8_t *>(msg.data()), msg.size());
     return h;
   }
 
   hash512_t sha3_512(const std::string &msg) {
     hash512_t h;
-    sha3_512(h.data(), reinterpret_cast<const uint8_t *>(msg.data()), msg.size());
+    sha3_512(
+        h.data(), reinterpret_cast<const uint8_t *>(msg.data()), msg.size());
     return h;
   }
 

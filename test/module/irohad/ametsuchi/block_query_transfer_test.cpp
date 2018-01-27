@@ -32,8 +32,10 @@ namespace iroha {
       void SetUp() override {
         AmetsuchiTest::SetUp();
 
-        file = FlatFile::create(block_store_path);
-        ASSERT_TRUE(file);
+        auto tmp = FlatFile::create(block_store_path);
+        ASSERT_TRUE(tmp);
+        file = std::move(*tmp);
+
         index = std::make_shared<RedisBlockIndex>(client);
         blocks = std::make_shared<RedisBlockQuery>(client, *file);
       }
@@ -157,7 +159,7 @@ namespace iroha {
 
       auto wrapper = make_test_subscriber<CallExact>(
           blocks->getAccountAssetTransactions(creator1, asset), 2);
-      wrapper.subscribe([ i = 0, this ](auto val) mutable {
+      wrapper.subscribe([i = 0, this](auto val) mutable {
         ASSERT_EQ(tx_hashes.at(i), iroha::hash(val));
         ++i;
       });

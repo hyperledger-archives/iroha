@@ -35,7 +35,7 @@ namespace iroha {
        */
       virtual void index(const model::Block &block) = 0;
     };
-  } // namespace ametsuchi
-} // namespace iroha
+  }  // namespace ametsuchi
+}  // namespace iroha
 
-#endif //IROHA_BLOCK_INDEX_HPP
+#endif  // IROHA_BLOCK_INDEX_HPP

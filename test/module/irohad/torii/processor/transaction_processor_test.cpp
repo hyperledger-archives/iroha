@@ -87,7 +87,8 @@ TEST_F(TransactionProcessorTest, ValidTransaction) {
   auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 1);
   wrapper.subscribe([](auto response) {
     auto resp = static_cast<TransactionResponse &>(*response);
-    ASSERT_EQ(resp.current_status, TransactionResponse::STATELESS_VALIDATION_SUCCESS);
+    ASSERT_EQ(resp.current_status,
+              TransactionResponse::STATELESS_VALIDATION_SUCCESS);
   });
   tp->transactionHandle(tx);
 
@@ -103,8 +104,8 @@ TEST_F(TransactionProcessorTest, InvalidTransaction) {
   EXPECT_CALL(*mp, propagateTransactionImpl(_)).Times(0);
   EXPECT_CALL(*pcs, propagate_transaction(_)).Times(0);
 
-  EXPECT_CALL(*validation, validate(A<const Transaction&>()))
-  .WillRepeatedly(Return(false));
+  EXPECT_CALL(*validation, validate(A<const Transaction &>()))
+      .WillRepeatedly(Return(false));
 
   auto tx = std::make_shared<Transaction>();
   tx->signatures.emplace_back();
@@ -112,7 +113,8 @@ TEST_F(TransactionProcessorTest, InvalidTransaction) {
   auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 1);
   wrapper.subscribe([](auto response) {
     auto resp = static_cast<TransactionResponse &>(*response);
-    ASSERT_EQ(resp.current_status, TransactionResponse::STATELESS_VALIDATION_FAILED);
+    ASSERT_EQ(resp.current_status,
+              TransactionResponse::STATELESS_VALIDATION_FAILED);
   });
   tp->transactionHandle(tx);
 

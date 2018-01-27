@@ -54,7 +54,9 @@ namespace shared_model {
         return new iroha::model::TransactionResponse("", oldModelStatus());
       }
 
-      bool operator==(const Model &rhs) const override { return true; }
+      bool operator==(const Model &rhs) const override {
+        return true;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

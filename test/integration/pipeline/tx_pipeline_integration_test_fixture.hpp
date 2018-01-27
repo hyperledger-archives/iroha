@@ -19,12 +19,12 @@
 #define TX_PIPELINE_INTEGRATION_TEST_FIXTURE_HPP
 
 #include <atomic>
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "crypto/keys_manager_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "datetime/time.hpp"
 #include "framework/test_subscriber.hpp"
 #include "main/application.hpp"
-#include "main/raw_block_insertion.hpp"
+#include "main/raw_block_loader.hpp"
 #include "model/generators/block_generator.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
@@ -151,7 +151,7 @@ class TxPipelineIntegrationTestFixture
 
   std::shared_ptr<iroha::KeysManager> manager;
 
-  std::atomic_bool duplicate_sent {false};
+  std::atomic_bool duplicate_sent{false};
   size_t next_height_count = 2;
 
  private:

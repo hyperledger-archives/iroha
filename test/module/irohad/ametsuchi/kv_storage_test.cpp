@@ -106,7 +106,6 @@ class KVTest : public AmetsuchiTest {
   std::string account_name2 = "user2";
 };
 
-
 /**
  * @given empty in account1
  * @when non existing detail is queried using GetAccountDetail
