@@ -16,7 +16,6 @@
  */
 
 #include <algorithm>
-#include <boost/format.hpp>
 
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
@@ -42,24 +41,20 @@
 using namespace iroha::ametsuchi;
 using iroha::expected::makeError;
 
-// TODO: Create structured error message
 
 namespace iroha {
   namespace model {
 
-    ExecutionResult errorIfNot(bool predicate,
-                               const std::string &error_message) {
+    // TODO: Make db calls return result to eliminate need for this function IR-775
+    ExecutionResult CommandExecutor::errorIfNot(bool predicate,
+                               const std::string &error_message) const noexcept {
       if (!predicate) {
-        return makeError(error_message);
+        return makeExecutionError(error_message);
       }
       return {};
     }
 
     // ----------------------------| Common |-----------------------------
-
-    CommandExecutor::CommandExecutor() {
-      log_ = logger::log("DefaultCommandExecutorLogger");
-    }
 
     bool CommandExecutor::validate(const Command &command,
                                    WsvQuery &queries,
@@ -68,9 +63,14 @@ namespace iroha {
           and isValid(command, queries, creator_account_id);
     }
 
+    expected::Error<ExecutionError> CommandExecutor::makeExecutionError(
+        const std::string &error_message) const noexcept {
+      return makeError(ExecutionError{commandName(), error_message});
+    }
+
     // ----------------------------| Append Role |-----------------------------
-    AppendRoleExecutor::AppendRoleExecutor() {
-      log_ = logger::log("AppendRoleExecutor");
+    std::string AppendRoleExecutor::commandName() const noexcept {
+      return "AppendRole";
     }
 
     ExecutionResult AppendRoleExecutor::execute(
@@ -82,7 +82,7 @@ namespace iroha {
 
       return errorIfNot(
           commands.insertAccountRole(cmd_value.account_id, cmd_value.role_name),
-          "AppendRole: failed to insert account");
+          "failed to insert account");
     }
 
     bool AppendRoleExecutor::hasPermissions(
@@ -122,8 +122,8 @@ namespace iroha {
     }
 
     // ----------------------------| Detach Role |-----------------------------
-    DetachRoleExecutor::DetachRoleExecutor() {
-      log_ = logger::log("DetachRoleExecutor");
+    std::string DetachRoleExecutor::commandName() const noexcept {
+      return "DetachRole";
     }
 
     ExecutionResult DetachRoleExecutor::execute(
@@ -135,7 +135,7 @@ namespace iroha {
 
       return errorIfNot(
           commands.deleteAccountRole(cmd_value.account_id, cmd_value.role_name),
-          "DetachRole: failed to delete account role");
+          "failed to delete account role");
     }
 
     bool DetachRoleExecutor::hasPermissions(
@@ -153,9 +153,8 @@ namespace iroha {
     }
 
     // ----------------------------| Create Role |-----------------------------
-
-    CreateRoleExecutor::CreateRoleExecutor() {
-      log_ = logger::log("CreateRoleExecutor");
+    std::string CreateRoleExecutor::commandName() const noexcept {
+      return "CreateRole";
     }
 
     ExecutionResult CreateRoleExecutor::execute(
@@ -166,13 +165,13 @@ namespace iroha {
       auto cmd_value = static_cast<const CreateRole &>(command);
 
       if (!commands.insertRole(cmd_value.role_name)) {
-        return makeError("Create Role: failed to insert role: "
+        return makeExecutionError("failed to insert role: "
                          + cmd_value.role_name);
       }
 
       return errorIfNot(commands.insertRolePermissions(cmd_value.role_name,
                                                        cmd_value.permissions),
-                        "Create Role: failed to insert role permissions");
+                        "failed to insert role permissions");
     }
 
     bool CreateRoleExecutor::hasPermissions(
@@ -206,8 +205,8 @@ namespace iroha {
     }
 
     // --------------------|Grant Permission|-----------------------
-    GrantPermissionExecutor::GrantPermissionExecutor() {
-      log_ = logger::log("GrantPermissionExecutor");
+    std::string GrantPermissionExecutor::commandName() const noexcept {
+      return "GrantPermission";
     }
 
     ExecutionResult GrantPermissionExecutor::execute(
@@ -220,7 +219,7 @@ namespace iroha {
           commands.insertAccountGrantablePermission(cmd_value.account_id,
                                                     creator_account_id,
                                                     cmd_value.permission_name),
-          "GrantPermission: failed to insert account grantable permission");
+          "failed to insert account grantable permission");
     }
 
     bool GrantPermissionExecutor::hasPermissions(
@@ -242,8 +241,8 @@ namespace iroha {
 
     // --------------------------|Revoke
     // Permission|-----------------------------
-    RevokePermissionExecutor::RevokePermissionExecutor() {
-      log_ = logger::log("RevokePermissionExecutor");
+    std::string RevokePermissionExecutor::commandName() const noexcept {
+      return "RevokePermission";
     }
 
     ExecutionResult RevokePermissionExecutor::execute(
@@ -256,7 +255,7 @@ namespace iroha {
           commands.deleteAccountGrantablePermission(cmd_value.account_id,
                                                     creator_account_id,
                                                     cmd_value.permission_name),
-          "Revoke Permission: failed to delete account grantable permision");
+          "failed to delete account grantable permision");
     }
 
     bool RevokePermissionExecutor::hasPermissions(
@@ -279,9 +278,8 @@ namespace iroha {
     }
 
     // ----------------------------|AddAssetQuantity|-----------------------------
-
-    AddAssetQuantityExecutor::AddAssetQuantityExecutor() {
-      log_ = logger::log("AddAssetQuantityExecutor");
+    std::string AddAssetQuantityExecutor::commandName() const noexcept {
+      return "AddAssetQuantity";
     }
 
     ExecutionResult AddAssetQuantityExecutor::execute(
@@ -293,26 +291,23 @@ namespace iroha {
 
       auto asset = queries.getAsset(add_asset_quantity.asset_id);
       if (not asset.has_value()) {
-        return makeError(
+        return makeExecutionError(
             (boost::format("asset %s is absent") % add_asset_quantity.asset_id)
                 .str());
       }
       auto precision = asset.value().precision;
 
       if (add_asset_quantity.amount.getPrecision() != precision) {
-        return makeError("amount is wrongly formed");
+        return makeExecutionError("amount is wrongly formed");
       }
       if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
-        return makeError((boost::format("account %s is absent")
+        return makeExecutionError((boost::format("account %s is absent")
                           % add_asset_quantity.account_id)
                              .str());
       }
       auto account_asset = queries.getAccountAsset(
           add_asset_quantity.account_id, add_asset_quantity.asset_id);
       if (not account_asset.has_value()) {
-        log_->info("create wallet {} for {}",
-                   add_asset_quantity.asset_id,
-                   add_asset_quantity.account_id);
 
         account_asset = AccountAsset();
         account_asset->asset_id = add_asset_quantity.asset_id;
@@ -324,14 +319,14 @@ namespace iroha {
         auto new_balance =
             account_asset_value.balance + add_asset_quantity.amount;
         if (not new_balance.has_value()) {
-          return makeError("Add Asset Quantity: amount overflows balance");
+          return makeExecutionError("amount overflows balance");
         }
         account_asset->balance = new_balance.value();
       }
 
       // accountAsset.value().balance += amount;
       return errorIfNot(commands.upsertAccountAsset(account_asset.value()),
-                        "AddAssetQuantity: failed to update account asset");
+                        "failed to update account asset");
     }
 
     bool AddAssetQuantityExecutor::hasPermissions(
@@ -356,9 +351,8 @@ namespace iroha {
     }
 
     // ----------------------------|SubtractAssetQuantity|-----------------------------
-
-    SubtractAssetQuantityExecutor::SubtractAssetQuantityExecutor() {
-      log_ = logger::log("SubtractAssetQuantityExecutor");
+    std::string SubtractAssetQuantityExecutor::commandName() const noexcept {
+      return "SubtractAssetQuantity";
     }
 
     ExecutionResult SubtractAssetQuantityExecutor::execute(
@@ -371,19 +365,19 @@ namespace iroha {
 
       auto asset = queries.getAsset(subtract_asset_quantity.asset_id);
       if (not asset) {
-        return makeError((boost::format("asset %s is absent")
+        return makeExecutionError((boost::format("asset %s is absent")
                           % subtract_asset_quantity.asset_id)
                              .str());
       }
       auto precision = asset.value().precision;
 
       if (subtract_asset_quantity.amount.getPrecision() != precision) {
-        return makeError("amount is wrongly formed");
+        return makeExecutionError("amount is wrongly formed");
       }
       auto account_asset = queries.getAccountAsset(
           subtract_asset_quantity.account_id, subtract_asset_quantity.asset_id);
       if (not account_asset.has_value()) {
-        return makeError((boost::format("%s do not have %s")
+        return makeExecutionError((boost::format("%s do not have %s")
                           % subtract_asset_quantity.account_id
                           % subtract_asset_quantity.asset_id)
                              .str());
@@ -393,7 +387,7 @@ namespace iroha {
       auto new_balance =
           account_asset_value.balance - subtract_asset_quantity.amount;
       if (not new_balance.has_value()) {
-        return makeError("Not sufficient amount");
+        return makeExecutionError("Not sufficient amount");
       }
       account_asset->balance = new_balance.value();
 
@@ -420,9 +414,8 @@ namespace iroha {
     }
 
     // --------------------------|AddPeer|------------------------------
-
-    AddPeerExecutor::AddPeerExecutor() {
-      log_ = logger::log("AddPeerExecutor");
+    std::string AddPeerExecutor::commandName() const noexcept {
+      return "AddPeer";
     }
 
     ExecutionResult AddPeerExecutor::execute(
@@ -455,8 +448,8 @@ namespace iroha {
     }
 
     // -------------------------|AddSignatory|--------------------------
-    AddSignatoryExecutor::AddSignatoryExecutor() {
-      log_ = logger::log("AddSignatoryExecutor");
+    std::string AddSignatoryExecutor::commandName() const noexcept {
+      return "AddSignatory";
     }
 
     ExecutionResult AddSignatoryExecutor::execute(
@@ -467,7 +460,7 @@ namespace iroha {
       auto add_signatory = static_cast<const AddSignatory &>(command);
 
       if (!commands.insertSignatory(add_signatory.pubkey)) {
-        return makeError("failed to insert signatory");
+        return makeExecutionError("failed to insert signatory");
       }
       return errorIfNot(commands.insertAccountSignatory(
                             add_signatory.account_id, add_signatory.pubkey),
@@ -499,8 +492,8 @@ namespace iroha {
     }
 
     // ------------------------------|CreateAccount|------------------------------
-    CreateAccountExecutor::CreateAccountExecutor() {
-      log_ = logger::log("CreateAccountExecutor");
+    std::string CreateAccountExecutor::commandName() const noexcept {
+      return "CreateAccount";
     }
 
     ExecutionResult CreateAccountExecutor::execute(
@@ -519,20 +512,20 @@ namespace iroha {
       account.json_data = "{}";
       auto domain = queries.getDomain(create_account.domain_id);
       if (not domain.has_value()) {
-        return makeError(
+        return makeExecutionError(
             (boost::format("Domain %s not found") % create_account.domain_id)
                 .str());
       }
       // TODO: remove insert signatory from here ?
       if (!commands.insertSignatory(create_account.pubkey)) {
-        return makeError("failed to insert signatory");
+        return makeExecutionError("failed to insert signatory");
       }
       if (!commands.insertAccount(account)) {
-        return makeError("failed to insert account");
+        return makeExecutionError("failed to insert account");
       }
       if (!commands.insertAccountSignatory(account.account_id,
                                            create_account.pubkey)) {
-        return makeError("failed to insert account signatory");
+        return makeExecutionError("failed to insert account signatory");
       }
       return errorIfNot(commands.insertAccountRole(account.account_id,
                                                    domain.value().default_role),
@@ -561,9 +554,8 @@ namespace iroha {
     }
 
     // --------------------------|CreateAsset|---------------------------
-
-    CreateAssetExecutor::CreateAssetExecutor() {
-      log_ = logger::log("CreateAssetExecutor");
+    std::string CreateAssetExecutor::commandName() const noexcept {
+      return "CreateAsset";
     }
 
     ExecutionResult CreateAssetExecutor::execute(
@@ -608,9 +600,8 @@ namespace iroha {
     }
 
     // ------------------------|CreateDomain|---------------------------
-
-    CreateDomainExecutor::CreateDomainExecutor() {
-      log_ = logger::log("CreateDomainExecutor");
+    std::string CreateDomainExecutor::commandName() const noexcept {
+      return "CreateDomain";
     }
 
     ExecutionResult CreateDomainExecutor::execute(
@@ -653,9 +644,8 @@ namespace iroha {
     }
 
     // --------------------|RemoveSignatory|--------------------
-
-    RemoveSignatoryExecutor::RemoveSignatoryExecutor() {
-      log_ = logger::log("RemoveSignatoryExecutor");
+    std::string RemoveSignatoryExecutor::commandName() const noexcept {
+      return "RemoveSignatory";
     }
 
     ExecutionResult RemoveSignatoryExecutor::execute(
@@ -668,7 +658,7 @@ namespace iroha {
       // Delete will fail if account signatory doesn't exist
       if (!commands.deleteAccountSignatory(remove_signatory.account_id,
                                            remove_signatory.pubkey)) {
-        return makeError("failed to delete account signatory");
+        return makeExecutionError("failed to delete account signatory");
       }
       return errorIfNot(commands.deleteSignatory(remove_signatory.pubkey),
                         "failed to delete signatory");
@@ -715,9 +705,8 @@ namespace iroha {
     }
 
     // -----------------------|SetAccountDetail|-------------------------
-
-    SetAccountDetailExecutor::SetAccountDetailExecutor() {
-      log_ = logger::log("SetAccountDetailExecutor");
+    std::string SetAccountDetailExecutor::commandName() const noexcept {
+      return "SetAccountDetail";
     }
 
     ExecutionResult SetAccountDetailExecutor::execute(
@@ -758,9 +747,8 @@ namespace iroha {
     }
 
     // -----------------------|SetQuorum|-------------------------
-
-    SetQuorumExecutor::SetQuorumExecutor() {
-      log_ = logger::log("SetQuorumExecutor");
+    std::string SetQuorumExecutor::commandName() const noexcept {
+      return "SetQuorum";
     }
 
     ExecutionResult SetQuorumExecutor::execute(
@@ -772,7 +760,7 @@ namespace iroha {
 
       auto account = queries.getAccount(set_quorum.account_id);
       if (not account.has_value()) {
-        return makeError(
+        return makeExecutionError(
             (boost::format("absent account %s") % set_quorum.account_id).str());
       }
       account.value().quorum = set_quorum.new_quorum;
@@ -812,8 +800,8 @@ namespace iroha {
     }
 
     // ------------------------|TransferAsset|-------------------------
-    TransferAssetExecutor::TransferAssetExecutor() {
-      log_ = logger::log("TransferAssetExecutor");
+    std::string TransferAssetExecutor::commandName() const noexcept {
+      return "TransferAsset";
     }
 
     ExecutionResult TransferAssetExecutor::execute(
@@ -826,11 +814,8 @@ namespace iroha {
       auto src_account_asset = queries.getAccountAsset(
           transfer_asset.src_account_id, transfer_asset.asset_id);
       if (not src_account_asset.has_value()) {
-        log_->info("asset {} is absent of {}",
-                   transfer_asset.asset_id,
-                   transfer_asset.src_account_id);
 
-        return makeError((boost::format("asset %s is absent of %s")
+        return makeExecutionError((boost::format("asset %s is absent of %s")
                           % transfer_asset.asset_id
                           % transfer_asset.src_account_id)
                              .str());
@@ -841,12 +826,7 @@ namespace iroha {
           transfer_asset.dest_account_id, transfer_asset.asset_id);
       auto asset = queries.getAsset(transfer_asset.asset_id);
       if (not asset.has_value()) {
-        log_->info("asset {} is absent of {}",
-                   transfer_asset.asset_id,
-                   transfer_asset.dest_account_id,
-                   transfer_asset.description);
-
-        return makeError((boost::format("asset %s is absent of %s")
+        return makeExecutionError((boost::format("asset %s is absent of %s")
                           % transfer_asset.asset_id
                           % transfer_asset.dest_account_id)
                              .str());
@@ -854,14 +834,14 @@ namespace iroha {
       // Precision for both wallets
       auto precision = asset.value().precision;
       if (transfer_asset.amount.getPrecision() != precision) {
-        return makeError(
+        return makeExecutionError(
             (boost::format("precision %d is wrong") % precision).str());
       }
       // Get src balance
       auto src_balance = src_account_asset.value().balance;
       auto new_src_balance = src_balance - transfer_asset.amount;
       if (not new_src_balance.has_value()) {
-        return makeError("not enough assets on source account");
+        return makeExecutionError("not enough assets on source account");
       }
       src_balance = new_src_balance.value();
       // Set new balance for source account
@@ -883,7 +863,7 @@ namespace iroha {
 
         auto new_dest_balance = dest_balance + transfer_asset.amount;
         if (not new_dest_balance.has_value()) {
-          return makeError("operation overflows destination balance");
+          return makeExecutionError("operation overflows destination balance");
         }
         dest_balance = new_dest_balance.value();
         // Set new balance for dest
@@ -891,7 +871,7 @@ namespace iroha {
       }
 
       if (!commands.upsertAccountAsset(dest_AccountAsset)) {
-        return makeError("failed to upsert destination balance");
+        return makeExecutionError("failed to upsert destination balance");
       }
       return errorIfNot(commands.upsertAccountAsset(src_account_asset.value()),
                         "failed to upsert source account");
@@ -928,18 +908,15 @@ namespace iroha {
       auto transfer_asset = static_cast<const TransferAsset &>(command);
 
       if (transfer_asset.amount.getIntValue() == 0) {
-        log_->info("amount must be not zero");
         return false;
       }
 
       auto asset = queries.getAsset(transfer_asset.asset_id);
       if (not asset.has_value()) {
-        log_->info("Asset not found");
         return false;
       }
       // Amount is formed wrong
       if (transfer_asset.amount.getPrecision() != asset.value().precision) {
-        log_->info("Wrong precision");
         return false;
       }
       auto account_asset = queries.getAccountAsset(

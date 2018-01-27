@@ -49,7 +49,7 @@ namespace iroha {
             executor->execute(*command, *wsv_, *executor_, tx_creator);
         return result.match(
             [](expected::Value<void> &v) { return true; },
-            [this](expected::Error<std::string> &e) { return false; });
+            [this](expected::Error<iroha::model::ExecutionError> &e) { return false; });
       };
 
       transaction_->exec("SAVEPOINT savepoint_;");

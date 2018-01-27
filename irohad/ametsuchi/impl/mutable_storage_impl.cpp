@@ -56,7 +56,7 @@ namespace iroha {
                   *command, *wsv_, *executor_, transaction.creator_account_id);
           return result.match(
               [](expected::Value<void> v) { return true; },
-              [](expected::Error<std::string> e) { return false; });
+              [](expected::Error<iroha::model::ExecutionError> e) { return false; });
         };
         return std::all_of(transaction.commands.begin(),
                            transaction.commands.end(),

@@ -78,7 +78,7 @@ class CommandValidateExecuteTest : public ::testing::Test {
       auto result = executor->execute(
           *command, *wsv_query, *wsv_command, creator.account_id);
       return result.match([](expected::Value<void> v) { return true; },
-                          [](expected::Error<std::string> e) { return false; });
+                          [](expected::Error<iroha::model::ExecutionError> e) { return false; });
     }
     return false;
   }
@@ -88,7 +88,7 @@ class CommandValidateExecuteTest : public ::testing::Test {
     auto result = executor->execute(
         *command, *wsv_query, *wsv_command, creator.account_id);
     return result.match([](expected::Value<void> v) { return true; },
-                        [](expected::Error<std::string> e) { return false; });
+                        [](expected::Error<iroha::model::ExecutionError> e) { return false; });
   }
 
   Amount max_amount{
