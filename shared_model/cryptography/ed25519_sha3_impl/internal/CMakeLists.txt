@@ -29,6 +29,5 @@ add_library(cryptography
         )
 
 target_link_libraries(cryptography
-#        ed25519
         hash
         )
