@@ -29,13 +29,13 @@ using iroha::operator|;
 
 namespace iroha {
   /**
-   * Return function which will try to deserialize specified value to specified
-   * field in given keypair
+   * Return a function which will try deserialize the value to
+   * specified field in given keypair
    * @tparam T - keypair field type
    * @tparam V - value type to deserialize
    * @param field - keypair field to be deserialized
    * @param value - value to be deserialized
-   * @return keypair on success, otherwise nullopt
+   * @return function that will return keypair on success, otherwise nullopt
    */
   template <typename T, typename V>
   auto deserializeKeypairField(T keypair_t::*field, const V &value) {
@@ -45,6 +45,12 @@ namespace iroha {
     };
   }
 
+  /**
+   * Function for the private key encryption via XOR
+   * @param privkey is a private key
+   * @param pass_phrase is a key for encryption
+   * @return encrypted string
+   */
   std::string encrypt(const privkey_t &privkey,
                       const std::string &pass_phrase) {
     std::string ciphertext(privkey.size(), '\0');
@@ -56,6 +62,14 @@ namespace iroha {
     return ciphertext;
   }
 
+  /**
+   * Return a function which will try to deserialize and then decrypt private
+   * key via XORing with pass phrase
+   * @param s is an encrypted data from file
+   * @param pass_phrase for decryption
+   * @return function that will set keypair::privkey on successful
+   *         deserialization and decryption
+   */
   auto deserializedEncrypted(const std::string &s,
                              const std::string &pass_phrase) {
     constexpr auto size = privkey_t::size();
@@ -136,19 +150,8 @@ namespace iroha {
           };
   }
 
-  keypair_t generate() {
-    blob_t<32> seed;
-    std::generate(seed.begin(), seed.end(), [] {
-      static std::random_device rd;
-      static std::uniform_int_distribution<> dist;
-      return dist(rd);
-    });
-
-    return create_keypair(seed);
-  }
-
   bool KeysManagerImpl::createKeys() {
-    auto key_pairs = generate();
+    auto key_pairs = create_keypair();
 
     auto pub = key_pairs.pubkey.to_hexstring();
     auto priv = key_pairs.privkey.to_hexstring();
@@ -156,7 +159,7 @@ namespace iroha {
   }
 
   bool KeysManagerImpl::createKeys(const std::string &pass_phrase) {
-    auto key_pairs = generate();
+    auto key_pairs = create_keypair();
 
     auto pub = key_pairs.pubkey.to_hexstring();
     auto priv = bytestringToHexstring(encrypt(key_pairs.privkey, pass_phrase));

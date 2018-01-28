@@ -54,6 +54,12 @@ namespace iroha {
      */
     bool loadFile(const std::string &filename, std::string &res);
 
+    /**
+     * Stores strings, that represent public and private keys on disk
+     * @param pub is a public key
+     * @param priv is a private key
+     * @return true, if saving was successful
+     */
     bool store(const std::string &pub, const std::string &priv);
 
     std::string account_name_;
