@@ -21,6 +21,9 @@
 #include "interfaces/iroha_internal/block.hpp"
 
 #include <boost/range/numeric.hpp>
+#include "backend/protobuf/common_objects/signature.hpp"
+#include "backend/protobuf/transaction.hpp"
+#include "backend/protobuf/util.hpp"
 #include "common_objects/trivial_proto.hpp"
 #include "model/block.hpp"
 
