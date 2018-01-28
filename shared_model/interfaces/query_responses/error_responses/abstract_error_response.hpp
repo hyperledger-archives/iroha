@@ -56,7 +56,9 @@ namespace shared_model {
         return error_response;
       }
 
-      bool operator==(const Model &rhs) const override { return true; }
+      bool operator==(const Model &rhs) const override {
+        return true;
+      }
     };
   }  // namespace interface
 }  // namespace shared_model

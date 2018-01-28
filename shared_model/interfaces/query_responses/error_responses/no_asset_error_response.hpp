@@ -30,7 +30,9 @@ namespace shared_model {
     class NoAssetErrorResponse
         : public AbstractErrorResponse<NoAssetErrorResponse> {
      private:
-      std::string reason() const override { return "NoAssetErrorResponse"; }
+      std::string reason() const override {
+        return "NoAssetErrorResponse";
+      }
 
       iroha::model::ErrorResponse::Reason oldModelReason() const override {
         return iroha::model::ErrorResponse::Reason::NO_ASSET;

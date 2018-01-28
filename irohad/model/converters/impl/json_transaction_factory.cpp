@@ -42,8 +42,8 @@ namespace iroha {
         document.AddMember("signatures", signatures, allocator);
 
         document.AddMember("created_ts", transaction.created_ts, allocator);
-        document.AddMember("creator_account_id", transaction.creator_account_id,
-                           allocator);
+        document.AddMember(
+            "creator_account_id", transaction.creator_account_id, allocator);
         document.AddMember("tx_counter", transaction.tx_counter, allocator);
 
         Value commands;
@@ -75,8 +75,10 @@ namespace iroha {
             };
           };
           return std::accumulate(
-              array.begin(), array.end(),
-              nonstd::make_optional<Transaction::CommandsType>(), acc_commands);
+              array.begin(),
+              array.end(),
+              nonstd::make_optional<Transaction::CommandsType>(),
+              acc_commands);
         };
         return nonstd::make_optional<Transaction>()
             | des.Uint64(&Transaction::created_ts, "created_ts")

@@ -42,7 +42,7 @@ namespace iroha {
      private:
       keypair_t keypair_;
     };
-  }
-}
+  }  // namespace model
+}  // namespace iroha
 
 #endif  // IROHA_MODEL_CRYPTO_PROVIDER_IMPL_HPP

@@ -56,7 +56,9 @@ namespace shared_model {
         return add_asset_quantity_->asset_id();
       }
 
-      const interface::Amount &amount() const override { return *amount_; }
+      const interface::Amount &amount() const override {
+        return *amount_;
+      }
 
      private:
       // lazy

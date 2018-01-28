@@ -48,7 +48,8 @@ namespace iroha {
 
       CreateAsset() {}
 
-      CreateAsset(const std::string &asset_name, const std::string &domain_id,
+      CreateAsset(const std::string &asset_name,
+                  const std::string &domain_id,
                   uint8_t precision)
           : asset_name(asset_name),
             domain_id(domain_id),

@@ -19,10 +19,7 @@
 #define IROHA_POSTGRES_WSV_QUERY_HPP
 
 #include "ametsuchi/wsv_query.hpp"
-
-#include <pqxx/nontransaction>
-
-#include "logger/logger.hpp"
+#include "postgres_wsv_common.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -58,8 +55,10 @@ namespace iroha {
 
      private:
       pqxx::nontransaction &transaction_;
-
       logger::Logger log_;
+
+      using ExecuteType = decltype(makeExecute(transaction_, log_));
+      ExecuteType execute_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

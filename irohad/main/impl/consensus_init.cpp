@@ -34,8 +34,7 @@ namespace iroha {
       }
 
       auto YacInit::createNetwork() {
-        consensus_network =
-            std::make_shared<NetworkImpl>();
+        consensus_network = std::make_shared<NetworkImpl>();
         return consensus_network;
       }
 
@@ -45,7 +44,9 @@ namespace iroha {
         return crypto;
       }
 
-      auto YacInit::createTimer() { return std::make_shared<TimerImpl>(); }
+      auto YacInit::createTimer() {
+        return std::make_shared<TimerImpl>();
+      }
 
       auto YacInit::createHashProvider() {
         return std::make_shared<YacHashProviderImpl>();
@@ -55,13 +56,12 @@ namespace iroha {
           ClusterOrdering initial_order,
           const keypair_t &keypair,
           std::chrono::milliseconds delay_milliseconds) {
-        return Yac::create(
-            YacVoteStorage(),
-            createNetwork(),
-            createCryptoProvider(keypair),
-            createTimer(),
-            initial_order,
-            delay_milliseconds.count());
+        return Yac::create(YacVoteStorage(),
+                           createNetwork(),
+                           createCryptoProvider(keypair),
+                           createTimer(),
+                           initial_order,
+                           delay_milliseconds.count());
       }
 
       std::shared_ptr<YacGate> YacInit::initConsensusGate(

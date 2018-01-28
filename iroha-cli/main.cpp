@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
 
     if (FLAGS_peers_address.empty()) {
       logger->error("--peers_address is empty");
-      return -1;
+      return EXIT_FAILURE;
     }
 
     std::ifstream file(FLAGS_peers_address);
@@ -133,8 +133,8 @@ int main(int argc, char *argv[]) {
               std::istream_iterator<std::string>(),
               std::back_inserter(peers_address));
     // Generate genesis block
-    auto transaction = TransactionGenerator()
-      .generateGenesisTransaction(0, std::move(peers_address));
+    auto transaction = TransactionGenerator().generateGenesisTransaction(
+        0, std::move(peers_address));
     auto block = generator.generateGenesisBlock(0, {transaction});
 
     // Convert to json
@@ -145,8 +145,8 @@ int main(int argc, char *argv[]) {
     logger->info("File saved to genesis.block");
   } else if (FLAGS_interactive) {
     if (FLAGS_name.empty()) {
-      logger->error("Specify account name");
-      return -1;
+      logger->error("Specify account name with --name flag");
+      return EXIT_FAILURE;
     }
 
     fs::path path(FLAGS_key_path);
@@ -164,7 +164,8 @@ int main(int argc, char *argv[]) {
           FLAGS_name);
       return EXIT_FAILURE;
     }
-    // TODO 13/09/17 grimadas: Init counters from Iroha, or read from disk? IR-334
+    // TODO 13/09/17 grimadas: Init counters from Iroha, or read from disk?
+    // IR-334
     InteractiveCli interactiveCli(
         FLAGS_name,
         0,
@@ -173,7 +174,8 @@ int main(int argc, char *argv[]) {
             keypair.value()));
     interactiveCli.run();
   } else {
-    assert_config::assert_fatal(false, "Invalid flags");
+    logger->error("Invalid flags");
+    return EXIT_FAILURE;
   }
   return 0;
 }

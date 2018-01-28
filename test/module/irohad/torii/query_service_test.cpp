@@ -26,8 +26,8 @@ using namespace iroha::torii;
 using namespace iroha::model;
 using namespace iroha::model::converters;
 
-using ::testing::Return;
 using ::testing::_;
+using ::testing::Return;
 
 class QueryServiceTest : public ::testing::Test {
  public:

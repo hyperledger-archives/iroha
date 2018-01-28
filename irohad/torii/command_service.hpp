@@ -17,15 +17,16 @@ limitations under the License.
 #ifndef TORII_COMMAND_SERVICE_HPP
 #define TORII_COMMAND_SERVICE_HPP
 
-#include <endpoint.grpc.pb.h>
-#include <endpoint.pb.h>
 #include <iostream>
 #include <string>
 #include <unordered_map>
+
 #include "ametsuchi/storage.hpp"
+#include "cache/cache.hpp"
+#include "endpoint.grpc.pb.h"
+#include "endpoint.pb.h"
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/transaction_response.hpp"
-#include "torii/cache/cache.hpp"
 #include "torii/processor/transaction_processor.hpp"
 
 namespace torii {
@@ -60,8 +61,8 @@ namespace torii {
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
     std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
     std::shared_ptr<iroha::ametsuchi::Storage> storage_;
-    std::shared_ptr<iroha::cache::Cache<std::string,
-                                        iroha::protocol::ToriiResponse>>
+    std::shared_ptr<
+        iroha::cache::Cache<std::string, iroha::protocol::ToriiResponse>>
         cache_;
   };
 

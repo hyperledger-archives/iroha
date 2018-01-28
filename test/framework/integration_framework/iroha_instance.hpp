@@ -21,7 +21,6 @@
 #include <cstdlib>
 
 #include "integration/pipeline/test_irohad.hpp"
-#include "main/raw_block_insertion.hpp"
 
 namespace integration_framework {
 
@@ -36,8 +35,7 @@ namespace integration_framework {
     }
 
     void rawInsertBlock(const iroha::model::Block &block) {
-      iroha::main::BlockInserter inserter(instance_->storage);
-      inserter.applyToLedger({block});
+      instance_->storage->insertBlock({block});
     }
 
     void initPipeline(const iroha::keypair_t &key_pair) {

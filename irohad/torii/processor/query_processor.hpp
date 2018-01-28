@@ -31,7 +31,6 @@ namespace iroha {
      */
     class QueryProcessor {
      public:
-
       /**
        * Register client query
        * @param client - query emitter
@@ -43,12 +42,12 @@ namespace iroha {
        * Subscribe for query responses
        * @return observable with query responses
        */
-      virtual rxcpp::observable<std::shared_ptr<model::QueryResponse>> queryNotifier() = 0;
+      virtual rxcpp::observable<std::shared_ptr<model::QueryResponse>>
+      queryNotifier() = 0;
 
-      virtual ~QueryProcessor() {
-      };
+      virtual ~QueryProcessor(){};
     };
-  } //namespace torii
-} //namespace iroha
+  }  // namespace torii
+}  // namespace iroha
 
-#endif //IROHA_QUERY_PROCESSOR_HPP
+#endif  // IROHA_QUERY_PROCESSOR_HPP

@@ -11,22 +11,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <torii_utils/query_client.hpp>
-#include <torii/torii_service_handler.hpp>
-#include <network/grpc_call.hpp>
 #include <block.pb.h>
 #include <grpc++/grpc++.h>
+#include <network/grpc_call.hpp>
 #include <thread>
+#include <torii/torii_service_handler.hpp>
+#include <torii_utils/query_client.hpp>
 
 namespace torii_utils {
-  
+
   using iroha::protocol::Query;
   using iroha::protocol::QueryResponse;
 
-  QuerySyncClient::QuerySyncClient(const std::string& ip, const int port)
-    : stub_(iroha::protocol::QueryService::NewStub(
-    grpc::CreateChannel(ip + ":" + std::to_string(port), grpc::InsecureChannelCredentials())))
-  {}
+  QuerySyncClient::QuerySyncClient(const std::string &ip, const int port)
+      : stub_(iroha::protocol::QueryService::NewStub(
+            grpc::CreateChannel(ip + ":" + std::to_string(port),
+                                grpc::InsecureChannelCredentials()))) {}
 
   QuerySyncClient::~QuerySyncClient() {
     completionQueue_.Shutdown();
@@ -38,17 +38,18 @@ namespace torii_utils {
    * @param response
    * @return grpc::Status
    */
-  grpc::Status QuerySyncClient::Find(const iroha::protocol::Query &query, QueryResponse &response) {
-
-    std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::QueryResponse>> rpc(
-      stub_->AsyncFind(&context_, query, &completionQueue_)
-    );
+  grpc::Status QuerySyncClient::Find(const iroha::protocol::Query &query,
+                                     QueryResponse &response) {
+    std::unique_ptr<
+        grpc::ClientAsyncResponseReader<iroha::protocol::QueryResponse>>
+        rpc(stub_->AsyncFind(&context_, query, &completionQueue_));
 
     using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
 
-    rpc->Finish(&response, &status_, (void *)static_cast<int>(State::ResponseSent));
+    rpc->Finish(
+        &response, &status_, (void *)static_cast<int>(State::ResponseSent));
 
-    void* got_tag;
+    void *got_tag;
     bool ok = false;
 
     /**
@@ -64,4 +65,4 @@ namespace torii_utils {
     return status_;
   }
 
-}  // namespace torii
+}  // namespace torii_utils

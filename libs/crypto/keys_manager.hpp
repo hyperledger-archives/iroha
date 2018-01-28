@@ -19,12 +19,15 @@
 #define IROHA_CLI_KEYS_MANAGER_HPP
 
 #include <nonstd/optional.hpp>
+
 #include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 
 namespace iroha {
 
   class KeysManager {
    public:
+    virtual ~KeysManager() = default;
+
     /**
      * Load keys associated with account
      * Validate loaded keypair by signing and verifying signature
@@ -40,10 +43,14 @@ namespace iroha {
      * @param pass_phrase
      * @return false if create account failed
      */
-    virtual bool createKeys(std::string pass_phrase) = 0;
+    // <<<<<<< HEAD
+    //     virtual bool createKeys(std::string pass_phrase) = 0;
 
-    virtual ~KeysManager() = default;
+    //     virtual ~KeysManager() = default;
+    // =======
+    virtual bool createKeys(const std::string &pass_phrase) = 0;
+    // >>>>>>> origin/develop
   };
 
-}  // namepsace iroha_cli
+}  // namespace iroha
 #endif  // IROHA_CLI_KEYS_MANAGER_HPP

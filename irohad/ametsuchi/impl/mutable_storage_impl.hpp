@@ -20,13 +20,13 @@
 
 #include "ametsuchi/mutable_storage.hpp"
 
-#include <unordered_map>
 #include <cpp_redis/cpp_redis>
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
+#include <unordered_map>
 
-#include "model/execution/command_executor_factory.hpp"
 #include "ametsuchi/impl/block_index.hpp"
+#include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -35,15 +35,16 @@ namespace iroha {
 
      public:
       MutableStorageImpl(
-          hash256_t top_hash, std::unique_ptr<cpp_redis::client> index,
+          hash256_t top_hash,
+          std::unique_ptr<cpp_redis::client> index,
           std::unique_ptr<pqxx::lazyconnection> connection,
           std::unique_ptr<pqxx::nontransaction> transaction,
           std::shared_ptr<model::CommandExecutorFactory> command_executors);
 
       bool apply(const model::Block &block,
                  std::function<bool(const model::Block &,
-                                    WsvQuery &, const hash256_t &)>
-                 function) override;
+                                    WsvQuery &,
+                                    const hash256_t &)> function) override;
 
       ~MutableStorageImpl() override;
 

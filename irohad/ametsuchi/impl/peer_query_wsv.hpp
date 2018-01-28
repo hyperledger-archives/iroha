@@ -18,11 +18,11 @@
 #ifndef IROHA_PEER_QUERY_WSV_HPP
 #define IROHA_PEER_QUERY_WSV_HPP
 
-#include <vector>
 #include <memory>
-#include "model/peer.hpp"
-#include "ametsuchi/wsv_query.hpp"
+#include <vector>
 #include "ametsuchi/peer_query.hpp"
+#include "ametsuchi/wsv_query.hpp"
+#include "model/peer.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -46,4 +46,4 @@ namespace iroha {
 
   }  // namespace ametsuchi
 }  // namespace iroha
-#endif //IROHA_PEER_QUERY_WSV_HPP
+#endif  // IROHA_PEER_QUERY_WSV_HPP

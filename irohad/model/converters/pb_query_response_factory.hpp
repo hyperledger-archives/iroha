@@ -66,9 +66,10 @@ namespace iroha {
             const protocol::AccountAssetResponse &account_asset_response) const;
 
         protocol::AccountDetailResponse serializeAccountDetailResponse(
-          const model::AccountDetailResponse &accountDetailResponse) const;
+            const model::AccountDetailResponse &accountDetailResponse) const;
         model::AccountDetailResponse deserializeAccountDetailResponse(
-          const protocol::AccountDetailResponse &account_detail_response) const;
+            const protocol::AccountDetailResponse &account_detail_response)
+            const;
 
         protocol::SignatoriesResponse serializeSignatoriesResponse(
             const model::SignatoriesResponse &signatoriesResponse) const;
@@ -100,8 +101,8 @@ namespace iroha {
         model::ErrorResponse deserializeErrorResponse(
             const protocol::ErrorResponse &response) const;
       };
-    }
-  }
-}
+    }  // namespace converters
+  }    // namespace model
+}  // namespace iroha
 
 #endif  // IROHA_PB_QUERY_RESPONSE_FACTORY_HPP

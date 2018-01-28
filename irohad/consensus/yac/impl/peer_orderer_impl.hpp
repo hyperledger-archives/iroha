@@ -32,7 +32,8 @@ namespace iroha {
 
         nonstd::optional<ClusterOrdering> getInitialOrdering() override;
 
-        nonstd::optional<ClusterOrdering> getOrdering(YacHash hash) override;
+        nonstd::optional<ClusterOrdering> getOrdering(
+            const YacHash &hash) override;
 
        private:
         std::shared_ptr<ametsuchi::PeerQuery> query_;

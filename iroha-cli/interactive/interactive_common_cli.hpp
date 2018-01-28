@@ -116,9 +116,9 @@ namespace iroha_cli {
     /**
      * Get string input from user
      * @param message Message to ask user
-     * @return user's input
+     * @return nullopt if termintaing symbol, else user's input
      */
-    std::string promtString(const std::string &message);
+    nonstd::optional<std::string> promptString(const std::string &message);
 
     /**
      * Parse parameters in interactive and shortcuted mode.

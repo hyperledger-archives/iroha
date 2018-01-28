@@ -19,9 +19,9 @@
 #define IROHA_AMETSUCHI_H
 
 #include "ametsuchi/block_query.hpp"
-#include "ametsuchi/wsv_query.hpp"
-#include "ametsuchi/temporary_factory.hpp"
 #include "ametsuchi/mutable_factory.hpp"
+#include "ametsuchi/temporary_factory.hpp"
+#include "ametsuchi/wsv_query.hpp"
 
 namespace iroha {
 
@@ -33,7 +33,6 @@ namespace iroha {
      */
     class Storage : public TemporaryFactory, public MutableFactory {
      public:
-
       virtual std::shared_ptr<WsvQuery> getWsvQuery() const = 0;
 
       virtual std::shared_ptr<BlockQuery> getBlockQuery() const = 0;

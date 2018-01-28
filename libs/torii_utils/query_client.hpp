@@ -19,8 +19,8 @@ limitations under the License.
 
 #include <endpoint.grpc.pb.h>
 #include <endpoint.pb.h>
-#include <grpc++/grpc++.h>
 #include <grpc++/channel.h>
+#include <grpc++/grpc++.h>
 #include <memory>
 #include <thread>
 
@@ -30,8 +30,8 @@ namespace torii_utils {
    * CommandSyncClient
    */
   class QuerySyncClient {
-  public:
-    QuerySyncClient(const std::string& ip, const int port);
+   public:
+    QuerySyncClient(const std::string &ip, const int port);
     ~QuerySyncClient();
 
     /**
@@ -40,9 +40,10 @@ namespace torii_utils {
      * @param response - QueryResponse that contains what clients want to get.
      * @return grpc::Status
      */
-    grpc::Status Find(const iroha::protocol::Query &query, iroha::protocol::QueryResponse &response);
+    grpc::Status Find(const iroha::protocol::Query &query,
+                      iroha::protocol::QueryResponse &response);
 
-  private:
+   private:
     grpc::ClientContext context_;
     std::unique_ptr<iroha::protocol::QueryService::Stub> stub_;
     grpc::CompletionQueue completionQueue_;
@@ -58,6 +59,6 @@ namespace torii_utils {
   };
    */
 
-}  // namespace torii
+}  // namespace torii_utils
 
 #endif  // TORII_UTILS_QUERY_CLIENT_HPP

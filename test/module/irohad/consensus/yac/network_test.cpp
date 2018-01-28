@@ -19,8 +19,8 @@
 
 #include <grpc++/grpc++.h>
 
-#include "consensus/yac/transport/yac_pb_converters.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
+#include "consensus/yac/transport/yac_pb_converters.hpp"
 
 using ::testing::_;
 using ::testing::InvokeWithoutArgs;
@@ -44,9 +44,8 @@ namespace iroha {
 
           grpc::ServerBuilder builder;
           int port = 0;
-          builder.AddListeningPort(default_address,
-                                   grpc::InsecureServerCredentials(),
-                                   &port);
+          builder.AddListeningPort(
+              default_address, grpc::InsecureServerCredentials(), &port);
           builder.RegisterService(network.get());
           server = builder.BuildAndStart();
           ASSERT_TRUE(server);
@@ -85,6 +84,6 @@ namespace iroha {
         std::unique_lock<std::mutex> lock(mtx);
         cv.wait_for(lock, std::chrono::milliseconds(100));
       }
-    } // namespace yac
-  } // namespace consensus
-} // namespace iroha
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha

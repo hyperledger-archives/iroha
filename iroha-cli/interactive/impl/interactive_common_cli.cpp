@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <utility>
+
 #include "interactive/interactive_common_cli.hpp"
 #include "parser/parser.hpp"
 
@@ -51,7 +53,7 @@ namespace iroha_cli {
     }
 
     bool isBackOption(std::string line) {
-      auto command = parser::parseFirstCommand(line);
+      auto command = parser::parseFirstCommand(std::move(line));
       return command.has_value()
           and (command.value() == "0" or command.value() == BACK_CODE);
     }
@@ -72,14 +74,19 @@ namespace iroha_cli {
       });
     }
 
-    std::string promtString(const std::string &message) {
+    nonstd::optional<std::string> promptString(const std::string &message) {
       std::string line;
       std::cout << message << ": ";
-      std::getline(std::cin, line);
+      if (not std::getline(std::cin, line)) {
+        // Input is a terminating symbol
+        return nonstd::nullopt;
+      }
       return line;
     }
 
-    void printEnd() { std::cout << "--------------------" << std::endl; }
+    void printEnd() {
+      std::cout << "--------------------" << std::endl;
+    }
 
     nonstd::optional<std::pair<std::string, uint16_t>> parseIrohaPeerParams(
         ParamsDescription params) {
@@ -95,21 +102,30 @@ namespace iroha_cli {
 
     nonstd::optional<std::vector<std::string>> parseParams(
         std::string line, std::string command_name, ParamsMap params_map) {
-      auto params_description = findInHandlerMap(command_name, params_map);
+      auto params_description =
+          findInHandlerMap(command_name, std::move(params_map));
       if (not params_description.has_value()) {
         // Report no params where found for this command
         std::cout << "Command params not found" << std::endl;
         // Stop parsing, something is not implemented
         return nonstd::nullopt;
       }
-      auto words = parser::split(line);
+      auto words = parser::split(std::move(line));
       if (words.size() == 1) {
         // Start interactive mode
         std::vector<std::string> params;
-        std::for_each(
-            params_description.value().begin(),
-            params_description.value().end(),
-            [&params](auto param) { params.push_back(promtString(param)); });
+        std::for_each(params_description.value().begin(),
+                      params_description.value().end(),
+                      [&params](auto param) {
+                        auto val = promptString(param);
+                        if (val and not val.value().empty()) {
+                          params.push_back(val.value());
+                        }
+                      });
+        if (params.size() != params_description.value().size()) {
+          // Wrong params passed
+          return nonstd::nullopt;
+        }
         return params;
       } else if (words.size() != params_description.value().size() + 1) {
         // Not enough parameters passed
@@ -125,10 +141,8 @@ namespace iroha_cli {
     size_t addMenuPoint(std::vector<std::string> &menu_points,
                         const std::string &description,
                         const std::string &command_short_name) {
-      menu_points.push_back(
-          std::to_string(menu_points.size() + 1) + ". " + description + " ("
-          + command_short_name
-          + ")");
+      menu_points.push_back(std::to_string(menu_points.size() + 1) + ". "
+                            + description + " (" + command_short_name + ")");
       return menu_points.size();
     }
   }  // namespace interactive

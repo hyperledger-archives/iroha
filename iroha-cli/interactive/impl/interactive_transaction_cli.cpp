@@ -183,7 +183,6 @@ namespace iroha_cli {
     }
 
     void InteractiveTransactionCli::run() {
-      std::string line;
       bool is_parsing = true;
       current_context_ = MAIN;
       printMenu("Forming a new transactions, choose command to add: ",
@@ -191,13 +190,18 @@ namespace iroha_cli {
       // Creating a new transaction, increment local tx_counter
       ++tx_counter_;
       while (is_parsing) {
-        line = promtString("> ");
+        auto line = promptString("> ");
+        if (not line) {
+          // The promtSting returns error, terminating symbol
+          is_parsing = false;
+          break;
+        }
         switch (current_context_) {
           case MAIN:
-            is_parsing = parseCommand(line);
+            is_parsing = parseCommand(line.value());
             break;
           case RESULT:
-            is_parsing = parseResult(line);
+            is_parsing = parseResult(line.value());
             break;
           default:
             // shouldn't get here
@@ -241,9 +245,7 @@ namespace iroha_cli {
       auto create_account = parser::parseValue<bool>(params[8]);
 
       if (not(read_self and edit_self and read_all and transfer_receive
-              and asset_create
-              and create_domain
-              and roles
+              and asset_create and create_domain and roles
               and create_account)) {
         std::cout << "Wrong format for permission" << std::endl;
         return nullptr;
