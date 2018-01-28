@@ -25,6 +25,7 @@
 #include <numeric>
 #include <rxcpp/rx.hpp>
 #include <string>
+#include <thread>
 #include <vector>
 #include "ametsuchi/peer_query.hpp"
 #include "model/peer.hpp"
@@ -165,18 +166,14 @@ TEST(GossipPropagationStrategyTest, MultipleSubsEmission) {
   EXPECT_CALL(*query, getLedgerPeers()).WillRepeatedly(testing::Return(peers));
   GossipPropagationStrategy strategy(query, 1ms, amount);
 
-  std::for_each(
-      range.begin(), range.end(), [=, &result, &ths, &strategy](auto i) {
-        auto &res = result[i];
-        ths[i] = std::thread(
-            [=, &res](auto &strategy) {
-              auto subscriber = rxcpp::make_subscriber<Peers>([&res](auto v) {
-                std::copy(v.begin(), v.end(), std::back_inserter(res));
-              });
-              strategy.emitter().take(take).as_blocking().subscribe(subscriber);
-            },
-            std::ref(strategy));
+  std::transform(range.begin(), range.end(), std::begin(ths), [&](auto i) {
+    return std::thread([ =, &res = result[i], &strategy ] {
+      auto subscriber = rxcpp::make_subscriber<Peers>([&res](auto v) {
+        std::copy(v.begin(), v.end(), std::back_inserter(res));
       });
+      strategy.emitter().take(take).as_blocking().subscribe(subscriber);
+    });
+  });
 
   std::for_each(range.begin(), range.end(), [&ths](auto i) { ths[i].join(); });
   std::for_each(range.begin(), range.end(), [&](auto i) {
