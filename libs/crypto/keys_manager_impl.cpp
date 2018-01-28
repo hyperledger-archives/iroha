@@ -46,21 +46,27 @@ namespace iroha {
   }
 
   /**
-   * Function for the private key encryption via XOR
+   * Function for the key encryption via XOR
+   * @tparam is a key type
    * @param privkey is a private key
    * @param pass_phrase is a key for encryption
    * @return encrypted string
    */
-  std::string encrypt(const privkey_t &privkey,
-                      const std::string &pass_phrase) {
-    std::string ciphertext(privkey.size(), '\0');
+  template <typename T>
+  std::string encrypt(const T &key, const std::string &pass_phrase) {
+    std::string ciphertext(key.size(), '\0');
     const auto pass_size = std::max(1ul, pass_phrase.size());
 
-    for (auto i = 0u; i < privkey.size(); i++) {
-      ciphertext[i] = privkey[i] ^ pass_phrase[i % pass_size];
+    for (auto i = 0u; i < key.size(); i++) {
+      ciphertext[i] = key[i] ^ pass_phrase[i % pass_size];
     }
     return ciphertext;
   }
+
+  /**
+   * Function for XOR decryption
+   */
+  auto decrypt = encrypt<std::string>;
 
   /**
    * Return a function which will try to deserialize and then decrypt private
@@ -73,20 +79,13 @@ namespace iroha {
   auto deserializedEncrypted(const std::string &s,
                              const std::string &pass_phrase) {
     constexpr auto size = privkey_t::size();
-    auto decryption = [=](auto binstr) {
-      std::string key(binstr.size(), '\0');
-      const auto pass_size = std::max(1ul, pass_phrase.size());
-
-      for (auto i = 0u; i < binstr.size(); i++) {
-        key[i] = binstr[i] ^ pass_phrase[i % pass_size];
-      }
-      return nonstd::make_optional(key);
-    };
 
     return [=](auto keypair) mutable {
-      return hexstringToBytestring(s) | decryption
-          | stringToBlob<
-                 size> | assignObjectField(keypair, &keypair_t::privkey);
+      return hexstringToBytestring(s) |
+          [&](auto binstr) {
+            return nonstd::make_optional(decrypt(binstr, pass_phrase));
+          }
+      | stringToBlob<size> | assignObjectField(keypair, &keypair_t::privkey);
     };
   }
 
