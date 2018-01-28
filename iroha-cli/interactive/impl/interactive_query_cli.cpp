@@ -113,7 +113,6 @@ namespace iroha_cli {
     }
 
     void InteractiveQueryCli::run() {
-      std::string line;
       bool is_parsing = true;
       current_context_ = MAIN;
       printMenu(menu_points_);
@@ -123,13 +122,18 @@ namespace iroha_cli {
       local_time_ = iroha::time::now();
 
       while (is_parsing) {
-        line = promtString("> ");
+        auto line = promptString("> ");
+        if (not line) {
+          // The promtSting returns error, terminating symbol
+          is_parsing = false;
+          break;
+        }
         switch (current_context_) {
           case MAIN:
-            is_parsing = parseQuery(line);
+            is_parsing = parseQuery(line.value());
             break;
           case RESULT:
-            is_parsing = parseResult(line);
+            is_parsing = parseResult(line.value());
             break;
           default:
             BOOST_ASSERT_MSG(false, "not implemented");
