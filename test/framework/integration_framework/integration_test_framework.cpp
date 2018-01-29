@@ -66,7 +66,7 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
-      const Keypair &keypair, const shared_model::interface::Block &block) {
+      const Keypair &keypair, shared_model::proto::Block block) {
     log_->info("init state");
     // peer initialization
     std::shared_ptr<iroha::keypair_t> old_key(keypair.makeOldModel());
@@ -121,8 +121,8 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::sendQuery(
-      const iroha::model::Query &qry) {
-    sendQuery(qry, [](const auto &) {});
+      shared_model::proto::Query qry) {
+    sendQuery(qry, [](auto) {});
     return *this;
   }
 

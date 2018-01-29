@@ -16,6 +16,7 @@
  */
 
 #include "backend/protobuf/transaction.hpp"
+#include "builders/protobuf/queries.hpp"
 #include "builders/protobuf/transaction.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "datetime/time.hpp"
@@ -142,23 +143,28 @@ TEST_F(TxPipelineIntegrationTest, GetTransactionsTest) {
   ASSERT_EQ(given_tx, *PbTransactionFactory{}.deserialize(got_pb_tx));
 }
 
+constexpr auto kUser = "user@test";
+constexpr auto kAsset = "asset#domain";
+
 /**
  * @given unsigned empty GetAccount query
  * AND default-initialized IntegrationTestFramework
  * @when query is sent to the framework
  * @then query response is STATELESS_INVALID
  */
-TEST(PipelineIntegrationTest, SendQueryWithValidation) {
-  iroha::model::GetAccount query;
+TEST(PipelineIntegrationTest, SendQuery) {
+  auto query = shared_model::proto::QueryBuilder()
+                   .createdTime(iroha::time::now())
+                   .creatorAccountId(kUser)
+                   .queryCounter(1)
+                   .getAccount(kUser)
+                   .build()
+                   .signAndAddSignature(
+                       shared_model::crypto::DefaultCryptoAlgorithmType::
+                           generateKeypair());
   integration_framework::IntegrationTestFramework()
       .setInitialState()
-      .sendQuery(query,
-                 [](const auto &res) {
-                   auto err_res =
-                       dynamic_cast<const iroha::model::ErrorResponse &>(res);
-                   ASSERT_EQ(iroha::model::ErrorResponse::STATELESS_INVALID,
-                             err_res.reason);
-                 })
+      .sendQuery(query)
       .done();
 }
 
@@ -168,8 +174,6 @@ TEST(PipelineIntegrationTest, SendQueryWithValidation) {
  * @then receive STATELESS_VALIDATION_SUCCESS status on that tx
  */
 TEST(PipelineIntegrationTest, SendTx) {
-  constexpr auto kUser = "user@test";
-  constexpr auto kAsset = "asset#domain";
   auto tx = shared_model::proto::TransactionBuilder()
                 .createdTime(iroha::time::now())
                 .creatorAccountId(kUser)

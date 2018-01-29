@@ -36,6 +36,8 @@
 
 #include "backend/protobuf/block.hpp"
 #include "backend/protobuf/proposal.hpp"
+#include "backend/protobuf/queries/proto_query.hpp"
+#include "backend/protobuf/query_responses/proto_query_response.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "backend/protobuf/transaction_responses/proto_tx_response.hpp"
 
@@ -53,7 +55,7 @@ namespace integration_framework {
         const iroha::keypair_t &keypair = iroha::create_keypair());
     IntegrationTestFramework &setInitialState(
         const shared_model::crypto::Keypair &keypair,
-        const shared_model::interface::Block &block);
+        shared_model::proto::Block block);
 
     template <typename Lambda>
     IntegrationTestFramework &sendTx(shared_model::proto::Transaction tx,
@@ -63,9 +65,9 @@ namespace integration_framework {
         const std::string &hash);
 
     template <typename Lambda>
-    IntegrationTestFramework &sendQuery(const iroha::model::Query &qry,
+    IntegrationTestFramework &sendQuery(shared_model::proto::Query qry,
                                         Lambda validation);
-    IntegrationTestFramework &sendQuery(const iroha::model::Query &qry);
+    IntegrationTestFramework &sendQuery(shared_model::proto::Query qry);
 
     template <typename Lambda>
     IntegrationTestFramework &checkProposal(Lambda validation);
@@ -137,22 +139,20 @@ namespace integration_framework {
 
   template <typename Lambda>
   IntegrationTestFramework &IntegrationTestFramework::sendQuery(
-      const iroha::model::Query &qry, Lambda validation) {
+      shared_model::proto::Query qry, Lambda validation) {
     using iroha::operator|;
     log_->info("send query");
-    // serialize without calling destructor on passed reference
-    auto pb_qry = iroha::model::converters::PbQueryFactory().serialize(
-        std::shared_ptr<const iroha::model::Query>(&qry, [](auto) {}));
-    // send
-    iroha::protocol::QueryResponse pb_response;
-    iroha_instance_->getIrohaInstance()->getQueryService()->FindAsync(
-        *pb_qry, pb_response);
-    // deserialize
-    auto response =
-        iroha::model::converters::PbQueryResponseFactory().deserialize(
-            pb_response);
-    // check validation function
-    validation(**response);
+
+    std::shared_ptr<shared_model::proto::QueryResponse> query_response;
+    {
+      iroha::protocol::QueryResponse response;
+      iroha_instance_->getIrohaInstance()->getQueryService()->FindAsync(
+          qry.getTransport(), response);
+      query_response =
+          std::make_shared<shared_model::proto::QueryResponse>(response);
+    }
+
+    validation(*query_response);
     return *this;
   }
 
