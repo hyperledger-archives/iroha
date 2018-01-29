@@ -73,7 +73,9 @@ int main(int argc, char *argv[]) {
   if (FLAGS_new_account) {
     // Create new pub/priv key
     auto keysManager = iroha::KeysManagerImpl(FLAGS_name);
-    if (not keysManager.createKeys(FLAGS_pass_phrase)) {
+    if (not(FLAGS_pass_phrase.size() == 0
+                ? keysManager.createKeys()
+                : keysManager.createKeys(FLAGS_pass_phrase))) {
       logger->error("Keys already exist");
     } else {
       logger->info(
@@ -151,13 +153,19 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
     iroha::KeysManagerImpl manager((path / FLAGS_name).string());
-    auto keypair = manager.loadKeys();
+    nonstd::optional<iroha::keypair_t> keypair;
+    if (FLAGS_pass_phrase.size() != 0) {
+      keypair = manager.loadKeys(FLAGS_pass_phrase);
+    } else {
+      keypair = manager.loadKeys();
+    }
     if (not keypair.has_value()) {
       logger->error(
           "Cannot load specified keypair, or keypair is invalid. Path: {}, "
-          "keypair name: {}",
+          "keypair name: {}\nMaybe wrong pass phrase (\"{}\")?",
           path.string(),
-          FLAGS_name);
+          FLAGS_name,
+          FLAGS_pass_phrase);
       return EXIT_FAILURE;
     }
     // TODO 13/09/17 grimadas: Init counters from Iroha, or read from disk?
