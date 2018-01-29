@@ -37,7 +37,8 @@ namespace shared_model {
      * possible achieved in the system.
      */
     class ErrorQueryResponse
-        : public Primitive<ErrorQueryResponse, iroha::model::ErrorResponse> {
+        : public PRIMITIVE_WITH_OLD(ErrorQueryResponse,
+                                    iroha::model::ErrorResponse) {
      private:
       /// Shortcut type for polymorphic wrapper
       template <typename... Value>
@@ -68,10 +69,12 @@ namespace shared_model {
         return boost::apply_visitor(detail::ToStringVisitor(), get());
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         return boost::apply_visitor(
             detail::OldModelCreatorVisitor<OldModelType *>(), get());
       }
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return get() == rhs.get();

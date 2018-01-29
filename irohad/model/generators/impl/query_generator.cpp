@@ -16,7 +16,6 @@
  */
 #include <memory>
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/generators/query_generator.hpp"
 
 namespace iroha {

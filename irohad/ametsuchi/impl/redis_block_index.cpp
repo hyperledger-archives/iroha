@@ -25,8 +25,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/commands/transfer_asset.hpp"
+#include "model/sha3_hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {

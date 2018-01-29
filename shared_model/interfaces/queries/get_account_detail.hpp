@@ -20,15 +20,17 @@
 
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/queries/get_account_detail.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Query for get all account's assets and balance
      */
-    class GetAccountDetail
-        : public Primitive<GetAccountDetail, iroha::model::GetAccountDetail> {
+    class GetAccountDetail : public PRIMITIVE(GetAccountDetail) {
      public:
       /**
        * @return account identifier
@@ -39,12 +41,15 @@ namespace shared_model {
        */
       virtual const types::DetailType &detail() const = 0;
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::GetAccountDetail;
         oldModel->account_id = accountId();
         oldModel->detail = detail();
         return oldModel;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
