@@ -67,7 +67,7 @@ namespace iroha {
         transaction_->exec("ROLLBACK TO SAVEPOINT savepoint_;");
       }
       return result;
-    }  // namespace ametsuchi
+    }
 
     TemporaryWsvImpl::~TemporaryWsvImpl() {
       transaction_->exec("ROLLBACK;");

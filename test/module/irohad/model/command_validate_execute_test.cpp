@@ -88,7 +88,7 @@ class CommandValidateExecuteTest : public ::testing::Test {
   void assertValueCase(ExecutionResult result) {
     result.match([](expected::Value<void> v) { SUCCEED(); },
                  [](expected::Error<ExecutionError> e) {
-                   FAIL() << e.error.toString();
+                   FAIL() << "Unexpected Error Case: " << e.error.toString();
                  });
   }
 
@@ -96,8 +96,9 @@ class CommandValidateExecuteTest : public ::testing::Test {
   // TODO: add check for error message, when database access will return result
   // IR-775
   void assertErrorCase(ExecutionResult result) {
-    result.match([](expected::Value<void> v) { FAIL(); },
-                 [](expected::Error<ExecutionError> e) { SUCCEED(); });
+    result.match(
+        [](expected::Value<void> v) { FAIL() << "Unexpected value case"; },
+        [](expected::Error<ExecutionError> e) { SUCCEED(); });
   }
 
   Amount max_amount{
@@ -660,6 +661,17 @@ TEST_F(CreateAssetTest, InvalidWhenNoPermissions) {
   assertErrorCase(validateAndExecute());
 }
 
+/**
+ * @given CreateAsset
+ * @when command tries to create asset, but insertion fails
+ * @then execute() fails
+ */
+TEST_F(CreateAssetTest, InvalidWhenAssetInsertionFails) {
+  EXPECT_CALL(*wsv_command, insertAsset(_)).WillOnce(Return(false));
+
+  assertErrorCase(execute());
+}
+
 class CreateDomainTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -692,6 +704,17 @@ TEST_F(CreateDomainTest, InvalidWhenNoPermissions) {
   EXPECT_CALL(*wsv_query, getAccountRoles(admin_id))
       .WillOnce(Return(nonstd::nullopt));
   assertErrorCase(validateAndExecute());
+}
+
+/**
+ * @given CreateDomain
+ * @when command tries to create domain, but insertion fails
+ * @then execute() fails
+ */
+TEST_F(CreateDomainTest, InvalidWhenDomainInsertionFails) {
+  EXPECT_CALL(*wsv_command, insertDomain(_)).WillOnce(Return(false));
+
+  assertErrorCase(execute());
 }
 
 class RemoveSignatoryTest : public CommandValidateExecuteTest {
@@ -878,6 +901,20 @@ TEST_F(RemoveSignatoryTest, InvalidWhenNoPermissionToRemoveFromSelf) {
       .WillOnce(Return(false));
 
   assertErrorCase(validateAndExecute());
+}
+
+/**
+ * @given RemoveSignatory
+ * @when command tries to remove signatory but deletion fails
+ * @then execute() fails
+ */
+TEST_F(RemoveSignatoryTest, InvalidWhenAccountSignatoryDeletionFails) {
+  EXPECT_CALL(*wsv_command,
+              deleteAccountSignatory(remove_signatory->account_id,
+                                     remove_signatory->pubkey))
+      .WillOnce(Return(false));
+
+  assertErrorCase(execute());
 }
 
 class SetQuorumTest : public CommandValidateExecuteTest {
@@ -1444,6 +1481,17 @@ TEST_F(AddPeerTest, InvalidCaseWhenNoPermissions) {
   assertErrorCase(validateAndExecute());
 }
 
+/**
+ * @given AddPeer
+ * @when command tries to insert peer but insertion fails
+ * @then execute returns false
+ */
+TEST_F(AddPeerTest, InvalidCaseWhenInsertPeerFails) {
+  EXPECT_CALL(*wsv_command, insertPeer(_)).WillOnce(Return(false));
+
+  assertErrorCase(execute());
+}
+
 class CreateRoleTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -1496,6 +1544,17 @@ TEST_F(CreateRoleTest, InvalidCaseWhenWrongRoleName) {
   std::set<std::string> perms = {can_create_role};
   command = std::make_shared<CreateRole>("m!Aster", perms);
   assertErrorCase(validateAndExecute());
+}
+
+/**
+ * @given CreateRole
+ * @when command tries to create new role, but insertion fails
+ * @then execute returns false
+ */
+TEST_F(CreateRoleTest, InvalidCaseWhenRoleInsertionFails) {
+  EXPECT_CALL(*wsv_command, insertRole(create_role->role_name))
+      .WillOnce(Return(false));
+  assertErrorCase(execute());
 }
 
 class AppendRoleTest : public CommandValidateExecuteTest {
@@ -1591,6 +1650,19 @@ TEST_F(AppendRoleTest, InvalidCaseRoleHasNoPermissions) {
   assertErrorCase(validateAndExecute());
 }
 
+/**
+ * @given AppendRole
+ * @when command tries to append role, but insertion of account fails
+ * @then execute() fails
+ */
+TEST_F(AppendRoleTest, InvalidCaseInsertAccountRoleFails) {
+  EXPECT_CALL(
+      *wsv_command,
+      insertAccountRole(exact_command->account_id, exact_command->role_name))
+      .WillOnce(Return(false));
+  assertErrorCase(execute());
+}
+
 class DetachRoleTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -1620,6 +1692,19 @@ TEST_F(DetachRoleTest, InvalidCase) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(nonstd::nullopt));
   assertErrorCase(validateAndExecute());
+}
+
+/**
+ * @given DetachRole
+ * @when deletion of account role fails
+ * @then execute fails()
+ */
+TEST_F(DetachRoleTest, InvalidCaseWhenDeleteAccountRoleFails) {
+  EXPECT_CALL(
+      *wsv_command,
+      deleteAccountRole(exact_command->account_id, exact_command->role_name))
+      .WillOnce(Return(false));
+  assertErrorCase(execute());
 }
 
 class GrantPermissionTest : public CommandValidateExecuteTest {
@@ -1654,6 +1739,20 @@ TEST_F(GrantPermissionTest, InvalidCaseWhenNoPermissions) {
   assertErrorCase(validateAndExecute());
 }
 
+/**
+ * @given GrantPermission
+ * @when command tries to grant permission but insertion fails
+ * @then execute() fails
+ */
+TEST_F(GrantPermissionTest, InvalidCaseWhenInsertGrantablePermissionFails) {
+  EXPECT_CALL(*wsv_command,
+              insertAccountGrantablePermission(exact_command->account_id,
+                                               creator.account_id,
+                                               exact_command->permission_name))
+      .WillOnce(Return(false));
+  assertErrorCase(execute());
+}
+
 class RevokePermissionTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
@@ -1685,6 +1784,20 @@ TEST_F(RevokePermissionTest, InvalidCaseNoPermissions) {
           exact_command->account_id, admin_id, exact_command->permission_name))
       .WillOnce(Return(false));
   assertErrorCase(validateAndExecute());
+}
+
+/**
+ * @given RevokePermission
+ * @when deleting permission fails
+ * @then execute fails
+ */
+TEST_F(RevokePermissionTest, InvalidCaseDeleteAccountPermissionvFails) {
+  EXPECT_CALL(*wsv_command,
+              deleteAccountGrantablePermission(exact_command->account_id,
+                                               creator.account_id,
+                                               exact_command->permission_name))
+      .WillOnce(Return(false));
+  assertErrorCase(execute());
 }
 
 class SetAccountDetailTest : public CommandValidateExecuteTest {
@@ -1742,4 +1855,17 @@ TEST_F(SetAccountDetailTest, ValidWhenHasPermissions) {
       setAccountKV(cmd->account_id, creator.account_id, cmd->key, cmd->value))
       .WillOnce(Return(true));
   assertValueCase(validateAndExecute());
+}
+
+/**
+ * @given SetAccountDetail
+ * @when command tries to set details, but setting key-value fails
+ * @then execute fails
+ */
+TEST_F(SetAccountDetailTest, InvalidWhenSetAccountKVFails) {
+  EXPECT_CALL(
+      *wsv_command,
+      setAccountKV(cmd->account_id, creator.account_id, cmd->key, cmd->value))
+      .WillOnce(Return(false));
+  assertErrorCase(execute());
 }
