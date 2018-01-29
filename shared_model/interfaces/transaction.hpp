@@ -37,13 +37,7 @@ namespace shared_model {
      * Transaction class represent well-formed intent from client to change
      * state of ledger.
      */
-    class Transaction :
-#ifdef DISABLE_BACKWARD
-        public Signable<Transaction>
-#else
-        public Signable<Transaction, iroha::model::Transaction>
-#endif
-    {
+    class Transaction : public SIGNABLE(Transaction) {
      public:
       /**
        * @return creator of transaction
