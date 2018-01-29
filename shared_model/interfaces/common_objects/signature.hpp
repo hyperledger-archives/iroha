@@ -22,8 +22,11 @@
 #include "cryptography/public_key.hpp"
 #include "cryptography/signed.hpp"
 #include "interfaces/base/primitive.hpp"
-#include "model/signature.hpp"
 #include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/signature.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -31,7 +34,7 @@ namespace shared_model {
     /**
      * Class represents signature of high-level domain objects.
      */
-    class Signature : public Primitive<Signature, iroha::model::Signature> {
+    class Signature : public PRIMITIVE(Signature) {
      public:
       /**
        * Type of public key
@@ -58,6 +61,7 @@ namespace shared_model {
             and signedData() == rhs.signedData();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         iroha::model::Signature *oldStyleSignature =
             new iroha::model::Signature();
@@ -69,6 +73,8 @@ namespace shared_model {
                 publicKey().toString());
         return oldStyleSignature;
       }
+
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

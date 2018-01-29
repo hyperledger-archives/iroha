@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include <utility>
+
 #include "interactive/interactive_cli.hpp"
 
 namespace iroha_cli {
@@ -50,7 +52,7 @@ namespace iroha_cli {
     }
 
     void InteractiveCli::parseMain(std::string line) {
-      auto raw_command = parser::parseFirstCommand(line);
+      auto raw_command = parser::parseFirstCommand(std::move(line));
       if (not raw_command.has_value()) {
         handleEmptyCommand();
         return;
@@ -80,8 +82,12 @@ namespace iroha_cli {
       // Parsing cycle
       while (true) {
         printMenu("Choose what to do:", menu_points_);
-        auto line = promtString("> ");
-        parseMain(line);
+        auto line = promptString("> ");
+        if (not line) {
+          // Line contains terminating symbol
+          break;
+        }
+        parseMain(line.value());
       }
     }
 

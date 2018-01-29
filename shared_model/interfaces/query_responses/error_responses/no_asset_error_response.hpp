@@ -34,9 +34,12 @@ namespace shared_model {
         return "NoAssetErrorResponse";
       }
 
+#ifndef DISABLE_BACKWARD
       iroha::model::ErrorResponse::Reason oldModelReason() const override {
         return iroha::model::ErrorResponse::Reason::NO_ASSET;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

@@ -14,15 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-#include <endpoint.grpc.pb.h>
-#include <google/protobuf/empty.pb.h>
-#include <grpc/support/time.h>
-#include <unistd.h>
-#include <network/grpc_async_service.hpp>
-#include <network/grpc_call.hpp>
-#include <torii/command_service.hpp>
-#include <torii/query_service.hpp>
-#include <torii/torii_service_handler.hpp>
+#include "endpoint.grpc.pb.h"
+#include "network/grpc_async_service.hpp"
+#include "network/grpc_call.hpp"
+#include "torii/command_service.hpp"
+#include "torii/query_service.hpp"
+#include "torii/torii_service_handler.hpp"
 
 namespace prot = iroha::protocol;
 
@@ -159,10 +156,12 @@ namespace torii {
         &ToriiServiceHandler::QueryFindHandler,
         queryAsyncService_);
   }
+
   void ToriiServiceHandler::assignCommandHandler(
       std::unique_ptr<torii::CommandService> command_service) {
     command_service_ = std::move(command_service);
   }
+
   void ToriiServiceHandler::assignQueryHandler(
       std::unique_ptr<torii::QueryService> query_service) {
     query_service_ = std::move(query_service);

@@ -19,8 +19,8 @@
 #include <boost/optional.hpp>
 #include "ametsuchi/impl/redis_block_index.hpp"
 #include "ametsuchi/impl/redis_block_query.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "framework/test_subscriber.hpp"
+#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
 using namespace iroha::ametsuchi;
@@ -279,8 +279,8 @@ TEST_F(BlockQueryTest, GetBlocksFrom1) {
   size_t counter = 1;
   wrapper.subscribe([&counter](Block b) {
     // wrapper returns blocks 1 and 2
-    ASSERT_EQ(b.height, counter++)
-        << "block height: " << b.height << "counter: " << counter;
+    ASSERT_EQ(b.height, counter++) << "block height: " << b.height
+                                   << "counter: " << counter;
   });
   ASSERT_TRUE(wrapper.validate());
 }

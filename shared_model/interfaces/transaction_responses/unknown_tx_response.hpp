@@ -31,10 +31,13 @@ namespace shared_model {
         return "UnknownTxResponse";
       }
 
+#ifndef DISABLE_BACKWARD
       iroha::model::TransactionResponse::Status oldModelStatus()
           const override {
         return iroha::model::TransactionResponse::Status::NOT_RECEIVED;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

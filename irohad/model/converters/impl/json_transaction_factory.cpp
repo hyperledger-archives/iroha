@@ -18,7 +18,6 @@
 #include "model/converters/json_transaction_factory.hpp"
 
 #include <algorithm>
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/converters/json_common.hpp"
 
 using namespace rapidjson;

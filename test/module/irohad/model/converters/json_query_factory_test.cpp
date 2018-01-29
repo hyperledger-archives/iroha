@@ -18,12 +18,12 @@
 #include "model/converters/json_query_factory.hpp"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/converters/json_common.hpp"
 #include "model/generators/query_generator.hpp"
 #include "model/generators/signature_generator.hpp"
 #include "model/queries/get_asset_info.hpp"
 #include "model/queries/get_roles.hpp"
+#include "model/sha3_hash.hpp"
 
 using namespace iroha;
 using namespace iroha::model;

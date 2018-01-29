@@ -7,6 +7,7 @@ import "google/protobuf/empty.proto";
 message Proposal {
   uint64 height = 1;
   repeated iroha.protocol.Transaction transactions = 2;
+  uint64 created_time = 3;
 }
 
 service OrderingGateTransportGrpc {

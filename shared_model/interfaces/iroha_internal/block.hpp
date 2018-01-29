@@ -20,23 +20,26 @@
 
 #include "interfaces/base/signable.hpp"
 #include "interfaces/transaction.hpp"
-#include "model/block.hpp"
 #include "utils/string_builder.hpp"
+
+#ifndef DISABLE_BACKWARD
+#include "model/block.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
 
-    class Block : public Signable<Block, iroha::model::Block> {
+    class Block : public SIGNABLE(Block) {
      public:
       /**
        * @return block number in the ledger
        */
-      virtual types::HeightType &height() const = 0;
+      virtual types::HeightType height() const = 0;
 
       /**
        * @return hash of a previous block
        */
-      virtual HashType &prevHash() const = 0;
+      virtual const HashType &prevHash() const = 0;
 
       /// Type of a number of transactions in block
       using TransactionsNumberType = uint16_t;
@@ -44,7 +47,7 @@ namespace shared_model {
       /**
        * @return amount of transactions in block
        */
-      virtual TransactionsNumberType &txsNumber() const = 0;
+      virtual TransactionsNumberType txsNumber() const = 0;
 
       /// Type of a single Transaction
       using TransactionType = detail::PolymorphicWrapper<Transaction>;
@@ -57,6 +60,7 @@ namespace shared_model {
        */
       virtual const TransactionsCollectionType &transactions() const = 0;
 
+#ifndef DISABLE_BACKWARD
       iroha::model::Block *makeOldModel() const override {
         iroha::model::Block *oldStyleBlock = new iroha::model::Block();
         oldStyleBlock->height = height();
@@ -79,6 +83,7 @@ namespace shared_model {
                       });
         return oldStyleBlock;
       }
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

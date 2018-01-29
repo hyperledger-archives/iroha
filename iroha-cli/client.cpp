@@ -17,8 +17,6 @@
 
 #include "client.hpp"
 #include <model/converters/json_query_factory.hpp>
-#include <utility>
-#include "model/converters/json_common.hpp"
 #include "model/converters/json_transaction_factory.hpp"
 #include "model/converters/pb_query_factory.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
