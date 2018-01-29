@@ -36,5 +36,4 @@ target_link_libraries(yac
     yac_grpc
     logger
     hash
-    pb_model_converters
     )

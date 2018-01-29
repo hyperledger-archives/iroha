@@ -23,5 +23,5 @@ add_library(keys_manager
 target_link_libraries(keys_manager
     optional
     cryptography
-    pb_model_converters
+    logger
     )
