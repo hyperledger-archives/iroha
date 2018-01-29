@@ -26,14 +26,10 @@
 #include "crypto/keys_manager_impl.hpp"
 #include "grpc_response_handler.hpp"
 #include "interactive/interactive_cli.hpp"
-#include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
-#include "model/converters/json_common.hpp"
 #include "model/converters/json_query_factory.hpp"
 #include "model/generators/block_generator.hpp"
-#include "model/generators/signature_generator.hpp"
 #include "model/model_crypto_provider_impl.hpp"
-#include "responses.pb.h"
 #include "validators.hpp"
 
 DEFINE_string(config, "", "Trusted peer's ip addresses");

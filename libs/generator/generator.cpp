@@ -17,8 +17,6 @@
 
 #include "generator/generator.hpp"
 
-#include <cstdlib>
-
 namespace generator {
 
   int64_t random_number(int64_t min, int64_t max) {

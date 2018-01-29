@@ -22,7 +22,6 @@
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
-#include "model/commands/create_role.hpp"
 #include "model/permissions.hpp"
 #include "model/sha3_hash.hpp"
 
