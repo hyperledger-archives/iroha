@@ -194,11 +194,18 @@ RUN git clone git://github.com/warchant/ed25519.git /tmp/ed25519; \
     ldconfig; \
     rm -rf /tmp/ed25519
 
-RUN adduser iroha-ci
+# non-interactive adduser
+#   -m = create home dir
+#   -s = set default shell
+#   iroha-ci = username
+#   -u = userid, default for Ubuntu is 1000
+#   -U = create a group same as username
+#   no password
+RUN useradd -ms /bin/bash iroha-ci -u 1000 -U
+
 WORKDIR /opt/iroha
 RUN chmod -R 777 /opt/iroha; \
     mkdir -p /tmp/ccache -m 777;
 
 USER iroha-ci
-
 CMD ["/bin/bash"]

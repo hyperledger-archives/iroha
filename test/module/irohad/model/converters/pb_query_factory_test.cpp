@@ -17,8 +17,8 @@
 
 #include "model/converters/pb_query_factory.hpp"
 #include <gtest/gtest.h>
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/generators/query_generator.hpp"
+#include "model/sha3_hash.hpp"
 
 #include "model/queries/get_asset_info.hpp"
 #include "model/queries/get_roles.hpp"

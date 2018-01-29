@@ -16,30 +16,74 @@
  */
 
 #include "keys_manager_impl.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
-#include "logger/logger.hpp"
 
+#include <algorithm>
 #include <fstream>
+#include <random>
 #include <utility>
 
 using iroha::operator|;
 
 namespace iroha {
   /**
-   * Return function which will try to deserialize specified value to specified
-   * field in given keypair
+   * Return a function which will try deserialize the value to
+   * specified field in given keypair
    * @tparam T - keypair field type
    * @tparam V - value type to deserialize
    * @param field - keypair field to be deserialized
    * @param value - value to be deserialized
-   * @return keypair on success, otherwise nullopt
+   * @return function that will return keypair on success, otherwise nullopt
    */
   template <typename T, typename V>
-  auto deserializeKeypairField(T iroha::keypair_t::*field, const V &value) {
+  auto deserializeKeypairField(T keypair_t::*field, const V &value) {
     return [=](auto keypair) mutable {
-      return iroha::hexstringToArray<T::size()>(value)
-          | iroha::assignObjectField(keypair, field);
+      return hexstringToArray<T::size()>(value)
+          | assignObjectField(keypair, field);
+    };
+  }
+
+  /**
+   * Function for the key encryption via XOR
+   * @tparam is a key type
+   * @param privkey is a private key
+   * @param pass_phrase is a key for encryption
+   * @return encrypted string
+   */
+  template <typename T>
+  std::string encrypt(const T &key, const std::string &pass_phrase) {
+    std::string ciphertext(key.size(), '\0');
+    const auto pass_size = std::max(1ul, pass_phrase.size());
+
+    for (auto i = 0u; i < key.size(); i++) {
+      ciphertext[i] = key[i] ^ pass_phrase[i % pass_size];
+    }
+    return ciphertext;
+  }
+
+  /**
+   * Function for XOR decryption
+   */
+  auto decrypt = encrypt<std::string>;
+
+  /**
+   * Return a function which will try to deserialize and then decrypt private
+   * key via XORing with pass phrase
+   * @param s is an encrypted data from file
+   * @param pass_phrase for decryption
+   * @return function that will set keypair::privkey on successful
+   *         deserialization and decryption
+   */
+  auto deserializedEncrypted(const std::string &s,
+                             const std::string &pass_phrase) {
+    constexpr auto size = privkey_t::size();
+
+    return [=](auto keypair) mutable {
+      return hexstringToBytestring(s) |
+          [&](auto binstr) {
+            return nonstd::make_optional(decrypt(binstr, pass_phrase));
+          }
+      | stringToBlob<size> | assignObjectField(keypair, &keypair_t::privkey);
     };
   }
 
@@ -47,12 +91,11 @@ namespace iroha {
       : account_name_(std::move(account_name)),
         log_(logger::log("KeysManagerImpl")) {}
 
-  bool KeysManagerImpl::validate(const iroha::keypair_t &keypair) const {
+  bool KeysManagerImpl::validate(const keypair_t &keypair) const {
     std::string test = "12345";
-    auto sig = iroha::sign(
-        iroha::sha3_256(test).to_string(), keypair.pubkey, keypair.privkey);
-    if (not iroha::verify(
-            iroha::sha3_256(test).to_string(), keypair.pubkey, sig)) {
+    auto sig =
+        sign(sha3_256(test).to_string(), keypair.pubkey, keypair.privkey);
+    if (not verify(sha3_256(test).to_string(), keypair.pubkey, sig)) {
       log_->error("key validation failed");
       return false;
     }
@@ -70,7 +113,7 @@ namespace iroha {
     return true;
   }
 
-  nonstd::optional<iroha::keypair_t> KeysManagerImpl::loadKeys() {
+  nonstd::optional<keypair_t> KeysManagerImpl::loadKeys() {
     std::string pub_key;
     std::string priv_key;
 
@@ -78,27 +121,58 @@ namespace iroha {
         || !loadFile(account_name_ + kPrivExt, priv_key))
       return nonstd::nullopt;
 
-    return nonstd::make_optional<iroha::keypair_t>()
-        | deserializeKeypairField(&iroha::keypair_t::pubkey, pub_key)
-        | deserializeKeypairField(&iroha::keypair_t::privkey, priv_key) |
+    return nonstd::make_optional<keypair_t>()
+        | deserializeKeypairField(&keypair_t::pubkey, pub_key)
+        | deserializeKeypairField(&keypair_t::privkey, priv_key) |
         [this](auto keypair) {
           return this->validate(keypair) ? nonstd::make_optional(keypair)
                                          : nonstd::nullopt;
         };
   }
 
-  bool KeysManagerImpl::createKeys(const std::string &pass_phrase) {
-    auto seed = iroha::create_seed(pass_phrase);
-    auto key_pairs = iroha::create_keypair(seed);
+  nonstd::optional<keypair_t> KeysManagerImpl::loadKeys(
+      const std::string &pass_phrase) {
+    std::string pub_key;
+    std::string priv_key;
 
+    if (!loadFile(account_name_ + kPubExt, pub_key)
+        || !loadFile(account_name_ + kPrivExt, priv_key))
+      return nonstd::nullopt;
+
+    return nonstd::make_optional<keypair_t>()
+        | deserializeKeypairField(&keypair_t::pubkey, pub_key)
+        | deserializedEncrypted(priv_key, pass_phrase) | [this](auto keypair) {
+            return this->validate(keypair) ? nonstd::make_optional(keypair)
+                                           : nonstd::nullopt;
+          };
+  }
+
+  bool KeysManagerImpl::createKeys() {
+    auto key_pairs = create_keypair();
+
+    auto pub = key_pairs.pubkey.to_hexstring();
+    auto priv = key_pairs.privkey.to_hexstring();
+    return store(pub, priv);
+  }
+
+  bool KeysManagerImpl::createKeys(const std::string &pass_phrase) {
+    auto key_pairs = create_keypair();
+
+    auto pub = key_pairs.pubkey.to_hexstring();
+    auto priv = bytestringToHexstring(encrypt(key_pairs.privkey, pass_phrase));
+    return store(pub, priv);
+  }
+
+  bool KeysManagerImpl::store(const std::string &pub, const std::string &priv) {
     std::ofstream pub_file(account_name_ + kPubExt);
     std::ofstream priv_file(account_name_ + kPrivExt);
     if (not pub_file or not priv_file) {
       return false;
     }
-    pub_file << key_pairs.pubkey.to_hexstring();
-    priv_file << key_pairs.privkey.to_hexstring();
-    return true;
+
+    pub_file << pub;
+    priv_file << priv;
+    return pub_file.good() && priv_file.good();
   }
 
   const std::string KeysManagerImpl::kPubExt = ".pub";

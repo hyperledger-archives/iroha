@@ -21,7 +21,10 @@
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/peer.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/commands/add_peer.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -29,7 +32,7 @@ namespace shared_model {
     /**
      * Add new peer to Iroha
      */
-    class AddPeer : public Primitive<AddPeer, iroha::model::AddPeer> {
+    class AddPeer : public PRIMITIVE(AddPeer) {
      public:
       /**
        * Return peer to be added by the command.
@@ -45,6 +48,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::AddPeer;
         oldModel->peer.address = peer().address();
@@ -52,6 +56,7 @@ namespace shared_model {
             peer().pubkey().makeOldModel<decltype(oldModel->peer.pubkey)>();
         return oldModel;
       }
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return peer() == rhs.peer();

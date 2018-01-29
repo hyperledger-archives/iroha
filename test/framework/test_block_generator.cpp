@@ -18,13 +18,12 @@
 #include "framework/test_block_generator.hpp"
 #include <chrono>
 #include <model/commands/create_role.hpp>
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
-#include "model/commands/create_role.hpp"
 #include "model/permissions.hpp"
+#include "model/sha3_hash.hpp"
 
 using namespace iroha;
 using namespace iroha::model;

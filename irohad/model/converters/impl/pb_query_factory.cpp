@@ -17,7 +17,6 @@
 
 #include "model/converters/pb_query_factory.hpp"
 #include <queries.pb.h>
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/common.hpp"
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"

@@ -16,7 +16,6 @@
  */
 
 #include "model/converters/json_query_factory.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"

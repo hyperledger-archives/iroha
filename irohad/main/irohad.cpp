@@ -24,8 +24,6 @@
 #include "main/iroha_conf_loader.hpp"
 #include "main/raw_block_loader.hpp"
 
-#include "logger/logger.hpp"
-
 /**
  * Gflag validator.
  * Validator for the configuration file path input argument.

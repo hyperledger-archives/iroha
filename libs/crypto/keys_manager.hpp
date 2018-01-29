@@ -29,21 +29,35 @@ namespace iroha {
     virtual ~KeysManager() = default;
 
     /**
-     * Load keys associated with account
-     * Validate loaded keypair by signing and verifying signature
-     * of test message
-     * @param account_name
-     * @return nullopt if no keypair found locally, or verification failure
+     * Create a new keypair and store it as is on disk
+     * @return false if create account failed
+     */
+    virtual bool createKeys() = 0;
+
+    /**
+     * Load plain-text keys associated with the manager, then validate loaded
+     * keypair by signing and verifying signature of test message
+     * @return nullopt if no keypair found locally, or verification failure;
+     *         related keypair otherwise
      */
     virtual nonstd::optional<iroha::keypair_t> loadKeys() = 0;
 
     /**
-     * Create keys and associate with account
-     * @param account_name
-     * @param pass_phrase
+     * Create keys a new keypair and store it encrypted on disk
+     * @param pass_phrase is a password for the keys
      * @return false if create account failed
      */
     virtual bool createKeys(const std::string &pass_phrase) = 0;
+
+    /**
+     * Load encrypted keys associated with the manager, then validate loaded
+     * keypair by signing and verifying signature of test message
+     * @param pass_phrase is a password for decryption
+     * @return nullopt if no keypair found locally, or verification failure;
+     *         related keypair otherwise
+     */
+    virtual nonstd::optional<iroha::keypair_t> loadKeys(
+        const std::string &pass_phrase) = 0;
   };
 
 }  // namespace iroha

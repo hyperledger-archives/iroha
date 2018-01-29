@@ -26,14 +26,10 @@
 #include "crypto/keys_manager_impl.hpp"
 #include "grpc_response_handler.hpp"
 #include "interactive/interactive_cli.hpp"
-#include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
-#include "model/converters/json_common.hpp"
 #include "model/converters/json_query_factory.hpp"
 #include "model/generators/block_generator.hpp"
-#include "model/generators/signature_generator.hpp"
 #include "model/model_crypto_provider_impl.hpp"
-#include "responses.pb.h"
 #include "validators.hpp"
 
 DEFINE_string(config, "", "Trusted peer's ip addresses");
@@ -77,7 +73,9 @@ int main(int argc, char *argv[]) {
   if (FLAGS_new_account) {
     // Create new pub/priv key
     auto keysManager = iroha::KeysManagerImpl(FLAGS_name);
-    if (not keysManager.createKeys(FLAGS_pass_phrase)) {
+    if (not(FLAGS_pass_phrase.size() == 0
+                ? keysManager.createKeys()
+                : keysManager.createKeys(FLAGS_pass_phrase))) {
       logger->error("Keys already exist");
     } else {
       logger->info(
@@ -124,7 +122,7 @@ int main(int argc, char *argv[]) {
 
     if (FLAGS_peers_address.empty()) {
       logger->error("--peers_address is empty");
-      return -1;
+      return EXIT_FAILURE;
     }
 
     std::ifstream file(FLAGS_peers_address);
@@ -145,8 +143,8 @@ int main(int argc, char *argv[]) {
     logger->info("File saved to genesis.block");
   } else if (FLAGS_interactive) {
     if (FLAGS_name.empty()) {
-      logger->error("Specify account name");
-      return -1;
+      logger->error("Specify account name with --name flag");
+      return EXIT_FAILURE;
     }
 
     fs::path path(FLAGS_key_path);
@@ -155,13 +153,19 @@ int main(int argc, char *argv[]) {
       return EXIT_FAILURE;
     }
     iroha::KeysManagerImpl manager((path / FLAGS_name).string());
-    auto keypair = manager.loadKeys();
+    nonstd::optional<iroha::keypair_t> keypair;
+    if (FLAGS_pass_phrase.size() != 0) {
+      keypair = manager.loadKeys(FLAGS_pass_phrase);
+    } else {
+      keypair = manager.loadKeys();
+    }
     if (not keypair.has_value()) {
       logger->error(
           "Cannot load specified keypair, or keypair is invalid. Path: {}, "
-          "keypair name: {}",
+          "keypair name: {}\nMaybe wrong pass phrase (\"{}\")?",
           path.string(),
-          FLAGS_name);
+          FLAGS_name,
+          FLAGS_pass_phrase);
       return EXIT_FAILURE;
     }
     // TODO 13/09/17 grimadas: Init counters from Iroha, or read from disk?
@@ -174,7 +178,8 @@ int main(int argc, char *argv[]) {
             keypair.value()));
     interactiveCli.run();
   } else {
-    assert_config::assert_fatal(false, "Invalid flags");
+    logger->error("Invalid flags");
+    return EXIT_FAILURE;
   }
   return 0;
 }

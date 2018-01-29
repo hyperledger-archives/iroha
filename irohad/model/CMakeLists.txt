@@ -36,6 +36,14 @@ target_link_libraries(command_execution
     validator
     )
 
+add_library(sha3_hash
+    sha3_hash.cpp
+    )
+
+target_link_libraries(sha3_hash
+    pb_model_converters
+    )
+
 add_library(model
     model_crypto_provider_impl.cpp
     impl/model_operators.cpp
@@ -43,6 +51,7 @@ add_library(model
     )
 target_link_libraries(model
     hash
+    sha3_hash
     optional
     rxcpp
     logger

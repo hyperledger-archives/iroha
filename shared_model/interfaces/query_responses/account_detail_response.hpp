@@ -25,14 +25,16 @@
 #include "utils/string_builder.hpp"
 #include "utils/visitor_apply_for_all.hpp"
 
+#ifndef DISABLE_BACKWARD
+#include "model/queries/responses/account_detail_response.hpp"
+#endif
+
 namespace shared_model {
   namespace interface {
     /**
      * Provide response with account asset
      */
-    class AccountDetailResponse
-        : public Primitive<AccountDetailResponse,
-                           iroha::model::AccountDetailResponse> {
+    class AccountDetailResponse : public PRIMITIVE(AccountDetailResponse) {
      public:
       /// Detail
       using DetailType = std::string;
@@ -61,6 +63,7 @@ namespace shared_model {
         return detail() == rhs.detail();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of account asset response.
@@ -70,6 +73,8 @@ namespace shared_model {
         oldModel->detail = detail();
         return oldModel;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

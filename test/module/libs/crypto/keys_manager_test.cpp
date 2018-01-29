@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include "crypto/keys_manager.hpp"
 #include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
 #include <fstream>
@@ -56,6 +57,7 @@ class KeyManager : public ::testing::Test {
       "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"s;
   KeysManagerImpl manager = KeysManagerImpl(filepath);
   const std::string passphrase = "test";
+  const std::string nonexistent = "/tmp/path/that/does/not/exist/100/percent";
 };
 
 TEST_F(KeyManager, LoadNonExistentKeyFile) {
@@ -93,34 +95,40 @@ TEST_F(KeyManager, LoadValid) {
 }
 
 TEST_F(KeyManager, CreateAndLoad) {
-  ASSERT_TRUE(manager.createKeys(passphrase));
+  ASSERT_TRUE(manager.createKeys());
   ASSERT_TRUE(manager.loadKeys());
+}
+
+TEST_F(KeyManager, CreateAndLoadEncrypted) {
+  ASSERT_TRUE(manager.createKeys(passphrase));
+  ASSERT_TRUE(manager.loadKeys(passphrase));
+}
+
+TEST_F(KeyManager, CreateAndLoadEncryptedEmptyKey) {
+  ASSERT_TRUE(manager.createKeys(""));
+  ASSERT_TRUE(manager.loadKeys(""));
+}
+
+TEST_F(KeyManager, CreateAndLoadEncryptedInvalidKey) {
+  ASSERT_TRUE(manager.createKeys(passphrase));
+  ASSERT_FALSE(manager.loadKeys(passphrase + "123"));
 }
 
 TEST_F(KeyManager, LoadInaccessiblePubkey) {
   create_file(pub_key_path, pubkey);
   create_file(pri_key_path, prikey);
-  permissions(pub_key_path, no_perms);
+  remove(pub_key_path);
   ASSERT_FALSE(manager.loadKeys());
 }
 
 TEST_F(KeyManager, LoadInaccessiblePrikey) {
   create_file(pub_key_path, pubkey);
   create_file(pri_key_path, prikey);
-  permissions(pri_key_path, no_perms);
+  remove(pri_key_path);
   ASSERT_FALSE(manager.loadKeys());
 }
 
-TEST_F(KeyManager, CreateInaccessiblePubkey) {
-  create_file(pub_key_path, "");
-  create_file(pri_key_path, "");
-  permissions(pub_key_path, no_perms);
-  ASSERT_FALSE(manager.createKeys(passphrase));
-}
-
-TEST_F(KeyManager, CreateInaccessiblePrikey) {
-  create_file(pub_key_path, "");
-  create_file(pri_key_path, "");
-  permissions(pri_key_path, no_perms);
+TEST_F(KeyManager, CreateKeypairInNonexistentDir) {
+  KeysManagerImpl manager = KeysManagerImpl(nonexistent);
   ASSERT_FALSE(manager.createKeys(passphrase));
 }
