@@ -43,7 +43,7 @@ namespace iroha {
       auto execute_command = [this, &tx_creator](auto command) {
         auto executor = command_executors_->getCommandExecutor(command);
         auto account = wsv_->getAccount(tx_creator).value();
-        if (!executor->validate(*command, *wsv_, tx_creator)) {
+        if (not executor->validate(*command, *wsv_, tx_creator)) {
           return false;
         }
         auto result =

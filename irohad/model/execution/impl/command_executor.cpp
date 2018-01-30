@@ -41,14 +41,14 @@
 using namespace iroha::ametsuchi;
 using iroha::expected::makeError;
 
-
 namespace iroha {
   namespace model {
 
-    // TODO: Make db calls return result to eliminate need for this function IR-775
-    ExecutionResult CommandExecutor::errorIfNot(bool predicate,
-                               const std::string &error_message) const noexcept {
-      if (!predicate) {
+    // TODO: 30.01.2018 nickaleks make db calls return result to eliminate need
+    // for this function IR-775
+    ExecutionResult CommandExecutor::errorIfNot(
+        bool predicate, const std::string &error_message) const noexcept {
+      if (not predicate) {
         return makeExecutionError(error_message);
       }
       return {};
@@ -164,9 +164,9 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const CreateRole &>(command);
 
-      if (!commands.insertRole(cmd_value.role_name)) {
+      if (not commands.insertRole(cmd_value.role_name)) {
         return makeExecutionError("failed to insert role: "
-                         + cmd_value.role_name);
+                                  + cmd_value.role_name);
       }
 
       return errorIfNot(commands.insertRolePermissions(cmd_value.role_name,
@@ -302,13 +302,12 @@ namespace iroha {
       }
       if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
         return makeExecutionError((boost::format("account %s is absent")
-                          % add_asset_quantity.account_id)
-                             .str());
+                                   % add_asset_quantity.account_id)
+                                      .str());
       }
       auto account_asset = queries.getAccountAsset(
           add_asset_quantity.account_id, add_asset_quantity.asset_id);
       if (not account_asset.has_value()) {
-
         account_asset = AccountAsset();
         account_asset->asset_id = add_asset_quantity.asset_id;
         account_asset->account_id = add_asset_quantity.account_id;
@@ -366,8 +365,8 @@ namespace iroha {
       auto asset = queries.getAsset(subtract_asset_quantity.asset_id);
       if (not asset) {
         return makeExecutionError((boost::format("asset %s is absent")
-                          % subtract_asset_quantity.asset_id)
-                             .str());
+                                   % subtract_asset_quantity.asset_id)
+                                      .str());
       }
       auto precision = asset.value().precision;
 
@@ -378,9 +377,9 @@ namespace iroha {
           subtract_asset_quantity.account_id, subtract_asset_quantity.asset_id);
       if (not account_asset.has_value()) {
         return makeExecutionError((boost::format("%s do not have %s")
-                          % subtract_asset_quantity.account_id
-                          % subtract_asset_quantity.asset_id)
-                             .str());
+                                   % subtract_asset_quantity.account_id
+                                   % subtract_asset_quantity.asset_id)
+                                      .str());
       }
       auto account_asset_value = account_asset.value();
 
@@ -459,7 +458,7 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto add_signatory = static_cast<const AddSignatory &>(command);
 
-      if (!commands.insertSignatory(add_signatory.pubkey)) {
+      if (not commands.insertSignatory(add_signatory.pubkey)) {
         return makeExecutionError("failed to insert signatory");
       }
       return errorIfNot(commands.insertAccountSignatory(
@@ -517,14 +516,14 @@ namespace iroha {
                 .str());
       }
       // TODO: remove insert signatory from here ?
-      if (!commands.insertSignatory(create_account.pubkey)) {
+      if (not commands.insertSignatory(create_account.pubkey)) {
         return makeExecutionError("failed to insert signatory");
       }
-      if (!commands.insertAccount(account)) {
+      if (not commands.insertAccount(account)) {
         return makeExecutionError("failed to insert account");
       }
-      if (!commands.insertAccountSignatory(account.account_id,
-                                           create_account.pubkey)) {
+      if (not commands.insertAccountSignatory(account.account_id,
+                                              create_account.pubkey)) {
         return makeExecutionError("failed to insert account signatory");
       }
       return errorIfNot(commands.insertAccountRole(account.account_id,
@@ -570,7 +569,7 @@ namespace iroha {
           create_asset.asset_name + "#" + create_asset.domain_id;
       new_asset.domain_id = create_asset.domain_id;
       new_asset.precision = create_asset.precision;
-      // The insert will fail if asset already exist
+      // The insert will fail if asset already exists
       return errorIfNot(commands.insertAsset(new_asset),
                         "failed to insert asset");
     }
@@ -656,8 +655,8 @@ namespace iroha {
       auto remove_signatory = static_cast<const RemoveSignatory &>(command);
 
       // Delete will fail if account signatory doesn't exist
-      if (!commands.deleteAccountSignatory(remove_signatory.account_id,
-                                           remove_signatory.pubkey)) {
+      if (not commands.deleteAccountSignatory(remove_signatory.account_id,
+                                              remove_signatory.pubkey)) {
         return makeExecutionError("failed to delete account signatory");
       }
       return errorIfNot(commands.deleteSignatory(remove_signatory.pubkey),
@@ -814,11 +813,10 @@ namespace iroha {
       auto src_account_asset = queries.getAccountAsset(
           transfer_asset.src_account_id, transfer_asset.asset_id);
       if (not src_account_asset.has_value()) {
-
         return makeExecutionError((boost::format("asset %s is absent of %s")
-                          % transfer_asset.asset_id
-                          % transfer_asset.src_account_id)
-                             .str());
+                                   % transfer_asset.asset_id
+                                   % transfer_asset.src_account_id)
+                                      .str());
       }
 
       AccountAsset dest_AccountAsset;
@@ -827,9 +825,9 @@ namespace iroha {
       auto asset = queries.getAsset(transfer_asset.asset_id);
       if (not asset.has_value()) {
         return makeExecutionError((boost::format("asset %s is absent of %s")
-                          % transfer_asset.asset_id
-                          % transfer_asset.dest_account_id)
-                             .str());
+                                   % transfer_asset.asset_id
+                                   % transfer_asset.dest_account_id)
+                                      .str());
       }
       // Precision for both wallets
       auto precision = asset.value().precision;
@@ -870,7 +868,7 @@ namespace iroha {
         dest_AccountAsset.balance = dest_balance;
       }
 
-      if (!commands.upsertAccountAsset(dest_AccountAsset)) {
+      if (not commands.upsertAccountAsset(dest_AccountAsset)) {
         return makeExecutionError("failed to upsert destination balance");
       }
       return errorIfNot(commands.upsertAccountAsset(src_account_asset.value()),
