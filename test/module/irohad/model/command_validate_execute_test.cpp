@@ -38,11 +38,11 @@
 #include "model/execution/command_executor_factory.hpp"
 #include "model/permissions.hpp"
 
-using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::_;
 
 using namespace iroha;
 using namespace iroha::ametsuchi;
@@ -1610,9 +1610,10 @@ class GrantPermissionTest : public CommandValidateExecuteTest {
  public:
   void SetUp() override {
     CommandValidateExecuteTest::SetUp();
-    exact_command = std::make_shared<GrantPermission>("yoda", "CanTeach");
+    const auto perm = "can_teach";
+    exact_command = std::make_shared<GrantPermission>("yoda", perm);
     command = exact_command;
-    role_permissions = {"CanGrantCanTeach"};
+    role_permissions = {can_grant + perm};
   }
   std::shared_ptr<GrantPermission> exact_command;
 };

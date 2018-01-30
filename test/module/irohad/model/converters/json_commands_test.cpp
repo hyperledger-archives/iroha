@@ -36,6 +36,7 @@
 #include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/converters/json_command_factory.hpp"
+#include "model/permissions.hpp"
 #include "model/sha3_hash.hpp"
 
 using namespace rapidjson;
@@ -284,7 +285,7 @@ TEST_F(JsonCommandTest, detach_role) {
 
 TEST_F(JsonCommandTest, create_role) {
   std::set<std::string> perms = {
-      "CanGetMyAccount", "CanCreateAsset", "CanAddPeer"};
+      can_get_my_account, can_create_asset, can_add_peer};
   auto orig_command = std::make_shared<CreateRole>("master", perms);
   auto json_command = factory.serializeCreateRole(orig_command);
   auto serial_command = factory.deserializeCreateRole(json_command);
