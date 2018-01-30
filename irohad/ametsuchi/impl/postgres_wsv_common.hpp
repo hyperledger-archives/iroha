@@ -34,12 +34,12 @@ namespace iroha {
     inline auto makeExecute(pqxx::nontransaction &transaction,
                             logger::Logger &logger) noexcept {
       return [&](const std::string &statement) noexcept
-          ->nonstd::optional<pqxx::result> {
+          ->expected::Result<pqxx::result, std::string> {
         try {
-          return transaction.exec(statement);
+          return expected::makeValue(transaction.exec(statement));
         } catch (const std::exception &e) {
           logger->error(e.what());
-          return nonstd::nullopt;
+          return expected::makeError(e.what());
         }
       };
     }

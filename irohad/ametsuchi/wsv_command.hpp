@@ -20,6 +20,7 @@
 
 #include <set>
 #include <string>
+#include "common/result.hpp"
 #include "common/types.hpp"
 #include "model/account.hpp"
 #include "model/account_asset.hpp"
@@ -29,6 +30,9 @@
 
 namespace iroha {
   namespace ametsuchi {
+
+    using WsvError = std::string;
+    using WsvCommandResult = expected::Result<void, WsvError>;
 
     /**
      * Commands for modifying world state view
@@ -42,7 +46,8 @@ namespace iroha {
        * @param role_name
        * @return true if insert successful
        */
-      virtual bool insertRole(const std::string &role_name) = 0;
+      virtual WsvCommandResult insertRole(
+          const std::string &role_name) = 0;
 
       /**
        * Bind account and role
@@ -50,16 +55,18 @@ namespace iroha {
        * @param role_name
        * @return true if insert successful
        */
-      virtual bool insertAccountRole(const std::string &account_id,
-                                     const std::string &role_name) = 0;
+      virtual WsvCommandResult insertAccountRole(
+          const std::string &account_id,
+          const std::string &role_name) = 0;
       /**
        * Unbind account and role
        * @param account_id
        * @param role_name
        * @return true if delete successful
        */
-      virtual bool deleteAccountRole(const std::string &account_id,
-                                     const std::string &role_name) = 0;
+      virtual WsvCommandResult deleteAccountRole(
+          const std::string &account_id,
+          const std::string &role_name) = 0;
 
       /**
        * Bind role and permissions
@@ -67,7 +74,7 @@ namespace iroha {
        * @param permissions
        * @return true is insert successful, false otherwise
        */
-      virtual bool insertRolePermissions(
+      virtual WsvCommandResult insertRolePermissions(
           const std::string &role_id,
           const std::set<std::string> &permissions) = 0;
 
@@ -78,7 +85,7 @@ namespace iroha {
        * @param permission_id what permission
        * @return true is execution is successful
        */
-      virtual bool insertAccountGrantablePermission(
+      virtual WsvCommandResult insertAccountGrantablePermission(
           const std::string &permittee_account_id,
           const std::string &account_id,
           const std::string &permission_id) = 0;
@@ -91,7 +98,7 @@ namespace iroha {
        * @param permission_id what permission
        * @return true is execution is successful
        */
-      virtual bool deleteAccountGrantablePermission(
+      virtual WsvCommandResult deleteAccountGrantablePermission(
           const std::string &permittee_account_id,
           const std::string &account_id,
           const std::string &permission_id) = 0;
@@ -101,14 +108,16 @@ namespace iroha {
        * @param account
        * @return
        */
-      virtual bool insertAccount(const model::Account &account) = 0;
+      virtual WsvCommandResult insertAccount(
+          const model::Account &account) = 0;
 
       /**
        *
        * @param account
        * @return true if no error occurred, false otherwise
        */
-      virtual bool updateAccount(const model::Account &account) = 0;
+      virtual WsvCommandResult updateAccount(
+          const model::Account &account) = 0;
 
       /**
        * @param account_id  account in which update key value
@@ -118,31 +127,35 @@ namespace iroha {
        * @param val - value of the key/value pair
        * @return true if no error occurred, false otherwise
        */
-      virtual bool setAccountKV(const std::string &account_id,
-                                const std::string &creator_account_id,
-                                const std::string &key,
-                                const std::string &val) = 0;
+      virtual WsvCommandResult setAccountKV(
+          const std::string &account_id,
+          const std::string &creator_account_id,
+          const std::string &key,
+          const std::string &val) = 0;
 
       /**
        *
        * @param asset
        * @return
        */
-      virtual bool insertAsset(const model::Asset &asset) = 0;
+      virtual WsvCommandResult insertAsset(
+          const model::Asset &asset) = 0;
 
       /**
        * Update or insert account asset
        * @param asset
        * @return
        */
-      virtual bool upsertAccountAsset(const model::AccountAsset &asset) = 0;
+      virtual WsvCommandResult upsertAccountAsset(
+          const model::AccountAsset &asset) = 0;
 
       /**
        *
        * @param signatory
        * @return
        */
-      virtual bool insertSignatory(const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult insertSignatory(
+          const pubkey_t &signatory) = 0;
 
       /**
        * Insert account signatory relationship
@@ -150,8 +163,9 @@ namespace iroha {
        * @param signatory
        * @return
        */
-      virtual bool insertAccountSignatory(const std::string &account_id,
-                                          const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult insertAccountSignatory(
+          const std::string &account_id,
+          const pubkey_t &signatory) = 0;
 
       /**
        * Delete account signatory relationship
@@ -159,36 +173,39 @@ namespace iroha {
        * @param signatory
        * @return
        */
-      virtual bool deleteAccountSignatory(const std::string &account_id,
-                                          const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult deleteAccountSignatory(
+          const std::string &account_id,
+          const pubkey_t &signatory) = 0;
 
       /**
        * Delete signatory
        * @param signatory
        * @return
        */
-      virtual bool deleteSignatory(const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult deleteSignatory(
+          const pubkey_t &signatory) = 0;
 
       /**
        *
        * @param peer
        * @return
        */
-      virtual bool insertPeer(const model::Peer &peer) = 0;
+      virtual WsvCommandResult insertPeer(const model::Peer &peer) = 0;
 
       /**
        *
        * @param peer
        * @return
        */
-      virtual bool deletePeer(const model::Peer &peer) = 0;
+      virtual WsvCommandResult deletePeer(const model::Peer &peer) = 0;
 
       /**
        *
        * @param peer
        * @return
        */
-      virtual bool insertDomain(const model::Domain &domain) = 0;
+      virtual WsvCommandResult insertDomain(
+          const model::Domain &domain) = 0;
     };
 
   }  // namespace ametsuchi

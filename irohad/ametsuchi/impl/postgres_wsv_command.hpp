@@ -26,40 +26,51 @@ namespace iroha {
     class PostgresWsvCommand : public WsvCommand {
      public:
       explicit PostgresWsvCommand(pqxx::nontransaction &transaction);
-      bool insertRole(const std::string &role_name) override;
+      WsvCommandResult insertRole(
+          const std::string &role_name) override;
 
-      bool insertAccountRole(const std::string &account_id,
-                             const std::string &role_name) override;
-      bool deleteAccountRole(const std::string &account_id,
-                             const std::string &role_name) override;
+      WsvCommandResult insertAccountRole(
+          const std::string &account_id,
+          const std::string &role_name) override;
+      WsvCommandResult deleteAccountRole(
+          const std::string &account_id,
+          const std::string &role_name) override;
 
-      bool insertRolePermissions(
+      WsvCommandResult insertRolePermissions(
           const std::string &role_id,
           const std::set<std::string> &permissions) override;
 
-      bool insertAccount(const model::Account &account) override;
-      bool updateAccount(const model::Account &account) override;
-      bool setAccountKV(const std::string &account_id,
-                        const std::string &creator_account_id,
-                        const std::string &key,
-                        const std::string &val) override;
-      bool insertAsset(const model::Asset &asset) override;
-      bool upsertAccountAsset(const model::AccountAsset &asset) override;
-      bool insertSignatory(const pubkey_t &signatory) override;
-      bool insertAccountSignatory(const std::string &account_id,
-                                  const pubkey_t &signatory) override;
-      bool deleteAccountSignatory(const std::string &account_id,
-                                  const pubkey_t &signatory) override;
-      bool deleteSignatory(const pubkey_t &signatory) override;
-      bool insertPeer(const model::Peer &peer) override;
-      bool deletePeer(const model::Peer &peer) override;
-      bool insertDomain(const model::Domain &domain) override;
-      bool insertAccountGrantablePermission(
+      WsvCommandResult insertAccount(
+          const model::Account &account) override;
+      WsvCommandResult updateAccount(
+          const model::Account &account) override;
+      WsvCommandResult setAccountKV(const std::string &account_id,
+                                    const std::string &creator_account_id,
+                                    const std::string &key,
+                                    const std::string &val) override;
+      WsvCommandResult insertAsset(const model::Asset &asset) override;
+      WsvCommandResult upsertAccountAsset(
+          const model::AccountAsset &asset) override;
+      WsvCommandResult insertSignatory(
+          const pubkey_t &signatory) override;
+      WsvCommandResult insertAccountSignatory(
+          const std::string &account_id,
+          const pubkey_t &signatory) override;
+      WsvCommandResult deleteAccountSignatory(
+          const std::string &account_id,
+          const pubkey_t &signatory) override;
+      WsvCommandResult deleteSignatory(
+          const pubkey_t &signatory) override;
+      WsvCommandResult insertPeer(const model::Peer &peer) override;
+      WsvCommandResult deletePeer(const model::Peer &peer) override;
+      WsvCommandResult insertDomain(
+          const model::Domain &domain) override;
+      WsvCommandResult insertAccountGrantablePermission(
           const std::string &permittee_account_id,
           const std::string &account_id,
           const std::string &permission_id) override;
 
-      bool deleteAccountGrantablePermission(
+      WsvCommandResult deleteAccountGrantablePermission(
           const std::string &permittee_account_id,
           const std::string &account_id,
           const std::string &permission_id) override;
@@ -74,9 +85,9 @@ namespace iroha {
       ExecuteType execute_;
 
       // TODO: refactor to return Result when it is introduced IR-744
-      bool execute(const std::string &statement) noexcept {
-        return execute_(statement).has_value();
-      }
+      WsvCommandResult makeCommandResult(
+          expected::Result<pqxx::result, std::string> result,
+          const std::string &error_message);
     };
   }  // namespace ametsuchi
 }  // namespace iroha
