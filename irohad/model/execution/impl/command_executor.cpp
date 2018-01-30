@@ -82,7 +82,7 @@ namespace iroha {
 
       return errorIfNot(
           commands.insertAccountRole(cmd_value.account_id, cmd_value.role_name),
-          "failed to insert account");
+          "failed to insert account role");
     }
 
     bool AppendRoleExecutor::hasPermissions(
@@ -298,8 +298,12 @@ namespace iroha {
       auto precision = asset.value().precision;
 
       if (add_asset_quantity.amount.getPrecision() != precision) {
-        return makeExecutionError("amount is wrongly formed");
+        return makeExecutionError(
+            (boost::format("precision mismatch: expected %d, but got %d")
+             % precision % add_asset_quantity.amount.getPrecision())
+                .str());
       }
+
       if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
         return makeExecutionError((boost::format("account %s is absent")
                                    % add_asset_quantity.account_id)
@@ -371,7 +375,10 @@ namespace iroha {
       auto precision = asset.value().precision;
 
       if (subtract_asset_quantity.amount.getPrecision() != precision) {
-        return makeExecutionError("amount is wrongly formed");
+        return makeExecutionError(
+            (boost::format("precision mismatch: expected %d, but got %d")
+             % precision % subtract_asset_quantity.amount.getPrecision())
+                .str());
       }
       auto account_asset = queries.getAccountAsset(
           subtract_asset_quantity.account_id, subtract_asset_quantity.asset_id);

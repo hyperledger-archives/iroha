@@ -64,7 +64,8 @@ namespace iroha {
        * @param command - command to be executed
        * @param queries - world state view query interface
        * @param commands - world state view command interface
-       * @return true, if execution is successful
+       * @return Result, which will contain error with ExecutionError if execute
+       * is not successful or void Value otherwise
        */
       virtual ExecutionResult execute(
           const Command &command,
