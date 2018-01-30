@@ -21,7 +21,10 @@
 #include "common/types.hpp"
 #include "interfaces/base/hashable.hpp"
 #include "interfaces/common_objects/types.hpp"
+
+#ifndef DISABLE_BACKWARD
 #include "model/peer.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
@@ -29,7 +32,7 @@ namespace shared_model {
     /**
      * Representation of a network participant.
      */
-    class Peer : public Hashable<Peer, iroha::model::Peer> {
+    class Peer : public HASHABLE(Peer) {
      public:
       /**
        * @return Peer address, for fetching data
@@ -62,6 +65,7 @@ namespace shared_model {
         return address() == rhs.address() and pubkey() == rhs.pubkey();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of account asset.
@@ -72,6 +76,7 @@ namespace shared_model {
         oldModel->pubkey = pubkey().makeOldModel<decltype(oldModel->pubkey)>();
         return oldModel;
       }
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

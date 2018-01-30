@@ -23,6 +23,7 @@
 #include "common/types.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "model/peer.hpp"
 #include "model/signature.hpp"
 
 namespace iroha {

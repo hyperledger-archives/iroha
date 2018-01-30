@@ -271,9 +271,9 @@ class FieldValidatorTest : public ValidatorsTest {
   }
 
   /// Make test case for invalid peer public key
-  FieldTestCase makeInvalidPPeerPubkeyTestCase(const std::string &case_name,
-                                               const std::string &address,
-                                               const std::string &pubkey) {
+  FieldTestCase makeInvalidPeerPubkeyTestCase(const std::string &case_name,
+                                              const std::string &address,
+                                              const std::string &pubkey) {
     return {case_name,
             [&, address, pubkey] {
               this->peer.set_address(address);
@@ -309,10 +309,10 @@ class FieldValidatorTest : public ValidatorsTest {
           "invalid_peer_address", "182.13.35.1:3040xx", std::string(32, '0')),
       makeInvalidPeerAddressTestCase(
           "invalid_peer_address_empty", "", std::string(32, '0')),
-      makeInvalidPPeerPubkeyTestCase("invalid_peer_pubkey_length",
-                                     "182.13.35.1:3040",
-                                     std::string(64, '0')),
-      makeInvalidPPeerPubkeyTestCase(
+      makeInvalidPeerPubkeyTestCase("invalid_peer_pubkey_length",
+                                    "182.13.35.1:3040",
+                                    std::string(64, '0')),
+      makeInvalidPeerPubkeyTestCase(
           "invalid_peer_pubkey_empty", "182.13.35.1:3040", "")};
 
   /// Generate test cases for name types
