@@ -8,6 +8,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 import shutil
+import git
 
 def dir_up(dir,level):
     if level == 0:
@@ -16,7 +17,8 @@ def dir_up(dir,level):
 
 
 pwd = os.getcwd()
-IROHA_HOME = "/Users/dumitru/iroha/"
+# IROHA_HOME = "/Users/dumitru/iroha/"
+IROHA_HOME = dir_up(pwd,3)
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -42,7 +44,7 @@ class CMakeBuild(build_ext):
         # cmd = "cmake -H"+IROHA_HOME+" -Bbuild -DSWIG_PYTHON=ON"
         # subprocess.check_call(cmd.split())
         # subprocess.check_call("cmake --build build/ --target irohapy -- -j4".split())
-
+        # git.Git('.').clone("git://gitorious.org/git-python/mainline.git")
 
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
@@ -75,15 +77,25 @@ class CMakeBuild(build_ext):
 
 # subprocess.check_call()
 
+if __name__ == "__main__":
+    print(subprocess.check_call(["pwd"]))
+    print(subprocess.check_call(["ls"]))
 
-setup(
-    name='iroha',
-    version='0.0.1',
-    author='Soramitsu',
-    author_email='soramitsu@gmail.com',
-    description='Python library for iroha',
-    long_description='',
-    ext_modules=[CMakeExtension('iroha',IROHA_HOME)],
-    cmdclass=dict(build_ext=CMakeBuild),
-    zip_safe=False,
-)
+    repo_url = "https://github.com/hyperledger/iroha"
+    try:
+        subprocess.check_call('git clone {} -b develop --depth 1'.format(repo_url).split())
+    except:
+        pass
+    # subprocess.check_call("mkdir iroha2".split())
+    #
+    setup(
+        name='iroha',
+        version='0.0.1',
+        author='Soramitsu',
+        author_email='soramitsu@gmail.com',
+        description='Python library for iroha',
+        long_description='',
+        ext_modules=[CMakeExtension('iroha', 'iroha')],
+        cmdclass=dict(build_ext=CMakeBuild),
+        zip_safe=False,
+    )
