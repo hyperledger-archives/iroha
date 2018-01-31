@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include "crypto/keys_manager.hpp"
 #include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
 #include <fstream>
@@ -94,8 +95,23 @@ TEST_F(KeyManager, LoadValid) {
 }
 
 TEST_F(KeyManager, CreateAndLoad) {
-  ASSERT_TRUE(manager.createKeys(passphrase));
+  ASSERT_TRUE(manager.createKeys());
   ASSERT_TRUE(manager.loadKeys());
+}
+
+TEST_F(KeyManager, CreateAndLoadEncrypted) {
+  ASSERT_TRUE(manager.createKeys(passphrase));
+  ASSERT_TRUE(manager.loadKeys(passphrase));
+}
+
+TEST_F(KeyManager, CreateAndLoadEncryptedEmptyKey) {
+  ASSERT_TRUE(manager.createKeys(""));
+  ASSERT_TRUE(manager.loadKeys(""));
+}
+
+TEST_F(KeyManager, CreateAndLoadEncryptedInvalidKey) {
+  ASSERT_TRUE(manager.createKeys(passphrase));
+  ASSERT_FALSE(manager.loadKeys(passphrase + "123"));
 }
 
 TEST_F(KeyManager, LoadInaccessiblePubkey) {

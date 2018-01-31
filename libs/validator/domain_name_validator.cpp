@@ -18,11 +18,6 @@
 #include "validator/domain_name_validator.hpp"
 
 #include <boost/spirit/include/qi.hpp>
-#include <boost/spirit/include/qi_char_class.hpp>
-#include <boost/spirit/include/qi_lexeme.hpp>
-#include <boost/spirit/include/qi_optional.hpp>
-#include <boost/spirit/include/qi_parse.hpp>
-#include <boost/spirit/include/qi_plus.hpp>
 
 namespace validator {
   bool isValidDomainName(const std::string &str) {

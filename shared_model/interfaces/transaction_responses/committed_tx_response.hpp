@@ -31,10 +31,13 @@ namespace shared_model {
         return "CommittedTxResponse";
       }
 
+#ifndef DISABLE_BACKWARD
       iroha::model::TransactionResponse::Status oldModelStatus()
           const override {
         return iroha::model::TransactionResponse::Status::COMMITTED;
       }
+
+#endif
     };
 
   }  // namespace interface

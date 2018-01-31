@@ -20,8 +20,8 @@
 #include <grpc++/server_builder.h>
 #include <gtest/gtest.h>
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "framework/test_subscriber.hpp"
+#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/model/model_mocks.hpp"
 

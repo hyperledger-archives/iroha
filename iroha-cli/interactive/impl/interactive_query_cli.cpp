@@ -24,12 +24,12 @@
 #include "client.hpp"
 #include "crypto/keys_manager_impl.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "datetime/time.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/converters/json_query_factory.hpp"
 #include "model/queries/get_asset_info.hpp"
 #include "model/queries/get_roles.hpp"
+#include "model/sha3_hash.hpp"
 
 using namespace iroha::model;
 
@@ -189,8 +189,9 @@ namespace iroha_cli {
       GetTransactions::TxHashCollectionType tx_hashes;
       std::for_each(
           params.begin(), params.end(), [&tx_hashes](auto const &hex_hash) {
-            if (auto opt = iroha::hexstringToArray<
-                    GetTransactions::TxHashType::size()>(hex_hash)) {
+            if (auto opt = iroha::
+                    hexstringToArray<GetTransactions::TxHashType::size()>(
+                        hex_hash)) {
               tx_hashes.push_back(*opt);
             }
           });

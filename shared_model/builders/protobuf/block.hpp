@@ -46,7 +46,6 @@ namespace shared_model {
         Height,
         PrevHash,
         CreatedTime,
-        Signatures,
         TOTAL
       };
 
@@ -79,9 +78,8 @@ namespace shared_model {
       auto transactions(const T &transactions) const {
         return transform<Transactions>([&](auto &block) {
           for (const auto &tx : transactions) {
-            iroha::protocol::Transaction proto_tx(tx->getTransport());
-            block.mutable_payload()->mutable_transactions()->Add(
-                std::move(proto_tx));
+            new (block.mutable_payload()->add_transactions())
+                iroha::protocol::Transaction(tx.getTransport());
           }
         });
       }
@@ -107,19 +105,6 @@ namespace shared_model {
       auto createdTime(interface::types::TimestampType time) const {
         return transform<CreatedTime>([&](auto &block) {
           block.mutable_payload()->set_created_time(time);
-        });
-      }
-
-      auto signatures(
-          const interface::Signable<interface::Block,
-                                    iroha::model::Block>::SignatureSetType
-              &signatures) const {
-        return transform<Signatures>([&](auto &block) {
-          for (const auto &signature : signatures) {
-            auto sig = block.add_signatures();
-            sig->set_pubkey(crypto::toBinaryString(signature->publicKey()));
-            sig->set_signature(crypto::toBinaryString(signature->signedData()));
-          }
         });
       }
 

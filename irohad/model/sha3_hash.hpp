@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef IROHA_SHA3_HASH_HPP
+#define IROHA_SHA3_HASH_HPP
 
-#include "interfaces/common_objects/account.hpp"
-#include "interfaces/common_objects/account_asset.hpp"
-#include "interfaces/common_objects/asset.hpp"
-#include "interfaces/iroha_internal/block.hpp"
-#include "interfaces/proposal.hpp"
-#include "interfaces/queries/query.hpp"
-#include "interfaces/query_responses/query_response.hpp"
-#include "interfaces/transaction.hpp"
-#include "interfaces/transaction_responses/tx_response.hpp"
+#include "model/block.hpp"
+#include "model/query.hpp"
+#include "model/transaction.hpp"
+
+namespace iroha {
+    hash256_t hash(const model::Transaction &tx);
+    hash256_t hash(const model::Block &block);
+    hash256_t hash(const model::Query &query);
+}
+#endif //IROHA_SHA3_HASH_HPP

@@ -27,6 +27,7 @@
 #include "model/queries/responses/roles_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
+#include "model/sha3_hash.hpp"
 
 #include <boost/algorithm/string.hpp>
 #include <rxcpp/rx-observable.hpp>

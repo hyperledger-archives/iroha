@@ -22,7 +22,7 @@
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/redis_block_index.hpp"
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "model/sha3_hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {

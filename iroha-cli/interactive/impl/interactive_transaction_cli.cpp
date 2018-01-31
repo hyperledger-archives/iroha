@@ -19,7 +19,6 @@
 
 #include <fstream>
 #include "client.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
@@ -31,6 +30,7 @@
 #include "model/converters/json_transaction_factory.hpp"
 #include "model/converters/pb_common.hpp"
 #include "model/permissions.hpp"
+#include "model/sha3_hash.hpp"
 
 using namespace iroha::model;
 
