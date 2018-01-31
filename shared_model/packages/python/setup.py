@@ -8,7 +8,6 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 import shutil
-import git
 
 def dir_up(dir,level):
     if level == 0:
@@ -37,8 +36,15 @@ class CMakeBuild(build_ext):
         for ext in self.extensions:
             self.build_extension(ext)
 
+    def build(self):
+        repo_url = "https://github.com/hyperledger/iroha"
+        try:
+            subprocess.check_call('git clone {} -b develop --depth 1'.format(repo_url).split())
+        except:
+            pass
     def build_extension(self, ext):
         print(ext.sourcedir)
+        self.build()
         #sys.exit()
 
         # cmd = "cmake -H"+IROHA_HOME+" -Bbuild -DSWIG_PYTHON=ON"
@@ -67,10 +73,12 @@ class CMakeBuild(build_ext):
         shutil.copy(self.build_temp+"/shared_model/bindings/iroha.py", extdir+"/")
 
         pwd = os.getcwd()
+        print(subprocess.check_call(["pwd"]))
+        print(subprocess.check_call(["ls"]))
         os.chdir(extdir)
-        gen_proto = "protoc --proto_path={}/schema --python_out=. block.proto primitive.proto commands.proto queries.proto responses.proto endpoint.proto".format(IROHA_HOME)
+        gen_proto = "protoc --proto_path={}/iroha/schema --python_out=. block.proto primitive.proto commands.proto queries.proto responses.proto endpoint.proto".format(pwd)
         subprocess.check_call(gen_proto.split())
-        gen_py = "python -m grpc_tools.protoc --proto_path={}/schema --python_out=. --grpc_python_out=. endpoint.proto yac.proto ordering.proto loader.proto".format(IROHA_HOME)
+        gen_py = "python -m grpc_tools.protoc --proto_path={}/iroha/schema --python_out=. --grpc_python_out=. endpoint.proto yac.proto ordering.proto loader.proto".format(pwd)
         subprocess.check_call(gen_py.split())
         os.chdir(pwd)
 
@@ -78,24 +86,17 @@ class CMakeBuild(build_ext):
 # subprocess.check_call()
 
 if __name__ == "__main__":
-    print(subprocess.check_call(["pwd"]))
-    print(subprocess.check_call(["ls"]))
-
-    repo_url = "https://github.com/hyperledger/iroha"
-    try:
-        subprocess.check_call('git clone {} -b develop --depth 1'.format(repo_url).split())
-    except:
-        pass
-    # subprocess.check_call("mkdir iroha2".split())
-    #
     setup(
         name='iroha',
-        version='0.0.1',
+        version='0.0.4',
         author='Soramitsu',
         author_email='soramitsu@gmail.com',
         description='Python library for iroha',
         long_description='',
         ext_modules=[CMakeExtension('iroha', 'iroha')],
         cmdclass=dict(build_ext=CMakeBuild),
+        install_requires=[
+            "grpcio-tools",
+        ],
         zip_safe=False,
     )
