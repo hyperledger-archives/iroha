@@ -343,7 +343,7 @@ namespace iroha_cli {
       auto key = params[1];
       iroha::pubkey_t pubkey;
       pubkey = iroha::hexstringToArray<iroha::pubkey_t::size()>(key).value();
-      return generator_.generateAddPeer(address, pubkey);
+      return generator_.generateAddPeer(Peer(address, pubkey));
     }
 
     std::shared_ptr<iroha::model::Command>

@@ -118,7 +118,7 @@ namespace iroha {
       if (! instanceof <AddPeer>(command))
         return false;
       auto add_peer = static_cast<const AddPeer &>(command);
-      return add_peer.peer_key == peer_key && add_peer.address == address;
+      return add_peer.peer == peer;
     }
 
     /* AddSignatory */

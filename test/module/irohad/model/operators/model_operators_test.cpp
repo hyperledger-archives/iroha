@@ -41,8 +41,8 @@ using namespace iroha::model;
 
 AddPeer createAddPeer() {
   AddPeer addPeer;
-  addPeer.address = "localhost";
-  std::fill(addPeer.peer_key.begin(), addPeer.peer_key.end(), 0x1);
+  addPeer.peer.address = "localhost";
+  std::fill(addPeer.peer.pubkey.begin(), addPeer.peer.pubkey.end(), 0x1);
   return addPeer;
 }
 
@@ -50,7 +50,7 @@ TEST(ModelOperatorTest, AddPeerTest) {
   AddPeer first = createAddPeer();
   AddPeer second = createAddPeer();
   ASSERT_EQ(first, second);
-  second.address = "127.0.0.1";
+  second.peer.address = "127.0.0.1";
   ASSERT_NE(first, second);
 }
 

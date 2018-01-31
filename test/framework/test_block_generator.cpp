@@ -38,8 +38,8 @@ namespace framework {
       transaction.signatures = {sign};
 
       auto add_peer = std::make_shared<AddPeer>();
-      add_peer->address = address;
-      add_peer->peer_key = {};
+      add_peer->peer.address = address;
+      add_peer->peer.pubkey = {};
 
       transaction.commands = {add_peer};
       return transaction;

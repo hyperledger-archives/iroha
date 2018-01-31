@@ -54,6 +54,12 @@ namespace shared_model {
       }
     }
 
+    void FieldValidator::validatePeer(ReasonsGroupType &reason,
+                                      const interface::Peer &peer) const {
+      validatePeerAddress(reason, peer.address());
+      validatePubkey(reason, peer.pubkey());
+    }
+
     void FieldValidator::validateAmount(ReasonsGroupType &reason,
                                         const interface::Amount &amount) const {
       if (amount.intValue() <= 0) {
@@ -79,7 +85,7 @@ namespace shared_model {
 
     void FieldValidator::validatePeerAddress(
         ReasonsGroupType &reason,
-        const interface::AddPeer::AddressType &address) const {
+        const interface::types::AddressType &address) const {
       if (not(iroha::validator::isValidIpV4(address)
               or iroha::validator::isValidHostname(address))) {
         auto message =

@@ -39,7 +39,7 @@ namespace iroha {
           manager.createKeys();
           auto keypair = *manager.loadKeys();
           tx.commands.push_back(command_generator.generateAddPeer(
-              peers_address[i], keypair.pubkey));
+              Peer(peers_address[i], keypair.pubkey)));
         }
         // Create admin role
         tx.commands.push_back(

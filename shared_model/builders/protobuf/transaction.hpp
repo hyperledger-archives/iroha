@@ -24,6 +24,7 @@
 
 #include "block.pb.h"
 #include "commands.pb.h"
+#include "primitive.pb.h"
 
 #include "amount/amount.hpp"
 #include "builders/protobuf/helpers.hpp"
@@ -115,7 +116,7 @@ namespace shared_model {
           auto command = proto_command->mutable_add_asset_quantity();
           command->set_account_id(account_id);
           command->set_asset_id(asset_id);
-          addAmount(command->mutable_amount(), amount);
+          initializeProtobufAmount(command->mutable_amount(), amount);
         });
       }
 
@@ -123,8 +124,9 @@ namespace shared_model {
                    const interface::types::PubkeyType &peer_key) const {
         return addCommand([&](auto proto_command) {
           auto command = proto_command->mutable_add_peer();
-          command->set_address(address);
-          command->set_peer_key(crypto::toBinaryString(peer_key));
+          auto peer = command->mutable_peer();
+          peer->set_address(address);
+          peer->set_peer_key(crypto::toBinaryString(peer_key));
         });
       }
 
@@ -279,7 +281,7 @@ namespace shared_model {
           auto command = proto_command->mutable_subtract_asset_quantity();
           command->set_account_id(account_id);
           command->set_asset_id(asset_id);
-          addAmount(command->mutable_amount(), amount);
+          initializeProtobufAmount(command->mutable_amount(), amount);
         });
       }
 
@@ -295,7 +297,7 @@ namespace shared_model {
           command->set_dest_account_id(dest_account_id);
           command->set_asset_id(asset_id);
           command->set_description(description);
-          addAmount(command->mutable_amount(), amount);
+          initializeProtobufAmount(command->mutable_amount(), amount);
         });
       }
 
