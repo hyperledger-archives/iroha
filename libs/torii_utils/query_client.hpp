@@ -48,6 +48,8 @@ namespace torii_utils {
     std::unique_ptr<iroha::protocol::QueryService::Stub> stub_;
     grpc::CompletionQueue completionQueue_;
     grpc::Status status_;
+
+    enum class State { RequestCreated, ResponseSent };
   };
 
   /**

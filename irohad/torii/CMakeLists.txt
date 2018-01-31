@@ -22,7 +22,6 @@ target_link_libraries(command_client
     )
 
 add_library(torii_service
-    torii_service_handler.cpp
     impl/query_service.cpp
     impl/command_service.cpp
     )

@@ -18,8 +18,8 @@
 #include <grpc++/server.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/server_context.h>
-#include <logger/logger.hpp>
-#include <main/server_runner.hpp>
+#include "logger/logger.hpp"
+#include "main/server_runner.hpp"
 
 ServerRunner::ServerRunner(const std::string &address)
     : serverAddress_(address) {}
@@ -29,8 +29,8 @@ void ServerRunner::run(std::vector<std::unique_ptr<grpc::Service>> services) {
   grpc::ServerBuilder builder;
   builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
 
-  for (auto it = services_.begin(); it != services_.end(); ++it) {
-    builder.RegisterService(it->get());
+  for (auto &service : services_) {
+    builder.RegisterService(service.get());
   }
 
   serverInstance_ = builder.BuildAndStart();

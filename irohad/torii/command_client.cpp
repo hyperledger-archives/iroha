@@ -11,12 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <block.pb.h>
-#include <grpc++/grpc++.h>
-#include <network/grpc_call.hpp>
-#include <thread>
 #include <torii/command_client.hpp>
-#include <torii/torii_service_handler.hpp>
 
 namespace torii {
 
@@ -43,8 +38,6 @@ namespace torii {
   grpc::Status CommandSyncClient::Torii(const Transaction &tx) {
     auto rpc = stub_->AsyncTorii(&context_, tx, &completionQueue_);
 
-    using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
-
     google::protobuf::Empty empty;
     rpc->Finish(
         &empty, &status_, (void *)static_cast<int>(State::ResponseSent));
@@ -69,8 +62,6 @@ namespace torii {
       const iroha::protocol::TxStatusRequest &request,
       iroha::protocol::ToriiResponse &response) {
     auto rpc = stub_->AsyncStatus(&context_, request, &completionQueue_);
-
-    using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
 
     rpc->Finish(
         &response, &status_, (void *)static_cast<int>(State::ResponseSent));
