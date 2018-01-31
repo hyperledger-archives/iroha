@@ -174,7 +174,12 @@ class FieldValidatorTest : public ValidatorsTest {
 
   /************************** TEST CASES ***************************/
 
-  /// Make message for wrong formed field
+  /**
+   * Make expected message for test with wrongly formed field.
+   * @param field_name - wrongly formed field
+   * @param value - wrongly formed value
+   * @return message expected from test
+   */
   std::string makeMessageWrongField(const std::string &field_name,
                                     const std::string &value) {
     return (boost::format("Wrongly formed %s, passed value: '%s'") % field_name
@@ -182,7 +187,11 @@ class FieldValidatorTest : public ValidatorsTest {
         .str();
   }
 
-  /// Make message for wrong key size
+  /**
+   * Make expected message for test with wrong key size.
+   * @param public_key - wrongly sized key
+   * @return message expected from test
+   */
   std::string makeMessageWrongKeySize(const std::string &public_key) {
     return (boost::format("Public key has wrong size, passed size: %d")
             % public_key.size())
@@ -257,7 +266,13 @@ class FieldValidatorTest : public ValidatorsTest {
        false,
        "Amount must be greater than 0, passed value: 0"}};
 
-  /// Make test case for invalid peer address
+  /**
+   * Make test case for invalid peer address.
+   * @param case_name - test case name
+   * @param address - peer address
+   * @param pubkey - peer public key
+   * @return test case for invalid peer address
+   */
   FieldTestCase makeInvalidPeerAddressTestCase(const std::string &case_name,
                                                const std::string &address,
                                                const std::string &pubkey) {
@@ -270,7 +285,13 @@ class FieldValidatorTest : public ValidatorsTest {
             makeMessageWrongField("peer address", address)};
   }
 
-  /// Make test case for invalid peer public key
+  /**
+   * Make test case for invalid peer public key.
+   * @param case_name - test case name
+   * @param address - peer address
+   * @param pubkey - peer public key
+   * @return test case for invalid peer public key
+   */
   FieldTestCase makeInvalidPeerPubkeyTestCase(const std::string &case_name,
                                               const std::string &address,
                                               const std::string &pubkey) {
@@ -283,6 +304,13 @@ class FieldValidatorTest : public ValidatorsTest {
             makeMessageWrongKeySize(pubkey)};
   }
 
+  /**
+   * Make test case for invalid peer public key.
+   * @param case_name - test case name
+   * @param address - peer address
+   * @param pubkey - peer public key
+   * @return test case for invalid peer public key
+   */
   FieldTestCase invalidPublicKeyTestCase(const std::string &case_name,
                                          const std::string &public_key) {
     return makeTestCase(case_name,
