@@ -14,26 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include <atomic>
+#include <chrono>
+#include <memory>
+#include <thread>
+
+#include <endpoint.pb.h>
+#include <queries.pb.h>
+
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "main/server_runner.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
-
-#include <endpoint.pb.h>
-#include <queries.pb.h>
-#include <atomic>
-#include <chrono>
-#include <main/server_runner.hpp>
-#include <memory>
-#include <thread>
-#include <torii/command_client.hpp>
-#include <torii/command_service.hpp>
-#include <torii/processor/query_processor_impl.hpp>
-#include <torii_utils/query_client.hpp>
-
+#include "torii/command_client.hpp"
+#include "torii/command_service.hpp"
+#include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
-#include "torii/torii_service_handler.hpp"
+#include "torii/query_service.hpp"
+#include "torii_utils/query_client.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;

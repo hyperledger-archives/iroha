@@ -22,10 +22,6 @@
 #ifndef MAIN_SERVER_RUNNER_HPP
 #define MAIN_SERVER_RUNNER_HPP
 
-namespace torii {
-  class ToriiServiceHandler;
-}
-
 /**
  * Class runs Torii server for handling queries and commands.
  */
