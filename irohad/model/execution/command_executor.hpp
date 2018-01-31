@@ -111,6 +111,14 @@ namespace iroha {
       expected::Error<ExecutionError> makeExecutionError(
           const std::string &error_message) const noexcept;
 
+      /**
+       * Return execution result with an error with given message if predicate
+       * is false
+       * @param predicate - condition which determines result state
+       * @param error_message - string which will be part of the error
+       * @return ExecutionResult with empty value if predicate is true, Error
+       * with error message otherwise
+       */
       ExecutionResult errorIfNot(bool predicate,
                                  const std::string &error_message) const
           noexcept;

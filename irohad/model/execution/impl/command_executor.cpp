@@ -30,6 +30,9 @@
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
 #include "model/commands/set_account_detail.hpp"
+
+
+
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/transfer_asset.hpp"
@@ -327,7 +330,6 @@ namespace iroha {
         account_asset->balance = new_balance.value();
       }
 
-      // accountAsset.value().balance += amount;
       return errorIfNot(commands.upsertAccountAsset(account_asset.value()),
                         "failed to update account asset");
     }
@@ -397,7 +399,6 @@ namespace iroha {
       }
       account_asset->balance = new_balance.value();
 
-      // accountAsset.value().balance -= amount;
       return errorIfNot(commands.upsertAccountAsset(account_asset.value()),
                         "Failed to upsert account asset");
     }
