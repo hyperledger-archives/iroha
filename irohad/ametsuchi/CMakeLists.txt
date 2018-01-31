@@ -8,6 +8,8 @@ add_library(ametsuchi
     impl/peer_query_wsv.cpp
     impl/redis_block_query.cpp
     impl/redis_block_index.cpp
+    impl/postgres_block_query.cpp
+    impl/postgres_block_index.cpp
     )
 
 target_link_libraries(ametsuchi

@@ -21,6 +21,7 @@
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/redis_block_index.hpp"
+#include "ametsuchi/impl/postgres_block_index.hpp"
 
 #include "model/sha3_hash.hpp"
 
@@ -38,7 +39,8 @@ namespace iroha {
           transaction_(std::move(transaction)),
           wsv_(std::make_unique<PostgresWsvQuery>(*transaction_)),
           executor_(std::make_unique<PostgresWsvCommand>(*transaction_)),
-          block_index_(std::make_unique<RedisBlockIndex>(*index_)),
+//          block_index_(std::make_unique<RedisBlockIndex>(*index_)),
+          block_index_(std::make_unique<PostgresBlockIndex>(*transaction_)),
           command_executors_(std::move(command_executors)),
           committed(false) {
       index_->multi();

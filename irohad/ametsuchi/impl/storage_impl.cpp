@@ -19,9 +19,10 @@
 
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-#include "ametsuchi/impl/redis_block_query.hpp"
+//#include "ametsuchi/impl/redis_block_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "model/converters/json_common.hpp"
+#include "ametsuchi/impl/postgres_block_query.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -38,6 +39,7 @@ namespace iroha {
         std::string postgres_options,
         std::unique_ptr<FlatFile> block_store,
         std::unique_ptr<cpp_redis::client> index,
+//        std::unique_ptr<pqxx::nontransaction> index,
         std::unique_ptr<pqxx::lazyconnection> wsv_connection,
         std::unique_ptr<pqxx::nontransaction> wsv_transaction)
         : block_store_dir_(std::move(block_store_dir)),
@@ -49,7 +51,8 @@ namespace iroha {
           wsv_connection_(std::move(wsv_connection)),
           wsv_transaction_(std::move(wsv_transaction)),
           wsv_(std::make_shared<PostgresWsvQuery>(*wsv_transaction_)),
-          blocks_(std::make_shared<RedisBlockQuery>(*index_, *block_store_)) {
+//          blocks_(std::make_shared<RedisBlockQuery>(*index_, *block_store_)) {
+          blocks_(std::make_shared<PostgresBlockQuery>(*wsv_transaction_, *block_store_)) {
       log_ = logger::log("StorageImpl");
 
       wsv_transaction_->exec(init_);
@@ -149,6 +152,10 @@ DROP TABLE IF EXISTS domain;
 DROP TABLE IF EXISTS signatory;
 DROP TABLE IF EXISTS peer;
 DROP TABLE IF EXISTS role;
+DROP TABLE IF EXISTS height_by_hash;
+DROP TABLE IF EXISTS height_by_account_set;
+DROP TABLE IF EXISTS index_by_creator_height;
+DROP TABLE IF EXISTS index_by_id_height_asset;
 )";
 
       // erase db
@@ -188,6 +195,7 @@ DROP TABLE IF EXISTS role;
         return nonstd::nullopt;
       }
       log_->info("block store created");
+
 
       auto index = std::make_unique<cpp_redis::client>();
       try {

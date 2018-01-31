@@ -791,6 +791,8 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   auto tx2hash = iroha::hash(tx2).to_string();
   auto tx3hash = "some garbage";
 
+  auto tx1check = *blocks->getTxByHashSync(tx1hash);
+
   ASSERT_EQ(*blocks->getTxByHashSync(tx1hash), tx1);
   ASSERT_EQ(*blocks->getTxByHashSync(tx2hash), tx2);
   ASSERT_EQ(blocks->getTxByHashSync(tx3hash), boost::none);

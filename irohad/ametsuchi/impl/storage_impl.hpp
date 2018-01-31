@@ -85,6 +85,7 @@ namespace iroha {
                   std::string postgres_options,
                   std::unique_ptr<FlatFile> block_store,
                   std::unique_ptr<cpp_redis::client> index,
+//                  std::unique_ptr<pqxx::nontransaction> index,
                   std::unique_ptr<pqxx::lazyconnection> wsv_connection,
                   std::unique_ptr<pqxx::nontransaction> wsv_transaction);
 
@@ -105,6 +106,7 @@ namespace iroha {
        * Redis connection
        */
       std::unique_ptr<cpp_redis::client> index_;
+//      std::unique_ptr<pqxx::nontransaction> index_;
 
       /**
        * Pg connection with direct transaction management
@@ -185,6 +187,26 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
     account_id character varying(197) NOT NULL REFERENCES account,
     permission_id character varying(45),
     PRIMARY KEY (permittee_account_id, account_id, permission_id)
+);
+CREATE TABLE IF NOT EXISTS height_by_hash (
+    hash bytea,
+    height text
+);
+CREATE TABLE IF NOT EXISTS height_by_account_set (
+    account_id text,
+    height text
+);
+CREATE TABLE IF NOT EXISTS index_by_creator_height (
+    id serial,
+    creator_id text,
+    height text,
+    index text
+);
+CREATE TABLE IF NOT EXISTS index_by_id_height_asset (
+    id text,
+    height text,
+    asset_id text,
+    index text
 );
 )";
     };
