@@ -76,7 +76,7 @@ TEST_F(QueryServiceTest, ValidWhenUniqueHash) {
 
   init();
 
-  query_service->FindAsync(query, response);
+  query_service->Find(query, response);
 }
 
 TEST_F(QueryServiceTest, InvalidWhenDuplicateHash) {
@@ -88,6 +88,6 @@ TEST_F(QueryServiceTest, InvalidWhenDuplicateHash) {
 
   init();
 
-  query_service->FindAsync(query, response);
-  query_service->FindAsync(query, response);
+  query_service->Find(query, response);
+  query_service->Find(query, response);
 }

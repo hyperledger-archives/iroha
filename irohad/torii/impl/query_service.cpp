@@ -41,8 +41,8 @@ namespace torii {
     });
   }
 
-  void QueryService::FindAsync(iroha::protocol::Query const &request,
-                               iroha::protocol::QueryResponse &response) {
+  void QueryService::Find(iroha::protocol::Query const &request,
+                          iroha::protocol::QueryResponse &response) {
     using iroha::operator|;
     auto deserializedRequest = pb_query_factory_->deserialize(request);
     deserializedRequest | [&](const auto &query) {
@@ -71,7 +71,7 @@ namespace torii {
   grpc::Status QueryService::Find(grpc::ServerContext *context,
                                   const iroha::protocol::Query *request,
                                   iroha::protocol::QueryResponse *response) {
-    FindAsync(*request, *response);
+    Find(*request, *response);
     return grpc::Status::OK;
   }
 

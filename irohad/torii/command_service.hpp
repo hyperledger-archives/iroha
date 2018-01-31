@@ -50,10 +50,10 @@ namespace torii {
      * @param request - Transaction
      * @param response - ToriiResponse
      */
-    void ToriiAsync(iroha::protocol::Transaction const &request,
+    void Torii(iroha::protocol::Transaction const &request,
                     google::protobuf::Empty &response);
 
-    void StatusAsync(iroha::protocol::TxStatusRequest const &request,
+    void Status(iroha::protocol::TxStatusRequest const &request,
                      iroha::protocol::ToriiResponse &response);
 
     virtual grpc::Status Torii(grpc::ServerContext *context,
