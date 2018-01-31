@@ -18,7 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_PROTO_PROPOSAL_HPP
 #define IROHA_SHARED_MODEL_PROTO_PROPOSAL_HPP
 
-#include "interfaces/proposal.hpp"
+#include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/transaction.hpp"
 
 #include <boost/range/numeric.hpp>
