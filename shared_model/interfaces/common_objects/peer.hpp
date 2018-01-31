@@ -19,7 +19,7 @@
 #define IROHA_SHARED_MODEL_PEER_HPP
 
 #include "common/types.hpp"
-#include "interfaces/base/hashable.hpp"
+#include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
 
 #ifndef DISABLE_BACKWARD
@@ -32,7 +32,7 @@ namespace shared_model {
     /**
      * Representation of a network participant.
      */
-    class Peer : public HASHABLE(Peer) {
+    class Peer : public PRIMITIVE(Peer) {
      public:
       /**
        * @return Peer address, for fetching data

@@ -34,8 +34,7 @@ namespace shared_model {
           : CopyableProto(std::forward<PeerType>(peer)),
             public_key_([this] {
               return interface::types::PubkeyType(proto_->peer_key());
-            }),
-            blob_([this] { return makeBlob(*proto_); }) {}
+            }) {}
 
       Peer(const Peer &o) : Peer(o.proto_) {}
 
@@ -49,18 +48,12 @@ namespace shared_model {
         return *public_key_;
       }
 
-      const BlobType &blob() const override {
-        return *blob_;
-      }
-
      private:
       // lazy
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
       const Lazy<interface::types::PubkeyType> public_key_;
-
-      const Lazy<BlobType> blob_;
     };
 
   }  // namespace proto
