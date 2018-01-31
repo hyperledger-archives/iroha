@@ -35,6 +35,15 @@ namespace shared_model {
       }
     };
 
+    class QueryAlwaysValidValidator
+        : public validation::Validator<
+              detail::PolymorphicWrapper<interface::Query>> {
+     public:
+      Answer validate(detail::PolymorphicWrapper<interface::Query>) const {
+        return Answer();
+      }
+    };
+
   }  // namespace validation
 }  // namespace shared_model
 

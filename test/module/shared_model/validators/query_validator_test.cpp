@@ -18,6 +18,7 @@
 #include "module/shared_model/validators/validators_fixture.hpp"
 
 #include "builders/protobuf/queries.hpp"
+#include "test_builder.hpp"
 
 class QueryValidatorTest : public ValidatorsTest {
  public:
@@ -26,6 +27,25 @@ class QueryValidatorTest : public ValidatorsTest {
 
 using namespace iroha::protocol;
 using namespace shared_model;
+
+/**
+ * @given query with invalid fields
+ * @when always valid query stateless validator is invoked on this query
+ * @then returned answer has no errors
+ */
+TEST_F(QueryValidatorTest, TestAlwaysValidValidator) {
+  TestQueryBuilder builder;
+  std::string invalid_account_id = "invalid##account_+id";
+  auto qry = builder.creatorAccountId(invalid_account_id)
+                 .getAccountTransactions(invalid_account_id)
+                 .build()
+                 .getTransport();
+
+  QueryAlwaysValidValidator validator;
+
+  auto answer = validator.validate(detail::makePolymorphic<proto::Query>(qry));
+  ASSERT_FALSE(answer.hasErrors());
+}
 
 /**
  * @given Protobuf query object

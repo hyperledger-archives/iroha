@@ -23,9 +23,18 @@
 namespace shared_model {
   namespace validation {
 
+    /**
+     * Abstract class for validators
+     * @tparam T -- validating type object
+     */
     template <typename T>
     class Validator {
      public:
+      /**
+       * Validates object
+       * @param object -- validating object
+       * @return answer containing errors
+       */
       virtual Answer validate(T object) const = 0;
     };
 

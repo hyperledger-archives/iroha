@@ -18,8 +18,8 @@
 #ifndef IROHA_TEST_TRANSACTION_BUILDER_HPP
 #define IROHA_TEST_TRANSACTION_BUILDER_HPP
 
+#include "builders/protobuf/builder_templates/query_template.hpp"
 #include "builders/protobuf/builder_templates/transaction_template.hpp"
-#include "builders/protobuf/queries.hpp"
 #include "validators_mocks.hpp"
 
 using namespace shared_model::proto;
@@ -29,5 +29,10 @@ using TestTransactionBuilder =
     TemplateTransactionBuilder<(1 << TemplateTransactionBuilder<>::total) - 1,
                                TransactionAlwaysValidValidator,
                                Transaction>;
+
+using TestQueryBuilder =
+    TemplateQueryBuilder<(1 << TemplateQueryBuilder<>::total) - 1,
+                         QueryAlwaysValidValidator,
+                         Query>;
 
 #endif  // IROHA_TEST_TRANSACTION_BUILDER_HPP
