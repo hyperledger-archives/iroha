@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROTO_TRANSACTION_BUILDER_HPP
-#define IROHA_PROTO_TRANSACTION_BUILDER_HPP
+#ifndef IROHA_PROTO_TRANSACTION_BUILDER_TEMPLATE_HPP
+#define IROHA_PROTO_TRANSACTION_BUILDER_TEMPLATE_HPP
 
 #include "backend/protobuf/transaction.hpp"
 
@@ -24,22 +24,29 @@
 
 #include "block.pb.h"
 #include "commands.pb.h"
-#include "primitive.pb.h"
 
 #include "amount/amount.hpp"
 #include "builders/protobuf/helpers.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "validators/default_validator.hpp"
-#include "builders/protobuf/builder_templates/transaction_template.hpp"
 
 namespace shared_model {
   namespace proto {
 
-    template <int S = 0, typename SV = validation::DefaultTransactionValidator>
+    /**
+     * Template tx builder for creating new types of transaction builders by
+     * means of replacing template parameters
+     * @tparam S -- field counter for checking that all required fields are set
+     * @tparam SV -- stateless validator called when build method is invoked
+     * @tparam BT -- build type of built object returned by build method
+     */
+    template <int S = 0,
+              typename SV = validation::DefaultTransactionValidator,
+              typename BT = UnsignedWrapper<Transaction>>
     class TemplateTransactionBuilder {
      private:
-      template <int, typename>
+      template <int, typename, typename>
       friend class TemplateTransactionBuilder;
 
       enum RequiredFields {
@@ -51,7 +58,7 @@ namespace shared_model {
       };
 
       template <int s>
-      using NextBuilder = TemplateTransactionBuilder<S | (1 << s), SV>;
+      using NextBuilder = TemplateTransactionBuilder<S | (1 << s), SV, BT>;
 
       using ProtoTx = iroha::protocol::Transaction;
       using ProtoCommand = iroha::protocol::Command;
@@ -88,6 +95,8 @@ namespace shared_model {
       }
 
      public:
+      using ModelType = BT;
+
       TemplateTransactionBuilder(const SV &validator = SV())
           : stateless_validator_(validator) {}
 
@@ -117,7 +126,7 @@ namespace shared_model {
           auto command = proto_command->mutable_add_asset_quantity();
           command->set_account_id(account_id);
           command->set_asset_id(asset_id);
-          initializeProtobufAmount(command->mutable_amount(), amount);
+          addAmount(command->mutable_amount(), amount);
         });
       }
 
@@ -125,9 +134,8 @@ namespace shared_model {
                    const interface::types::PubkeyType &peer_key) const {
         return addCommand([&](auto proto_command) {
           auto command = proto_command->mutable_add_peer();
-          auto peer = command->mutable_peer();
-          peer->set_address(address);
-          peer->set_peer_key(crypto::toBinaryString(peer_key));
+          command->set_address(address);
+          command->set_peer_key(crypto::toBinaryString(peer_key));
         });
       }
 
@@ -282,7 +290,7 @@ namespace shared_model {
           auto command = proto_command->mutable_subtract_asset_quantity();
           command->set_account_id(account_id);
           command->set_asset_id(asset_id);
-          initializeProtobufAmount(command->mutable_amount(), amount);
+          addAmount(command->mutable_amount(), amount);
         });
       }
 
@@ -298,11 +306,17 @@ namespace shared_model {
           command->set_dest_account_id(dest_account_id);
           command->set_asset_id(asset_id);
           command->set_description(description);
-          initializeProtobufAmount(command->mutable_amount(), amount);
+          addAmount(command->mutable_amount(), amount);
         });
       }
 
-      auto build() const {
+      template <typename T>
+      auto addAnyCommand(const T &command) {
+        return addCommand(
+            [&](auto proto_command) { proto_command->CopyFrom(command); });
+      }
+
+      BT build() const {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
 
         auto answer = stateless_validator_.validate(
@@ -310,8 +324,7 @@ namespace shared_model {
         if (answer.hasErrors()) {
           throw std::invalid_argument(answer.reason());
         }
-        return UnsignedWrapper<Transaction>(
-            Transaction(iroha::protocol::Transaction(transaction_)));
+        return BT(Transaction(iroha::protocol::Transaction(transaction_)));
       }
 
       static const int total = RequiredFields::TOTAL;
@@ -321,8 +334,7 @@ namespace shared_model {
       SV stateless_validator_;
     };
 
-    using TransactionBuilder = TemplateTransactionBuilder<>;
   }  // namespace proto
 }  // namespace shared_model
 
-#endif  // IROHA_PROTO_TRANSACTION_BUILDER_HPP
+#endif  // IROHA_PROTO_TRANSACTION_BUILDER_TEMPLATE_HPP

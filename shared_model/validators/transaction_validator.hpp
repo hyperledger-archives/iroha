@@ -22,6 +22,7 @@
 #include <boost/variant/static_visitor.hpp>
 
 #include "interfaces/transaction.hpp"
+#include "validators/abstract_validator.hpp"
 #include "validators/answer.hpp"
 
 namespace shared_model {
@@ -243,7 +244,8 @@ namespace shared_model {
      * @tparam CommandValidator
      */
     template <typename FieldValidator, typename CommandValidator>
-    class TransactionValidator {
+    class TransactionValidator
+        : public Validator<detail::PolymorphicWrapper<interface::Transaction>> {
      public:
       TransactionValidator(
           const FieldValidator &field_validator = FieldValidator(),
@@ -256,8 +258,8 @@ namespace shared_model {
        * @param tx - transaction to validate
        * @return Answer containing found error if any
        */
-      Answer validate(
-          detail::PolymorphicWrapper<interface::Transaction> tx) const {
+      Answer validate(detail::PolymorphicWrapper<interface::Transaction> tx)
+          const override {
         Answer answer;
         std::string tx_reason_name = "Transaction";
         ReasonsGroupType tx_reason(tx_reason_name, GroupedReasons());
