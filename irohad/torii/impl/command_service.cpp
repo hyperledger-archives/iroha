@@ -98,6 +98,14 @@ namespace torii {
     tx_processor_->transactionHandle(iroha_tx);
   }
 
+  grpc::Status CommandService::Torii(
+      grpc::ServerContext *context,
+      const iroha::protocol::Transaction *request,
+      google::protobuf::Empty *response) {
+    ToriiAsync(*request, *response);
+    return grpc::Status::OK;
+  }
+
   void CommandService::StatusAsync(
       iroha::protocol::TxStatusRequest const &request,
       iroha::protocol::ToriiResponse &response) {
@@ -115,4 +123,11 @@ namespace torii {
     }
   }
 
+  grpc::Status CommandService::Status(
+      grpc::ServerContext *context,
+      const iroha::protocol::TxStatusRequest *request,
+      iroha::protocol::ToriiResponse *response) {
+    StatusAsync(*request, *response);
+    return grpc::Status::OK;
+  }
 }  // namespace torii

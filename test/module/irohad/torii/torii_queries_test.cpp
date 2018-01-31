@@ -26,6 +26,7 @@ limitations under the License.
 #include "model/permissions.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/torii_service_handler.hpp"
 #include "torii_utils/query_client.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
@@ -71,9 +72,6 @@ class ToriiQueriesTest : public testing::Test {
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
 
-      auto command_service = std::make_unique<torii::CommandService>(
-          pb_tx_factory, tx_processor, storageMock);
-
       //----------- Query Service ----------
 
       auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
@@ -87,11 +85,12 @@ class ToriiQueriesTest : public testing::Test {
       auto pb_query_resp_factory =
           std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
-      auto query_service = std::make_unique<torii::QueryService>(
-          pb_query_factory, pb_query_resp_factory, qpi);
-
       //----------- Server run ----------------
-      runner->run(std::move(command_service), std::move(query_service));
+      services.emplace_back(std::make_unique<torii::CommandService>(
+          pb_tx_factory, tx_processor, storageMock));
+      services.emplace_back(std::make_unique<torii::QueryService>(
+          pb_query_factory, pb_query_resp_factory, qpi));
+      runner->run(std::move(services));
     });
 
     runner->waitForServersReady();
@@ -112,6 +111,8 @@ class ToriiQueriesTest : public testing::Test {
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
+
+  std::vector<std::unique_ptr<grpc::Service>> services;
 
   // just random hex strings
   const std::string pubkey_test = generator::random_blob<16>(0).to_hexstring();

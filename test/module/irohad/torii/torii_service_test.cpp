@@ -33,6 +33,7 @@ limitations under the License.
 #include <torii_utils/query_client.hpp>
 
 #include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/torii_service_handler.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
@@ -92,8 +93,6 @@ class ToriiServiceTest : public testing::Test {
               pcsMock, statelessValidatorMock);
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
-      auto command_service = std::make_unique<torii::CommandService>(
-          pb_tx_factory, tx_processor, storageMock);
 
       //----------- Query Service ----------
       auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
@@ -107,16 +106,17 @@ class ToriiServiceTest : public testing::Test {
       auto pb_query_resp_factory =
           std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
-      auto query_service = std::make_unique<torii::QueryService>(
-          pb_query_factory, pb_query_resp_factory, qpi);
-
       EXPECT_CALL(*storageMock, getBlockQuery())
           .WillRepeatedly(Return(block_query));
       EXPECT_CALL(*block_query, getTxByHashSync(_))
           .WillRepeatedly(Return(boost::none));
 
       //----------- Server run ----------------
-      runner->run(std::move(command_service), std::move(query_service));
+      services.emplace_back(std::make_unique<torii::CommandService>(
+          pb_tx_factory, tx_processor, storageMock));
+      services.emplace_back(std::make_unique<torii::QueryService>(
+          pb_query_factory, pb_query_resp_factory, qpi));
+      runner->run(std::move(services));
     });
 
     runner->waitForServersReady();
@@ -140,6 +140,8 @@ class ToriiServiceTest : public testing::Test {
 
   std::shared_ptr<CustomPeerCommunicationServiceMock> pcsMock;
   std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
+
+  std::vector<std::unique_ptr<grpc::Service>> services;
 };
 
 /**

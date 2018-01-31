@@ -24,6 +24,7 @@
 #include "main/impl/consensus_init.hpp"
 #include "main/impl/ordering_init.hpp"
 #include "main/server_runner.hpp"
+#include "model/converters/pb_query_factory.hpp"
 #include "model/model_crypto_provider_impl.hpp"
 #include "network/block_loader.hpp"
 #include "network/consensus_gate.hpp"
@@ -35,6 +36,7 @@
 #include "torii/command_service.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/query_service.hpp"
 #include "validation/chain_validator.hpp"
 #include "validation/impl/stateless_validator_impl.hpp"
 #include "validation/stateful_validator.hpp"
@@ -176,6 +178,9 @@ class Irohad {
 
   // query service
   std::unique_ptr<torii::QueryService> query_service;
+
+  // collection of Torii services
+  std::vector<std::unique_ptr<grpc::Service>> torii_services;
 
   std::unique_ptr<ServerRunner> torii_server;
   std::unique_ptr<grpc::Server> internal_server;

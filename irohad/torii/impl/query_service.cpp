@@ -67,4 +67,12 @@ namespace torii {
           iroha::protocol::ErrorResponse::NOT_SUPPORTED);
     }
   }
+
+  grpc::Status QueryService::Find(grpc::ServerContext *context,
+                                  const iroha::protocol::Query *request,
+                                  iroha::protocol::QueryResponse *response) {
+    FindAsync(*request, *response);
+    return grpc::Status::OK;
+  }
+
 }  // namespace torii

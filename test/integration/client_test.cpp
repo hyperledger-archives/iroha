@@ -27,6 +27,7 @@
 #include "client.hpp"
 
 #include "main/server_runner.hpp"
+#include "torii/query_service.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
 
@@ -78,8 +79,6 @@ class ClientServerTest : public testing::Test {
                                                                    svMock);
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
-      auto command_service = std::make_unique<torii::CommandService>(
-          pb_tx_factory, tx_processor, storageMock);
 
       //----------- Query Service ----------
       auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
@@ -93,11 +92,12 @@ class ClientServerTest : public testing::Test {
       auto pb_query_resp_factory =
           std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
-      auto query_service = std::make_unique<torii::QueryService>(
-          pb_query_factory, pb_query_resp_factory, qpi);
-
       //----------- Server run ----------------
-      runner->run(std::move(command_service), std::move(query_service));
+      services.emplace_back(std::make_unique<torii::CommandService>(
+              pb_tx_factory, tx_processor, storageMock));
+      services.emplace_back(std::make_unique<torii::QueryService>(
+              pb_query_factory, pb_query_resp_factory, qpi));
+      runner->run(std::move(services));
     });
 
     runner->waitForServersReady();
@@ -116,6 +116,8 @@ class ClientServerTest : public testing::Test {
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
   std::shared_ptr<MockStorage> storageMock;
+
+  std::vector<std::unique_ptr<grpc::Service>> services;
 };
 
 TEST_F(ClientServerTest, SendTxWhenValid) {

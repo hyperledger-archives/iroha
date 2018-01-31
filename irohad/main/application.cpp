@@ -278,7 +278,9 @@ void Irohad::run() {
   internal_server = builder.BuildAndStart();
   // Run torii server
   server_thread = std::thread([this] {
-    torii_server->run(std::move(command_service), std::move(query_service));
+    torii_services.emplace_back(std::move(command_service));
+    torii_services.emplace_back(std::move(query_service));
+    torii_server->run(std::move(torii_services));
   });
   log_->info("===> iroha initialized");
   // Wait until servers shutdown

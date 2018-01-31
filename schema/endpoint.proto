@@ -30,6 +30,7 @@ message TxStatusRequest{
 service CommandService {
   rpc Torii (Transaction) returns (google.protobuf.Empty);
   rpc Status (TxStatusRequest) returns (ToriiResponse);
+  rpc StatusStream(TxStatusRequest) returns (stream ToriiResponse);
 }
 
 
