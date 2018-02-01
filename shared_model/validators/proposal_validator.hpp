@@ -64,7 +64,9 @@ namespace shared_model {
         for (const auto &tx : prop->transactions()) {
           validateTransaction(reason, tx);
         }
-        answer.addReason(std::move(reason));
+        if (not reason.second.empty()) {
+          answer.addReason(std::move(reason));
+        }
 
         return answer;
       }
