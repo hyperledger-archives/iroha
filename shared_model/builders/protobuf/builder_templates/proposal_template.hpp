@@ -20,31 +20,34 @@
 
 #include "backend/protobuf/proposal.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "validators/default_validator.hpp"
 
 #include "ordering.pb.h"
 
 namespace shared_model {
   namespace proto {
-    template <int S = 0>
+    template <int S = 0, typename SV = validation::DefaultProposalValidator>
     class TemplateProposalBuilder {
      private:
       template <class T>
       using w = detail::PolymorphicWrapper<T>;
       using TransactionContainer = std::vector<w<Transaction>>;
 
-      template <int>
+      template <int, typename>
       friend class TemplateProposalBuilder;
 
       enum RequiredFields { Transactions, Height, CreatedTime, TOTAL };
 
       template <int s>
-      using NextBuilder = TemplateProposalBuilder<S | (1 << s)>;
+      using NextBuilder = TemplateProposalBuilder<S | (1 << s), SV>;
 
       iroha::ordering::proto::Proposal proposal_;
+      SV stateless_validator_;
 
-      template <int Sp>
-      TemplateProposalBuilder(const TemplateProposalBuilder<Sp> &o)
-          : proposal_(o.proposal_) {}
+      template <int Sp, typename SVp>
+      TemplateProposalBuilder(const TemplateProposalBuilder<Sp, SVp> &o)
+          : proposal_(o.proposal_),
+            stateless_validator_(o.stateless_validator_) {}
 
       /**
        * Make transformation on copied content
@@ -60,7 +63,8 @@ namespace shared_model {
       }
 
      public:
-      TemplateProposalBuilder() = default;
+      TemplateProposalBuilder(const SV &validator = SV())
+          : stateless_validator_(validator){};
 
       auto height(const interface::types::HeightType height) const {
         return transform<Height>(

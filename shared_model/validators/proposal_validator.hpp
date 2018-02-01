@@ -18,11 +18,10 @@
 #ifndef IROHA_PROPOSAL_VALIDATOR_HPP
 #define IROHA_PROPOSAL_VALIDATOR_HPP
 
-#include <boost/format.hpp>
-#include <boost/variant/static_visitor.hpp>
 #include <regex>
 #include "datetime/time.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "interfaces/iroha_internal/proposal.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "validators/answer.hpp"
 
@@ -36,37 +35,17 @@ namespace shared_model {
      */
     class ProposalValidator {
      private:
-      /**
-       * Visitor used by commands validator to validate fields from proposal
-       */
-      class ProposalValidatorVisitor
-          : public boost::static_visitor<ReasonsGroupType> {
-       public:
-        ReasonsGroupType operator()(
-            const detail::PolymorphicWrapper<interface::Proposal> &prop) const {
-          ReasonsGroupType reason;
-          reason.first = "Proposal";
+      void validateTransaction(
+          ReasonsGroupType &reason,
+          const detail::PolymorphicWrapper<interface::Transaction> &transaction)
+          const {
+        // TODO write transaction validator
+      }
 
-          validateHeight(reason, prop->height());
-          for (const auto &tx : prop->transactions()) {
-            validateTransaction(reason, tx);
-          }
-          return reason;
-        }
-
-       private:
-        void validateTransaction(
-            ReasonsGroupType &reason,
-            const detail::PolymorphicWrapper<interface::Transaction>
-                &transaction) const {
-          // TODO write transaction validator
-        }
-
-        void validateHeight(ReasonsGroupType &reason,
-                            const interface::types::HeightType &height) const {
-          // TODO write height validator
-        }
-      };
+      void validateHeight(ReasonsGroupType &reason,
+                          const interface::types::HeightType &height) const {
+        // TODO write height validator
+      }
 
      public:
       /**
@@ -78,7 +57,14 @@ namespace shared_model {
           detail::PolymorphicWrapper<interface::Proposal> prop) const {
         Answer answer;
         // TODO 22/01/2018 x3medima17: add stateless validator IR-837
+        ReasonsGroupType reason;
+        reason.first = "Proposal";
 
+        validateHeight(reason, prop->height());
+        for (const auto &tx : prop->transactions()) {
+          validateTransaction(reason, tx);
+        }
+        answer.addReason(std::move(reason));
 
         return answer;
       }
