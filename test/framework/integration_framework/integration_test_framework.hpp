@@ -140,19 +140,15 @@ namespace integration_framework {
   template <typename Lambda>
   IntegrationTestFramework &IntegrationTestFramework::sendQuery(
       shared_model::proto::Query qry, Lambda validation) {
-    using iroha::operator|;
     log_->info("send query");
 
-    std::shared_ptr<shared_model::proto::QueryResponse> query_response;
-    {
-      iroha::protocol::QueryResponse response;
-      iroha_instance_->getIrohaInstance()->getQueryService()->FindAsync(
-          qry.getTransport(), response);
-      query_response =
-          std::make_shared<shared_model::proto::QueryResponse>(response);
-    }
+    iroha::protocol::QueryResponse response;
+    iroha_instance_->getIrohaInstance()->getQueryService()->FindAsync(
+        qry.getTransport(), response);
+    auto query_response =
+        shared_model::proto::QueryResponse(std::move(response));
 
-    validation(*query_response);
+    validation(query_response);
     return *this;
   }
 
