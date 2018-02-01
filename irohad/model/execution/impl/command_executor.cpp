@@ -30,9 +30,6 @@
 #include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
 #include "model/commands/set_account_detail.hpp"
-
-
-
 #include "model/commands/set_quorum.hpp"
 #include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/transfer_asset.hpp"
@@ -50,8 +47,8 @@ namespace iroha {
     // TODO: 30.01.2018 nickaleks make db calls return result to eliminate need
     // for this function IR-775
     ExecutionResult CommandExecutor::errorIfNot(
-        bool predicate, const std::string &error_message) const noexcept {
-      if (not predicate) {
+        bool condition, const std::string &error_message) const noexcept {
+      if (not condition) {
         return makeExecutionError(error_message);
       }
       return {};
@@ -450,7 +447,6 @@ namespace iroha {
     bool AddPeerExecutor::isValid(const Command &command,
                                   ametsuchi::WsvQuery &queries,
                                   const std::string &creator_account_id) {
-      // TODO: check that address is formed right
       return true;
     }
 

@@ -24,23 +24,22 @@
 #include "ametsuchi/wsv_query.hpp"
 #include "common/result.hpp"
 #include "model/command.hpp"
+#include "model/execution/execution_error.hpp"
 
 namespace iroha {
   namespace model {
 
     /**
-     * Error message contains command name, as well as what went wrong
-     * it may be validation error, or database error
+     * ExecutionResult is a return type of all execute functions.
+     * If execute is successful, result will not contain anything (void value),
+     * because execute does not return any value.
+     * If execution is not successful, ExecutionResult will contain Execution
+     * error with explanation
+     *
+     * Result is used because it allows for clear distinction between two states
+     * - value and error. If we just returned error, it would be confusing, what
+     * value of an error to consider as a successful state of execution
      */
-    struct ExecutionError {
-      std::string command_name;
-      std::string error_message;
-
-      std::string toString() const {
-        return (boost::format("%s: %s") % command_name % error_message).str();
-      }
-    };
-
     using ExecutionResult = expected::Result<void, ExecutionError>;
 
     /**
@@ -114,12 +113,12 @@ namespace iroha {
       /**
        * Return execution result with an error with given message if predicate
        * is false
-       * @param predicate - condition which determines result state
+       * @param condition - boolean value which determines result state
        * @param error_message - string which will be part of the error
        * @return ExecutionResult with empty value if predicate is true, Error
        * with error message otherwise
        */
-      ExecutionResult errorIfNot(bool predicate,
+      ExecutionResult errorIfNot(bool condition,
                                  const std::string &error_message) const
           noexcept;
     };

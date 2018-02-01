@@ -84,12 +84,12 @@ class CommandValidateExecuteTest : public ::testing::Test {
         *command, *wsv_query, *wsv_command, creator.account_id);
   }
 
-  // Throws exception if result does not contain value
+  /// Throws exception if result does not contain value
   void checkValueCase(const ExecutionResult &result) {
     boost::get<ExecutionResult::ValueType>(result);
   }
 
-  // Returns error from result or throws error in case result contains value
+  /// Returns error from result or throws error in case result contains value
   ExecutionResult::ErrorType checkErrorCase(const ExecutionResult &result) {
     return boost::get<ExecutionResult::ErrorType>(result);
   }
