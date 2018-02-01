@@ -20,7 +20,7 @@
 
 #include <string>
 #include "torii/command_client.hpp"
-#include "torii_utils/query_client.hpp"
+#include "torii/query_client.hpp"
 
 #include "model/query.hpp"
 #include "model/transaction.hpp"

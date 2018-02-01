@@ -30,7 +30,7 @@ limitations under the License.
 #include <torii/command_client.hpp>
 #include <torii/command_service.hpp>
 #include <torii/processor/query_processor_impl.hpp>
-#include <torii_utils/query_client.hpp>
+#include <torii/query_client.hpp>
 
 #include "torii/processor/transaction_processor_impl.hpp"
 
