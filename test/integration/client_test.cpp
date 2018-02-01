@@ -27,9 +27,9 @@
 #include "client.hpp"
 
 #include "main/server_runner.hpp"
-#include "torii/query_service.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/query_service.hpp"
 
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_query_factory.hpp"
@@ -93,11 +93,11 @@ class ClientServerTest : public testing::Test {
           std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
       //----------- Server run ----------------
-      services.emplace_back(std::make_unique<torii::CommandService>(
-              pb_tx_factory, tx_processor, storageMock));
-      services.emplace_back(std::make_unique<torii::QueryService>(
-              pb_query_factory, pb_query_resp_factory, qpi));
-      runner->run(std::move(services));
+      runner->append(std::make_unique<torii::CommandService>(
+          pb_tx_factory, tx_processor, storageMock));
+      runner->append(std::make_unique<torii::QueryService>(
+          pb_query_factory, pb_query_resp_factory, qpi));
+      runner->run();
     });
 
     runner->waitForServersReady();
@@ -116,8 +116,6 @@ class ClientServerTest : public testing::Test {
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
   std::shared_ptr<MockStorage> storageMock;
-
-  std::vector<std::unique_ptr<grpc::Service>> services;
 };
 
 TEST_F(ClientServerTest, SendTxWhenValid) {

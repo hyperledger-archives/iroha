@@ -86,11 +86,11 @@ class ToriiQueriesTest : public testing::Test {
           std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
       //----------- Server run ----------------
-      services.emplace_back(std::make_unique<torii::CommandService>(
+      runner->append(std::make_unique<torii::CommandService>(
           pb_tx_factory, tx_processor, storageMock));
-      services.emplace_back(std::make_unique<torii::QueryService>(
+      runner->append(std::make_unique<torii::QueryService>(
           pb_query_factory, pb_query_resp_factory, qpi));
-      runner->run(std::move(services));
+      runner->run();
     });
 
     runner->waitForServersReady();
@@ -111,8 +111,6 @@ class ToriiQueriesTest : public testing::Test {
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
-
-  std::vector<std::unique_ptr<grpc::Service>> services;
 
   // just random hex strings
   const std::string pubkey_test = generator::random_blob<16>(0).to_hexstring();

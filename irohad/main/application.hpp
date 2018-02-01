@@ -179,9 +179,6 @@ class Irohad {
   // query service
   std::unique_ptr<torii::QueryService> query_service;
 
-  // collection of Torii services
-  std::vector<std::unique_ptr<grpc::Service>> torii_services;
-
   std::unique_ptr<ServerRunner> torii_server;
   std::unique_ptr<grpc::Server> internal_server;
 

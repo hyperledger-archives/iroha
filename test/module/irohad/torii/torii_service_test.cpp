@@ -112,11 +112,11 @@ class ToriiServiceTest : public testing::Test {
           .WillRepeatedly(Return(boost::none));
 
       //----------- Server run ----------------
-      services.emplace_back(std::make_unique<torii::CommandService>(
+      runner->append(std::make_unique<torii::CommandService>(
           pb_tx_factory, tx_processor, storageMock));
-      services.emplace_back(std::make_unique<torii::QueryService>(
+      runner->append(std::make_unique<torii::QueryService>(
           pb_query_factory, pb_query_resp_factory, qpi));
-      runner->run(std::move(services));
+      runner->run();
     });
 
     runner->waitForServersReady();
@@ -140,8 +140,6 @@ class ToriiServiceTest : public testing::Test {
 
   std::shared_ptr<CustomPeerCommunicationServiceMock> pcsMock;
   std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
-
-  std::vector<std::unique_ptr<grpc::Service>> services;
 };
 
 /**

@@ -15,17 +15,20 @@
  * limitations under the License.
  */
 
+#include "main/server_runner.hpp"
 #include <grpc++/server.h>
 #include <grpc++/server_builder.h>
 #include <grpc++/server_context.h>
 #include "logger/logger.hpp"
-#include "main/server_runner.hpp"
 
 ServerRunner::ServerRunner(const std::string &address)
     : serverAddress_(address) {}
 
-void ServerRunner::run(std::vector<std::unique_ptr<grpc::Service>> services) {
-  services_ = std::move(services);
+void ServerRunner::append(std::unique_ptr<grpc::Service> service) {
+  services_.emplace_back(std::move(service));
+}
+
+void ServerRunner::run() {
   grpc::ServerBuilder builder;
   builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
 

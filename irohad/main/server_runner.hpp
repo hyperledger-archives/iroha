@@ -34,15 +34,15 @@ class ServerRunner {
   explicit ServerRunner(const std::string &address);
 
   /**
-   * Destructor. Shutdown the server.
+   * Adds a new grpc service to be run.
+   * @param service - service to append.
    */
-  ~ServerRunner() = default;
+  void append(std::unique_ptr<grpc::Service> service);
 
   /**
    * Initialize the server and run main loop.
-   * @param services - collection of services to run
    */
-  void run(std::vector<std::unique_ptr<grpc::Service>> services);
+  void run();
 
   /**
    * Release the completion queues and shutdown the server.
