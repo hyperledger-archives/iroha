@@ -32,7 +32,6 @@
 #include "cryptography/keypair.hpp"
 #include "framework/integration_framework/iroha_instance.hpp"
 #include "logger/logger.hpp"
-#include "model/generators/command_generator.hpp"
 
 #include "backend/protobuf/block.hpp"
 #include "backend/protobuf/proposal.hpp"
@@ -55,19 +54,20 @@ namespace integration_framework {
         const iroha::keypair_t &keypair = iroha::create_keypair());
     IntegrationTestFramework &setInitialState(
         const shared_model::crypto::Keypair &keypair,
-        shared_model::proto::Block block);
+        const shared_model::interface::Block &block);
 
     template <typename Lambda>
-    IntegrationTestFramework &sendTx(shared_model::proto::Transaction tx,
+    IntegrationTestFramework &sendTx(const shared_model::proto::Transaction &tx,
                                      Lambda validation);
-    IntegrationTestFramework &sendTx(shared_model::proto::Transaction tx);
+    IntegrationTestFramework &sendTx(
+        const shared_model::proto::Transaction &tx);
     shared_model::proto::TransactionResponse getTxStatus(
-        const std::string &hash);
+        const shared_model::crypto::Hash &hash);
 
     template <typename Lambda>
-    IntegrationTestFramework &sendQuery(shared_model::proto::Query qry,
+    IntegrationTestFramework &sendQuery(const shared_model::proto::Query &qry,
                                         Lambda validation);
-    IntegrationTestFramework &sendQuery(shared_model::proto::Query qry);
+    IntegrationTestFramework &sendQuery(const shared_model::proto::Query &qry);
 
     template <typename Lambda>
     IntegrationTestFramework &checkProposal(Lambda validation);
@@ -122,16 +122,13 @@ namespace integration_framework {
 
   template <typename Lambda>
   IntegrationTestFramework &IntegrationTestFramework::sendTx(
-      shared_model::proto::Transaction tx, Lambda validation) {
+      const shared_model::proto::Transaction &tx, Lambda validation) {
     log_->info("send transaction");
-    {
-      google::protobuf::Empty response;
-      iroha_instance_->getIrohaInstance()->getCommandService()->ToriiAsync(
-          tx.getTransport(), response);
-    }
+    google::protobuf::Empty response;
+    iroha_instance_->getIrohaInstance()->getCommandService()->ToriiAsync(
+        tx.getTransport(), response);
     // fetch status of transaction
-    shared_model::proto::TransactionResponse status =
-        getTxStatus(shared_model::crypto::toBinaryString(tx.hash()));
+    shared_model::proto::TransactionResponse status = getTxStatus(tx.hash());
     // check validation function
     validation(status);
     return *this;
@@ -139,7 +136,7 @@ namespace integration_framework {
 
   template <typename Lambda>
   IntegrationTestFramework &IntegrationTestFramework::sendQuery(
-      shared_model::proto::Query qry, Lambda validation) {
+      const shared_model::proto::Query &qry, Lambda validation) {
     log_->info("send query");
 
     iroha::protocol::QueryResponse response;

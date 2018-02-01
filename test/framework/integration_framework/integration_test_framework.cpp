@@ -24,7 +24,6 @@
 #include "cryptography/hash_providers/sha3_256.hpp"
 #include "datetime/time.hpp"
 #include "model/permissions.hpp"
-#include "model/transaction.hpp"
 
 using namespace shared_model::crypto;
 using namespace std::literals::string_literals;
@@ -48,7 +47,7 @@ namespace integration_framework {
                                          iroha::model::can_receive,
                                          iroha::model::can_transfer})
             .createDomain(default_domain, default_role)
-            .createAccount("admina", default_domain, key.publicKey())
+            .createAccount("admin", default_domain, key.publicKey())
             .createAsset("coin", default_domain, 1)
             .build()
             .signAndAddSignature(key);
@@ -66,7 +65,7 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
-      const Keypair &keypair, shared_model::proto::Block block) {
+      const Keypair &keypair, const shared_model::interface::Block &block) {
     log_->info("init state");
     // peer initialization
     std::shared_ptr<iroha::keypair_t> old_key(keypair.makeOldModel());
@@ -105,9 +104,10 @@ namespace integration_framework {
   }
 
   shared_model::proto::TransactionResponse
-  IntegrationTestFramework::getTxStatus(const std::string &hash) {
+  IntegrationTestFramework::getTxStatus(
+      const shared_model::crypto::Hash &hash) {
     iroha::protocol::TxStatusRequest request;
-    request.set_tx_hash(hash);
+    request.set_tx_hash(shared_model::crypto::toBinaryString(hash));
     iroha::protocol::ToriiResponse response;
     iroha_instance_->getIrohaInstance()->getCommandService()->StatusAsync(
         request, response);
@@ -115,24 +115,24 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::sendTx(
-      shared_model::proto::Transaction tx) {
-    sendTx(tx, [](auto) {});
+      const shared_model::proto::Transaction &tx) {
+    sendTx(tx, [](const auto &) {});
     return *this;
   }
 
   IntegrationTestFramework &IntegrationTestFramework::sendQuery(
-      shared_model::proto::Query qry) {
-    sendQuery(qry, [](auto) {});
+      const shared_model::proto::Query &qry) {
+    sendQuery(qry, [](const auto &) {});
     return *this;
   }
 
   IntegrationTestFramework &IntegrationTestFramework::skipProposal() {
-    checkProposal([](auto) {});
+    checkProposal([](const auto &) {});
     return *this;
   }
 
   IntegrationTestFramework &IntegrationTestFramework::skipBlock() {
-    checkBlock([](auto) {});
+    checkBlock([](const auto &) {});
     return *this;
   }
 
