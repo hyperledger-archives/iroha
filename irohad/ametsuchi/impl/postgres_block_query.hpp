@@ -81,7 +81,7 @@ namespace iroha {
        * @param block_id
        * @return
        */
-      std::function<void(pqxx::result &result)> callbackToLrange(
+      std::function<void(pqxx::result &result)> callback(
           const rxcpp::subscriber<model::Transaction> &s, uint64_t block_id);
 
       FlatFile &block_store_;
@@ -90,11 +90,6 @@ namespace iroha {
       using ExecuteType = decltype(makeExecute(transaction_, log_));
       ExecuteType execute_;
       model::converters::JsonBlockFactory serializer_;
-
-      // TODO: refactor to return Result when it is introduced IR-744
-      bool execute(const std::string &statement) noexcept {
-        return execute_(statement).has_value();
-      }
     };
   }  // namespace ametsuchi
 }  // namespace iroha

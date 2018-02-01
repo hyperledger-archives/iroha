@@ -106,8 +106,7 @@ namespace iroha {
       };
     }
 
-    std::function<void(pqxx::result &result)>
-    PostgresBlockQuery::callbackToLrange(
+    std::function<void(pqxx::result &result)> PostgresBlockQuery::callback(
         const rxcpp::subscriber<model::Transaction> &subscriber,
         uint64_t block_id) {
       return [this, &subscriber, block_id](pqxx::result &result) {
@@ -147,7 +146,7 @@ namespace iroha {
                   "creator_id = "
                   + transaction_.quote(account_id)
                   + " AND height = " + transaction_.quote(block_id) + ";")
-                  | callbackToLrange(subscriber, block_id);
+                  | callback(subscriber, block_id);
             }
             subscriber.on_completed();
           });
@@ -171,7 +170,7 @@ namespace iroha {
               + transaction_.quote(account_id)
               + " AND height = " + transaction_.quote(block_id)
               + " AND asset_id = " + transaction_.quote(asset_id) + ";")
-              | callbackToLrange(subscriber, block_id);
+              | callback(subscriber, block_id);
         }
         subscriber.on_completed();
       });

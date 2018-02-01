@@ -16,7 +16,6 @@ target_link_libraries(ametsuchi
     rxcpp
     optional
     pqxx
-    cpp_redis
     libs_common
     command_execution
     boost

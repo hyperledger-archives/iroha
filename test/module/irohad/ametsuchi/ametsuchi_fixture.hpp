@@ -22,7 +22,6 @@
 #include "logger/logger.hpp"
 
 #include <gtest/gtest.h>
-#include <cpp_redis/cpp_redis>
 #include <pqxx/pqxx>
 
 #include "model/generators/command_generator.hpp"

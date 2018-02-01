@@ -62,11 +62,6 @@ namespace iroha {
       ExecuteType execute_;
       /// format strings for index keys
       boost::format account_id_height_, account_id_height_asset_id_;
-
-      // TODO: refactor to return Result when it is introduced IR-744
-      bool execute(const std::string &statement) noexcept {
-        return execute_(statement).has_value();
-      }
     };
   }  // namespace ametsuchi
 }  // namespace iroha

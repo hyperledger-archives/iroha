@@ -20,7 +20,6 @@
 
 #include "ametsuchi/mutable_storage.hpp"
 
-#include <cpp_redis/cpp_redis>
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
 #include <unordered_map>
@@ -52,7 +51,7 @@ namespace iroha {
       // ordered collection is used to enforce block insertion order in
       // StorageImpl::commit
       std::map<uint32_t, model::Block> block_store_;
-      
+
       std::unique_ptr<pqxx::lazyconnection> connection_;
       std::unique_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
