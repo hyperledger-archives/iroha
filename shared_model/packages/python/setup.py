@@ -72,16 +72,6 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
         shutil.copy(self.build_temp+"/shared_model/bindings/iroha.py", extdir+"/")
 
-        pwd = os.getcwd()
-        print(subprocess.check_call(["pwd"]))
-        print(subprocess.check_call(["ls"]))
-        os.chdir(extdir)
-        gen_proto = "protoc --proto_path={}/iroha/schema --python_out=. block.proto primitive.proto commands.proto queries.proto responses.proto endpoint.proto".format(pwd)
-        subprocess.check_call(gen_proto.split())
-        gen_py = "python -m grpc_tools.protoc --proto_path={}/iroha/schema --python_out=. --grpc_python_out=. endpoint.proto yac.proto ordering.proto loader.proto".format(pwd)
-        subprocess.check_call(gen_py.split())
-        os.chdir(pwd)
-
 
 # subprocess.check_call()
 
@@ -95,8 +85,5 @@ if __name__ == "__main__":
         long_description='',
         ext_modules=[CMakeExtension('iroha', 'iroha')],
         cmdclass=dict(build_ext=CMakeBuild),
-        install_requires=[
-            "grpcio-tools",
-        ],
         zip_safe=False,
     )
