@@ -57,8 +57,7 @@ namespace shared_model {
         ReasonsGroupType reason;
         addInvalidCommand(reason, "AddPeer");
 
-        validator_.validatePubkey(reason, ap->peerKey());
-        validator_.validatePeerAddress(reason, ap->peerAddress());
+        validator_.validatePeer(reason, ap->peer());
 
         return reason;
       }

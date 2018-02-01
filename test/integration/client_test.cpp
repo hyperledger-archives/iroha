@@ -135,8 +135,10 @@ TEST_F(ClientServerTest, SendTxWhenValid) {
           "tx_counter": 0,
           "commands": [{
             "command_type": "AddPeer",
-            "address": "localhost",
-            "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            "peer": {
+              "address": "localhost",
+              "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            }
         }]})";
 
   JsonTransactionFactory tx_factory;
@@ -158,8 +160,10 @@ TEST_F(ClientServerTest, SendTxWhenInvalidJson) {
       R"({"creator_account_id": "test",
           "commands":[{
             "command_type": "AddPeer",
-            "address": "localhost",
-            "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            "peer": {
+              "address": "localhost",
+              "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            }
           }]
         })";
   JsonTransactionFactory tx_factory;
@@ -173,7 +177,7 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
   EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
       .WillOnce(Return(false));
   auto json_string =
-      R"({"signatures": [ {
+      R"({"signatures": [{
             "pubkey":
               "2423232323232323232323232323232323232323232323232323232323232323",
             "signature":
@@ -183,8 +187,10 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
           "tx_counter": 0,
           "commands": [{
             "command_type": "AddPeer",
-            "address": "localhost",
-            "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+              "peer": {
+                "address": "localhost",
+                "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+              }
         }]})";
 
   auto doc = iroha::model::converters::stringToJson(json_string).value();
@@ -209,8 +215,10 @@ TEST_F(ClientServerTest, SendQueryWhenInvalidJson) {
       R"({"creator_account_id": "test",
           "commands":[{
             "command_type": "AddPeer",
-            "address": "localhost",
-            "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            "peer": {
+              "address": "localhost",
+              "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            }
           }]
         })";
 

@@ -30,11 +30,10 @@ namespace shared_model {
       template <typename CommandType>
       explicit CreateRole(CommandType &&command)
           : CopyableProto(std::forward<CommandType>(command)),
-            create_role_(detail::makeReferenceGenerator(
-                proto_, &iroha::protocol::Command::create_role)),
+            create_role_(proto_->create_role()),
             role_permissions_([this] {
               return boost::accumulate(
-                  create_role_->permissions(),
+                  create_role_.permissions(),
                   PermissionsType{},
                   [](auto &&acc, const auto &perm) {
                     acc.insert(iroha::protocol::RolePermission_Name(
@@ -48,7 +47,7 @@ namespace shared_model {
       CreateRole(CreateRole &&o) noexcept : CreateRole(std::move(o.proto_)) {}
 
       const interface::types::RoleIdType &roleName() const override {
-        return create_role_->role_name();
+        return create_role_.role_name();
       }
 
       const PermissionsType &rolePermissions() const override {
@@ -59,7 +58,7 @@ namespace shared_model {
       // lazy
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
-      const Lazy<const iroha::protocol::CreateRole &> create_role_;
+      const iroha::protocol::CreateRole &create_role_;
       const Lazy<PermissionsType> role_permissions_;
     };
   }  // namespace proto

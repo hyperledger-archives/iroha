@@ -428,12 +428,8 @@ namespace iroha {
         ametsuchi::WsvCommand &commands,
         const std::string &creator_account_id) {
       auto add_peer = static_cast<const AddPeer &>(command);
-
-      Peer peer;
-      peer.address = add_peer.address;
-      peer.pubkey = add_peer.peer_key;
       // Will return false if peer is not unique
-      return errorIfNot(commands.insertPeer(peer), "peer is not unique");
+      return errorIfNot(commands.insertPeer(add_peer.peer), "peer is not unique");
     }
 
     bool AddPeerExecutor::hasPermissions(
@@ -736,7 +732,8 @@ namespace iroha {
 
       return
           // Case 1. Creator set details for his account
-          creator_account_id == cmd.account_id or
+          creator_account_id == cmd.account_id
+          or
           // Case 2. Creator has grantable permission to set account key/value
           queries.hasAccountGrantablePermission(
               creator_account_id, cmd.account_id, can_set_detail);

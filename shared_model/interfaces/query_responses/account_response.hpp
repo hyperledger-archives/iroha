@@ -37,7 +37,7 @@ namespace shared_model {
     class AccountResponse : public PRIMITIVE(AccountResponse) {
      public:
       /// Collection of role_id types
-      using SetRoleIdType = std::vector<types::RoleIdType>;
+      using AccountRolesIdType = std::vector<types::RoleIdType>;
 
       /**
        * @return the fetched account.
@@ -47,7 +47,7 @@ namespace shared_model {
       /**
        * @return roles attached to the account
        */
-      virtual const SetRoleIdType &roles() const = 0;
+      virtual const AccountRolesIdType &roles() const = 0;
 
       /**
        * Stringify the data.
