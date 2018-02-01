@@ -107,8 +107,6 @@ int main(int argc, char *argv[]) {
 
   // Configuring iroha daemon
   Irohad irohad(config[mbr::BlockStorePath].GetString(),
-                config[mbr::RedisHost].GetString(),
-                config[mbr::RedisPort].GetUint(),
                 config[mbr::PgOpt].GetString(),
                 config[mbr::ToriiPort].GetUint(),
                 config[mbr::InternalPort].GetUint(),

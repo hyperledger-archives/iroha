@@ -19,40 +19,31 @@
 
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-//#include "ametsuchi/impl/redis_block_query.hpp"
+#include "ametsuchi/impl/postgres_block_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "model/converters/json_common.hpp"
-#include "ametsuchi/impl/postgres_block_query.hpp"
 
 namespace iroha {
   namespace ametsuchi {
 
     const char *kCommandExecutorError = "Cannot create CommandExecutorFactory";
     const char *kPsqlBroken = "Connection to PostgreSQL broken: {}";
-    const char *kRedisBroken = "Connection {}:{} with Redis broken {}";
     const char *kTmpWsv = "TemporaryWsv";
 
     StorageImpl::StorageImpl(
         std::string block_store_dir,
-        std::string redis_host,
-        std::size_t redis_port,
         std::string postgres_options,
         std::unique_ptr<FlatFile> block_store,
-        std::unique_ptr<cpp_redis::client> index,
-//        std::unique_ptr<pqxx::nontransaction> index,
         std::unique_ptr<pqxx::lazyconnection> wsv_connection,
         std::unique_ptr<pqxx::nontransaction> wsv_transaction)
         : block_store_dir_(std::move(block_store_dir)),
-          redis_host_(std::move(redis_host)),
-          redis_port_(redis_port),
           postgres_options_(std::move(postgres_options)),
           block_store_(std::move(block_store)),
-          index_(std::move(index)),
           wsv_connection_(std::move(wsv_connection)),
           wsv_transaction_(std::move(wsv_transaction)),
           wsv_(std::make_shared<PostgresWsvQuery>(*wsv_transaction_)),
-//          blocks_(std::make_shared<RedisBlockQuery>(*index_, *block_store_)) {
-          blocks_(std::make_shared<PostgresBlockQuery>(*wsv_transaction_, *block_store_)) {
+          blocks_(std::make_shared<PostgresBlockQuery>(*wsv_transaction_,
+                                                       *block_store_)) {
       log_ = logger::log("StorageImpl");
 
       wsv_transaction_->exec(init_);
@@ -102,14 +93,6 @@ namespace iroha {
       auto wsv_transaction =
           std::make_unique<pqxx::nontransaction>(*postgres_connection, kTmpWsv);
 
-      auto index = std::make_unique<cpp_redis::client>();
-      try {
-        index->connect(redis_host_, redis_port_);
-      } catch (const cpp_redis::redis_error &e) {
-        log_->error(kRedisBroken, redis_host_, redis_port_, e.what());
-        return nullptr;
-      }
-
       nonstd::optional<hash256_t> top_hash;
 
       blocks_->getTopBlocks(1)
@@ -119,7 +102,6 @@ namespace iroha {
 
       return std::make_unique<MutableStorageImpl>(
           top_hash.value_or(hash256_t{}),
-          std::move(index),
           std::move(postgres_connection),
           std::move(wsv_transaction),
           std::move(command_executors.value()));
@@ -169,13 +151,6 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
       init_txn.exec(init_);
       init_txn.commit();
 
-      // erase tx index
-      log_->info("drop redis");
-      cpp_redis::client client;
-      client.connect(redis_host_, redis_port_);
-      client.flushall();
-      client.sync_commit();
-
       // erase blocks
       log_->info("drop block store");
       block_store_->dropAll();
@@ -183,8 +158,6 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
 
     nonstd::optional<ConnectionContext> StorageImpl::initConnections(
         std::string block_store_dir,
-        std::string redis_host,
-        std::size_t redis_port,
         std::string postgres_options) {
       auto log_ = logger::log("StorageImpl:initConnection");
       log_->info("Start storage creation");
@@ -195,16 +168,6 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
         return nonstd::nullopt;
       }
       log_->info("block store created");
-
-
-      auto index = std::make_unique<cpp_redis::client>();
-      try {
-        index->connect(redis_host, redis_port);
-      } catch (const cpp_redis::redis_error &e) {
-        log_->error(kRedisBroken, redis_host, redis_port, e.what());
-        return nonstd::nullopt;
-      }
-      log_->info("connection to Redis completed");
 
       auto postgres_connection =
           std::make_unique<pqxx::lazyconnection>(postgres_options);
@@ -222,29 +185,22 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
 
       return nonstd::make_optional<ConnectionContext>(
           std::move(*block_store),
-          std::move(index),
           std::move(postgres_connection),
           std::move(wsv_transaction));
     }
 
     std::shared_ptr<StorageImpl> StorageImpl::create(
         std::string block_store_dir,
-        std::string redis_host,
-        std::size_t redis_port,
         std::string postgres_options) {
-      auto ctx = initConnections(
-          block_store_dir, redis_host, redis_port, postgres_options);
+      auto ctx = initConnections(block_store_dir, postgres_options);
       if (not ctx.has_value()) {
         return nullptr;
       }
 
       return std::shared_ptr<StorageImpl>(
           new StorageImpl(block_store_dir,
-                          redis_host,
-                          redis_port,
                           postgres_options,
                           std::move(ctx->block_store),
-                          std::move(ctx->index),
                           std::move(ctx->pg_lazy),
                           std::move(ctx->pg_nontx)));
     }
@@ -258,8 +214,6 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
                           stringToBytes(model::converters::jsonToString(
                               serializer_.serialize(block.second))));
       }
-      storage->index_->exec();
-      storage->index_->sync_commit();
 
       storage->transaction_->exec("COMMIT;");
       storage->committed = true;

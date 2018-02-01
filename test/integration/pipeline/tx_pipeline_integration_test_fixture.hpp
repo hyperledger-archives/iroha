@@ -36,8 +36,6 @@ using iroha::model::Transaction;
 class TestIrohad : public Irohad {
  public:
   TestIrohad(const std::string &block_store_dir,
-             const std::string &redis_host,
-             size_t redis_port,
              const std::string &pg_conn,
              size_t torii_port,
              size_t internal_port,
@@ -47,8 +45,6 @@ class TestIrohad : public Irohad {
              std::chrono::milliseconds load_delay,
              const iroha::keypair_t &keypair)
       : Irohad(block_store_dir,
-               redis_host,
-               redis_port,
                pg_conn,
                torii_port,
                internal_port,

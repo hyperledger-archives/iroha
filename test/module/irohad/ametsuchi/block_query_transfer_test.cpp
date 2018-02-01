@@ -16,8 +16,8 @@
  */
 
 #include <boost/optional.hpp>
-#include "ametsuchi/impl/redis_block_index.hpp"
-#include "ametsuchi/impl/redis_block_query.hpp"
+#include "ametsuchi/impl/postgres_block_index.hpp"
+#include "ametsuchi/impl/postgres_block_query.hpp"
 #include "framework/test_subscriber.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/sha3_hash.hpp"
@@ -36,8 +36,19 @@ namespace iroha {
         ASSERT_TRUE(tmp);
         file = std::move(*tmp);
 
-        index = std::make_shared<RedisBlockIndex>(client);
-        blocks = std::make_shared<RedisBlockQuery>(client, *file);
+        postgres_connection = std::make_unique<pqxx::lazyconnection>(pgopt_);
+        try {
+          postgres_connection->activate();
+        } catch (const pqxx::broken_connection &e) {
+          FAIL() << "Connection to PostgreSQL broken: " << e.what();
+        }
+        transaction = std::make_unique<pqxx::nontransaction>(
+            *postgres_connection, "Postgres block indexes");
+
+        index = std::make_shared<PostgresBlockIndex>(*transaction);
+        blocks = std::make_shared<PostgresBlockQuery>(*transaction, *file);
+
+        transaction->exec(init_);
       }
 
       void insert(const model::Block &block) {
@@ -47,6 +58,8 @@ namespace iroha {
         index->index(block);
       }
 
+      std::unique_ptr<pqxx::nontransaction> transaction;
+      std::unique_ptr<pqxx::lazyconnection> postgres_connection;
       std::vector<iroha::hash256_t> tx_hashes;
       std::shared_ptr<BlockQuery> blocks;
       std::shared_ptr<BlockIndex> index;

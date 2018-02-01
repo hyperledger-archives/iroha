@@ -34,17 +34,15 @@ namespace iroha {
   namespace ametsuchi {
 
     struct ConnectionContext {
-      ConnectionContext(std::unique_ptr<FlatFile> block_store,
-                        std::unique_ptr<cpp_redis::client> index,
-                        std::unique_ptr<pqxx::lazyconnection> pg_lazy,
-                        std::unique_ptr<pqxx::nontransaction> pg_nontx)
+      ConnectionContext(
+          std::unique_ptr<FlatFile> block_store,
+          std::unique_ptr<pqxx::lazyconnection> pg_lazy,
+          std::unique_ptr<pqxx::nontransaction> pg_nontx)
           : block_store(std::move(block_store)),
-            index(std::move(index)),
             pg_lazy(std::move(pg_lazy)),
             pg_nontx(std::move(pg_nontx)) {}
 
       std::unique_ptr<FlatFile> block_store;
-      std::unique_ptr<cpp_redis::client> index;
       std::unique_ptr<pqxx::lazyconnection> pg_lazy;
       std::unique_ptr<pqxx::nontransaction> pg_nontx;
     };
@@ -53,15 +51,11 @@ namespace iroha {
      protected:
       static nonstd::optional<ConnectionContext> initConnections(
           std::string block_store_dir,
-          std::string redis_host,
-          std::size_t redis_port,
           std::string postgres_options);
 
      public:
       static std::shared_ptr<StorageImpl> create(
           std::string block_store_dir,
-          std::string redis_host,
-          std::size_t redis_port,
           std::string postgres_connection);
 
       std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
@@ -79,15 +73,12 @@ namespace iroha {
       std::shared_ptr<BlockQuery> getBlockQuery() const override;
 
      protected:
-      StorageImpl(std::string block_store_dir,
-                  std::string redis_host,
-                  std::size_t redis_port,
-                  std::string postgres_options,
-                  std::unique_ptr<FlatFile> block_store,
-                  std::unique_ptr<cpp_redis::client> index,
-//                  std::unique_ptr<pqxx::nontransaction> index,
-                  std::unique_ptr<pqxx::lazyconnection> wsv_connection,
-                  std::unique_ptr<pqxx::nontransaction> wsv_transaction);
+      StorageImpl(
+          std::string block_store_dir,
+          std::string postgres_options,
+          std::unique_ptr<FlatFile> block_store,
+          std::unique_ptr<pqxx::lazyconnection> wsv_connection,
+          std::unique_ptr<pqxx::nontransaction> wsv_transaction);
 
       /**
        * Folder with raw blocks
@@ -95,18 +86,10 @@ namespace iroha {
       const std::string block_store_dir_;
 
       // db info
-      const std::string redis_host_;
-      const std::size_t redis_port_;
       const std::string postgres_options_;
 
      private:
       std::unique_ptr<FlatFile> block_store_;
-
-      /**
-       * Redis connection
-       */
-      std::unique_ptr<cpp_redis::client> index_;
-//      std::unique_ptr<pqxx::nontransaction> index_;
 
       /**
        * Pg connection with direct transaction management

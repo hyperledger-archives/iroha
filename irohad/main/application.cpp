@@ -32,8 +32,6 @@ using namespace iroha::consensus::yac;
  * Configuring iroha daemon
  */
 Irohad::Irohad(const std::string &block_store_dir,
-               const std::string &redis_host,
-               size_t redis_port,
                const std::string &pg_conn,
                size_t torii_port,
                size_t internal_port,
@@ -43,8 +41,6 @@ Irohad::Irohad(const std::string &block_store_dir,
                std::chrono::milliseconds load_delay,
                const keypair_t &keypair)
     : block_store_dir_(block_store_dir),
-      redis_host_(redis_host),
-      redis_port_(redis_port),
       pg_conn_(pg_conn),
       torii_port_(torii_port),
       internal_port_(internal_port),
@@ -110,8 +106,7 @@ void Irohad::dropStorage() {
  * Initializing iroha daemon storage
  */
 void Irohad::initStorage() {
-  storage =
-      StorageImpl::create(block_store_dir_, redis_host_, redis_port_, pg_conn_);
+  storage = StorageImpl::create(block_store_dir_, pg_conn_);
 
   log_->info("[Init] => storage", logger::logBool(storage));
 }

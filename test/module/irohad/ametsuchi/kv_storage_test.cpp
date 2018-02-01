@@ -38,8 +38,7 @@ class KVTest : public AmetsuchiTest {
  protected:
   void SetUp() override {
     AmetsuchiTest::SetUp();
-    storage =
-        StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+    storage = StorageImpl::create(block_store_path, pgopt_);
     ASSERT_TRUE(storage);
     blocks = storage->getBlockQuery();
     wsv_query = storage->getWsvQuery();

@@ -42,8 +42,6 @@ namespace iroha {
         auto pg_port = std::getenv("IROHA_POSTGRES_PORT");
         auto pg_user = std::getenv("IROHA_POSTGRES_USER");
         auto pg_pass = std::getenv("IROHA_POSTGRES_PASSWORD");
-        auto rd_host = std::getenv("IROHA_REDIS_HOST");
-        auto rd_port = std::getenv("IROHA_REDIS_PORT");
         if (not pg_host) {
           return;
         }
@@ -51,8 +49,6 @@ namespace iroha {
         ss << "host=" << pg_host << " port=" << pg_port << " user=" << pg_user
            << " password=" << pg_pass;
         pgopt_ = ss.str();
-        redishost_ = rd_host;
-        redisport_ = std::stoull(rd_port);
         log->info("host={}, port={}, user={}, password={}",
                   pg_host,
                   pg_port,
@@ -67,11 +63,6 @@ namespace iroha {
           connection->activate();
         } catch (const pqxx::broken_connection &e) {
           FAIL() << "Connection to PostgreSQL broken: " << e.what();
-        }
-        try {
-          client.connect(redishost_, redisport_);
-        } catch (const cpp_redis::redis_error &e) {
-          FAIL() << "Connection to Redis broken: " << e.what();
         }
       }
       virtual void TearDown() {
@@ -98,28 +89,19 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
         txn.commit();
         connection->disconnect();
 
-        client.flushall();
-        client.sync_commit();
-        client.disconnect(true);
-
         iroha::remove_all(block_store_path);
       }
 
       std::shared_ptr<pqxx::lazyconnection> connection;
-
-      cpp_redis::client client;
 
       model::generators::CommandGenerator cmd_gen;
 
       std::string pgopt_ =
           "host=localhost port=5432 user=postgres password=mysecretpassword";
 
-      std::string redishost_ = "localhost";
-      size_t redisport_ = 6379;
-
       std::string block_store_path = "/tmp/block_store";
 
-        const std::string init_ = R"(
+      const std::string init_ = R"(
 CREATE TABLE IF NOT EXISTS role (
     role_id character varying(45),
     PRIMARY KEY (role_id)
