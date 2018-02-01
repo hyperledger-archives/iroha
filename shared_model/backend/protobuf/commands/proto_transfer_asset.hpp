@@ -30,10 +30,9 @@ namespace shared_model {
       template <typename CommandType>
       explicit TransferAsset(CommandType &&command)
           : CopyableProto(std::forward<CommandType>(command)),
-            transfer_asset_(detail::makeReferenceGenerator(
-                proto_, &iroha::protocol::Command::transfer_asset)),
+            transfer_asset_(proto_->transfer_asset()),
             amount_(
-                [this] { return proto::Amount(transfer_asset_->amount()); }) {}
+                [this] { return proto::Amount(transfer_asset_.amount()); }) {}
 
       TransferAsset(const TransferAsset &o) : TransferAsset(o.proto_) {}
 
@@ -45,19 +44,19 @@ namespace shared_model {
       }
 
       const interface::types::AssetIdType &assetId() const override {
-        return transfer_asset_->asset_id();
+        return transfer_asset_.asset_id();
       }
 
       const interface::types::AccountIdType &srcAccountId() const override {
-        return transfer_asset_->src_account_id();
+        return transfer_asset_.src_account_id();
       }
 
       const interface::types::AccountIdType &destAccountId() const override {
-        return transfer_asset_->dest_account_id();
+        return transfer_asset_.dest_account_id();
       }
 
       const MessageType &message() const override {
-        return transfer_asset_->description();
+        return transfer_asset_.description();
       }
 
      private:
@@ -65,7 +64,7 @@ namespace shared_model {
       template <typename Value>
       using Lazy = detail::LazyInitializer<Value>;
 
-      const Lazy<const iroha::protocol::TransferAsset &> transfer_asset_;
+      const iroha::protocol::TransferAsset &transfer_asset_;
       const Lazy<proto::Amount> amount_;
     };
 
