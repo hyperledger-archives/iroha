@@ -14,7 +14,6 @@ limitations under the License.
 #include <thread>
 
 #include <grpc++/grpc++.h>
-#include <network/grpc_call.hpp>
 
 #include "block.pb.h"
 #include "torii/command_client.hpp"
@@ -25,32 +24,42 @@ namespace torii {
   using iroha::protocol::ToriiResponse;
   using iroha::protocol::Transaction;
 
-  CommandSyncClient::CommandSyncClient(std::string ip, int port)
-      : stub_(iroha::protocol::CommandService::NewStub(
+  CommandSyncClient::CommandSyncClient(const std::string& ip, size_t port)
+      : ip(ip),
+        port(port),
+        stub_(iroha::protocol::CommandService::NewStub(
             grpc::CreateChannel(ip + ":" + std::to_string(port),
                                 grpc::InsecureChannelCredentials()))) {}
 
-  CommandSyncClient::~CommandSyncClient() {
-    completionQueue_.Shutdown();
+  CommandSyncClient::CommandSyncClient(const CommandSyncClient &rhs)
+          : ip(rhs.ip),
+            port(rhs.port),
+            stub_(iroha::protocol::CommandService::NewStub(
+                    grpc::CreateChannel(rhs.ip + ":" + std::to_string(rhs.port),
+                                        grpc::InsecureChannelCredentials()))) {}
+
+  CommandSyncClient& CommandSyncClient::operator=(const CommandSyncClient &rhs) {
+    this->ip = rhs.ip;
+    this->port = rhs.port;
+    this->stub_ = iroha::protocol::CommandService::NewStub(
+            grpc::CreateChannel(rhs.ip + ":" + std::to_string(rhs.port),
+                                grpc::InsecureChannelCredentials()));
+    return *this;
   }
 
-  const char *kQueueNextError = "CompletionQueue::Next() returns error";
-
-  /**
-   * requests tx to a torii server and returns response (blocking, sync)
-   * @param tx
-   * @param response - returns ToriiResponse if succeeded
-   * @return grpc::Status - returns connection is success or not.
-   */
-  grpc::Status CommandSyncClient::Torii(const Transaction &tx) {
+  grpc::Status CommandSyncClient::Torii(const Transaction &tx) const {
     google::protobuf::Empty a;
+    grpc::ClientContext context_;
     return stub_->Torii(&context_, tx, &a);
   }
 
   grpc::Status CommandSyncClient::Status(
       const iroha::protocol::TxStatusRequest &request,
-      iroha::protocol::ToriiResponse &response) {
+      iroha::protocol::ToriiResponse &response) const {
+    grpc::ClientContext context_;
     return stub_->Status(&context_, request, &response);
   }
+
+
 
 }  // namespace torii

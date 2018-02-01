@@ -166,11 +166,13 @@ TEST_F(ToriiServiceTest, StatusWhenTxWasNotReceivedBlocking) {
   }
 
   // get statuses of unsent transactions
+  auto client = torii::CommandSyncClient(Ip, Port);
+
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     iroha::protocol::TxStatusRequest tx_request;
     tx_request.set_tx_hash(tx_hashes.at(i));
     iroha::protocol::ToriiResponse toriiResponse;
-    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+    client.Status(tx_request, toriiResponse);
 
     ASSERT_EQ(toriiResponse.tx_status(),
               iroha::protocol::TxStatus::NOT_RECEIVED);
@@ -201,6 +203,8 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
 
   iroha::model::converters::PbTransactionFactory tx_factory;
 
+  auto client1 = torii::CommandSyncClient(Ip, Port);
+
   // create transactions and send them to Torii
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     auto new_tx = iroha::protocol::Transaction();
@@ -208,7 +212,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     payload->set_tx_counter(i);
     payload->set_creator_account_id("accountA");
 
-    auto stat = torii::CommandSyncClient(Ip, Port).Torii(new_tx);
+    auto stat = client1.Torii(new_tx);
 
     auto iroha_tx = tx_factory.deserialize(new_tx);
     txs.push_back(*iroha_tx);
@@ -222,12 +226,14 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   iroha::model::Proposal proposal(txs);
   prop_notifier_.get_subscriber().on_next(proposal);
 
+  torii::CommandSyncClient client2(client1);
+
   // check if stateless validation passed
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     iroha::protocol::TxStatusRequest tx_request;
     tx_request.set_tx_hash(tx_hashes.at(i));
     iroha::protocol::ToriiResponse toriiResponse;
-    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+    client2.Status(tx_request, toriiResponse);
 
     ASSERT_EQ(toriiResponse.tx_status(),
               iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
@@ -246,12 +252,13 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   commit_notifier_.get_subscriber().on_next(commit);
   block_notifier_.get_subscriber().on_next(block);
 
+  auto client3 = client2;
   // check if all transactions but the last one passed stateful validation
   for (size_t i = 0; i < TimesToriiBlocking - 1; ++i) {
     iroha::protocol::TxStatusRequest tx_request;
     tx_request.set_tx_hash(tx_hashes.at(i));
     iroha::protocol::ToriiResponse toriiResponse;
-    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+    client3.Status(tx_request, toriiResponse);
 
     ASSERT_EQ(toriiResponse.tx_status(),
               iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
@@ -260,22 +267,23 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   // end current commit
   block_notifier_.get_subscriber().on_completed();
 
+  auto client4 = client3;
   // check if all transactions but the last have committed state
   for (size_t i = 0; i < TimesToriiBlocking - 1; ++i) {
     iroha::protocol::TxStatusRequest tx_request;
     tx_request.set_tx_hash(tx_hashes.at(i));
     iroha::protocol::ToriiResponse toriiResponse;
-    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+    client4.Status(tx_request, toriiResponse);
 
     ASSERT_EQ(toriiResponse.tx_status(), iroha::protocol::TxStatus::COMMITTED);
   }
 
+  torii::CommandSyncClient client5(client4);
   // check if the last transaction from txs has failed stateful validation
   iroha::protocol::TxStatusRequest last_tx_request;
   last_tx_request.set_tx_hash(tx_hashes.at(TimesToriiBlocking - 1));
   iroha::protocol::ToriiResponse stful_invalid_response;
-  torii::CommandSyncClient(Ip, Port).Status(last_tx_request,
-                                            stful_invalid_response);
+  client5.Status(last_tx_request, stful_invalid_response);
   ASSERT_EQ(stful_invalid_response.tx_status(),
             iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED);
 }
@@ -302,14 +310,17 @@ TEST_F(ToriiServiceTest, CheckHash) {
     tx_hashes.push_back(iroha::hash(*tx).to_string());
   }
 
+  auto client = torii::CommandSyncClient(Ip, Port);
+
   // get statuses of transactions
   for (auto &hash : tx_hashes) {
     iroha::protocol::TxStatusRequest tx_request;
     tx_request.set_tx_hash(hash);
     iroha::protocol::ToriiResponse toriiResponse;
     // when
-    torii::CommandSyncClient(Ip, Port).Status(tx_request, toriiResponse);
+    client.Status(tx_request, toriiResponse);
     // then
     ASSERT_EQ(toriiResponse.tx_hash(), hash);
   }
 }
+

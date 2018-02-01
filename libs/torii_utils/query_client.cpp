@@ -13,7 +13,6 @@ limitations under the License.
 
 #include <block.pb.h>
 #include <grpc++/grpc++.h>
-#include <network/grpc_call.hpp>
 #include <thread>
 #include <torii/torii_service_handler.hpp>
 #include <torii_utils/query_client.hpp>
@@ -23,13 +22,27 @@ namespace torii_utils {
   using iroha::protocol::Query;
   using iroha::protocol::QueryResponse;
 
-  QuerySyncClient::QuerySyncClient(const std::string &ip, const int port)
-      : stub_(iroha::protocol::QueryService::NewStub(
+  QuerySyncClient::QuerySyncClient(const std::string &ip, size_t port)
+      : ip(ip),
+        port(port),
+        stub_(iroha::protocol::QueryService::NewStub(
             grpc::CreateChannel(ip + ":" + std::to_string(port),
                                 grpc::InsecureChannelCredentials()))) {}
 
-  QuerySyncClient::~QuerySyncClient() {
-    completionQueue_.Shutdown();
+  QuerySyncClient::QuerySyncClient(const QuerySyncClient &rhs)
+      : ip(rhs.ip),
+        port(rhs.port),
+        stub_(iroha::protocol::QueryService::NewStub(
+            grpc::CreateChannel(rhs.ip + ":" + std::to_string(rhs.port),
+                                grpc::InsecureChannelCredentials()))) {}
+
+  QuerySyncClient &QuerySyncClient::operator=(const QuerySyncClient &rhs) {
+    this->ip = rhs.ip;
+    this->port = rhs.port;
+    this->stub_ = iroha::protocol::QueryService::NewStub(
+        grpc::CreateChannel(rhs.ip + ":" + std::to_string(rhs.port),
+                            grpc::InsecureChannelCredentials()));
+    return *this;
   }
 
   /**
@@ -39,30 +52,9 @@ namespace torii_utils {
    * @return grpc::Status
    */
   grpc::Status QuerySyncClient::Find(const iroha::protocol::Query &query,
-                                     QueryResponse &response) {
-    std::unique_ptr<
-        grpc::ClientAsyncResponseReader<iroha::protocol::QueryResponse>>
-        rpc(stub_->AsyncFind(&context_, query, &completionQueue_));
-
-    using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
-
-    rpc->Finish(
-        &response, &status_, (void *)static_cast<int>(State::ResponseSent));
-
-    void *got_tag;
-    bool ok = false;
-
-    /**
-     * pulls a new rpc response. If no response, blocks this thread.
-     */
-    if (!completionQueue_.Next(&got_tag, &ok)) {
-      throw std::runtime_error("CompletionQueue::Next() returns error");
-    }
-
-    assert(got_tag == (void *)static_cast<int>(State::ResponseSent));
-    assert(ok);
-
-    return status_;
+                                     QueryResponse &response) const {
+    grpc::ClientContext context_;
+    return stub_->Find(&context_, query, &response);
   }
 
 }  // namespace torii_utils

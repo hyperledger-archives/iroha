@@ -525,6 +525,10 @@ TEST_F(ToriiQueriesTest, FindManyTimesWhereQueryServiceSync) {
               validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(false));
 
+  //Testing copy constructor and copy assignment operator
+  auto client1 = torii_utils::QuerySyncClient(Ip, Port);
+  auto client2 = client1;
+  auto client3 = torii_utils::QuerySyncClient(client2);
   for (size_t i = 0; i < TimesFind; ++i) {
     iroha::protocol::QueryResponse response;
     auto query = iroha::protocol::Query();
@@ -535,7 +539,7 @@ TEST_F(ToriiQueriesTest, FindManyTimesWhereQueryServiceSync) {
     query.mutable_signature()->set_pubkey(pubkey_test);
     query.mutable_signature()->set_signature(signature_test);
 
-    auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
+    auto stat = client3.Find(query, response);
     ASSERT_TRUE(stat.ok());
     // Must return Error Response
     ASSERT_EQ(response.error_response().reason(),

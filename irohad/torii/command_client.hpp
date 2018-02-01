@@ -29,15 +29,16 @@ namespace torii {
    */
   class CommandSyncClient {
    public:
-    CommandSyncClient(std::string ip, int port);
-    ~CommandSyncClient();
+    CommandSyncClient(const std::string& ip, size_t port);
+    CommandSyncClient(const CommandSyncClient&);
+    CommandSyncClient& operator=(const CommandSyncClient&);
 
     /**
      * requests tx to a torii server and returns response (blocking, sync)
      * @param tx
      * @return grpc::Status - returns connection is success or not.
      */
-    grpc::Status Torii(const iroha::protocol::Transaction &tx);
+    grpc::Status Torii(const iroha::protocol::Transaction &tx) const;
 
     /**
      * @param tx
@@ -45,14 +46,13 @@ namespace torii {
      * @return grpc::Status - returns connection is success or not.
      */
     grpc::Status Status(const iroha::protocol::TxStatusRequest &tx,
-                        iroha::protocol::ToriiResponse &response);
+                        iroha::protocol::ToriiResponse &response) const;
 
    private:
-    grpc::ClientContext context_;
+    std::string ip;
+    size_t port;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
 
-    grpc::CompletionQueue completionQueue_;
-    grpc::Status status_;
   };
 
 
