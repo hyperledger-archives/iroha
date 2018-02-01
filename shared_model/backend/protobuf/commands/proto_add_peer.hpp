@@ -33,7 +33,7 @@ namespace shared_model {
       explicit AddPeer(CommandType &&command)
           : CopyableProto(std::forward<CommandType>(command)),
             add_peer_(proto_->add_peer()),
-            peer_([this] { return proto::Peer(add_peer_->peer()); }) {}
+            peer_([this] { return proto::Peer(add_peer_.peer()); }) {}
 
 
       AddPeer(const AddPeer &o) : AddPeer(o.proto_) {}
