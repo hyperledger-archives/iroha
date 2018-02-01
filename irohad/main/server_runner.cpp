@@ -24,8 +24,9 @@
 ServerRunner::ServerRunner(const std::string &address)
     : serverAddress_(address) {}
 
-void ServerRunner::append(std::unique_ptr<grpc::Service> service) {
+ServerRunner &ServerRunner::append(std::unique_ptr<grpc::Service> service) {
   services_.emplace_back(std::move(service));
+  return *this;
 }
 
 void ServerRunner::run() {

@@ -36,8 +36,9 @@ class ServerRunner {
   /**
    * Adds a new grpc service to be run.
    * @param service - service to append.
+   * @return reference to this with service appended
    */
-  void append(std::unique_ptr<grpc::Service> service);
+  ServerRunner &append(std::unique_ptr<grpc::Service> service);
 
   /**
    * Initialize the server and run main loop.

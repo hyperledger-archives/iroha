@@ -93,11 +93,12 @@ class ClientServerTest : public testing::Test {
           std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
       //----------- Server run ----------------
-      runner->append(std::make_unique<torii::CommandService>(
-          pb_tx_factory, tx_processor, storageMock));
-      runner->append(std::make_unique<torii::QueryService>(
-          pb_query_factory, pb_query_resp_factory, qpi));
-      runner->run();
+      runner
+          ->append(std::make_unique<torii::CommandService>(
+              pb_tx_factory, tx_processor, storageMock))
+          .append(std::make_unique<torii::QueryService>(
+              pb_query_factory, pb_query_resp_factory, qpi))
+          .run();
     });
 
     runner->waitForServersReady();
