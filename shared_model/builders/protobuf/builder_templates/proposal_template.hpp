@@ -86,7 +86,6 @@ namespace shared_model {
       }
 
       Proposal build() {
-        // TODO 22/01/2018 x3medima17: add stateless validator IR-836
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
         auto answer = stateless_validator_.validate(
             detail::makePolymorphic<Proposal>(proposal_));
