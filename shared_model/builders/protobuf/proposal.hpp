@@ -20,6 +20,11 @@
 
 #include "builders/protobuf/builder_templates/proposal_template.hpp"
 
-using ProposalBuilder = TemplateProposalBuilder<>;
+namespace shared_model {
+  namespace proto {
 
-#endif //IROHA_PROTO_PROPOSAL_BUILDER_HPP
+    using ProposalBuilder = TemplateProposalBuilder<>;
+  }
+}  // namespace shared_model
+
+#endif  // IROHA_PROTO_PROPOSAL_BUILDER_HPP

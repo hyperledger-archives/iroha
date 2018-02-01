@@ -20,6 +20,11 @@
 
 #include "builders/protobuf/builder_templates/block_template.hpp"
 
-using BlockBuilder = TemplateBlockBuilder<>;
+namespace shared_model {
+  namespace proto {
 
-#endif //IROHA_PROTO_BLOCK_BUILDER_HPP
+    using BlockBuilder = TemplateBlockBuilder<>;
+  }
+}  // namespace shared_model
+
+#endif  // IROHA_PROTO_BLOCK_BUILDER_HPP
