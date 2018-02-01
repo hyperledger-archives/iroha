@@ -29,11 +29,12 @@ namespace iroha {
      * @param account_id - account to check
      * @param queries - WsvQueries
      * @param permission_id  = permission to check
-     * @return  True if account has permission, false otherwise
+     * @return
      */
-    bool checkAccountRolePermission(const std::string &account_id,
-                                    iroha::ametsuchi::WsvQuery &queries,
-                                    const std::string &permission_id);
+    ametsuchi::WsvQueryResult<bool> checkAccountRolePermission(
+        const std::string &account_id,
+        iroha::ametsuchi::WsvQuery &queries,
+        const std::string &permission_id);
 
     /**
      * Accumulate all account's role permissions
@@ -41,7 +42,7 @@ namespace iroha {
      * @param queries - WSVqueries
      * @return set of account's role permissions
      */
-    nonstd::optional<std::set<std::string>> getAccountPermissions(
+    ametsuchi::WsvQueryResult<std::set<std::string>> getAccountPermissions(
         const std::string &account_id, iroha::ametsuchi::WsvQuery &queries);
 
     /**

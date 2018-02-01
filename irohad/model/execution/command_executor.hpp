@@ -103,12 +103,11 @@ namespace iroha {
       virtual std::string commandName() const noexcept = 0;
 
       /**
-       * Creates Error out of given error message
-       * @param error_message what message should be displayed to the user
-       * @return Error object which can be used for result construction
+       * Creates Execution result out of given wsv command result
+       * @param result what message should be displayed to the user
+       * @return Result object which will contain command name as an addition to error message
        */
-      expected::Error<ExecutionError> makeExecutionError(
-          const std::string &error_message) const noexcept;
+      ExecutionResult makeExecutionResult(ametsuchi::WsvCommandResult &&result) const noexcept;
 
       /**
        * Return execution result with an error with given message if predicate

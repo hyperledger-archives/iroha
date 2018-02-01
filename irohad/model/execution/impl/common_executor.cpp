@@ -15,30 +15,28 @@
  * limitations under the License.
  */
 #include "model/execution/common_executor.hpp"
-#include "common/types.hpp"
 
 using namespace iroha::ametsuchi;
 
 namespace iroha {
   namespace model {
 
-    nonstd::optional<std::set<std::string>> getAccountPermissions(
+    WsvQueryResult<std::set<std::string>> getAccountPermissions(
         const std::string &account_id, iroha::ametsuchi::WsvQuery &queries) {
-      auto roles = queries.getAccountRoles(account_id);
-      if (not roles.has_value()) {
-        return nonstd::nullopt;
-      }
-      std::set<std::string> account_permissions;
-      std::for_each(roles.value().begin(),
-                    roles.value().end(),
-                    [&account_permissions, &queries](auto role) {
-                      auto perms = queries.getRolePermissions(role);
-                      if (perms.has_value()) {
-                        account_permissions.insert(perms.value().begin(),
-                                                   perms.value().end());
-                      }
-                    });
-      return account_permissions;
+      auto generate_permissions = [&](const auto &roles) -> WsvQueryResult<std::set<std::string>> {
+        std::set<std::string> account_permissions;
+        auto append_roles = [&account_permissions](const auto &permissions) {
+          account_permissions.insert(permissions.begin(), permissions.end());
+        };
+        std::for_each(roles.begin(),
+                      roles.end(),
+                      [&](auto role) {
+                        queries.getRolePermissions(role) | append_roles;
+                      });
+        return expected::makeValue(account_permissions);
+      };
+
+      return queries.getAccountRoles(account_id) | generate_permissions;
     }
 
     bool accountHasPermission(const std::set<std::string> &perms,
@@ -46,9 +44,10 @@ namespace iroha {
       return perms.count(permission_id) == 1;
     }
 
-    bool checkAccountRolePermission(const std::string &account_id,
-                                    WsvQuery &queries,
-                                    const std::string &permission_id) {
+    WsvQueryResult<bool> checkAccountRolePermission(
+        const std::string &account_id,
+        WsvQuery &queries,
+        const std::string &permission_id) {
       auto roleHasPermission = [&permission_id](auto permissions) {
         return std::any_of(
             permissions.begin(),
@@ -56,10 +55,15 @@ namespace iroha {
             [&permission_id](auto perm) { return permission_id == perm; });
       };
 
-      auto checkRolesPermission = [&](auto roles) {
-        return std::any_of(roles.begin(), roles.end(), [&](auto role) {
-          return queries.getRolePermissions(role) | roleHasPermission;
-        });
+      auto checkRolesPermission = [&](auto roles) -> WsvQueryResult<bool> {
+        return expected::makeValue(std::any_of(roles.begin(), roles.end(), [&](auto role) {
+          return queries.getRolePermissions(role).match(
+              [&roleHasPermission](const expected::Value<std::vector<std::string>> &v) {
+                return roleHasPermission(v.value);
+              },
+              [](const expected::Error<WsvError> &e) { return false; }
+          );
+        }));
       };
 
       return queries.getAccountRoles(account_id) | checkRolesPermission;

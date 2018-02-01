@@ -46,13 +46,13 @@ namespace iroha {
 
     // TODO: 30.01.2018 nickaleks make db calls return result to eliminate need
     // for this function IR-775
-    ExecutionResult CommandExecutor::errorIfNot(
-        bool condition, const std::string &error_message) const noexcept {
-      if (not condition) {
-        return makeExecutionError(error_message);
-      }
-      return {};
-    }
+    //    ExecutionResult CommandExecutor::errorIfNot(
+    //        bool condition, const std::string &error_message) const noexcept {
+    //      if (not condition) {
+    //        return makeExecutionResult(error_message);
+    //      }
+    //      return {};
+    //    }
 
     // ----------------------------| Common |-----------------------------
 
@@ -63,9 +63,13 @@ namespace iroha {
           and isValid(command, queries, creator_account_id);
     }
 
-    expected::Error<ExecutionError> CommandExecutor::makeExecutionError(
-        const std::string &error_message) const noexcept {
-      return makeError(ExecutionError{commandName(), error_message});
+    ExecutionResult CommandExecutor::makeExecutionResult(
+        ametsuchi::WsvCommandResult &&result) const {
+      return result.match(
+          [](expected::Value<void> &v) { return {}; },
+          [this](expected::Error<WsvError> &e) {
+            return makeError(ExecutionError{this->commandName(), e.error});
+          });
     }
 
     // ----------------------------| Append Role |-----------------------------
@@ -80,9 +84,8 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const AppendRole &>(command);
 
-      return errorIfNot(
-          commands.insertAccountRole(cmd_value.account_id, cmd_value.role_name),
-          "failed to insert account role");
+      return makeExecutionResult(commands.insertAccountRole(
+          cmd_value.account_id, cmd_value.role_name));
     }
 
     bool AppendRoleExecutor::hasPermissions(
@@ -133,9 +136,8 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const DetachRole &>(command);
 
-      return errorIfNot(
-          commands.deleteAccountRole(cmd_value.account_id, cmd_value.role_name),
-          "failed to delete account role");
+      return makeExecutionResult(commands.deleteAccountRole(
+          cmd_value.account_id, cmd_value.role_name));
     }
 
     bool DetachRoleExecutor::hasPermissions(
@@ -164,14 +166,10 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const CreateRole &>(command);
 
-      if (not commands.insertRole(cmd_value.role_name)) {
-        return makeExecutionError("failed to insert role: "
-                                  + cmd_value.role_name);
-      }
-
-      return errorIfNot(commands.insertRolePermissions(cmd_value.role_name,
-                                                       cmd_value.permissions),
-                        "failed to insert role permissions");
+      return commands.insertRole(cmd_value.role_name) | [&]() {
+        return commands.insertRolePermissions(cmd_value.role_name,
+                                              cmd_value.permissions);
+      };
     }
 
     bool CreateRoleExecutor::hasPermissions(
@@ -215,11 +213,10 @@ namespace iroha {
         ametsuchi::WsvCommand &commands,
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const GrantPermission &>(command);
-      return errorIfNot(
+      return makeExecutionResult(
           commands.insertAccountGrantablePermission(cmd_value.account_id,
                                                     creator_account_id,
-                                                    cmd_value.permission_name),
-          "failed to insert account grantable permission");
+                                                    cmd_value.permission_name);
     }
 
     bool GrantPermissionExecutor::hasPermissions(
@@ -251,11 +248,10 @@ namespace iroha {
         ametsuchi::WsvCommand &commands,
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const RevokePermission &>(command);
-      return errorIfNot(
+      return makeExecutionResult(
           commands.deleteAccountGrantablePermission(cmd_value.account_id,
                                                     creator_account_id,
-                                                    cmd_value.permission_name),
-          "failed to delete account grantable permision");
+                                                    cmd_value.permission_name));
     }
 
     bool RevokePermissionExecutor::hasPermissions(
@@ -429,7 +425,8 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto add_peer = static_cast<const AddPeer &>(command);
       // Will return false if peer is not unique
-      return errorIfNot(commands.insertPeer(add_peer.peer), "peer is not unique");
+      return errorIfNot(commands.insertPeer(add_peer.peer),
+                        "peer is not unique");
     }
 
     bool AddPeerExecutor::hasPermissions(
@@ -732,8 +729,7 @@ namespace iroha {
 
       return
           // Case 1. Creator set details for his account
-          creator_account_id == cmd.account_id
-          or
+          creator_account_id == cmd.account_id or
           // Case 2. Creator has grantable permission to set account key/value
           queries.hasAccountGrantablePermission(
               creator_account_id, cmd.account_id, can_set_detail);

@@ -48,7 +48,7 @@ namespace iroha {
       }
     };
 
-    template<>
+    template <>
     struct Value<void> {};
 
     template <typename E>
@@ -60,7 +60,7 @@ namespace iroha {
       }
     };
 
-    template<>
+    template <>
     struct Error<void> {};
 
     /**
@@ -114,12 +114,36 @@ namespace iroha {
      * result
      */
     template <typename T, typename E, typename Transform>
-    constexpr auto operator|(Result<T, E> r, Transform &&f)
-        -> decltype(f(std::declval<T>())) {
+    constexpr auto operator|(Result<T, E> r, Transform &&f) ->
+        typename std::enable_if<not std::is_same<decltype(f(std::declval<T>())), void>::value,
+                                decltype(f(std::declval<T>()))>::type {
       using return_type = decltype(f(std::declval<T>()));
       return r.match(
           [&f](const Value<T> &v) { return f(v.value); },
           [](const Error<E> &e) { return return_type(makeError(e.error)); });
+    }
+
+    /**
+     * Bind operator overload for functions which return void. Does nothing in
+     * error case, or executes function in a value case
+     * @param f function which returns void
+     */
+    template <typename T, typename E, typename Procedure>
+    constexpr auto operator|(Result<T, E> r, Procedure f) ->
+        typename std::enable_if<
+            std::is_same<decltype(f(std::declval<T>())), void>::value>::type {
+      return r.match([&f](const Value<T> &v) { f(v.value); },
+                     [](const Error<E> &e) {});
+    };
+
+    template <typename Function, typename NextFunction>
+    constexpr auto operator|(Function &&f, NextFunction &&nf) ->
+                            decltype(nf()) {
+      using return_type = decltype(nf());
+      using first_result_type = decltype(f());
+      return f().match(
+          [&nf](const typename first_result_type::ValueType &v) { return nf(); },
+          [&nf](const typename first_result_type::ErrorType &e) { return return_type(makeError(e.error)); });
     }
   }  // namespace expected
 }  // namespace iroha
