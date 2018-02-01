@@ -9,15 +9,6 @@ from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 import shutil
 
-def dir_up(dir,level):
-    if level == 0:
-        return dir
-    return dir_up(os.path.dirname(os.path.normpath(dir)), level-1)
-
-
-pwd = os.getcwd()
-# IROHA_HOME = "/Users/dumitru/iroha/"
-IROHA_HOME = dir_up(pwd,3)
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -36,21 +27,12 @@ class CMakeBuild(build_ext):
         for ext in self.extensions:
             self.build_extension(ext)
 
-    def build(self):
+    def clone(self):
         repo_url = "https://github.com/hyperledger/iroha"
-        try:
-            subprocess.check_call('git clone {} -b develop --depth 1'.format(repo_url).split())
-        except:
-            pass
-    def build_extension(self, ext):
-        print(ext.sourcedir)
-        self.build()
-        #sys.exit()
+        subprocess.check_call('git clone {} -b develop --depth 1'.format(repo_url).split())
 
-        # cmd = "cmake -H"+IROHA_HOME+" -Bbuild -DSWIG_PYTHON=ON"
-        # subprocess.check_call(cmd.split())
-        # subprocess.check_call("cmake --build build/ --target irohapy -- -j4".split())
-        # git.Git('.').clone("git://gitorious.org/git-python/mainline.git")
+    def build_extension(self, ext):
+        self.clone()
 
         extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
@@ -73,15 +55,13 @@ class CMakeBuild(build_ext):
         shutil.copy(self.build_temp+"/shared_model/bindings/iroha.py", extdir+"/")
 
 
-# subprocess.check_call()
-
 if __name__ == "__main__":
     setup(
         name='iroha',
-        version='0.0.4',
-        author='Soramitsu',
-        author_email='soramitsu@gmail.com',
-        description='Python library for iroha',
+        version='0.0.11',
+        author='Soramitsu Co Ltd',
+        author_email='Python library for Hyperledger Iroha',
+        description='Python library for Hyperledger Iroha',
         long_description='',
         ext_modules=[CMakeExtension('iroha', 'iroha')],
         cmdclass=dict(build_ext=CMakeBuild),
