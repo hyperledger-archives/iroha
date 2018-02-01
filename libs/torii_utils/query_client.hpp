@@ -44,8 +44,8 @@ namespace torii_utils {
                       iroha::protocol::QueryResponse &response) const;
 
    private:
-    std::string ip;
-    size_t port;
+    std::string ip_;
+    size_t port_;
     std::unique_ptr<iroha::protocol::QueryService::Stub> stub_;
   };
 

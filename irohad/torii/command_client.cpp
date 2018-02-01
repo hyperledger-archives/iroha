@@ -24,42 +24,37 @@ namespace torii {
   using iroha::protocol::ToriiResponse;
   using iroha::protocol::Transaction;
 
-  CommandSyncClient::CommandSyncClient(const std::string& ip, size_t port)
-      : ip(ip),
-        port(port),
+  CommandSyncClient::CommandSyncClient(const std::string &ip, size_t port)
+      : ip_(ip),
+        port_(port),
         stub_(iroha::protocol::CommandService::NewStub(
             grpc::CreateChannel(ip + ":" + std::to_string(port),
                                 grpc::InsecureChannelCredentials()))) {}
 
   CommandSyncClient::CommandSyncClient(const CommandSyncClient &rhs)
-          : ip(rhs.ip),
-            port(rhs.port),
-            stub_(iroha::protocol::CommandService::NewStub(
-                    grpc::CreateChannel(rhs.ip + ":" + std::to_string(rhs.port),
-                                        grpc::InsecureChannelCredentials()))) {}
+      : CommandSyncClient(rhs.ip_, rhs.port_) {}
 
-  CommandSyncClient& CommandSyncClient::operator=(const CommandSyncClient &rhs) {
-    this->ip = rhs.ip;
-    this->port = rhs.port;
+  CommandSyncClient &CommandSyncClient::operator=(
+      const CommandSyncClient &rhs) {
+    this->ip_ = rhs.ip_;
+    this->port_ = rhs.port_;
     this->stub_ = iroha::protocol::CommandService::NewStub(
-            grpc::CreateChannel(rhs.ip + ":" + std::to_string(rhs.port),
-                                grpc::InsecureChannelCredentials()));
+        grpc::CreateChannel(rhs.ip_ + ":" + std::to_string(rhs.port_),
+                            grpc::InsecureChannelCredentials()));
     return *this;
   }
 
   grpc::Status CommandSyncClient::Torii(const Transaction &tx) const {
     google::protobuf::Empty a;
-    grpc::ClientContext context_;
-    return stub_->Torii(&context_, tx, &a);
+    grpc::ClientContext context;
+    return stub_->Torii(&context, tx, &a);
   }
 
   grpc::Status CommandSyncClient::Status(
       const iroha::protocol::TxStatusRequest &request,
       iroha::protocol::ToriiResponse &response) const {
-    grpc::ClientContext context_;
-    return stub_->Status(&context_, request, &response);
+    grpc::ClientContext context;
+    return stub_->Status(&context, request, &response);
   }
-
-
 
 }  // namespace torii

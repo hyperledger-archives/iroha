@@ -23,18 +23,14 @@ namespace torii_utils {
   using iroha::protocol::QueryResponse;
 
   QuerySyncClient::QuerySyncClient(const std::string &ip, size_t port)
-      : ip(ip),
-        port(port),
+      : ip_(ip),
+        port_(port),
         stub_(iroha::protocol::QueryService::NewStub(
             grpc::CreateChannel(ip + ":" + std::to_string(port),
                                 grpc::InsecureChannelCredentials()))) {}
 
   QuerySyncClient::QuerySyncClient(const QuerySyncClient &rhs)
-      : ip(rhs.ip),
-        port(rhs.port),
-        stub_(iroha::protocol::QueryService::NewStub(
-            grpc::CreateChannel(rhs.ip + ":" + std::to_string(rhs.port),
-                                grpc::InsecureChannelCredentials()))) {}
+      : QuerySyncClient(rhs.ip_, rhs.port_) {}
 
   QuerySyncClient &QuerySyncClient::operator=(const QuerySyncClient &rhs) {
     this->ip = rhs.ip;
@@ -53,8 +49,8 @@ namespace torii_utils {
    */
   grpc::Status QuerySyncClient::Find(const iroha::protocol::Query &query,
                                      QueryResponse &response) const {
-    grpc::ClientContext context_;
-    return stub_->Find(&context_, query, &response);
+    grpc::ClientContext context;
+    return stub_->Find(&context, query, &response);
   }
 
 }  // namespace torii_utils

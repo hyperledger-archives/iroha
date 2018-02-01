@@ -49,8 +49,8 @@ namespace torii {
                         iroha::protocol::ToriiResponse &response) const;
 
    private:
-    std::string ip;
-    size_t port;
+    std::string ip_;
+    size_t port_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
 
   };
