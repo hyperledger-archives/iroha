@@ -23,6 +23,8 @@
 #include "builders/protobuf/transaction.hpp"
 #include "cryptography/hash_providers/sha3_256.hpp"
 #include "datetime/time.hpp"
+// TODO (@l4l) IR-874 create more confort way for permssion-dependent proto
+// building
 #include "model/permissions.hpp"
 
 using namespace shared_model::crypto;
@@ -41,6 +43,8 @@ namespace integration_framework {
             .addPeer("0.0.0.0:123", key.publicKey())
             .createRole(
                 default_role,
+                // TODO (@l4l) IR-874 create more confort way for
+                // permssion-dependent proto building
                 std::vector<std::string>{iroha::model::can_create_domain,
                                          iroha::model::can_create_account,
                                          iroha::model::can_add_peer,
