@@ -75,6 +75,9 @@ namespace iroha {
       using variant_type::variant_type;  // inherit constructors
 
      public:
+      using ValueType = Value<V>;
+      using ErrorType = Error<E>;
+
       /**
        * match is a function which allows working with result's underlying
        * types, you must provide 2 functions to cover success and failure cases.

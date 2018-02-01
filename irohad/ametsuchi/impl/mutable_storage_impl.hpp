@@ -18,14 +18,14 @@
 #ifndef IROHA_MUTABLE_STORAGE_IMPL_HPP
 #define IROHA_MUTABLE_STORAGE_IMPL_HPP
 
-#include "ametsuchi/mutable_storage.hpp"
-
 #include <cpp_redis/cpp_redis>
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
 #include <unordered_map>
 
 #include "ametsuchi/impl/block_index.hpp"
+#include "ametsuchi/mutable_storage.hpp"
+#include "logger/logger.hpp"
 #include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
@@ -63,6 +63,8 @@ namespace iroha {
       std::shared_ptr<model::CommandExecutorFactory> command_executors_;
 
       bool committed;
+
+      logger::Logger log_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha
