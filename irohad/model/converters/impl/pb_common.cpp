@@ -41,6 +41,22 @@ namespace iroha {
                 value.fourth(),
                 static_cast<uint8_t>(pb_amount.precision())};
       }
+
+      protocol::Peer serializePeer(iroha::model::Peer iroha_peer) {
+        protocol::Peer res;
+        res.set_address(iroha_peer.address);
+        res.set_peer_key(iroha_peer.pubkey.data(), iroha_peer.pubkey.size());
+        return res;
+      }
+
+      iroha::model::Peer deserializePeer(protocol::Peer pb_peer) {
+        iroha::model::Peer res;
+        res.address = pb_peer.address();
+        std::copy(pb_peer.peer_key().begin(),
+                  pb_peer.peer_key().end(),
+                  res.pubkey.begin());
+        return res;
+      }
     }  // namespace converters
   }    // namespace model
 }  // namespace iroha

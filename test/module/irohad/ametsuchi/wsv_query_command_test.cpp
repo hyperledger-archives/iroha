@@ -337,7 +337,7 @@ namespace iroha {
     class DeletePeerTest : public WsvQueryCommandTest {
      public:
       DeletePeerTest() {
-        peer = model::Peer{"1337"};
+        peer = model::Peer();
       }
 
       void SetUp() override {
