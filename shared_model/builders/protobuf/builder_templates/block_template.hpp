@@ -31,13 +31,15 @@
 
 namespace shared_model {
   namespace proto {
-    template <int S = 0, typename BT = UnsignedWrapper<Block>>
+    template <int S = 0,
+              typename SV = validation::DefaultBlockValidator,
+              typename BT = UnsignedWrapper<Block>>
     class TemplateBlockBuilder {
      private:
       template <class T>
       using w = detail::PolymorphicWrapper<T>;
 
-      template <int, typename>
+      template <int, typename, typename>
       friend class TemplateBlockBuilder;
 
       enum RequiredFields {
@@ -50,13 +52,14 @@ namespace shared_model {
       };
 
       template <int s>
-      using NextBuilder = TemplateBlockBuilder<S | (1 << s)>;
+      using NextBuilder = TemplateBlockBuilder<S | (1 << s), SV>;
 
       iroha::protocol::Block block_;
+      SV stateless_validator_;
 
-      template <int Sp>
-      TemplateBlockBuilder(const TemplateBlockBuilder<Sp> &o)
-          : block_(o.block_) {}
+      template <int Sp, typename SVp, typename BTp>
+      TemplateBlockBuilder(const TemplateBlockBuilder<Sp, SVp, BTp> &o)
+          : block_(o.block_), stateless_validator_(o.stateless_validator_) {}
 
       /**
        * Make transformation on copied content
@@ -72,7 +75,8 @@ namespace shared_model {
       }
 
      public:
-      TemplateBlockBuilder() = default;
+      TemplateBlockBuilder(const SV &validator = SV())
+          : stateless_validator_(validator){};
 
       template <class T>
       auto transactions(const T &transactions) const {
@@ -111,6 +115,11 @@ namespace shared_model {
       BT build() {
         // TODO 22/01/2018 x3medima17: add stateless validator IR-837
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
+        auto answer = stateless_validator_.validate(
+            detail::makePolymorphic<Block>(block_));
+        if (answer.hasErrors()) {
+          throw std::invalid_argument(answer.reason());
+        }
         return BT(Block(iroha::protocol::Block(block_)));
       }
 
