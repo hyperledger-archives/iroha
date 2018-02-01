@@ -39,12 +39,12 @@ namespace shared_model {
           ReasonsGroupType &reason,
           const detail::PolymorphicWrapper<interface::Transaction> &transaction)
           const {
-        // TODO write transaction validator
+        // TODO 22/01/2018 x3medima17: add stateless validator IR-837
       }
 
       void validateHeight(ReasonsGroupType &reason,
                           const interface::types::HeightType &height) const {
-        // TODO write height validator
+        // TODO 22/01/2018 x3medima17: add stateless validator IR-837
       }
 
      public:

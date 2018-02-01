@@ -31,6 +31,14 @@
 
 namespace shared_model {
   namespace proto {
+
+  /**
+     * Template block builder for creating new types of block builders by
+     * means of replacing template parameters
+     * @tparam S -- field counter for checking that all required fields are set
+     * @tparam SV -- stateless validator called when build method is invoked
+     * @tparam BT -- build type of built object returned by build method
+     */
     template <int S = 0,
               typename SV = validation::DefaultBlockValidator,
               typename BT = UnsignedWrapper<Block>>

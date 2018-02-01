@@ -26,6 +26,13 @@
 
 namespace shared_model {
   namespace proto {
+
+  /**
+     * Template proposal builder for creating new types of proposal builders by
+     * means of replacing template parameters
+     * @tparam S -- field counter for checking that all required fields are set
+     * @tparam SV -- stateless validator called when build method is invoked
+     */
     template <int S = 0, typename SV = validation::DefaultProposalValidator>
     class TemplateProposalBuilder {
      private:
