@@ -24,6 +24,8 @@
 namespace shared_model {
   namespace validation {
 
+  //TODO: kamilsa 01.02.2018 IR-873 Replace all these validators with mock classes
+
     /**
      * Tx validator which always returns answer with no errors.
      */

@@ -18,9 +18,10 @@
 #ifndef IROHA_TEST_TRANSACTION_BUILDER_HPP
 #define IROHA_TEST_TRANSACTION_BUILDER_HPP
 
+#include "builders/protobuf/builder_templates/block_template.hpp"
 #include "builders/protobuf/builder_templates/query_template.hpp"
 #include "builders/protobuf/builder_templates/transaction_template.hpp"
-#include "validators_mocks.hpp"
+#include "module/shared_model/validators/validators_mocks.hpp"
 
 using namespace shared_model::proto;
 using namespace shared_model::validation;
@@ -42,5 +43,12 @@ using TestQueryBuilder =
     TemplateQueryBuilder<(1 << TemplateQueryBuilder<>::total) - 1,
                          QueryAlwaysValidValidator,
                          Query>;
+
+/**
+ * Builder alias, to build shared model proto block object avoiding validation
+ * and "required fields" check
+ */
+using TestBlockBuilder =
+    TemplateBlockBuilder<(1 << TemplateBlockBuilder<>::total) - 1, Block>;
 
 #endif  // IROHA_TEST_TRANSACTION_BUILDER_HPP
