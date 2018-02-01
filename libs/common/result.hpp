@@ -136,15 +136,16 @@ namespace iroha {
                      [](const Error<E> &e) {});
     };
 
-    template <typename Function, typename NextFunction>
-    constexpr auto operator|(Function &&f, NextFunction &&nf) ->
-                            decltype(nf()) {
-      using return_type = decltype(nf());
-      using first_result_type = decltype(f());
-      return f().match(
-          [&nf](const typename first_result_type::ValueType &v) { return nf(); },
-          [&nf](const typename first_result_type::ErrorType &e) { return return_type(makeError(e.error)); });
-    }
+    template <typename T, typename E, typename Procedure>
+    constexpr auto operator|(Result<T, E> r, Procedure f) ->
+    typename std::enable_if<not
+        std::is_same<decltype(f()), void>::value, decltype(f())>::type {
+      using return_type = decltype(f());
+      return r.match([&f](const Value<T> &v) { return f(); },
+                     [](const Error<E> &e) {return return_type(makeError(e.error)); });
+    };
+
+
   }  // namespace expected
 }  // namespace iroha
 #endif  // IROHA_RESULT_HPP
