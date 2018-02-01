@@ -19,6 +19,7 @@
 #define IROHA_TEST_TRANSACTION_BUILDER_HPP
 
 #include "builders/protobuf/builder_templates/block_template.hpp"
+#include "builders/protobuf/builder_templates/proposal_template.hpp"
 #include "builders/protobuf/builder_templates/query_template.hpp"
 #include "builders/protobuf/builder_templates/transaction_template.hpp"
 #include "module/shared_model/validators/validators_mocks.hpp"
@@ -50,5 +51,12 @@ using TestQueryBuilder =
  */
 using TestBlockBuilder =
     TemplateBlockBuilder<(1 << TemplateBlockBuilder<>::total) - 1, Block>;
+
+/**
+ * Builder alias, to build shared model proto proposal object avoiding "required
+ * fields" check
+ */
+using TestProposalBuilder =
+    TemplateProposalBuilder<(1 << TemplateProposalBuilder<>::total) - 1>;
 
 #endif  // IROHA_TEST_TRANSACTION_BUILDER_HPP
