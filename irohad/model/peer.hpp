@@ -18,7 +18,7 @@
 #ifndef IROHA_PEER_HPP
 #define IROHA_PEER_HPP
 
-#include <common/types.hpp>
+#include "common/types.hpp"
 
 namespace iroha {
   namespace model {
@@ -47,7 +47,12 @@ namespace iroha {
         } else {
           return false;
         }
-      };
+      }
+
+      Peer() = default;
+
+      Peer(const AddressType &address, const KeyType &pubkey)
+          : address(address), pubkey(pubkey) {}
     };
   }  // namespace model
 }  // namespace iroha

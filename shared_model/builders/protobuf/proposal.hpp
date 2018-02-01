@@ -21,7 +21,7 @@
 #include "backend/protobuf/queries/proto_query.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/proposal.hpp"
+#include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/transaction.hpp"
 
 #include "ordering.pb.h"

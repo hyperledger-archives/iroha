@@ -140,7 +140,7 @@ TEST_F(JsonCommandTest, subtract_asset_quantity) {
 
 TEST_F(JsonCommandTest, add_peer) {
   auto orig_addPeer = std::make_shared<AddPeer>();
-  orig_addPeer->address = "10.90.129.23";
+  orig_addPeer->peer.address = "10.90.129.23";
   auto proto_add_peer = factory.serializeAddPeer(orig_addPeer);
   auto serial_addPeer = factory.deserializeAddPeer(proto_add_peer);
 
@@ -148,7 +148,7 @@ TEST_F(JsonCommandTest, add_peer) {
   ASSERT_EQ(*orig_addPeer, *serial_addPeer.value());
   command_converter_test(orig_addPeer);
 
-  orig_addPeer->address = "134";
+  orig_addPeer->peer.address = "134";
   ASSERT_NE(*serial_addPeer.value(), *orig_addPeer);
 }
 

@@ -400,7 +400,7 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
     class DeletePeerTest : public WsvQueryCommandTest {
      public:
       DeletePeerTest() {
-        peer = model::Peer{"1337"};
+        peer = model::Peer();
       }
 
       void SetUp() override {

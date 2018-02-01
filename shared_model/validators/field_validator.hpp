@@ -42,6 +42,9 @@ namespace shared_model {
       void validateAssetId(ReasonsGroupType &reason,
                            const interface::types::AssetIdType &asset_id) const;
 
+      void validatePeer(ReasonsGroupType &reason,
+                        const interface::Peer &peer) const;
+
       void validateAmount(ReasonsGroupType &reason,
                           const interface::Amount &amount) const;
 
@@ -50,7 +53,7 @@ namespace shared_model {
 
       void validatePeerAddress(
           ReasonsGroupType &reason,
-          const interface::AddPeer::AddressType &address) const;
+          const interface::types::AddressType &address) const;
 
       void validateRoleId(ReasonsGroupType &reason,
                           const interface::types::RoleIdType &role_id) const;

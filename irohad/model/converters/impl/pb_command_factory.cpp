@@ -16,7 +16,9 @@
  */
 
 #include "model/converters/pb_command_factory.hpp"
+
 #include <boost/assign/list_inserter.hpp>
+
 #include "model/converters/pb_common.hpp"
 
 namespace iroha {
@@ -175,18 +177,16 @@ namespace iroha {
       protocol::AddPeer PbCommandFactory::serializeAddPeer(
           const model::AddPeer &add_peer) {
         protocol::AddPeer pb_add_peer;
-        pb_add_peer.set_address(add_peer.address);
-        pb_add_peer.set_peer_key(add_peer.peer_key.data(),
-                                 add_peer.peer_key.size());
+        auto peer = pb_add_peer.mutable_peer();
+        peer->CopyFrom(serializePeer(add_peer.peer));
         return pb_add_peer;
       }
+
       model::AddPeer PbCommandFactory::deserializeAddPeer(
           const protocol::AddPeer &pb_add_peer) {
         model::AddPeer add_peer;
-        add_peer.address = pb_add_peer.address();
-        std::copy(pb_add_peer.peer_key().begin(),
-                  pb_add_peer.peer_key().end(),
-                  add_peer.peer_key.begin());
+        add_peer.peer = deserializePeer(pb_add_peer.peer());
+
         return add_peer;
       }
 
