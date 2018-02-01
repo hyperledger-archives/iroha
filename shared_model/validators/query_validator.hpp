@@ -22,7 +22,6 @@
 
 #include "interfaces/queries/query.hpp"
 #include "validators/answer.hpp"
-#include "validators/abstract_validator.hpp"
 
 namespace shared_model {
   namespace validation {
@@ -155,7 +154,7 @@ namespace shared_model {
      * @tparam QueryFieldValidator - concrete query validator type
      */
     template <typename FieldValidator, typename QueryFieldValidator>
-    class QueryValidator : Validator<detail::PolymorphicWrapper<interface::Query>>{
+    class QueryValidator {
      public:
       QueryValidator(const FieldValidator &field_validator = FieldValidator(),
                      const QueryFieldValidator &query_field_validator =
@@ -168,7 +167,7 @@ namespace shared_model {
        * @param qry - query to validate
        * @return Answer containing found error if any
        */
-      Answer validate(detail::PolymorphicWrapper<interface::Query> qry) const override {
+      Answer validate(detail::PolymorphicWrapper<interface::Query> qry) const {
         Answer answer;
         std::string qry_reason_name = "Query";
         ReasonsGroupType qry_reason(qry_reason_name, GroupedReasons());

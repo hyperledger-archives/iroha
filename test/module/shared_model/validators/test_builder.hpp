@@ -25,11 +25,19 @@
 using namespace shared_model::proto;
 using namespace shared_model::validation;
 
+/**
+ * Builder alias, to build shared model proto transaction object avoiding
+ * validation and "required fields" check
+ */
 using TestTransactionBuilder =
     TemplateTransactionBuilder<(1 << TemplateTransactionBuilder<>::total) - 1,
                                TransactionAlwaysValidValidator,
                                Transaction>;
 
+/**
+ * Builder alias, to build shared model proto query object avoiding validation
+ * and "required fields" check
+ */
 using TestQueryBuilder =
     TemplateQueryBuilder<(1 << TemplateQueryBuilder<>::total) - 1,
                          QueryAlwaysValidValidator,

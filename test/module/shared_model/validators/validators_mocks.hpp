@@ -20,14 +20,14 @@
 
 #include <gmock/gmock.h>
 #include "interfaces/transaction.hpp"
-#include "validators/abstract_validator.hpp"
 
 namespace shared_model {
   namespace validation {
 
-    class TransactionAlwaysValidValidator
-        : public validation::Validator<
-              detail::PolymorphicWrapper<interface::Transaction>> {
+    /**
+     * Tx validator which always returns answer with no errors.
+     */
+    class TransactionAlwaysValidValidator {
      public:
       Answer validate(
           detail::PolymorphicWrapper<interface::Transaction>) const {
@@ -35,9 +35,10 @@ namespace shared_model {
       }
     };
 
-    class QueryAlwaysValidValidator
-        : public validation::Validator<
-              detail::PolymorphicWrapper<interface::Query>> {
+    /**
+     * Query validator which always returns answer with no errors.
+     */
+    class QueryAlwaysValidValidator {
      public:
       Answer validate(detail::PolymorphicWrapper<interface::Query>) const {
         return Answer();
