@@ -30,8 +30,6 @@ namespace config_members {
   const char *InternalPort = "internal_port";
   const char *KeyPairPath = "key_pair_path";
   const char *PgOpt = "pg_opt";
-  //  const char *RedisHost = "redis_host";
-  //  const char *RedisPort = "redis_port";
   const char *MaxProposalSize = "max_proposal_size";
   const char *ProposalDelay = "proposal_delay";
   const char *VoteDelay = "vote_delay";

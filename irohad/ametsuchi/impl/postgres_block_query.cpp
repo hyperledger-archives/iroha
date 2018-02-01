@@ -16,7 +16,6 @@
  */
 
 #include "ametsuchi/impl/postgres_block_query.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/sha3_hash.hpp"
 
 namespace iroha {

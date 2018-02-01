@@ -16,8 +16,6 @@
  */
 
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
-#include <model/commands/transfer_asset.hpp>
-
 #include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
@@ -38,7 +36,8 @@ namespace iroha {
           executor_(std::make_unique<PostgresWsvCommand>(*transaction_)),
           block_index_(std::make_unique<PostgresBlockIndex>(*transaction_)),
           command_executors_(std::move(command_executors)),
-          committed(false) {
+          committed(false),
+          log_(logger::log("MutableStorage")) {
       transaction_->exec("BEGIN;");
     }
 
@@ -48,8 +47,15 @@ namespace iroha {
             function) {
       auto execute_transaction = [this](auto &transaction) {
         auto execute_command = [this, &transaction](auto command) {
-          return command_executors_->getCommandExecutor(command)->execute(
-              *command, *wsv_, *executor_, transaction.creator_account_id);
+          auto result =
+              command_executors_->getCommandExecutor(command)->execute(
+                  *command, *wsv_, *executor_, transaction.creator_account_id);
+          return result.match(
+              [](expected::Value<void> v) { return true; },
+              [&](expected::Error<iroha::model::ExecutionError> e) {
+                log_->error(e.error.toString());
+                return false;
+              });
         };
         return std::all_of(transaction.commands.begin(),
                            transaction.commands.end(),
