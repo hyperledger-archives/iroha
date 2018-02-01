@@ -146,7 +146,7 @@ namespace iroha {
                   "creator_id = "
                   + transaction_.quote(account_id)
                   + " AND height = " + transaction_.quote(block_id) + ";")
-                  | callback(subscriber, block_id);
+                  | this->callback(subscriber, block_id);
             }
             subscriber.on_completed();
           });
@@ -170,7 +170,7 @@ namespace iroha {
               + transaction_.quote(account_id)
               + " AND height = " + transaction_.quote(block_id)
               + " AND asset_id = " + transaction_.quote(asset_id) + ";")
-              | callback(subscriber, block_id);
+              | this->callback(subscriber, block_id);
         }
         subscriber.on_completed();
       });
