@@ -21,7 +21,6 @@
 #include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-#include "ametsuchi/impl/redis_block_index.hpp"
 
 #include "model/sha3_hash.hpp"
 
