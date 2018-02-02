@@ -18,6 +18,7 @@
 #ifndef IROHA_TRANSPORT_BUILDER_HPP
 #define IROHA_TRANSPORT_BUILDER_HPP
 
+#include "common/result.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 
 namespace shared_model {
@@ -26,16 +27,17 @@ namespace shared_model {
     template <typename T, typename SV>
     class TransportBuilder {
      public:
-      TransportBuilder(typename T::TransportType transport, const SV &validator = SV())
+      TransportBuilder(typename T::TransportType transport,
+                       const SV &validator = SV())
           : transport_(transport), stateless_validator_(validator) {}
 
-      auto build() {
+      iroha::expected::Result<T, std::string> build() {
         auto answer = stateless_validator_.validate(
             detail::makePolymorphic<T>(transport_));
         if (answer.hasErrors()) {
           throw std::invalid_argument(answer.reason());
         }
-        return T(std::move(transport_));
+        return iroha::expected::makeValue(T(std::move(transport_)));
       }
 
      private:

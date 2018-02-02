@@ -25,6 +25,7 @@
 #include "test_transaction_builder.hpp"
 
 using namespace shared_model;
+using namespace iroha::expected;
 
 class TransportBuilderTest : public ::testing::Test {
  public:
@@ -104,8 +105,12 @@ TEST_F(TransportBuilderTest, TransactionCreationTest) {
       transport_builder(proto_tx);
 
   auto built_tx = transport_builder.build();
-  ASSERT_EQ(built_tx.getTransport().SerializeAsString(),
-            orig_tx.getTransport().SerializeAsString());
+  built_tx.match(
+      [&orig_tx](const Value<Transaction> &tx) {
+        ASSERT_EQ(tx.value.getTransport().SerializeAsString(),
+                  orig_tx.getTransport().SerializeAsString());
+      },
+      [](const Error<std::string> &message) { FAIL() << message.error; });
 }
 
 /**
@@ -121,8 +126,12 @@ TEST_F(TransportBuilderTest, QueryCreationTest) {
       transport_builder(proto_query);
 
   auto built_query = transport_builder.build();
-  ASSERT_EQ(built_query.getTransport().SerializeAsString(),
-            orig_query.getTransport().SerializeAsString());
+  built_query.match(
+      [&orig_query](const Value<Query> &query) {
+        ASSERT_EQ(query.value.getTransport().SerializeAsString(),
+                  orig_query.getTransport().SerializeAsString());
+      },
+      [](const Error<std::string> &message) { FAIL() << message.error; });
 }
 
 /**
@@ -138,8 +147,12 @@ TEST_F(TransportBuilderTest, BlockCreationTest) {
       transport_builder(proto_block);
 
   auto built_block = transport_builder.build();
-  ASSERT_EQ(built_block.getTransport().SerializeAsString(),
-            orig_block.getTransport().SerializeAsString());
+  built_block.match(
+      [&orig_block](const Value<Block> &block) {
+        ASSERT_EQ(block.value.getTransport().SerializeAsString(),
+                  orig_block.getTransport().SerializeAsString());
+      },
+      [](const Error<std::string> &message) { FAIL() << message.error; });
 }
 
 /**
@@ -155,6 +168,10 @@ TEST_F(TransportBuilderTest, ProposalCreationTest) {
       transport_builder(proto_proposal);
 
   auto built_proposal = transport_builder.build();
-  ASSERT_EQ(built_proposal.getTransport().SerializeAsString(),
-            orig_proposal.getTransport().SerializeAsString());
+  built_proposal.match(
+      [&orig_proposal](const Value<Proposal> &proposal) {
+        ASSERT_EQ(proposal.value.getTransport().SerializeAsString(),
+                  orig_proposal.getTransport().SerializeAsString());
+      },
+      [](const Error<std::string> &message) { FAIL() << message.error; });
 }
