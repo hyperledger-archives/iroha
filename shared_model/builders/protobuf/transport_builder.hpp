@@ -24,6 +24,12 @@
 namespace shared_model {
   namespace proto {
 
+    /**
+     * Class for building any shared model objects from corresponding transport
+     * representation (e.g. protobuf object)
+     * @tparam T Build type
+     * @tparam SV Stateless validator type
+     */
     template <typename T, typename SV>
     class TransportBuilder {
      public:
@@ -31,11 +37,15 @@ namespace shared_model {
                        const SV &validator = SV())
           : transport_(transport), stateless_validator_(validator) {}
 
+      /**
+       * Builds result from transport object
+       * @return value if transport object is valid and error message otherwise
+       */
       iroha::expected::Result<T, std::string> build() {
         auto answer = stateless_validator_.validate(
             detail::makePolymorphic<T>(transport_));
         if (answer.hasErrors()) {
-          throw std::invalid_argument(answer.reason());
+          return iroha::expected::makeError(answer.reason());
         }
         return iroha::expected::makeValue(T(std::move(transport_)));
       }

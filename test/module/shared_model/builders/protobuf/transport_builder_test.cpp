@@ -17,7 +17,6 @@
 
 #include "builders/protobuf/transport_builder.hpp"
 #include <gtest/gtest.h>
-#include <utility>
 #include "block.pb.h"
 #include "test_block_builder.hpp"
 #include "test_proposal_builder.hpp"
@@ -84,12 +83,16 @@ class TransportBuilderTest : public ::testing::Test {
     return proposal;
   }
 
+ protected:
   decltype(iroha::time::now()) created_time;
   std::string account_id;
   uint8_t quorum;
   uint64_t counter;
   std::string hash;
   uint64_t height;
+
+  std::function<void(const Error<std::string> &)> failCase =
+      [](const Error<std::string> &message) { FAIL() << message.error; };
 };
 
 /**
@@ -110,7 +113,7 @@ TEST_F(TransportBuilderTest, TransactionCreationTest) {
         ASSERT_EQ(tx.value.getTransport().SerializeAsString(),
                   orig_tx.getTransport().SerializeAsString());
       },
-      [](const Error<std::string> &message) { FAIL() << message.error; });
+      failCase);
 }
 
 /**
@@ -131,7 +134,7 @@ TEST_F(TransportBuilderTest, QueryCreationTest) {
         ASSERT_EQ(query.value.getTransport().SerializeAsString(),
                   orig_query.getTransport().SerializeAsString());
       },
-      [](const Error<std::string> &message) { FAIL() << message.error; });
+      failCase);
 }
 
 /**
@@ -152,7 +155,7 @@ TEST_F(TransportBuilderTest, BlockCreationTest) {
         ASSERT_EQ(block.value.getTransport().SerializeAsString(),
                   orig_block.getTransport().SerializeAsString());
       },
-      [](const Error<std::string> &message) { FAIL() << message.error; });
+      failCase);
 }
 
 /**
@@ -173,5 +176,5 @@ TEST_F(TransportBuilderTest, ProposalCreationTest) {
         ASSERT_EQ(proposal.value.getTransport().SerializeAsString(),
                   orig_proposal.getTransport().SerializeAsString());
       },
-      [](const Error<std::string> &message) { FAIL() << message.error; });
+      failCase);
 }
