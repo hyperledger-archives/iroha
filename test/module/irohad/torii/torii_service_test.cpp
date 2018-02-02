@@ -141,6 +141,30 @@ class ToriiServiceTest : public testing::Test {
   std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
 };
 
+
+/**
+ * @given chain of CommandClient copies and moves
+ * @when status is asked
+ * @then grpc returns ok
+ */
+TEST_F(ToriiServiceTest, CommandClient) {
+
+  iroha::protocol::TxStatusRequest tx_request;
+  iroha::protocol::ToriiResponse toriiResponse;
+
+  auto client1 = torii::CommandSyncClient(Ip, Port);
+  //Copy ctor
+  torii::CommandSyncClient client2(client1);
+  //copy assignment
+  auto client3 = client2;
+  //move ctor
+  torii::CommandSyncClient client4(std::move(client3));
+  //move assignment
+  auto client5 = std::move(client4);
+  auto stat = client5.Status(tx_request, toriiResponse);
+
+  ASSERT_TRUE(stat.ok());
+}
 /**
  * @given torii service and number of transactions
  * @when retrieving their status
@@ -323,4 +347,3 @@ TEST_F(ToriiServiceTest, CheckHash) {
     ASSERT_EQ(toriiResponse.tx_hash(), hash);
   }
 }
-

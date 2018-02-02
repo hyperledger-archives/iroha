@@ -57,4 +57,16 @@ namespace torii {
     return stub_->Status(&context, request, &response);
   }
 
+  CommandSyncClient::CommandSyncClient(CommandSyncClient &&rhs)
+      : ip_(std::move(rhs.ip_)),
+        port_(rhs.port_),
+        stub_(std::move(rhs.stub_)) {}
+
+  CommandSyncClient& CommandSyncClient::operator=(CommandSyncClient &&rhs) {
+    this->ip_ = std::move(rhs.ip_);
+    this->port_ = rhs.port_;
+    this->stub_ = std::move(rhs.stub_);
+    return *this;
+  }
+
 }  // namespace torii

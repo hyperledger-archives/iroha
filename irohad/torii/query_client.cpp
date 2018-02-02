@@ -14,8 +14,9 @@ limitations under the License.
 #include <block.pb.h>
 #include <grpc++/grpc++.h>
 #include <thread>
-#include <torii/torii_service_handler.hpp>
-#include <torii/query_client.hpp>
+
+#include "torii/query_client.hpp"
+#include "torii/torii_service_handler.hpp"
 
 namespace torii_utils {
 
@@ -38,6 +39,16 @@ namespace torii_utils {
     this->stub_ = iroha::protocol::QueryService::NewStub(
         grpc::CreateChannel(rhs.ip_ + ":" + std::to_string(rhs.port_),
                             grpc::InsecureChannelCredentials()));
+    return *this;
+  }
+
+  QuerySyncClient::QuerySyncClient(QuerySyncClient &&rhs)
+      : ip_(std::move(rhs.ip_)), port_(rhs.port_), stub_(std::move(rhs.stub_)) {}
+
+  QuerySyncClient& QuerySyncClient::operator=(QuerySyncClient &&rhs) {
+    this->ip_ = std::move(rhs.ip_);
+    this->port_ = rhs.port_;
+    this->stub_ = std::move(rhs.stub_);
     return *this;
   }
 

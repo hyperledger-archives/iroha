@@ -32,8 +32,13 @@ namespace torii_utils {
   class QuerySyncClient {
    public:
     QuerySyncClient(const std::string &ip, size_t port);
+
     QuerySyncClient(const QuerySyncClient&);
     QuerySyncClient& operator=(const QuerySyncClient&);
+
+    QuerySyncClient(QuerySyncClient&&);
+    QuerySyncClient&operator=(QuerySyncClient&&);
+
     /**
      * requests query to a torii server and returns response (blocking, sync)
      * @param query - contains Query what clients request.
@@ -48,7 +53,6 @@ namespace torii_utils {
     size_t port_;
     std::unique_ptr<iroha::protocol::QueryService::Stub> stub_;
   };
-
   /**
    * QueryAsyncClient
 
