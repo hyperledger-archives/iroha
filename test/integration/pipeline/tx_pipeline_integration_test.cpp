@@ -146,6 +146,11 @@ TEST_F(TxPipelineIntegrationTest, GetTransactionsTest) {
 constexpr auto kUser = "user@test";
 constexpr auto kAsset = "asset#domain";
 
+const auto kAdminOldKeypair = iroha::create_keypair();
+const shared_model::crypto::Keypair kAdminKeypair(
+    shared_model::crypto::PublicKey(kAdminOldKeypair.pubkey.to_string()),
+    shared_model::crypto::PrivateKey(kAdminOldKeypair.privkey.to_string()));
+
 /**
  * @given GetAccount query AND default-initialized IntegrationTestFramework
  * @when query is sent to the framework
@@ -162,7 +167,7 @@ TEST(PipelineIntegrationTest, SendQuery) {
                        shared_model::crypto::DefaultCryptoAlgorithmType::
                            generateKeypair());
   integration_framework::IntegrationTestFramework()
-      .setInitialState()
+      .setInitialState(kAdminKeypair)
       .sendQuery(query)
       .done();
 }
@@ -189,7 +194,7 @@ TEST(PipelineIntegrationTest, SendTx) {
             shared_model::interface::StatelessValidTxResponse>>(status.get()));
   };
   integration_framework::IntegrationTestFramework()
-      .setInitialState()
+      .setInitialState(kAdminKeypair)
       .sendTx(tx, check)
       .done();
 }

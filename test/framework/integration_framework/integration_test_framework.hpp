@@ -51,7 +51,7 @@ namespace integration_framework {
 
    public:
     IntegrationTestFramework &setInitialState(
-        const iroha::keypair_t &keypair = iroha::create_keypair());
+        const shared_model::crypto::Keypair &keypair);
     IntegrationTestFramework &setInitialState(
         const shared_model::crypto::Keypair &keypair,
         const shared_model::interface::Block &block);

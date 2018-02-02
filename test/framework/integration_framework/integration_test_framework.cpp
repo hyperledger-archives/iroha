@@ -32,9 +32,7 @@ using namespace std::literals::string_literals;
 
 namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
-      const iroha::keypair_t &keypair) {
-    Keypair key(PublicKey(keypair.pubkey.to_string()),
-                PrivateKey(keypair.privkey.to_string()));
+      const shared_model::crypto::Keypair &key) {
     auto genesis_tx =
         shared_model::proto::TransactionBuilder()
             .creatorAccountId("admin@test")
