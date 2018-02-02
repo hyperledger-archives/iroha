@@ -18,9 +18,12 @@
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+#include "framework/result_fixture.hpp"
 
 namespace iroha {
   namespace ametsuchi {
+
+    using namespace framework::expected;
 
     class WsvQueryCommandTest : public AmetsuchiTest {
      public:
@@ -50,17 +53,7 @@ namespace iroha {
         wsv_transaction->exec(init_);
       }
 
-      /// Throws exception if result does not contain value
-      void checkValueCase(const WsvCommandResult &result) {
-        boost::get<WsvCommandResult::ValueType>(result);
-      }
 
-      /// Returns error from result or throws error in case result contains
-      /// value
-      WsvCommandResult ::ErrorType checkErrorCase(
-          const WsvCommandResult &result) {
-        return boost::get<WsvCommandResult ::ErrorType>(result);
-      }
 
       std::string role = "role", permission = "permission";
       model::Account account;

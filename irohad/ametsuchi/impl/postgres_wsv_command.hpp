@@ -98,7 +98,7 @@ namespace iroha {
                 expected::Error<std::string> e) -> WsvCommandResult {
               return expected::makeError(error_generator() + "\n" + e.error);
             });
-      };
+      }
     };
   }  // namespace ametsuchi
 }  // namespace iroha

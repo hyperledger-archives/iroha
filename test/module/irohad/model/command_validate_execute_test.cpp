@@ -17,8 +17,7 @@
 
 #include <limits>
 
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
-
+#include "framework/result_fixture.hpp"
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
@@ -37,16 +36,18 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/execution/command_executor_factory.hpp"
 #include "model/permissions.hpp"
+#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 
+using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::Return;
 using ::testing::StrictMock;
-using ::testing::_;
 
 using namespace iroha;
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
+using namespace framework::expected;
 
 class CommandValidateExecuteTest : public ::testing::Test {
  public:
@@ -82,16 +83,6 @@ class CommandValidateExecuteTest : public ::testing::Test {
     auto executor = factory->getCommandExecutor(command);
     return executor->execute(
         *command, *wsv_query, *wsv_command, creator.account_id);
-  }
-
-  /// Throws exception if result does not contain value
-  void checkValueCase(const ExecutionResult &result) {
-    boost::get<ExecutionResult::ValueType>(result);
-  }
-
-  /// Returns error from result or throws error in case result contains value
-  ExecutionResult::ErrorType checkErrorCase(const ExecutionResult &result) {
-    return boost::get<ExecutionResult::ErrorType>(result);
   }
 
   Amount max_amount{
@@ -158,7 +149,8 @@ TEST_F(AddAssetQuantityTest, ValidWhenNewWallet) {
       .WillOnce(Return(asset));
   EXPECT_CALL(*wsv_query, getAccount(add_asset_quantity->account_id))
       .WillOnce(Return(account));
-  EXPECT_CALL(*wsv_command, upsertAccountAsset(_)).WillOnce(Return(WsvCommandResult()));
+  EXPECT_CALL(*wsv_command, upsertAccountAsset(_))
+      .WillOnce(Return(WsvCommandResult()));
   EXPECT_CALL(*wsv_query, getAccountRoles(creator.account_id))
       .WillOnce(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
@@ -178,7 +170,8 @@ TEST_F(AddAssetQuantityTest, ValidWhenExistingWallet) {
   EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
   EXPECT_CALL(*wsv_query, getAccount(add_asset_quantity->account_id))
       .WillOnce(Return(account));
-  EXPECT_CALL(*wsv_command, upsertAccountAsset(_)).WillOnce(Return(WsvCommandResult()));
+  EXPECT_CALL(*wsv_command, upsertAccountAsset(_))
+      .WillOnce(Return(WsvCommandResult()));
   EXPECT_CALL(*wsv_query, getAccountRoles(add_asset_quantity->account_id))
       .WillOnce(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
@@ -341,7 +334,8 @@ TEST_F(SubtractAssetQuantityTest, ValidWhenExistingWallet) {
       .WillOnce(Return(wallet));
 
   EXPECT_CALL(*wsv_query, getAsset(asset_id)).WillOnce(Return(asset));
-  EXPECT_CALL(*wsv_command, upsertAccountAsset(_)).WillOnce(Return(WsvCommandResult()));
+  EXPECT_CALL(*wsv_command, upsertAccountAsset(_))
+      .WillOnce(Return(WsvCommandResult()));
   EXPECT_CALL(*wsv_query, getAccountRoles(subtract_asset_quantity->account_id))
       .WillOnce(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
@@ -558,7 +552,8 @@ TEST_F(CreateAccountTest, ValidWhenNewAccount) {
       .Times(1)
       .WillOnce(Return(WsvCommandResult()));
 
-  EXPECT_CALL(*wsv_command, insertAccount(_)).WillOnce(Return(WsvCommandResult()));
+  EXPECT_CALL(*wsv_command, insertAccount(_))
+      .WillOnce(Return(WsvCommandResult()));
 
   EXPECT_CALL(*wsv_command,
               insertAccountSignatory(account_id, create_account->pubkey))
@@ -639,7 +634,8 @@ TEST_F(CreateAssetTest, ValidWhenCreatorHasPermissions) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
 
-  EXPECT_CALL(*wsv_command, insertAsset(_)).WillOnce(Return(WsvCommandResult()));
+  EXPECT_CALL(*wsv_command, insertAsset(_))
+      .WillOnce(Return(WsvCommandResult()));
 
   ASSERT_NO_THROW(checkValueCase(validateAndExecute()));
 }
@@ -660,7 +656,8 @@ TEST_F(CreateAssetTest, InvalidWhenNoPermissions) {
  * @then execute() fails
  */
 TEST_F(CreateAssetTest, InvalidWhenAssetInsertionFails) {
-  EXPECT_CALL(*wsv_command, insertAsset(_)).WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+  EXPECT_CALL(*wsv_command, insertAsset(_))
+      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
 
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
@@ -687,7 +684,8 @@ TEST_F(CreateDomainTest, ValidWhenCreatorHasPermissions) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
 
-  EXPECT_CALL(*wsv_command, insertDomain(_)).WillOnce(Return(WsvCommandResult()));
+  EXPECT_CALL(*wsv_command, insertDomain(_))
+      .WillOnce(Return(WsvCommandResult()));
 
   ASSERT_NO_THROW(checkValueCase(validateAndExecute()));
 }
@@ -705,7 +703,8 @@ TEST_F(CreateDomainTest, InvalidWhenNoPermissions) {
  * @then execute() fails
  */
 TEST_F(CreateDomainTest, InvalidWhenDomainInsertionFails) {
-  EXPECT_CALL(*wsv_command, insertDomain(_)).WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+  EXPECT_CALL(*wsv_command, insertDomain(_))
+      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
 
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
@@ -944,7 +943,8 @@ TEST_F(SetQuorumTest, ValidWhenCreatorHasPermissions) {
   EXPECT_CALL(*wsv_query, getSignatories(set_quorum->account_id))
       .WillOnce(Return(account_pubkeys));
 
-  EXPECT_CALL(*wsv_command, updateAccount(_)).WillOnce(Return(WsvCommandResult()));
+  EXPECT_CALL(*wsv_command, updateAccount(_))
+      .WillOnce(Return(WsvCommandResult()));
 
   ASSERT_NO_THROW(checkValueCase(validateAndExecute()));
 }
@@ -960,7 +960,8 @@ TEST_F(SetQuorumTest, ValidWhenSameAccount) {
       .WillOnce(Return(account));
   EXPECT_CALL(*wsv_query, getSignatories(set_quorum->account_id))
       .WillOnce(Return(account_pubkeys));
-  EXPECT_CALL(*wsv_command, updateAccount(_)).WillOnce(Return(WsvCommandResult()));
+  EXPECT_CALL(*wsv_command, updateAccount(_))
+      .WillOnce(Return(WsvCommandResult()));
 
   ASSERT_NO_THROW(checkValueCase(validateAndExecute()));
 }
@@ -1480,7 +1481,8 @@ TEST_F(AddPeerTest, InvalidCaseWhenNoPermissions) {
  * @then execute returns false
  */
 TEST_F(AddPeerTest, InvalidCaseWhenInsertPeerFails) {
-  EXPECT_CALL(*wsv_command, insertPeer(_)).WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+  EXPECT_CALL(*wsv_command, insertPeer(_))
+      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
 
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }

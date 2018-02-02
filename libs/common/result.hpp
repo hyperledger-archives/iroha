@@ -146,7 +146,7 @@ namespace iroha {
             std::is_same<decltype(f(std::declval<T>())), void>::value>::type {
       return r.match([&f](const Value<T> &v) { f(v.value); },
                      [](const Error<E> &e) {});
-    };
+    }
 
     /**
      * Bind operator overload for functions which do not accept anything as a
@@ -162,7 +162,7 @@ namespace iroha {
       return r.match(
           [&f](const Value<T> &v) { return f(); },
           [](const Error<E> &e) { return return_type(makeError(e.error)); });
-    };
+    }
 
   }  // namespace expected
 }  // namespace iroha

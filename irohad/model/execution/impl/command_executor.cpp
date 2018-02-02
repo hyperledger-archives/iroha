@@ -310,7 +310,7 @@ namespace iroha {
         auto new_balance =
             account_asset_value.balance + add_asset_quantity.amount;
         if (not new_balance.has_value()) {
-          return makeExecutionResult("amount overflows balance");
+          return makeExecutionResult(std::string("amount overflows balance"));
         }
         account_asset->balance = new_balance.value();
       }
@@ -380,7 +380,7 @@ namespace iroha {
       auto new_balance =
           account_asset_value.balance - subtract_asset_quantity.amount;
       if (not new_balance.has_value()) {
-        return makeExecutionResult("Not sufficient amount");
+        return makeExecutionResult(std::string("not sufficient amount"));
       }
       account_asset->balance = new_balance.value();
 
@@ -819,7 +819,7 @@ namespace iroha {
       auto src_balance = src_account_asset.value().balance;
       auto new_src_balance = src_balance - transfer_asset.amount;
       if (not new_src_balance.has_value()) {
-        return makeExecutionResult("not enough assets on source account");
+        return makeExecutionResult(std::string("not enough assets on source account"));
       }
       src_balance = new_src_balance.value();
       // Set new balance for source account
@@ -841,7 +841,8 @@ namespace iroha {
 
         auto new_dest_balance = dest_balance + transfer_asset.amount;
         if (not new_dest_balance.has_value()) {
-          return makeExecutionResult("operation overflows destination balance");
+          return makeExecutionResult(
+              std::string("operation overflows destination balance"));
         }
         dest_balance = new_dest_balance.value();
         // Set new balance for dest
