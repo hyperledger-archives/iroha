@@ -32,7 +32,7 @@ namespace iroha {
 
   MstState MstStorage::updateOwnState(const DataType &tx) {
     std::lock_guard<std::mutex> lock{this->mutex_};
-    return updateOwnStateImpl(std::move(tx));
+    return updateOwnStateImpl(tx);
   }
 
   MstState MstStorage::getExpiredTransactions(const TimeType &current_time) {

@@ -11,3 +11,11 @@ target_link_libraries(transfer_asset_inter_domain_test
   raw_block_insertion
   model_generators
   )
+
+
+addtest(multisig_tx_pipeline_test multisig_tx_pipeline_test.cpp)
+target_link_libraries(multisig_tx_pipeline_test
+  application
+  raw_block_insertion
+  model_generators
+  )
