@@ -43,17 +43,6 @@ using iroha::expected::makeError;
 
 namespace iroha {
   namespace model {
-
-    // TODO: 30.01.2018 nickaleks make db calls return result to eliminate need
-    // for this function IR-775
-    //    ExecutionResult CommandExecutor::errorIfNot(
-    //        bool condition, const std::string &error_message) const noexcept {
-    //      if (not condition) {
-    //        return makeExecutionError(error_message);
-    //      }
-    //      return {};
-    //    }
-
     // ----------------------------| Common |-----------------------------
 
     bool CommandExecutor::validate(const Command &command,
@@ -66,8 +55,7 @@ namespace iroha {
     ExecutionResult CommandExecutor::makeExecutionResult(
         const ametsuchi::WsvCommandResult &result) const noexcept {
       return result.match(
-          [](const
-             expected::Value<void> &v) -> ExecutionResult { return {}; },
+          [](const expected::Value<void> &v) -> ExecutionResult { return {}; },
           [this](const expected::Error<WsvError> &e) -> ExecutionResult {
             return makeError(ExecutionError{commandName(), e.error});
           });
@@ -173,16 +161,11 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const CreateRole &>(command);
 
-      return commands.insertRole(cmd_value.role_name)
-          .match(
-              [&](expected::Value<void> &v) {
-                return makeExecutionResult(commands.insertRolePermissions(
-                    cmd_value.role_name, cmd_value.permissions));
-              },
-              [this](expected::Error<WsvError> &e) {
-                return ExecutionResult(
-                    makeError(ExecutionError{this->commandName(), e.error}));
-              });
+      auto result = commands.insertRole(cmd_value.role_name) | [&]() {
+        return commands.insertRolePermissions(cmd_value.role_name,
+                                              cmd_value.permissions);
+      };
+      return makeExecutionResult(result);
     }
 
     bool CreateRoleExecutor::hasPermissions(
@@ -296,27 +279,23 @@ namespace iroha {
 
       auto asset = queries.getAsset(add_asset_quantity.asset_id);
       if (not asset.has_value()) {
-        return ExecutionResult(expected::makeError(ExecutionError{
-            this->commandName(),
+        return makeExecutionResult(
             (boost::format("asset %s is absent") % add_asset_quantity.asset_id)
-                .str()}));
+                .str());
       }
       auto precision = asset.value().precision;
 
       if (add_asset_quantity.amount.getPrecision() != precision) {
-        return ExecutionResult(expected::makeError(ExecutionError{
-            this->commandName(),
+        return makeExecutionResult(
             (boost::format("precision mismatch: expected %d, but got %d")
              % precision % add_asset_quantity.amount.getPrecision())
-                .str()}));
+                .str());
       }
 
       if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
-        return ExecutionResult(expected::makeError(
-            ExecutionError{this->commandName(),
-                           (boost::format("account %s is absent")
-                            % add_asset_quantity.account_id)
-                               .str()}));
+        return makeExecutionResult((boost::format("account %s is absent")
+                                    % add_asset_quantity.account_id)
+                                       .str());
       }
       auto account_asset = queries.getAccountAsset(
           add_asset_quantity.account_id, add_asset_quantity.asset_id);
@@ -331,8 +310,7 @@ namespace iroha {
         auto new_balance =
             account_asset_value.balance + add_asset_quantity.amount;
         if (not new_balance.has_value()) {
-          return ExecutionResult(expected::makeError(
-              ExecutionError{this->commandName(), "amount overflows balance"}));
+          return makeExecutionResult("amount overflows balance");
         }
         account_asset->balance = new_balance.value();
       }
@@ -377,37 +355,31 @@ namespace iroha {
 
       auto asset = queries.getAsset(subtract_asset_quantity.asset_id);
       if (not asset) {
-        return ExecutionResult(expected::makeError(
-            ExecutionError{this->commandName(),
-                           (boost::format("asset %s is absent")
-                            % subtract_asset_quantity.asset_id)
-                               .str()}));
+        return makeExecutionResult((boost::format("asset %s is absent")
+                             % subtract_asset_quantity.asset_id)
+                                .str());
       }
       auto precision = asset.value().precision;
 
       if (subtract_asset_quantity.amount.getPrecision() != precision) {
-        return ExecutionResult(expected::makeError(ExecutionError{
-            this->commandName(),
+        return makeExecutionResult(
             (boost::format("precision mismatch: expected %d, but got %d")
              % precision % subtract_asset_quantity.amount.getPrecision())
-                .str()}));
+                .str());
       }
       auto account_asset = queries.getAccountAsset(
           subtract_asset_quantity.account_id, subtract_asset_quantity.asset_id);
       if (not account_asset.has_value()) {
-        return ExecutionResult(expected::makeError(
-            ExecutionError{this->commandName(),
-                           (boost::format("account %s is absent")
-                            % subtract_asset_quantity.account_id)
-                               .str()}));
+        return makeExecutionResult((boost::format("account %s is absent")
+                             % subtract_asset_quantity.account_id)
+                                .str());
       }
       auto account_asset_value = account_asset.value();
 
       auto new_balance =
           account_asset_value.balance - subtract_asset_quantity.amount;
       if (not new_balance.has_value()) {
-        return ExecutionResult(expected::makeError(
-            ExecutionError{this->commandName(), "Not sufficient amount"}));
+        return makeExecutionResult("Not sufficient amount");
       }
       account_asset->balance = new_balance.value();
 
