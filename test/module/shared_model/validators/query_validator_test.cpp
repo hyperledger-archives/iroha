@@ -24,7 +24,6 @@ class QueryValidatorTest : public ValidatorsTest {
   shared_model::validation::DefaultQueryValidator query_validator;
 };
 
-using namespace iroha::protocol;
 using namespace shared_model;
 
 /**

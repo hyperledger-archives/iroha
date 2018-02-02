@@ -15,16 +15,20 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROTO_BLOCK_BUILDER_HPP
-#define IROHA_PROTO_BLOCK_BUILDER_HPP
+#ifndef IROHA_TEST_PROPOSAL_BUILDER_HPP
+#define IROHA_TEST_PROPOSAL_BUILDER_HPP
 
-#include "builders/protobuf/builder_templates/block_template.hpp"
+#include "builders/protobuf/builder_templates/proposal_template.hpp"
 
-namespace shared_model {
-  namespace proto {
+using namespace shared_model::proto;
+using namespace shared_model::validation;
 
-    using BlockBuilder = TemplateBlockBuilder<>;
-  }  // namespace proto
-}  // namespace shared_model
+/**
+ * Builder alias, to build shared model proto proposal object avoiding "required
+ * fields" check
+ */
+using TestProposalBuilder =
+    TemplateProposalBuilder<(1 << TemplateProposalBuilder<>::total) - 1,
+                            DefaultProposalValidator>;
 
-#endif  // IROHA_PROTO_BLOCK_BUILDER_HPP
+#endif  // IROHA_TEST_PROPOSAL_BUILDER_HPP

@@ -15,16 +15,22 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_PROTO_BLOCK_BUILDER_HPP
-#define IROHA_PROTO_BLOCK_BUILDER_HPP
+#ifndef IROHA_TEST_QUERY_BUILDER_HPP
+#define IROHA_TEST_QUERY_BUILDER_HPP
 
-#include "builders/protobuf/builder_templates/block_template.hpp"
+#include "builders/protobuf/builder_templates/query_template.hpp"
+#include "module/shared_model/validators/validators.hpp"
 
-namespace shared_model {
-  namespace proto {
+using namespace shared_model::proto;
+using namespace shared_model::validation;
 
-    using BlockBuilder = TemplateBlockBuilder<>;
-  }  // namespace proto
-}  // namespace shared_model
+/**
+ * Builder alias, to build shared model proto query object avoiding validation
+ * and "required fields" check
+ */
+using TestQueryBuilder =
+    TemplateQueryBuilder<(1 << TemplateQueryBuilder<>::total) - 1,
+                         QueryAlwaysValidValidator,
+                         Query>;
 
-#endif  // IROHA_PROTO_BLOCK_BUILDER_HPP
+#endif  // IROHA_TEST_QUERY_BUILDER_HPP

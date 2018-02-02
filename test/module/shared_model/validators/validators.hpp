@@ -15,39 +15,39 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_BLOCK_VALIDATOR_HPP
-#define IROHA_BLOCK_VALIDATOR_HPP
+#ifndef IROHA_VALIDATOR_MOCKS_HPP
+#define IROHA_VALIDATOR_MOCKS_HPP
 
-#include "datetime/time.hpp"
-#include "interfaces/common_objects/types.hpp"
-#include "utils/polymorphic_wrapper.hpp"
-#include "validators/answer.hpp"
-#include "interfaces/iroha_internal/block.hpp"
-
-// TODO 22/01/2018 x3medima17: write stateless validator IR-837
+#include <gmock/gmock.h>
+#include "interfaces/transaction.hpp"
 
 namespace shared_model {
   namespace validation {
 
+  //TODO: kamilsa 01.02.2018 IR-873 Replace all these validators with mock classes
+
     /**
-     * Class that validates block
+     * Tx validator which always returns answer with no errors.
      */
-    class BlockValidator {
+    class TransactionAlwaysValidValidator {
      public:
-      /**
-       * Applies validation on block
-       * @param block
-       * @return Answer containing found error if any
-       */
       Answer validate(
-          detail::PolymorphicWrapper<interface::Block> block) const {
+          detail::PolymorphicWrapper<interface::Transaction>) const {
         return Answer();
       }
+    };
 
-      Answer answer_;
+    /**
+     * Query validator which always returns answer with no errors.
+     */
+    class QueryAlwaysValidValidator {
+     public:
+      Answer validate(detail::PolymorphicWrapper<interface::Query>) const {
+        return Answer();
+      }
     };
 
   }  // namespace validation
 }  // namespace shared_model
 
-#endif  // IROHA_BLOCK_VALIDATOR_HPP
+#endif  // IROHA_VALIDATOR_MOCKS_HPP
