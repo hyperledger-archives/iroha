@@ -48,6 +48,10 @@ TEST(JsonProtoConverterTest, JsonToProtoTxTest) {
   ASSERT_TRUE(obtained_tx);
   ASSERT_EQ(orig_tx.getTransport().SerializeAsString(),
             obtained_tx.value().getTransport().SerializeAsString());
+
+  // check some field's values
+  ASSERT_EQ(orig_tx.createdTime(), obtained_tx->createdTime());
+  ASSERT_EQ(orig_tx.creatorAccountId(), obtained_tx->creatorAccountId());
 }
 
 /**
