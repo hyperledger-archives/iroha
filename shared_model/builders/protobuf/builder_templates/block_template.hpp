@@ -28,6 +28,7 @@
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/transaction.hpp"
+#include "validators/default_validator.hpp"
 
 namespace shared_model {
   namespace proto {
