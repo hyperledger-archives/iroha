@@ -80,6 +80,7 @@ namespace iroha {
 
   void FairMstProcessor::onNewState(ConstRefPeer from,
                                     ConstRefState new_state) {
+    log_->info("Applying new state");
     auto current_time = time_provider_->getCurrentTime();
 
     // update state
@@ -88,6 +89,7 @@ namespace iroha {
         std::make_shared<MstState>(storage_->whatsNew(new_state));
     state_subject_.get_subscriber().on_next(new_transactions);
 
+    log_->info("New txes size: {}", new_transactions->getTransactions().size());
     // completed transactions
     shareState(storage_->apply(from, new_state), transactions_subject_);
 
@@ -100,6 +102,7 @@ namespace iroha {
 
   void FairMstProcessor::onPropagate(
       const PropagationStrategy::PropagationData &data) {
+    log_->info("Propagate new data[{}]", data.size());
     auto current_time = time_provider_->getCurrentTime();
     std::for_each(
         data.begin(), data.end(), [this, &current_time](const auto &peer) {
