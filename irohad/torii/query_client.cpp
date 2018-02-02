@@ -33,22 +33,17 @@ namespace torii_utils {
   QuerySyncClient::QuerySyncClient(const QuerySyncClient &rhs)
       : QuerySyncClient(rhs.ip_, rhs.port_) {}
 
-  QuerySyncClient &QuerySyncClient::operator=(const QuerySyncClient &rhs) {
-    this->ip_ = rhs.ip_;
-    this->port_ = rhs.port_;
-    this->stub_ = iroha::protocol::QueryService::NewStub(
-        grpc::CreateChannel(rhs.ip_ + ":" + std::to_string(rhs.port_),
-                            grpc::InsecureChannelCredentials()));
+  QuerySyncClient &QuerySyncClient::operator=(QuerySyncClient rhs) {
+    swap(*this, rhs);
     return *this;
   }
 
-  QuerySyncClient::QuerySyncClient(QuerySyncClient &&rhs)
-      : ip_(std::move(rhs.ip_)), port_(rhs.port_), stub_(std::move(rhs.stub_)) {}
+  QuerySyncClient::QuerySyncClient(QuerySyncClient &&rhs) noexcept {
+    swap(*this, rhs);
+  }
 
-  QuerySyncClient& QuerySyncClient::operator=(QuerySyncClient &&rhs) {
-    this->ip_ = std::move(rhs.ip_);
-    this->port_ = rhs.port_;
-    this->stub_ = std::move(rhs.stub_);
+  QuerySyncClient &QuerySyncClient::operator=(QuerySyncClient &&rhs) noexcept {
+    swap(*this, rhs);
     return *this;
   }
 
@@ -62,6 +57,13 @@ namespace torii_utils {
                                      QueryResponse &response) const {
     grpc::ClientContext context;
     return stub_->Find(&context, query, &response);
+  }
+
+  void QuerySyncClient::swap(QuerySyncClient &lhs, QuerySyncClient &rhs) {
+    using std::swap;
+    swap(lhs.ip_, rhs.ip_);
+    swap(lhs.port_, rhs.port_);
+    swap(lhs.stub_, rhs.stub_);
   }
 
 }  // namespace torii_utils

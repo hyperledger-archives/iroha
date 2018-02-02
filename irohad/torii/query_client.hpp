@@ -34,10 +34,10 @@ namespace torii_utils {
     QuerySyncClient(const std::string &ip, size_t port);
 
     QuerySyncClient(const QuerySyncClient&);
-    QuerySyncClient& operator=(const QuerySyncClient&);
+    QuerySyncClient& operator=(QuerySyncClient);
 
-    QuerySyncClient(QuerySyncClient&&);
-    QuerySyncClient&operator=(QuerySyncClient&&);
+    QuerySyncClient(QuerySyncClient&&) noexcept ;
+    QuerySyncClient&operator=(QuerySyncClient&&) noexcept ;
 
     /**
      * requests query to a torii server and returns response (blocking, sync)
@@ -49,6 +49,8 @@ namespace torii_utils {
                       iroha::protocol::QueryResponse &response) const;
 
    private:
+    void swap(QuerySyncClient& lhs, QuerySyncClient& rhs);
+
     std::string ip_;
     size_t port_;
     std::unique_ptr<iroha::protocol::QueryService::Stub> stub_;

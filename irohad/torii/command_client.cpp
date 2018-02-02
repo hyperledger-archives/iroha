@@ -34,13 +34,17 @@ namespace torii {
   CommandSyncClient::CommandSyncClient(const CommandSyncClient &rhs)
       : CommandSyncClient(rhs.ip_, rhs.port_) {}
 
-  CommandSyncClient &CommandSyncClient::operator=(
-      const CommandSyncClient &rhs) {
-    this->ip_ = rhs.ip_;
-    this->port_ = rhs.port_;
-    this->stub_ = iroha::protocol::CommandService::NewStub(
-        grpc::CreateChannel(rhs.ip_ + ":" + std::to_string(rhs.port_),
-                            grpc::InsecureChannelCredentials()));
+  CommandSyncClient &CommandSyncClient::operator=(CommandSyncClient rhs) {
+    swap(*this, rhs);
+    return *this;
+  }
+
+  CommandSyncClient::CommandSyncClient(CommandSyncClient &&rhs) noexcept {
+    swap(*this, rhs);
+  }
+
+  CommandSyncClient& CommandSyncClient::operator=(CommandSyncClient &&rhs) noexcept  {
+    swap(*this, rhs);
     return *this;
   }
 
@@ -57,16 +61,13 @@ namespace torii {
     return stub_->Status(&context, request, &response);
   }
 
-  CommandSyncClient::CommandSyncClient(CommandSyncClient &&rhs)
-      : ip_(std::move(rhs.ip_)),
-        port_(rhs.port_),
-        stub_(std::move(rhs.stub_)) {}
 
-  CommandSyncClient& CommandSyncClient::operator=(CommandSyncClient &&rhs) {
-    this->ip_ = std::move(rhs.ip_);
-    this->port_ = rhs.port_;
-    this->stub_ = std::move(rhs.stub_);
-    return *this;
+
+  void  CommandSyncClient::swap(CommandSyncClient& lhs, CommandSyncClient& rhs) {
+    using std::swap;
+    swap(lhs.ip_, rhs.ip_);
+    swap(lhs.port_, rhs.port_);
+    swap(lhs.stub_, rhs.stub_);
   }
 
 }  // namespace torii
