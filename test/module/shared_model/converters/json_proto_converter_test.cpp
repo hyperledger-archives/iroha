@@ -19,40 +19,11 @@
 
 #include "backend/protobuf/transaction.hpp"
 #include "converters/protobuf/json_proto_converter.hpp"
+#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 using namespace shared_model::converters::protobuf;
-
-/**
- * creates sample transaction
- * @return tx shared model object
- */
-shared_model::proto::Transaction generateTransaction() {
-  shared_model::interface::types::CounterType tx_counter = 1;
-  std::string creator_account_id = "admin@test";
-
-  iroha::protocol::Transaction proto_tx;
-  auto &payload = *proto_tx.mutable_payload();
-  payload.set_tx_counter(tx_counter);
-  payload.set_creator_account_id(creator_account_id);
-  payload.set_created_time(123);
-
-  return shared_model::proto::Transaction(std::move(proto_tx));
-}
-
-/**
- * creates sample block containing several txs
- * @return block shared model object
- */
-shared_model::proto::Block generateBlock() {
-  size_t tx_number = 10;
-  iroha::protocol::Block block;
-  for (size_t i = 0; i < tx_number; i++) {
-    auto tx = generateTransaction();
-    block.mutable_payload()->add_transactions()->CopyFrom(tx.getTransport());
-  }
-
-  return shared_model::proto::Block(std::move(block));
-}
+using namespace shared_model;
 
 /**
  * @given sample transaction shared model object
@@ -61,7 +32,16 @@ shared_model::proto::Block generateBlock() {
  * @then original and obtained objects are equal
  */
 TEST(JsonProtoConverterTest, JsonToProtoTxTest) {
-  auto orig_tx = generateTransaction();
+  TestTransactionBuilder builder;
+
+  shared_model::interface::types::CounterType tx_counter = 1;
+  std::string creator_account_id = "admin@test";
+
+  auto orig_tx = builder.txCounter(tx_counter)
+                     .creatorAccountId(creator_account_id)
+                     .createdTime(123)
+                     .build();
+
   auto json = modelToJson(orig_tx);
 
   auto obtained_tx = jsonToModel<shared_model::proto::Transaction>(json);
@@ -89,7 +69,15 @@ TEST(JsonProtoConverterTest, InvalidJsonToProtoTx) {
  * @then original and obtained objects are equal
  */
 TEST(JsonProtoConverterTest, JsonToProtoBlockTest) {
-  auto orig_block = generateBlock();
+  TestTransactionBuilder tx_builder;
+  TestBlockBuilder block_builder;
+
+  auto orig_block =
+      block_builder.transactions(std::vector<Transaction>({tx_builder.build()}))
+          .createdTime(123)
+          .txNumber(1)
+          .build();
+
   auto json = modelToJson(orig_block);
 
   auto obtained_block = jsonToModel<shared_model::proto::Block>(json);
