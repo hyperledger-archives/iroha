@@ -60,8 +60,6 @@ namespace iroha {
       logger::Logger log_;
       using ExecuteType = decltype(makeExecute(transaction_, log_));
       ExecuteType execute_;
-      /// format strings for index keys
-      boost::format account_id_height_, account_id_height_asset_id_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

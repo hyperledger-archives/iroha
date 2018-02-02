@@ -35,9 +35,7 @@ namespace iroha {
     PostgresBlockIndex::PostgresBlockIndex(pqxx::nontransaction &transaction)
         : transaction_(transaction),
           log_(logger::log("PostgresBlockIndex")),
-          execute_{makeExecute(transaction_, log_)},
-          account_id_height_("%s:%s"),
-          account_id_height_asset_id_("%s:%s:%s") {}
+          execute_{makeExecute(transaction_, log_)} {}
 
     void PostgresBlockIndex::index(const model::Block &block) {
       const auto &height = std::to_string(block.height);
@@ -48,12 +46,10 @@ namespace iroha {
                         const auto &index = std::to_string(tx.index());
 
                         // tx hash -> block where hash is stored
-                        auto query =
-                            "INSERT INTO height_by_hash(hash, height) VALUES ("
-                            + transaction_.quote(
-                                  pqxx::binarystring(hash.data(), hash.size()))
-                            + ", " + transaction_.quote(height) + ");";
-                        execute_(query);
+                        execute_("INSERT INTO height_by_hash(hash, height) VALUES ("
+                                 + transaction_.quote(
+                                pqxx::binarystring(hash.data(), hash.size()))
+                                 + ", " + transaction_.quote(height) + ");");
 
                         this->indexAccountIdHeight(creator_id, height);
 
