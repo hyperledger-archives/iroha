@@ -252,7 +252,8 @@ namespace iroha {
 
       auto message =
           (boost::format("failed to delete account signatory, account id: "
-                         "'%s', signatory hex string: '%s'") % account_id % signatory.to_hexstring())
+                         "'%s', signatory hex string: '%s'")
+           % account_id % signatory.to_hexstring())
               .str();
 
       return makeCommandResult(result, message);

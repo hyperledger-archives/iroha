@@ -356,8 +356,8 @@ namespace iroha {
       auto asset = queries.getAsset(subtract_asset_quantity.asset_id);
       if (not asset) {
         return makeExecutionResult((boost::format("asset %s is absent")
-                             % subtract_asset_quantity.asset_id)
-                                .str());
+                                    % subtract_asset_quantity.asset_id)
+                                       .str());
       }
       auto precision = asset.value().precision;
 
@@ -370,9 +370,10 @@ namespace iroha {
       auto account_asset = queries.getAccountAsset(
           subtract_asset_quantity.account_id, subtract_asset_quantity.asset_id);
       if (not account_asset.has_value()) {
-        return makeExecutionResult((boost::format("account %s is absent")
-                             % subtract_asset_quantity.account_id)
-                                .str());
+        return makeExecutionResult((boost::format("account %s does not have %s")
+                                    % subtract_asset_quantity.account_id
+                                    % subtract_asset_quantity.asset_id)
+                                       .str());
       }
       auto account_asset_value = account_asset.value();
 

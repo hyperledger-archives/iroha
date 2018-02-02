@@ -26,24 +26,19 @@ namespace iroha {
     class PostgresWsvCommand : public WsvCommand {
      public:
       explicit PostgresWsvCommand(pqxx::nontransaction &transaction);
-      WsvCommandResult insertRole(
-          const std::string &role_name) override;
+      WsvCommandResult insertRole(const std::string &role_name) override;
 
-      WsvCommandResult insertAccountRole(
-          const std::string &account_id,
-          const std::string &role_name) override;
-      WsvCommandResult deleteAccountRole(
-          const std::string &account_id,
-          const std::string &role_name) override;
+      WsvCommandResult insertAccountRole(const std::string &account_id,
+                                         const std::string &role_name) override;
+      WsvCommandResult deleteAccountRole(const std::string &account_id,
+                                         const std::string &role_name) override;
 
       WsvCommandResult insertRolePermissions(
           const std::string &role_id,
           const std::set<std::string> &permissions) override;
 
-      WsvCommandResult insertAccount(
-          const model::Account &account) override;
-      WsvCommandResult updateAccount(
-          const model::Account &account) override;
+      WsvCommandResult insertAccount(const model::Account &account) override;
+      WsvCommandResult updateAccount(const model::Account &account) override;
       WsvCommandResult setAccountKV(const std::string &account_id,
                                     const std::string &creator_account_id,
                                     const std::string &key,
@@ -51,20 +46,15 @@ namespace iroha {
       WsvCommandResult insertAsset(const model::Asset &asset) override;
       WsvCommandResult upsertAccountAsset(
           const model::AccountAsset &asset) override;
-      WsvCommandResult insertSignatory(
-          const pubkey_t &signatory) override;
+      WsvCommandResult insertSignatory(const pubkey_t &signatory) override;
       WsvCommandResult insertAccountSignatory(
-          const std::string &account_id,
-          const pubkey_t &signatory) override;
+          const std::string &account_id, const pubkey_t &signatory) override;
       WsvCommandResult deleteAccountSignatory(
-          const std::string &account_id,
-          const pubkey_t &signatory) override;
-      WsvCommandResult deleteSignatory(
-          const pubkey_t &signatory) override;
+          const std::string &account_id, const pubkey_t &signatory) override;
+      WsvCommandResult deleteSignatory(const pubkey_t &signatory) override;
       WsvCommandResult insertPeer(const model::Peer &peer) override;
       WsvCommandResult deletePeer(const model::Peer &peer) override;
-      WsvCommandResult insertDomain(
-          const model::Domain &domain) override;
+      WsvCommandResult insertDomain(const model::Domain &domain) override;
       WsvCommandResult insertAccountGrantablePermission(
           const std::string &permittee_account_id,
           const std::string &account_id,
@@ -84,10 +74,17 @@ namespace iroha {
       using ExecuteType = decltype(makeExecuteResult(transaction_, log_));
       ExecuteType execute_;
 
-      // TODO: refactor to return Result when it is introduced IR-744
+      /**
+       * Transforms result which contains pqxx to WsvCommandResult,
+       * which will have given error message appended to one received from the
+       * driver
+       * @param result which can be received by calling execute_
+       * @param error_message what to append to error received from the driver
+       * @return WsvCommandResult with combined error message in case of failure
+       */
       WsvCommandResult makeCommandResult(
           expected::Result<pqxx::result, std::string> result,
-          const std::string &error_message) const noexcept ;
+          const std::string &error_message) const noexcept;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

@@ -31,7 +31,17 @@
 namespace iroha {
   namespace ametsuchi {
 
+    /**
+     * Error returned by WSV functions
+     */
     using WsvError = std::string;
+
+    /**
+     *  If command is successful, we assume changes are made,
+     *  and do not need anything
+     *  If something goes wrong, Result will contain WsvError
+     *  with additional information
+     */
     using WsvCommandResult = expected::Result<void, WsvError>;
 
     /**

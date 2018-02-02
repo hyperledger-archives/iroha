@@ -19,8 +19,8 @@
 #define IROHA_POSTGRES_WSV_COMMON_HPP
 
 #include <pqxx/nontransaction>
-#include "logger/logger.hpp"
 #include "common/result.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -29,11 +29,11 @@ namespace iroha {
      * Return function which can execute SQL statements on provided transaction
      * @param transaction on which to apply statement.
      * @param logger is used to report an error.
-     * @return nonstd::optional with pqxx::result in successful case, or nullopt
+     * @return Result with pqxx::result in value case, or exception message
      * if exception was caught
      */
     inline auto makeExecuteResult(pqxx::nontransaction &transaction,
-                            logger::Logger &logger) noexcept {
+                                  logger::Logger &logger) noexcept {
       return [&](const std::string &statement) noexcept
           ->expected::Result<pqxx::result, std::string> {
         try {
@@ -45,8 +45,17 @@ namespace iroha {
       };
     }
 
+    /**
+     * Return function which can execute SQL statements on provided transaction
+     * This function is deprecated, and will be removed as soon as wsv_query
+     * will be refactored to return result
+     * @param transaction on which to apply statement.
+     * @param logger is used to report an error.
+     * @return nonstd::optional with pqxx::result in successful case, or nullopt
+     * if exception was caught
+     */
     inline auto makeExecuteOptional(pqxx::nontransaction &transaction,
-                            logger::Logger &logger) noexcept {
+                                    logger::Logger &logger) noexcept {
       return [&](const std::string &statement) noexcept
           ->nonstd::optional<pqxx::result> {
         try {
