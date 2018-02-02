@@ -147,10 +147,9 @@ constexpr auto kUser = "user@test";
 constexpr auto kAsset = "asset#domain";
 
 /**
- * @given unsigned empty GetAccount query
- * AND default-initialized IntegrationTestFramework
+ * @given GetAccount query AND default-initialized IntegrationTestFramework
  * @when query is sent to the framework
- * @then query response is STATELESS_INVALID
+ * @then no error occurs
  */
 TEST(PipelineIntegrationTest, SendQuery) {
   auto query = shared_model::proto::QueryBuilder()
