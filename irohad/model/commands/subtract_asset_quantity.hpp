@@ -17,10 +17,9 @@
 #ifndef IROHA_SUBTRACT_ASSET_QUANTITY_HPP
 #define IROHA_SUBTRACT_ASSET_QUANTITY_HPP
 
-#include <model/command.hpp>
 #include <string>
 #include "amount/amount.hpp"
-#include "common/types.hpp"
+#include "model/command.hpp"
 
 namespace iroha {
   namespace model {

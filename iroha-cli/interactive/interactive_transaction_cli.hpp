@@ -22,9 +22,14 @@
 
 #include "interactive/interactive_common_cli.hpp"
 #include "logger/logger.hpp"
-#include "model/command.hpp"
 #include "model/generators/transaction_generator.hpp"
-#include "model/model_crypto_provider.hpp"
+
+namespace iroha {
+  namespace model {
+    struct Command;
+    class ModelCryptoProvider;
+  }
+}
 
 namespace iroha_cli {
   namespace interactive {

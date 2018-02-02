@@ -18,6 +18,7 @@
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/simulator/simulator_mocks.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
 
 #include <memory>
 #include <rxcpp/rx-observable.hpp>

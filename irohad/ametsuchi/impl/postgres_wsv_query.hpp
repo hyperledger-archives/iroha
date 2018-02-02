@@ -19,6 +19,7 @@
 #define IROHA_POSTGRES_WSV_QUERY_HPP
 
 #include "ametsuchi/wsv_query.hpp"
+
 #include "postgres_wsv_common.hpp"
 
 namespace iroha {

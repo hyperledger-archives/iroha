@@ -15,25 +15,13 @@
  * limitations under the License.
  */
 
-#include <algorithm>
-
-#include "model/commands/add_asset_quantity.hpp"
-#include "model/commands/add_peer.hpp"
-#include "model/commands/add_signatory.hpp"
-#include "model/commands/append_role.hpp"
-#include "model/commands/create_account.hpp"
-#include "model/commands/create_asset.hpp"
-#include "model/commands/create_domain.hpp"
-#include "model/commands/create_role.hpp"
-#include "model/commands/detach_role.hpp"
-#include "model/commands/grant_permission.hpp"
-#include "model/commands/remove_signatory.hpp"
-#include "model/commands/revoke_permission.hpp"
-#include "model/commands/set_account_detail.hpp"
-#include "model/commands/set_quorum.hpp"
-#include "model/commands/subtract_asset_quantity.hpp"
-#include "model/commands/transfer_asset.hpp"
 #include "model/execution/command_executor.hpp"
+#include <algorithm>
+#include "model/account.hpp"
+#include "model/asset.hpp"
+#include "model/domain.hpp"
+#include "model/account_asset.hpp"
+#include "model/commands/all.hpp"
 #include "model/execution/common_executor.hpp"
 #include "model/permissions.hpp"
 #include "validator/domain_name_validator.hpp"

@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-#include "validators.hpp"
 #include <iostream>
 #include <sstream>
+
+#include "validators.hpp"
 
 namespace iroha_cli {
 

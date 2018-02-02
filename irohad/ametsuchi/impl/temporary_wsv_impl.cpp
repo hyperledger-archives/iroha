@@ -16,9 +16,11 @@
  */
 
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
-
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
+#include "model/execution/command_executor_factory.hpp"
+#include "model/account.hpp"
+#include "amount/amount.hpp"
 
 namespace iroha {
   namespace ametsuchi {

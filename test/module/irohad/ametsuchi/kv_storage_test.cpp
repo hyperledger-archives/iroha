@@ -16,8 +16,12 @@
  */
 
 #include <gtest/gtest.h>
+
 #include "ametsuchi/block_query.hpp"
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
+#include "ametsuchi/mutable_storage.hpp"
+#include "model/account.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_domain.hpp"
 #include "model/commands/create_role.hpp"

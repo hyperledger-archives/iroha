@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-#include "interactive/interactive_query_cli.hpp"
-
 #include <boost/algorithm/string.hpp>
 #include <fstream>
 
-#include "byteutils.hpp"
 #include "client.hpp"
+#include "common/byteutils.hpp"
 #include "crypto/keys_manager_impl.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
 #include "datetime/time.hpp"
 #include "grpc_response_handler.hpp"
+#include "interactive/interactive_query_cli.hpp"
 #include "model/converters/json_query_factory.hpp"
+#include "model/model_crypto_provider.hpp"  // for ModelCryptoProvider
 #include "model/queries/get_asset_info.hpp"
 #include "model/queries/get_roles.hpp"
 #include "model/sha3_hash.hpp"
@@ -113,7 +113,7 @@ namespace iroha_cli {
       create_result_menu();
     }
 
-    void printMenu(const MenuPoints &menu) {
+    static void printMenu(const MenuPoints &menu) {
       printMenu("Choose query: ", menu);
     }
 

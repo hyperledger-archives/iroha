@@ -16,6 +16,7 @@
  */
 
 #include "query_response_handler.hpp"
+#include "logger/logger.hpp"
 #include "model/converters/pb_common.hpp"
 
 using namespace iroha::protocol;

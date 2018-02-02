@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "framework/test_subscriber.hpp"
 #include "yac_mocks.hpp"
 

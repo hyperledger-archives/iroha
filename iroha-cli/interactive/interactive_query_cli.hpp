@@ -24,8 +24,13 @@
 #include "interactive/interactive_common_cli.hpp"
 #include "logger/logger.hpp"
 #include "model/generators/query_generator.hpp"
-#include "model/model_crypto_provider.hpp"
-#include "model/query.hpp"
+
+namespace iroha {
+  namespace model {
+    class ModelCryptoProvider;
+    struct Query;
+  }
+}
 
 namespace iroha_cli {
   namespace interactive {

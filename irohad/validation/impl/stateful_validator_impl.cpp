@@ -18,6 +18,7 @@
 #include "validation/impl/stateful_validator_impl.hpp"
 #include <numeric>
 #include <set>
+#include "model/account.hpp"
 
 namespace iroha {
   namespace validation {

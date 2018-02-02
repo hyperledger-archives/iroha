@@ -17,6 +17,7 @@
 
 #include "validation/impl/chain_validator_impl.hpp"
 
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "consensus/consensus_common.hpp"
 
 namespace iroha {
@@ -30,17 +31,17 @@ namespace iroha {
       log_->info("validate block: height {}, hash {}",
                  block.height,
                  block.hash.to_hexstring());
-      auto apply_block =
-          [](const auto &block, auto &queries, const auto &top_hash) {
-            auto peers = queries.getPeers();
-            if (not peers.has_value()) {
-              return false;
-            }
-            return block.prev_hash == top_hash
-                and consensus::hasSupermajority(block.sigs.size(),
-                                                peers.value().size())
-                and consensus::peersSubset(block.sigs, peers.value());
-          };
+      auto apply_block = [](
+          const auto &block, auto &queries, const auto &top_hash) {
+        auto peers = queries.getPeers();
+        if (not peers.has_value()) {
+          return false;
+        }
+        return block.prev_hash == top_hash
+            and consensus::hasSupermajority(block.sigs.size(),
+                                            peers.value().size())
+            and consensus::peersSubset(block.sigs, peers.value());
+      };
 
       // Apply to temporary storage
       return storage.apply(block, apply_block);

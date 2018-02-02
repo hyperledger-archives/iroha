@@ -16,12 +16,16 @@
  */
 
 #include "consensus/yac/storage/yac_common.hpp"
+
 #include <algorithm>
+
 #include "consensus/consensus_common.hpp"
+#include "consensus/yac/messages.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
+
       bool hasReject(uint64_t frequent, uint64_t voted, uint64_t all) {
         auto not_voted = all - voted;
         return not hasSupermajority(frequent + not_voted, all);

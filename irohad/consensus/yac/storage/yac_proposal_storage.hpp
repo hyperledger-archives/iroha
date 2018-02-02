@@ -19,10 +19,8 @@
 #define IROHA_YAC_PROPOSAL_STORAGE_HPP
 
 #include <nonstd/optional.hpp>
-#include <unordered_map>
 #include <vector>
 
-#include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/storage_result.hpp"
 #include "consensus/yac/storage/yac_block_storage.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
@@ -31,6 +29,8 @@
 namespace iroha {
   namespace consensus {
     namespace yac {
+
+      struct VoteMessage;
 
       /**
        * Class for storing votes related to given proposal hash

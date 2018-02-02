@@ -19,10 +19,11 @@
 #define IROHA_MUTABLE_FACTORY_HPP
 
 #include <memory>
-#include "ametsuchi/mutable_storage.hpp"
 
 namespace iroha {
   namespace ametsuchi {
+
+    class MutableStorage;
 
     class MutableFactory {
      public:

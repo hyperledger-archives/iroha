@@ -23,6 +23,11 @@
 #include <iostream>
 #include <unordered_map>
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
+#include "model/account.hpp"
+#include "model/account_asset.hpp"
+#include "model/asset.hpp"
+#include "model/domain.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 

@@ -13,10 +13,11 @@ limitations under the License.
 
 #include <block.pb.h>
 #include <grpc++/grpc++.h>
-#include <network/grpc_call.hpp>
 #include <thread>
-#include <torii/torii_service_handler.hpp>
-#include <torii_utils/query_client.hpp>
+
+#include "network/grpc_call.hpp"
+#include "torii/torii_service_handler.hpp"
+#include "torii_utils/query_client.hpp"
 
 namespace torii_utils {
 
@@ -40,8 +41,8 @@ namespace torii_utils {
    */
   grpc::Status QuerySyncClient::Find(const iroha::protocol::Query &query,
                                      QueryResponse &response) {
-    std::unique_ptr<
-        grpc::ClientAsyncResponseReader<iroha::protocol::QueryResponse>>
+    std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::
+                                                        QueryResponse>>
         rpc(stub_->AsyncFind(&context_, query, &completionQueue_));
 
     using State = network::UntypedCall<torii::ToriiServiceHandler>::State;

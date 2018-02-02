@@ -18,11 +18,10 @@
 #ifndef IROHA_ABSTRACT_CACHE_HPP
 #define IROHA_ABSTRACT_CACHE_HPP
 
+#include <boost/optional.hpp>
 #include <list>
 #include <mutex>
 #include <string>
-
-#include <boost/optional.hpp>
 
 namespace iroha {
   namespace cache {

@@ -20,6 +20,7 @@
 
 #include <endpoint.pb.h>
 #include <string>
+
 #include "interactive/interactive_common_cli.hpp"
 
 namespace iroha_cli {

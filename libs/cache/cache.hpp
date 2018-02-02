@@ -18,9 +18,9 @@
 #ifndef IROHA_CACHE_HPP
 #define IROHA_CACHE_HPP
 
-#include <unordered_map>
-
 #include "cache/abstract_cache.hpp"
+
+#include <unordered_map>
 
 namespace iroha {
   namespace cache {

@@ -17,11 +17,13 @@
 
 #include "ametsuchi/impl/storage_impl.hpp"
 
+#include "ametsuchi/impl/flat_file/flat_file.hpp"  // for FlatFile
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/redis_block_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "model/converters/json_common.hpp"
+#include "model/execution/command_executor_factory.hpp"  // for CommandExecutorFactory
 
 namespace iroha {
   namespace ametsuchi {
@@ -30,6 +32,16 @@ namespace iroha {
     const char *kPsqlBroken = "Connection to PostgreSQL broken: {}";
     const char *kRedisBroken = "Connection {}:{} with Redis broken {}";
     const char *kTmpWsv = "TemporaryWsv";
+
+    ConnectionContext::ConnectionContext(
+        std::unique_ptr<FlatFile> block_store,
+        std::unique_ptr<cpp_redis::client> index,
+        std::unique_ptr<pqxx::lazyconnection> pg_lazy,
+        std::unique_ptr<pqxx::nontransaction> pg_nontx)
+        : block_store(std::move(block_store)),
+          index(std::move(index)),
+          pg_lazy(std::move(pg_lazy)),
+          pg_nontx(std::move(pg_nontx)) {}
 
     StorageImpl::StorageImpl(
         std::string block_store_dir,
