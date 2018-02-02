@@ -44,20 +44,12 @@ using iroha::expected::makeError;
 namespace iroha {
   namespace model {
 
-    bool resultToBool(WsvQueryResult<bool> result) {
-      return result.match(
-          [](iroha::expected::Value<bool> &v) { return v.value; },
-          [](iroha::expected::Error<iroha::ametsuchi::WsvError> e) {
-            return false;
-          });
-    }
-
     // TODO: 30.01.2018 nickaleks make db calls return result to eliminate need
     // for this function IR-775
     //    ExecutionResult CommandExecutor::errorIfNot(
     //        bool condition, const std::string &error_message) const noexcept {
     //      if (not condition) {
-    //        return makeExecutionResult(error_message);
+    //        return makeExecutionError(error_message);
     //      }
     //      return {};
     //    }
@@ -72,12 +64,19 @@ namespace iroha {
     }
 
     ExecutionResult CommandExecutor::makeExecutionResult(
-        ametsuchi::WsvCommandResult &&result) const noexcept {
+        const ametsuchi::WsvCommandResult &result) const noexcept {
       return result.match(
-          [](expected::Value<void> &v) -> ExecutionResult { return {}; },
-          [this](expected::Error<WsvError> &e) -> ExecutionResult {
-            return makeError(ExecutionError{this->commandName(), e.error});
+          [](const
+             expected::Value<void> &v) -> ExecutionResult { return {}; },
+          [this](const expected::Error<WsvError> &e) -> ExecutionResult {
+            return makeError(ExecutionError{commandName(), e.error});
           });
+    }
+
+    ExecutionResult CommandExecutor::makeExecutionResult(
+        const std::string &error_message) const noexcept {
+      return ExecutionResult(
+          expected::makeError(ExecutionError{commandName(), error_message}));
     }
 
     // ----------------------------| Append Role |-----------------------------
@@ -100,40 +99,36 @@ namespace iroha {
         const Command &command,
         ametsuchi::WsvQuery &queries,
         const std::string &creator_account_id) {
-      return resultToBool(checkAccountRolePermission(
-          creator_account_id, queries, can_append_role));
+      return checkAccountRolePermission(
+          creator_account_id, queries, can_append_role);
     }
 
     bool AppendRoleExecutor::isValid(const Command &command,
                                      ametsuchi::WsvQuery &queries,
                                      const std::string &creator_account_id) {
       auto cmd_value = static_cast<const AppendRole &>(command);
-      // TODO: Refactor to results
-      //      auto role_permissions =
-      //      queries.getRolePermissions(cmd_value.role_name); auto
-      //      account_roles = queries.getAccountRoles(creator_account_id);
-      //
-      //      if (not resultToBool(role_permissions) or not
-      //      resultToBool(account_roles)) {
-      //        return false;
-      //      }
-      //
-      //      std::set<std::string> account_permissions;
-      //      for (const auto &role : *account_roles) {
-      //        auto permissions = queries.getRolePermissions(role);
-      //        if (not resultToBool(permissions))
-      //          continue;
-      //        for (const auto &permission : *permissions)
-      //          account_permissions.insert(permission);
-      //      }
-      //
-      //      return std::none_of((*role_permissions).begin(),
-      //                          (*role_permissions).end(),
-      //                          [&account_permissions](const auto &perm) {
-      //                            return account_permissions.find(perm)
-      //                                == account_permissions.end();
-      //                          });
-      return true;
+      auto role_permissions = queries.getRolePermissions(cmd_value.role_name);
+      auto account_roles = queries.getAccountRoles(creator_account_id);
+
+      if (not role_permissions.has_value() or not account_roles.has_value()) {
+        return false;
+      }
+
+      std::set<std::string> account_permissions;
+      for (const auto &role : *account_roles) {
+        auto permissions = queries.getRolePermissions(role);
+        if (not permissions.has_value())
+          continue;
+        for (const auto &permission : *permissions)
+          account_permissions.insert(permission);
+      }
+
+      return std::none_of((*role_permissions).begin(),
+                          (*role_permissions).end(),
+                          [&account_permissions](const auto &perm) {
+                            return account_permissions.find(perm)
+                                == account_permissions.end();
+                          });
     }
 
     // ----------------------------| Detach Role |-----------------------------
@@ -156,8 +151,8 @@ namespace iroha {
         const Command &command,
         ametsuchi::WsvQuery &queries,
         const std::string &creator_account_id) {
-      return resultToBool(checkAccountRolePermission(
-          creator_account_id, queries, can_detach_role));
+      return checkAccountRolePermission(
+          creator_account_id, queries, can_detach_role);
     }
 
     bool DetachRoleExecutor::isValid(const Command &command,
@@ -178,19 +173,24 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const CreateRole &>(command);
 
-      return makeExecutionResult(
-          (commands.insertRole(cmd_value.role_name) | [&]() {
-            return commands.insertRolePermissions(cmd_value.role_name,
-                                                  cmd_value.permissions);
-          }));
+      return commands.insertRole(cmd_value.role_name)
+          .match(
+              [&](expected::Value<void> &v) {
+                return makeExecutionResult(commands.insertRolePermissions(
+                    cmd_value.role_name, cmd_value.permissions));
+              },
+              [this](expected::Error<WsvError> &e) {
+                return ExecutionResult(
+                    makeError(ExecutionError{this->commandName(), e.error}));
+              });
     }
 
     bool CreateRoleExecutor::hasPermissions(
         const Command &command,
         ametsuchi::WsvQuery &queries,
         const std::string &creator_account_id) {
-      return resultToBool(checkAccountRolePermission(
-          creator_account_id, queries, can_create_role));
+      return checkAccountRolePermission(
+          creator_account_id, queries, can_create_role);
     }
 
     bool CreateRoleExecutor::isValid(const Command &command,
@@ -235,8 +235,8 @@ namespace iroha {
         ametsuchi::WsvQuery &queries,
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const GrantPermission &>(command);
-      return resultToBool(checkAccountRolePermission(
-          creator_account_id, queries, can_grant + cmd_value.permission_name));
+      return checkAccountRolePermission(
+          creator_account_id, queries, can_grant + cmd_value.permission_name);
     }
 
     bool GrantPermissionExecutor::isValid(
@@ -270,8 +270,8 @@ namespace iroha {
       auto cmd_value = static_cast<const GrantPermission &>(command);
       // Target account must have permission on creator's account -> creator can
       // revoke his permission
-      return resultToBool(queries.hasAccountGrantablePermission(
-          cmd_value.account_id, creator_account_id, cmd_value.permission_name));
+      return queries.hasAccountGrantablePermission(
+          cmd_value.account_id, creator_account_id, cmd_value.permission_name);
     }
 
     bool RevokePermissionExecutor::isValid(
@@ -294,51 +294,51 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto add_asset_quantity = static_cast<const AddAssetQuantity &>(command);
 
-      auto check_precision = [&](Asset asset) -> WsvQueryResult<Asset> {
-        if (add_asset_quantity.amount.getPrecision() != asset.precision) {
-          return expected::makeError(
-              (boost::format("precision mismatch: expected %d, but got %d")
-               % asset.precision % add_asset_quantity.amount.getPrecision())
-                  .str());
-        }
-        return expected::makeValue(asset);
-      };
+      auto asset = queries.getAsset(add_asset_quantity.asset_id);
+      if (not asset.has_value()) {
+        return ExecutionResult(expected::makeError(ExecutionError{
+            this->commandName(),
+            (boost::format("asset %s is absent") % add_asset_quantity.asset_id)
+                .str()}));
+      }
+      auto precision = asset.value().precision;
 
+      if (add_asset_quantity.amount.getPrecision() != precision) {
+        return ExecutionResult(expected::makeError(ExecutionError{
+            this->commandName(),
+            (boost::format("precision mismatch: expected %d, but got %d")
+             % precision % add_asset_quantity.amount.getPrecision())
+                .str()}));
+      }
+
+      if (not queries.getAccount(add_asset_quantity.account_id).has_value()) {
+        return ExecutionResult(expected::makeError(
+            ExecutionError{this->commandName(),
+                           (boost::format("account %s is absent")
+                            % add_asset_quantity.account_id)
+                               .str()}));
+      }
       auto account_asset = queries.getAccountAsset(
           add_asset_quantity.account_id, add_asset_quantity.asset_id);
+      if (not account_asset.has_value()) {
+        account_asset = AccountAsset();
+        account_asset->asset_id = add_asset_quantity.asset_id;
+        account_asset->account_id = add_asset_quantity.account_id;
+        account_asset->balance = add_asset_quantity.amount;
+      } else {
+        auto account_asset_value = account_asset.value();
 
-      auto new_asset = account_asset.match(
-          [&](expected::Value<AccountAsset> &v)
-              -> WsvQueryResult<AccountAsset> {
-            auto &account_asset = v.value;
-            auto new_balance =
-                account_asset.balance + add_asset_quantity.amount;
-            if (not new_balance.has_value()) {
-              return expected::makeError("amount overflows balance");
-            }
-
-            account_asset.balance = new_balance.value();
-            return expected::makeValue(account_asset);
-          },
-          [&](expected::Error<WsvError> &e) -> WsvQueryResult<AccountAsset> {
-            auto account_asset = AccountAsset();
-            account_asset.asset_id = add_asset_quantity.asset_id;
-            account_asset.account_id = add_asset_quantity.account_id;
-            account_asset.balance = add_asset_quantity.amount;
-            return expected::makeValue(account_asset);
-          });
+        auto new_balance =
+            account_asset_value.balance + add_asset_quantity.amount;
+        if (not new_balance.has_value()) {
+          return ExecutionResult(expected::makeError(
+              ExecutionError{this->commandName(), "amount overflows balance"}));
+        }
+        account_asset->balance = new_balance.value();
+      }
 
       return makeExecutionResult(
-          (queries.getAsset(add_asset_quantity.asset_id) | check_precision)
-              .match(
-                  [&](expected::Value<Asset> &v) -> WsvCommandResult {
-                    return new_asset | [&commands](const auto &asset) -> WsvCommandResult {
-                      return commands.upsertAccountAsset(asset);
-                    };
-                  },
-                  [&](expected::Error<WsvError> &e) -> WsvCommandResult {
-                    return makeError(e.error);
-                  }));
+          commands.upsertAccountAsset(account_asset.value()));
     }
 
     bool AddAssetQuantityExecutor::hasPermissions(
@@ -350,8 +350,8 @@ namespace iroha {
       // One can only add to his/her account
       // TODO: In future: Separate money creation for distinct assets
       return creator_account_id == cmd_value.account_id
-          and resultToBool(checkAccountRolePermission(
-                  creator_account_id, queries, can_add_asset_qty));
+          and checkAccountRolePermission(
+                  creator_account_id, queries, can_add_asset_qty);
     }
 
     bool AddAssetQuantityExecutor::isValid(
@@ -377,37 +377,42 @@ namespace iroha {
 
       auto asset = queries.getAsset(subtract_asset_quantity.asset_id);
       if (not asset) {
-        return makeExecutionError((boost::format("asset %s is absent")
-                                   % subtract_asset_quantity.asset_id)
-                                      .str());
+        return ExecutionResult(expected::makeError(
+            ExecutionError{this->commandName(),
+                           (boost::format("asset %s is absent")
+                            % subtract_asset_quantity.asset_id)
+                               .str()}));
       }
       auto precision = asset.value().precision;
 
       if (subtract_asset_quantity.amount.getPrecision() != precision) {
-        return makeExecutionError(
+        return ExecutionResult(expected::makeError(ExecutionError{
+            this->commandName(),
             (boost::format("precision mismatch: expected %d, but got %d")
              % precision % subtract_asset_quantity.amount.getPrecision())
-                .str());
+                .str()}));
       }
       auto account_asset = queries.getAccountAsset(
           subtract_asset_quantity.account_id, subtract_asset_quantity.asset_id);
       if (not account_asset.has_value()) {
-        return makeExecutionError((boost::format("%s do not have %s")
-                                   % subtract_asset_quantity.account_id
-                                   % subtract_asset_quantity.asset_id)
-                                      .str());
+        return ExecutionResult(expected::makeError(
+            ExecutionError{this->commandName(),
+                           (boost::format("account %s is absent")
+                            % subtract_asset_quantity.account_id)
+                               .str()}));
       }
       auto account_asset_value = account_asset.value();
 
       auto new_balance =
           account_asset_value.balance - subtract_asset_quantity.amount;
       if (not new_balance.has_value()) {
-        return makeExecutionError("Not sufficient amount");
+        return ExecutionResult(expected::makeError(
+            ExecutionError{this->commandName(), "Not sufficient amount"}));
       }
       account_asset->balance = new_balance.value();
 
-      return errorIfNot(commands.upsertAccountAsset(account_asset.value()),
-                        "Failed to upsert account asset");
+      return makeExecutionResult(
+          commands.upsertAccountAsset(account_asset.value()));
     }
 
     bool SubtractAssetQuantityExecutor::hasPermissions(
@@ -416,8 +421,8 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const SubtractAssetQuantity &>(command);
       return creator_account_id == cmd_value.account_id
-          and resultToBool(checkAccountRolePermission(
-                  creator_account_id, queries, can_subtract_asset_qty));
+          and checkAccountRolePermission(
+                  creator_account_id, queries, can_subtract_asset_qty);
     }
 
     bool SubtractAssetQuantityExecutor::isValid(
@@ -439,16 +444,15 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto add_peer = static_cast<const AddPeer &>(command);
       // Will return false if peer is not unique
-      return errorIfNot(commands.insertPeer(add_peer.peer),
-                        "peer is not unique");
+      return makeExecutionResult(commands.insertPeer(add_peer.peer));
     }
 
     bool AddPeerExecutor::hasPermissions(
         const Command &command,
         ametsuchi::WsvQuery &queries,
         const std::string &creator_account_id) {
-      return resultToBool(checkAccountRolePermission(
-          creator_account_id, queries, can_add_peer));
+      return checkAccountRolePermission(
+          creator_account_id, queries, can_add_peer);
     }
 
     bool AddPeerExecutor::isValid(const Command &command,
@@ -469,12 +473,12 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto add_signatory = static_cast<const AddSignatory &>(command);
 
-      if (not commands.insertSignatory(add_signatory.pubkey)) {
-        return makeExecutionError("failed to insert signatory");
-      }
-      return errorIfNot(commands.insertAccountSignatory(
-                            add_signatory.account_id, add_signatory.pubkey),
-                        "failed to insert account signatory");
+      auto result = commands.insertSignatory(add_signatory.pubkey) | [&]() {
+        return commands.insertAccountSignatory(add_signatory.account_id,
+                                               add_signatory.pubkey);
+      };
+
+      return makeExecutionResult(result);
     }
 
     bool AddSignatoryExecutor::hasPermissions(
@@ -487,8 +491,8 @@ namespace iroha {
           // Case 1. When command creator wants to add signatory to their
           // account and he has permission CanAddSignatory
           (add_signatory.account_id == creator_account_id
-           and resultToBool(checkAccountRolePermission(
-                   creator_account_id, queries, can_add_signatory)))
+           and checkAccountRolePermission(
+                   creator_account_id, queries, can_add_signatory))
           or
           // Case 2. Creator has granted permission for it
           (queries.hasAccountGrantablePermission(
@@ -522,24 +526,22 @@ namespace iroha {
       account.json_data = "{}";
       auto domain = queries.getDomain(create_account.domain_id);
       if (not domain.has_value()) {
-        return makeExecutionError(
+        return makeExecutionResult(
             (boost::format("Domain %s not found") % create_account.domain_id)
                 .str());
       }
       // TODO: remove insert signatory from here ?
-      if (not commands.insertSignatory(create_account.pubkey)) {
-        return makeExecutionError("failed to insert signatory");
-      }
-      if (not commands.insertAccount(account)) {
-        return makeExecutionError("failed to insert account");
-      }
-      if (not commands.insertAccountSignatory(account.account_id,
-                                              create_account.pubkey)) {
-        return makeExecutionError("failed to insert account signatory");
-      }
-      return errorIfNot(commands.insertAccountRole(account.account_id,
-                                                   domain.value().default_role),
-                        "failed to insert account role");
+      auto result = commands.insertSignatory(create_account.pubkey) | [&]() {
+        return commands.insertAccount(account);
+      } | [&]() {
+        return commands.insertAccountSignatory(account.account_id,
+                                               create_account.pubkey);
+      } | [&]() {
+        return commands.insertAccountRole(account.account_id,
+                                          domain.value().default_role);
+      };
+
+      return makeExecutionResult(result);
     }
 
     bool CreateAccountExecutor::hasPermissions(
@@ -547,8 +549,8 @@ namespace iroha {
         ametsuchi::WsvQuery &queries,
         const std::string &creator_account_id) {
       // Creator must have permission to create account
-      return resultToBool(checkAccountRolePermission(
-          creator_account_id, queries, can_create_account));
+      return checkAccountRolePermission(
+          creator_account_id, queries, can_create_account);
     }
 
     bool CreateAccountExecutor::isValid(const Command &command,
@@ -581,8 +583,7 @@ namespace iroha {
       new_asset.domain_id = create_asset.domain_id;
       new_asset.precision = create_asset.precision;
       // The insert will fail if asset already exists
-      return errorIfNot(commands.insertAsset(new_asset),
-                        "failed to insert asset");
+      return makeExecutionResult(commands.insertAsset(new_asset));
     }
 
     bool CreateAssetExecutor::hasPermissions(
@@ -590,8 +591,8 @@ namespace iroha {
         ametsuchi::WsvQuery &queries,
         const std::string &creator_account_id) {
       // Creator must have permission to create assets
-      return resultToBool(checkAccountRolePermission(
-          creator_account_id, queries, can_create_asset));
+      return checkAccountRolePermission(
+          creator_account_id, queries, can_create_asset);
     }
 
     bool CreateAssetExecutor::isValid(const Command &command,
@@ -625,8 +626,7 @@ namespace iroha {
       new_domain.domain_id = create_domain.domain_id;
       new_domain.default_role = create_domain.user_default_role;
       // The insert will fail if domain already exist
-      return errorIfNot(commands.insertDomain(new_domain),
-                        "failed to insert domain");
+      return makeExecutionResult(commands.insertDomain(new_domain));
     }
 
     bool CreateDomainExecutor::hasPermissions(
@@ -634,8 +634,8 @@ namespace iroha {
         ametsuchi::WsvQuery &queries,
         const std::string &creator_account_id) {
       // Creator must have permission to create domains
-      return resultToBool(checkAccountRolePermission(
-          creator_account_id, queries, can_create_domain));
+      return checkAccountRolePermission(
+          creator_account_id, queries, can_create_domain);
     }
 
     bool CreateDomainExecutor::isValid(const Command &command,
@@ -666,12 +666,10 @@ namespace iroha {
       auto remove_signatory = static_cast<const RemoveSignatory &>(command);
 
       // Delete will fail if account signatory doesn't exist
-      if (not commands.deleteAccountSignatory(remove_signatory.account_id,
-                                              remove_signatory.pubkey)) {
-        return makeExecutionError("failed to delete account signatory");
-      }
-      return errorIfNot(commands.deleteSignatory(remove_signatory.pubkey),
-                        "failed to delete signatory");
+      auto result = commands.deleteAccountSignatory(remove_signatory.account_id,
+                                                    remove_signatory.pubkey)
+          | [&]() { return commands.deleteSignatory(remove_signatory.pubkey); };
+      return makeExecutionResult(result);
     }
 
     bool RemoveSignatoryExecutor::hasPermissions(
@@ -686,10 +684,10 @@ namespace iroha {
           // 1. Creator removes signatory from their account, and he must have
           // permission on it
           (creator_account_id == remove_signatory.account_id
-           and resultToBool(checkAccountRolePermission(
-                   creator_account_id, queries, can_remove_signatory)))
+           and checkAccountRolePermission(
+                   creator_account_id, queries, can_remove_signatory))
           // 2. Creator has granted permission on removal
-          or resultToBool((queries.hasAccountGrantablePermission(creator_account_id,
+          or (queries.hasAccountGrantablePermission(creator_account_id,
                                                     remove_signatory.account_id,
                                                     can_remove_signatory));
     }
@@ -730,9 +728,8 @@ namespace iroha {
         // When creator is not known, it is genesis block
         creator = "genesis";
       }
-      return errorIfNot(
-          commands.setAccountKV(cmd.account_id, creator, cmd.key, cmd.value),
-          "failed to set account key-value");
+      return makeExecutionResult(
+          commands.setAccountKV(cmd.account_id, creator, cmd.key, cmd.value));
     }
 
     bool SetAccountDetailExecutor::hasPermissions(
@@ -745,8 +742,8 @@ namespace iroha {
           // Case 1. Creator set details for his account
           creator_account_id == cmd.account_id or
           // Case 2. Creator has grantable permission to set account key/value
-          resultToBool(queries.hasAccountGrantablePermission(
-              creator_account_id, cmd.account_id, can_set_detail));
+          queries.hasAccountGrantablePermission(
+              creator_account_id, cmd.account_id, can_set_detail);
     }
 
     bool SetAccountDetailExecutor::isValid(
@@ -770,12 +767,11 @@ namespace iroha {
 
       auto account = queries.getAccount(set_quorum.account_id);
       if (not account.has_value()) {
-        return makeExecutionError(
+        return makeExecutionResult(
             (boost::format("absent account %s") % set_quorum.account_id).str());
       }
       account.value().quorum = set_quorum.new_quorum;
-      return errorIfNot(commands.updateAccount(account.value()),
-                        "failed to update account");
+      return makeExecutionResult(commands.updateAccount(account.value()));
     }
 
     bool SetQuorumExecutor::hasPermissions(
@@ -787,8 +783,8 @@ namespace iroha {
       return
           // 1. Creator set quorum for his account -> must have permission
           (creator_account_id == set_quorum.account_id
-           and resultToBool(checkAccountRolePermission(
-                   creator_account_id, queries, can_set_quorum)))
+           and checkAccountRolePermission(
+                   creator_account_id, queries, can_set_quorum))
           // 2. Creator has granted permission on it
           or (queries.hasAccountGrantablePermission(
                  creator_account_id, set_quorum.account_id, can_set_quorum));
@@ -824,10 +820,10 @@ namespace iroha {
       auto src_account_asset = queries.getAccountAsset(
           transfer_asset.src_account_id, transfer_asset.asset_id);
       if (not src_account_asset.has_value()) {
-        return makeExecutionError((boost::format("asset %s is absent of %s")
-                                   % transfer_asset.asset_id
-                                   % transfer_asset.src_account_id)
-                                      .str());
+        return makeExecutionResult((boost::format("asset %s is absent of %s")
+                                    % transfer_asset.asset_id
+                                    % transfer_asset.src_account_id)
+                                       .str());
       }
 
       AccountAsset dest_AccountAsset;
@@ -835,22 +831,22 @@ namespace iroha {
           transfer_asset.dest_account_id, transfer_asset.asset_id);
       auto asset = queries.getAsset(transfer_asset.asset_id);
       if (not asset.has_value()) {
-        return makeExecutionError((boost::format("asset %s is absent of %s")
-                                   % transfer_asset.asset_id
-                                   % transfer_asset.dest_account_id)
-                                      .str());
+        return makeExecutionResult((boost::format("asset %s is absent of %s")
+                                    % transfer_asset.asset_id
+                                    % transfer_asset.dest_account_id)
+                                       .str());
       }
       // Precision for both wallets
       auto precision = asset.value().precision;
       if (transfer_asset.amount.getPrecision() != precision) {
-        return makeExecutionError(
+        return makeExecutionResult(
             (boost::format("precision %d is wrong") % precision).str());
       }
       // Get src balance
       auto src_balance = src_account_asset.value().balance;
       auto new_src_balance = src_balance - transfer_asset.amount;
       if (not new_src_balance.has_value()) {
-        return makeExecutionError("not enough assets on source account");
+        return makeExecutionResult("not enough assets on source account");
       }
       src_balance = new_src_balance.value();
       // Set new balance for source account
@@ -872,18 +868,18 @@ namespace iroha {
 
         auto new_dest_balance = dest_balance + transfer_asset.amount;
         if (not new_dest_balance.has_value()) {
-          return makeExecutionError("operation overflows destination balance");
+          return makeExecutionResult("operation overflows destination balance");
         }
         dest_balance = new_dest_balance.value();
         // Set new balance for dest
         dest_AccountAsset.balance = dest_balance;
       }
 
-      if (not commands.upsertAccountAsset(dest_AccountAsset)) {
-        return makeExecutionError("failed to upsert destination balance");
-      }
-      return errorIfNot(commands.upsertAccountAsset(src_account_asset.value()),
-                        "failed to upsert source account");
+      auto result = commands.upsertAccountAsset(dest_AccountAsset) | [&]() {
+        return commands.upsertAccountAsset(src_account_asset.value());
+      };
+
+      return makeExecutionResult(result);
     }
 
     bool TransferAssetExecutor::hasPermissions(
@@ -897,18 +893,18 @@ namespace iroha {
           (
               // 1. Creator has granted permission on src_account_id
               (creator_account_id != transfer_asset.src_account_id
-               and resultToBool(queries.hasAccountGrantablePermission(
+               and queries.hasAccountGrantablePermission(
                        creator_account_id,
                        transfer_asset.src_account_id,
-                       can_transfer)))
+                       can_transfer))
               or
               // 2. Creator transfer from their account
               (creator_account_id == transfer_asset.src_account_id
-               and resultToBool(checkAccountRolePermission(
-                       creator_account_id, queries, can_transfer))))
+               and checkAccountRolePermission(
+                       creator_account_id, queries, can_transfer)))
           // For both cases, dest_account must have can_receive
-          and resultToBool(checkAccountRolePermission(
-                  transfer_asset.dest_account_id, queries, can_receive));
+          and checkAccountRolePermission(
+                  transfer_asset.dest_account_id, queries, can_receive);
     }
 
     bool TransferAssetExecutor::isValid(const Command &command,

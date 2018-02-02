@@ -93,6 +93,13 @@ namespace iroha {
                               std::forward<ValueMatch>(value_func),
                               std::forward<ErrorMatch>(error_func));
       }
+
+      template <typename ValueMatch, typename ErrorMatch>
+      constexpr auto match(ValueMatch &&value_func, ErrorMatch &&error_func) const {
+        return visit_in_place(*this,
+                              std::forward<ValueMatch>(value_func),
+                              std::forward<ErrorMatch>(error_func));
+      }
     };
 
     // Factory methods for avoiding type specification

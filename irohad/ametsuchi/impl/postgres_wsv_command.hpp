@@ -81,13 +81,13 @@ namespace iroha {
       pqxx::nontransaction &transaction_;
       logger::Logger log_;
 
-      using ExecuteType = decltype(makeExecute(transaction_, log_));
+      using ExecuteType = decltype(makeExecuteResult(transaction_, log_));
       ExecuteType execute_;
 
       // TODO: refactor to return Result when it is introduced IR-744
       WsvCommandResult makeCommandResult(
           expected::Result<pqxx::result, std::string> result,
-          const std::string &error_message);
+          const std::string &error_message) const noexcept ;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

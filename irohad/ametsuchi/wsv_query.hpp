@@ -27,16 +27,9 @@
 #include <string>
 #include <vector>
 #include "model/domain.hpp"
-#include "common/result.hpp"
-
 
 namespace iroha {
   namespace ametsuchi {
-
-    // TODO: Move to separate file
-    using WsvError = std::string;
-    template <typename T>
-    using WsvQueryResult = expected::Result<T, WsvError>;
 
     /**
      *  Public interface for world state view queries
@@ -52,7 +45,7 @@ namespace iroha {
        * @param permission_id
        * @return true if has permission, false otherwise
        */
-      virtual WsvQueryResult<bool> hasAccountGrantablePermission(
+      virtual bool hasAccountGrantablePermission(
           const std::string &permitee_account_id,
           const std::string &account_id,
           const std::string &permission_id) = 0;
@@ -62,7 +55,7 @@ namespace iroha {
        * @param domain_id - id in the system
        * @return Domain if exist, nullopt otherwise
        */
-      virtual WsvQueryResult<model::Domain> getDomain(
+      virtual nonstd::optional<model::Domain> getDomain(
           const std::string &domain_id) = 0;
 
       /**
@@ -70,26 +63,26 @@ namespace iroha {
        * @param account_id
        * @return
        */
-      virtual WsvQueryResult<std::vector<std::string>> getAccountRoles(
+      virtual nonstd::optional<std::vector<std::string>> getAccountRoles(
           const std::string &account_id) = 0;
       /**
        * Get all permissions of a role
        * @param role_name
        * @return
        */
-      virtual WsvQueryResult<std::vector<std::string>> getRolePermissions(
+      virtual nonstd::optional<std::vector<std::string>> getRolePermissions(
           const std::string &role_name) = 0;
 
       /**
        * @return All roles currently in the system
        */
-      virtual WsvQueryResult<std::vector<std::string>> getRoles() = 0;
+      virtual nonstd::optional<std::vector<std::string>> getRoles() = 0;
       /**
        * Get account by user account_id
        * @param account_id
        * @return
        */
-      virtual WsvQueryResult<model::Account> getAccount(
+      virtual nonstd::optional<model::Account> getAccount(
           const std::string &account_id) = 0;
 
       /**
@@ -99,7 +92,7 @@ namespace iroha {
        * @param detail
        * @return
        */
-      virtual WsvQueryResult<std::string> getAccountDetail(
+      virtual nonstd::optional<std::string> getAccountDetail(
           const std::string &account_id,
           const std::string &creator_account_id,
           const std::string &detail) = 0;
@@ -109,7 +102,7 @@ namespace iroha {
        * @param account_id
        * @return
        */
-      virtual WsvQueryResult<std::vector<pubkey_t>> getSignatories(
+      virtual nonstd::optional<std::vector<pubkey_t>> getSignatories(
           const std::string &account_id) = 0;
 
       /**
@@ -117,7 +110,7 @@ namespace iroha {
        * @param asset_id
        * @return
        */
-      virtual WsvQueryResult<model::Asset> getAsset(
+      virtual nonstd::optional<model::Asset> getAsset(
           const std::string &asset_id) = 0;
 
       /**
@@ -126,14 +119,14 @@ namespace iroha {
        * @param asset_id
        * @return
        */
-      virtual WsvQueryResult<model::AccountAsset> getAccountAsset(
+      virtual nonstd::optional<model::AccountAsset> getAccountAsset(
           const std::string &account_id, const std::string &asset_id) = 0;
 
       /**
        *
        * @return
        */
-      virtual WsvQueryResult<std::vector<model::Peer>> getPeers() = 0;
+      virtual nonstd::optional<std::vector<model::Peer>> getPeers() = 0;
     };
 
   }  // namespace ametsuchi

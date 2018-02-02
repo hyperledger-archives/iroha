@@ -20,6 +20,7 @@
 
 #include <pqxx/nontransaction>
 #include "logger/logger.hpp"
+#include "common/result.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -31,7 +32,7 @@ namespace iroha {
      * @return nonstd::optional with pqxx::result in successful case, or nullopt
      * if exception was caught
      */
-    inline auto makeExecute(pqxx::nontransaction &transaction,
+    inline auto makeExecuteResult(pqxx::nontransaction &transaction,
                             logger::Logger &logger) noexcept {
       return [&](const std::string &statement) noexcept
           ->expected::Result<pqxx::result, std::string> {
@@ -40,6 +41,19 @@ namespace iroha {
         } catch (const std::exception &e) {
           logger->error(e.what());
           return expected::makeError(e.what());
+        }
+      };
+    }
+
+    inline auto makeExecuteOptional(pqxx::nontransaction &transaction,
+                            logger::Logger &logger) noexcept {
+      return [&](const std::string &statement) noexcept
+          ->nonstd::optional<pqxx::result> {
+        try {
+          return transaction.exec(statement);
+        } catch (const std::exception &e) {
+          logger->error(e.what());
+          return nonstd::nullopt;
         }
       };
     }

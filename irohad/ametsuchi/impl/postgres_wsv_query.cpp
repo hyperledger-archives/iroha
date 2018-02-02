@@ -30,9 +30,10 @@ namespace iroha {
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
         : transaction_(transaction),
           log_(logger::log("PostgresWsvQuery")),
-          execute_{makeExecute(transaction_, log_)} {}
+          execute_{makeExecuteOptional
+                       (transaction_, log_)} {}
 
-    WsvQueryResult<bool> PostgresWsvQuery::hasAccountGrantablePermission(
+    bool PostgresWsvQuery::hasAccountGrantablePermission(
         const std::string &permitee_account_id,
         const std::string &account_id,
         const std::string &permission_id) {
@@ -43,11 +44,10 @@ namespace iroha {
                  + " AND account_id = " + transaction_.quote(account_id)
                  + " AND permission_id = " + transaction_.quote(permission_id)
                  + ";")
-          | [](const auto &result) {
-              return expected::makeValue(result.size() == 1); };
+          | [](const auto &result) { return result.size() == 1; };
     }
 
-    WsvQueryResult<std::vector<std::string>>
+    nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getAccountRoles(const std::string &account_id) {
       return execute_(
                  "SELECT role_id FROM account_has_roles WHERE account_id = "
@@ -59,7 +59,7 @@ namespace iroha {
             };
     }
 
-    WsvQueryResult<std::vector<std::string>>
+    nonstd::optional<std::vector<std::string>>
     PostgresWsvQuery::getRolePermissions(const std::string &role_name) {
       return execute_(
                  "SELECT permission_id FROM role_has_permissions WHERE role_id "
@@ -72,18 +72,18 @@ namespace iroha {
             };
     }
 
-    WsvQueryResult<std::vector<std::string>> PostgresWsvQuery::getRoles() {
+    nonstd::optional<std::vector<std::string>> PostgresWsvQuery::getRoles() {
       return execute_("SELECT role_id FROM role;") | [&](const auto &result) {
         return transform<std::string>(
             result, [](const auto &row) { return row.at(kRoleId).c_str(); });
       };
     }
 
-    WsvQueryResult<model::Account> PostgresWsvQuery::getAccount(
+    nonstd::optional<model::Account> PostgresWsvQuery::getAccount(
         const std::string &account_id) {
       return execute_("SELECT * FROM account WHERE account_id = "
                       + transaction_.quote(account_id) + ";")
-                 | [&](const auto &result) -> WsvQueryResult<model::Account> {
+                 | [&](const auto &result) -> nonstd::optional<model::Account> {
         if (result.empty()) {
           log_->info(kAccountNotFound, account_id);
           return nonstd::nullopt;
@@ -98,7 +98,7 @@ namespace iroha {
       };
     }
 
-    WsvQueryResult<std::string> PostgresWsvQuery::getAccountDetail(
+    nonstd::optional<std::string> PostgresWsvQuery::getAccountDetail(
         const std::string &account_id,
         const std::string &creator_account_id,
         const std::string &detail) {
@@ -107,7 +107,7 @@ namespace iroha {
                                            + detail + "}")
                       + " FROM account WHERE account_id = "
                       + transaction_.quote(account_id) + ";")
-                 | [&](const auto &result) -> WsvQueryResult<std::string> {
+                 | [&](const auto &result) -> nonstd::optional<std::string> {
         if (result.empty()) {
           log_->info(kAccountNotFound, account_id);
           return nonstd::nullopt;
@@ -124,7 +124,7 @@ namespace iroha {
       };
     }
 
-    WsvQueryResult<std::vector<pubkey_t>> PostgresWsvQuery::getSignatories(
+    nonstd::optional<std::vector<pubkey_t>> PostgresWsvQuery::getSignatories(
         const std::string &account_id) {
       return execute_(
                  "SELECT public_key FROM account_has_signatory WHERE "
@@ -142,12 +142,12 @@ namespace iroha {
           };
     }
 
-    WsvQueryResult<model::Asset> PostgresWsvQuery::getAsset(
+    nonstd::optional<model::Asset> PostgresWsvQuery::getAsset(
         const std::string &asset_id) {
       pqxx::result result;
       return execute_("SELECT * FROM asset WHERE asset_id = "
                       + transaction_.quote(asset_id) + ";")
-                 | [&](const auto &result) -> WsvQueryResult<model::Asset> {
+                 | [&](const auto &result) -> nonstd::optional<model::Asset> {
         if (result.empty()) {
           log_->info("Asset {} not found", asset_id);
           return nonstd::nullopt;
@@ -163,13 +163,13 @@ namespace iroha {
       };
     }
 
-    WsvQueryResult<model::AccountAsset> PostgresWsvQuery::getAccountAsset(
+    nonstd::optional<model::AccountAsset> PostgresWsvQuery::getAccountAsset(
         const std::string &account_id, const std::string &asset_id) {
       return execute_("SELECT * FROM account_has_asset WHERE account_id = "
                       + transaction_.quote(account_id)
                       + " AND asset_id = " + transaction_.quote(asset_id) + ";")
                  | [&](const auto &result)
-                 -> WsvQueryResult<model::AccountAsset> {
+                 -> nonstd::optional<model::AccountAsset> {
         if (result.empty()) {
           log_->info("Account {} does not have asset {}", account_id, asset_id);
           return nonstd::nullopt;
@@ -185,11 +185,11 @@ namespace iroha {
       };
     }
 
-    WsvQueryResult<model::Domain> PostgresWsvQuery::getDomain(
+    nonstd::optional<model::Domain> PostgresWsvQuery::getDomain(
         const std::string &domain_id) {
       return execute_("SELECT * FROM domain WHERE domain_id = "
                       + transaction_.quote(domain_id) + ";")
-                 | [&](const auto &result) -> WsvQueryResult<model::Domain> {
+                 | [&](const auto &result) -> nonstd::optional<model::Domain> {
         if (result.empty()) {
           log_->info("Domain {} not found", domain_id);
           return nonstd::nullopt;
@@ -202,7 +202,7 @@ namespace iroha {
       };
     }
 
-    WsvQueryResult<std::vector<model::Peer>> PostgresWsvQuery::getPeers() {
+    nonstd::optional<std::vector<model::Peer>> PostgresWsvQuery::getPeers() {
       pqxx::result result;
       return execute_("SELECT * FROM peer;") | [&](const auto &result) {
         return transform<model::Peer>(result, [](const auto &row) {

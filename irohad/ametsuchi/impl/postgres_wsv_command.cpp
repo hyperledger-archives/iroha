@@ -25,7 +25,7 @@ namespace iroha {
     PostgresWsvCommand::PostgresWsvCommand(pqxx::nontransaction &transaction)
         : transaction_(transaction),
           log_(logger::log("PostgresWsvCommand")),
-          execute_{makeExecute(transaction_, log_)} {}
+          execute_{makeExecuteResult(transaction_, log_)} {}
 
     WsvCommandResult PostgresWsvCommand::insertRole(
         const std::string &role_name) {
@@ -87,7 +87,7 @@ namespace iroha {
       auto all_permissions =
           std::accumulate(std::next(permissions.begin()),
                           permissions.end(),
-                          permissions.begin(),
+                          *permissions.begin(),
                           [](auto res, auto b) { return res + ", " + b; });
 
       auto message = (boost::format("failed to insert role permissions, role "
@@ -252,7 +252,7 @@ namespace iroha {
 
       auto message =
           (boost::format("failed to delete account signatory, account id: "
-                         "'%s', signatory hex string: '%s'"))
+                         "'%s', signatory hex string: '%s'") % account_id % signatory.to_hexstring())
               .str();
 
       return makeCommandResult(result, message);
@@ -371,11 +371,14 @@ namespace iroha {
 
     WsvCommandResult PostgresWsvCommand::makeCommandResult(
         expected::Result<pqxx::result, std::string> result,
-        const std::string &error_message) noexcept {
-      return result.match([](expected::Value<pqxx::result> v) { return {}; },
-                          [&error_message](expected::Error<std::string> e) {
-                            return expected::makeError(error_message + e.error);
-                          });
+        const std::string &error_message) const noexcept {
+      return result.match(
+          [](expected::Value<pqxx::result> v) -> WsvCommandResult {
+            return {};
+          },
+          [&error_message](expected::Error<std::string> e) -> WsvCommandResult {
+            return expected::makeError(error_message + e.error);
+          });
     }
   }  // namespace ametsuchi
 }  // namespace iroha
