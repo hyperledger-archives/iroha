@@ -95,6 +95,7 @@ namespace iroha {
     /// use for share expired transactions
     rxcpp::subjects::subject<DataType> expired_subject_;
 
+    /// use for tracking the propagation subscription
     rxcpp::composite_subscription propagation_subscriber_;
   };
 }  // namespace iroha
