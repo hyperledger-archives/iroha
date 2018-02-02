@@ -8,7 +8,7 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 import shutil
-
+import git
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -29,6 +29,8 @@ class CMakeBuild(build_ext):
 
     def clone(self):
         repo_url = "https://github.com/hyperledger/iroha"
+        if os.path.isdir("iroha"):
+            return
         subprocess.check_call('git clone {} -b develop --depth 1'.format(repo_url).split())
 
     def build_extension(self, ext):
@@ -54,13 +56,12 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
         shutil.copy(self.build_temp+"/shared_model/bindings/iroha.py", extdir+"/")
 
-
 if __name__ == "__main__":
     setup(
         name='iroha',
-        version='0.0.11',
+        version='0.0.18',
         author='Soramitsu Co Ltd',
-        author_email='Python library for Hyperledger Iroha',
+        author_email='savva@soramitsu.co.jp',
         description='Python library for Hyperledger Iroha',
         long_description='',
         ext_modules=[CMakeExtension('iroha', 'iroha')],
