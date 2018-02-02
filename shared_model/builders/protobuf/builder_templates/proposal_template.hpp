@@ -22,7 +22,7 @@
 #include "interfaces/common_objects/types.hpp"
 #include "validators/default_validator.hpp"
 
-#include "ordering.pb.h"
+#include "proposal.pb.h"
 
 namespace shared_model {
   namespace proto {
@@ -44,7 +44,7 @@ namespace shared_model {
       template <int s>
       using NextBuilder = TemplateProposalBuilder<S | (1 << s), SV>;
 
-      iroha::ordering::proto::Proposal proposal_;
+      iroha::protocol::Proposal proposal_;
       SV stateless_validator_;
 
       template <int Sp>
@@ -97,7 +97,7 @@ namespace shared_model {
         if (answer.hasErrors()) {
           throw std::invalid_argument(answer.reason());
         }
-        return Proposal(iroha::ordering::proto::Proposal(proposal_));
+        return Proposal(iroha::protocol::Proposal(proposal_));
       }
 
       static const int total = RequiredFields::TOTAL;

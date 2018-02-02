@@ -26,9 +26,9 @@
 #include "model/proposal.hpp"
 
 #include "block.pb.h"
-#include "ordering.pb.h"
-#include "utils/lazy_initializer.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "proposal.pb.h"
+#include "utils/lazy_initializer.hpp"
 
 #include "transaction.hpp"
 namespace shared_model {
@@ -36,7 +36,7 @@ namespace shared_model {
   namespace proto {
     class Proposal final
         : public CopyableProto<interface::Proposal,
-                               iroha::ordering::proto::Proposal,
+                               iroha::protocol::Proposal,
                                Proposal> {
       template <class T>
       using w = detail::PolymorphicWrapper<T>;
@@ -61,8 +61,7 @@ namespace shared_model {
 
       Proposal(Proposal &&o) noexcept : Proposal(std::move(o.proto_)) {}
 
-      const TransactionContainer &transactions()
-          const override {
+      const TransactionContainer &transactions() const override {
         return *transactions_;
       }
 
