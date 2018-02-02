@@ -55,7 +55,7 @@ namespace shared_model {
       using ProtoQuery = iroha::protocol::Query;
 
       template <int Sp>
-      TemplateQueryBuilder(const TemplateQueryBuilder<Sp> &o)
+      TemplateQueryBuilder(const TemplateQueryBuilder<Sp, SV, BT> &o)
           : query_(o.query_), stateless_validator_(o.stateless_validator_) {}
 
       /**
@@ -179,6 +179,16 @@ namespace shared_model {
         });
       }
 
+      template <typename Collection>
+      auto getTransactions(const Collection &hashes) const {
+        return queryField([&](auto proto_query) {
+          auto query = proto_query->mutable_get_transactions();
+          boost::for_each(hashes, [&query](const auto &hash) {
+            query->add_tx_hashes(toBinaryString(hash));
+          });
+        });
+      }
+
       auto getTransactions(
           std::initializer_list<interface::Transaction::HashType> hashes)
           const {
@@ -188,16 +198,6 @@ namespace shared_model {
       template <typename... Hash>
       auto getTransactions(const Hash &... hashes) const {
         return getTransactions({hashes...});
-      }
-
-      template <typename Collection>
-      auto getTransactions(const Collection &hashes) const {
-        return queryField([&](auto proto_query) {
-          auto query = proto_query->mutable_get_transactions();
-          boost::for_each(hashes, [&query](const auto &hash) {
-            query->add_tx_hashes(toBinaryString(hash));
-          });
-        });
       }
 
       auto build() const {

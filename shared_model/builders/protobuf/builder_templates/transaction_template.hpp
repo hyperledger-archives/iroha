@@ -65,7 +65,7 @@ namespace shared_model {
       using ProtoCommand = iroha::protocol::Command;
 
       template <int Sp>
-      TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp> &o)
+      TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp, SV, BT> &o)
           : transaction_(o.transaction_),
             stateless_validator_(o.stateless_validator_) {}
 
@@ -200,19 +200,6 @@ namespace shared_model {
         });
       }
 
-      auto createRole(
-          const interface::types::RoleIdType &role_name,
-          std::initializer_list<interface::types::PermissionNameType>
-              permissions) const {
-        return createRole(role_name, permissions);
-      }
-
-      template <typename... Permission>
-      auto createRole(const interface::types::RoleIdType &role_name,
-                      const Permission &... permissions) const {
-        return createRole(role_name, {permissions...});
-      }
-
       template <typename Collection>
       auto createRole(const interface::types::RoleIdType &role_name,
                       const Collection &permissions) const {
@@ -225,6 +212,19 @@ namespace shared_model {
             command->add_permissions(p);
           });
         });
+      }
+
+      auto createRole(
+          const interface::types::RoleIdType &role_name,
+          std::initializer_list<interface::types::PermissionNameType>
+              permissions) const {
+        return createRole(role_name, permissions);
+      }
+
+      template <typename... Permission>
+      auto createRole(const interface::types::RoleIdType &role_name,
+                      const Permission &... permissions) const {
+        return createRole(role_name, {permissions...});
       }
 
       auto detachRole(const interface::types::AccountIdType &account_id,

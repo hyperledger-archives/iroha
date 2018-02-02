@@ -24,7 +24,7 @@ namespace shared_model {
   namespace proto {
 
     using BlockBuilder = TemplateBlockBuilder<>;
-  }
+  }  // namespace proto
 }  // namespace shared_model
 
 #endif  // IROHA_PROTO_BLOCK_BUILDER_HPP

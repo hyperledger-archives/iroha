@@ -51,8 +51,8 @@ namespace shared_model {
       iroha::ordering::proto::Proposal proposal_;
       SV stateless_validator_;
 
-      template <int Sp, typename SVp>
-      TemplateProposalBuilder(const TemplateProposalBuilder<Sp, SVp> &o)
+      template <int Sp>
+      TemplateProposalBuilder(const TemplateProposalBuilder<Sp, SV> &o)
           : proposal_(o.proposal_),
             stateless_validator_(o.stateless_validator_) {}
 
