@@ -59,20 +59,13 @@ PropagationData generate(std::vector<std::string> &ids, size_t num) {
 }
 
 /**
- * Perform subscription and the emitting from created strategy
- * @param data retrieved from the PeerProvider
- * @param period of the strategy
+ * Perform subscription and the emitting from specified strategy
+ * @param strategy is emitter source
  * @param take is amount taken from the strategy emitter
  * @return emitted data
  */
-PropagationData subscribe_and_emit(nonstd::optional<PropagationData> data,
-                                   std::chrono::milliseconds period,
-                                   uint32_t amount,
-                                   uint32_t take) {
-  auto query = std::make_shared<MockPeerQuery>();
-  EXPECT_CALL(*query, getLedgerPeers()).WillRepeatedly(testing::Return(data));
-  GossipPropagationStrategy strategy(query, period, amount);
-
+PropagationData subscribeAndEmit(GossipPropagationStrategy &strategy,
+                                 uint32_t take) {
   PropagationData emitted;
   auto subscriber = rxcpp::make_subscriber<Peers>([&emitted](auto v) {
     std::copy(v.begin(), v.end(), std::back_inserter(emitted));
@@ -80,6 +73,37 @@ PropagationData subscribe_and_emit(nonstd::optional<PropagationData> data,
   strategy.emitter().take(take).as_blocking().subscribe(subscriber);
 
   return emitted;
+}
+
+/**
+ * Perform subscription and the emitting from created strategy
+ * @param data retrieved from the PeerProvider
+ * @param period of the strategy
+ * @param amount emit per once
+ * @param take is amount taken from the strategy emitter
+ * @return emitted data
+ */
+PropagationData subscribeAndEmit(nonstd::optional<PropagationData> data,
+                                 std::chrono::milliseconds period,
+                                 uint32_t amount,
+                                 uint32_t take) {
+  auto query = std::make_shared<MockPeerQuery>();
+  EXPECT_CALL(*query, getLedgerPeers()).WillRepeatedly(testing::Return(data));
+  GossipPropagationStrategy strategy(query, period, amount);
+  return subscribeAndEmit(strategy, take);
+}
+
+/**
+ * Checks the emitted data is being subset of peers
+ * @param emitted is data from observable
+ * @param peersId is a collection of peers
+ */
+void validateEmitted(const PropagationData &emitted,
+                     const std::vector<std::string> &peersId) {
+  std::for_each(emitted.begin(), emitted.end(), [&peersId](const auto &v) {
+    EXPECT_NE(std::find(peersId.begin(), peersId.end(), v.address),
+              peersId.end());
+  });
 }
 
 /**
@@ -93,16 +117,13 @@ TEST(GossipPropagationStrategyTest, EmittingAllPeers) {
   std::vector<std::string> peersId;
   PropagationData peers = generate(peersId, peers_size);
 
-  auto emitted = subscribe_and_emit(peers, 1ms, amount, take);
+  auto emitted = subscribeAndEmit(peers, 1ms, amount, take);
 
   // emitted.size() can be less than peers.size()
   ASSERT_GE(peers.size(), emitted.size());
   // because emitted size should be increased by amount at once
   ASSERT_FALSE(emitted.size() % amount);
-  std::for_each(emitted.begin(), emitted.end(), [&peersId](const auto &v) {
-    ASSERT_NE(std::find(peersId.begin(), peersId.end(), v.address),
-              peersId.end());
-  });
+  validateEmitted(emitted, peersId);
 }
 
 /**
@@ -116,14 +137,11 @@ TEST(GossipPropagationStrategyTest, EmitEvenOnOddPeers) {
   std::vector<std::string> peersId;
   PropagationData peers = generate(peersId, peers_size);
 
-  auto emitted = subscribe_and_emit(peers, 1ms, amount, take);
+  auto emitted = subscribeAndEmit(peers, 1ms, amount, take);
 
   ASSERT_EQ(emitted.size(), take * amount);
   ASSERT_LE(peers.size(), emitted.size());
-  std::for_each(emitted.begin(), emitted.end(), [&peersId](const auto &v) {
-    ASSERT_NE(std::find(peersId.begin(), peersId.end(), v.address),
-              peersId.end());
-  });
+  validateEmitted(emitted, peersId);
 }
 
 /**
@@ -132,7 +150,7 @@ TEST(GossipPropagationStrategyTest, EmitEvenOnOddPeers) {
  * @then ensure that empty peer list is emitted
  */
 TEST(GossipPropagationStrategyTest, EmptyEmitting) {
-  auto emitted = subscribe_and_emit(PropagationData{}, 1ms, 1, 13);
+  auto emitted = subscribeAndEmit(PropagationData{}, 1ms, 1, 13);
   ASSERT_EQ(emitted.size(), 0);
 }
 
@@ -142,7 +160,7 @@ TEST(GossipPropagationStrategyTest, EmptyEmitting) {
  * @then ensure that empty peer list is emitted
  */
 TEST(GossipPropagationStrategyTest, ErrorEmitting) {
-  auto emitted = subscribe_and_emit(nonstd::nullopt, 1ms, 1, 13);
+  auto emitted = subscribeAndEmit(nonstd::nullopt, 1ms, 1, 13);
   ASSERT_EQ(emitted.size(), 0);
 }
 
@@ -158,7 +176,9 @@ TEST(GossipPropagationStrategyTest, MultipleSubsEmission) {
   std::vector<std::string> peersId;
   PropagationData peers = generate(peersId, peers_size);
 
+  // subscribers for the propagation emitter
   std::thread ths[threads];
+  // Emitted data
   PropagationData result[threads];
   auto range = boost::irange(0, threads);
 
@@ -166,21 +186,18 @@ TEST(GossipPropagationStrategyTest, MultipleSubsEmission) {
   EXPECT_CALL(*query, getLedgerPeers()).WillRepeatedly(testing::Return(peers));
   GossipPropagationStrategy strategy(query, 1ms, amount);
 
+  // Create separate subscriber for every thread
+  // Use result[i] as storage for emitent for i-th one
   std::transform(range.begin(), range.end(), std::begin(ths), [&](auto i) {
-    return std::thread([ =, &res = result[i], &strategy ] {
-      auto subscriber = rxcpp::make_subscriber<Peers>([&res](auto v) {
-        std::copy(v.begin(), v.end(), std::back_inserter(res));
-      });
-      strategy.emitter().take(take).as_blocking().subscribe(subscriber);
+    return std::thread([ take, &res = result[i], &strategy ] {
+      res = subscribeAndEmit(strategy, take);
     });
   });
 
-  std::for_each(range.begin(), range.end(), [&ths](auto i) { ths[i].join(); });
+  // Wait until all thread is finished and ensure all threads have emitted peers
   std::for_each(range.begin(), range.end(), [&](auto i) {
-    std::for_each(
-        result[i].begin(), result[i].end(), [&peersId](const auto &v) {
-          ASSERT_NE(std::find(peersId.begin(), peersId.end(), v.address),
-                    peersId.end());
-        });
+    ths[i].join();
+    ASSERT_EQ(result[i].size(), take * amount);
+    validateEmitted(result[i], peersId);
   });
 }
