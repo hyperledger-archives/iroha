@@ -31,11 +31,14 @@ namespace iroha_cli {
       };
     }
 
-    ParamsMap getCommonParamsMap() {
+    ParamsMap getCommonParamsMap(const std::string &default_ip,
+                                 int default_port) {
       return {
           // commonParamsMap
           {SAVE_CODE, {"Path to save json file"}},
-          {SEND_CODE, {"Peer address", "Peer port"}}
+          {SEND_CODE,
+           {"Peer address (" + default_ip + ")",
+            "Peer port (" + std::to_string(default_port) + ")"}}
           // commonParamsMap
       };
     }
@@ -89,10 +92,13 @@ namespace iroha_cli {
     }
 
     nonstd::optional<std::pair<std::string, uint16_t>> parseIrohaPeerParams(
-        ParamsDescription params) {
-      auto address = params[0];
-      auto port = parser::parseValue<uint16_t>(params[1]);
-      if (not port.has_value()) {
+        ParamsDescription params,
+        const std::string &default_ip,
+        int default_port) {
+      const auto &address = params[0].empty() ? default_ip : params[0];
+      auto port = params[1].empty() ? default_port
+                                    : parser::parseValue<uint16_t>(params[1]);
+      if (not params.empty() and not port.has_value()) {
         std::cout << "Port has wrong format" << std::endl;
         // Continue parsing
         return nonstd::nullopt;

@@ -87,7 +87,8 @@ namespace iroha_cli {
     void InteractiveQueryCli::create_result_menu() {
       result_handlers_ = {{SAVE_CODE, &InteractiveQueryCli::parseSaveFile},
                           {SEND_CODE, &InteractiveQueryCli::parseSendToIroha}};
-      result_params_descriptions_ = getCommonParamsMap();
+      result_params_descriptions_ =
+          getCommonParamsMap(default_peer_ip_, default_port_);
 
       result_points_ = formMenu(result_handlers_,
                                 result_params_descriptions_,
@@ -97,10 +98,14 @@ namespace iroha_cli {
 
     InteractiveQueryCli::InteractiveQueryCli(
         const std::string &account_name,
+        const std::string &default_peer_ip,
+        int default_port,
         uint64_t query_counter,
         const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
         : current_context_(MAIN),
           creator_(account_name),
+          default_peer_ip_(default_peer_ip),
+          default_port_(default_port),
           counter_(query_counter),
           provider_(provider) {
       log_ = logger::log("InteractiveQueryCli");
@@ -248,7 +253,8 @@ namespace iroha_cli {
     }
 
     bool InteractiveQueryCli::parseSendToIroha(QueryParams params) {
-      auto address = parseIrohaPeerParams(params);
+      auto address =
+          parseIrohaPeerParams(params, default_peer_ip_, default_port_);
       if (not address.has_value()) {
         return true;
       }
