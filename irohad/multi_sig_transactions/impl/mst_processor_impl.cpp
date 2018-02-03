@@ -43,7 +43,7 @@ namespace iroha {
         strategy_(std::move(strategy)),
         time_provider_(std::move(time_provider)),
         propagation_subscriber_(strategy_->emitter().subscribe(
-            [this](auto data) { this->onPropagate(data); }, [] {})) {
+            [this](auto data) { this->onPropagate(data); })) {
     log_ = logger::log("FairMstProcessor");
   }
 
