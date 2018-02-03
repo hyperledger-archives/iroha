@@ -21,6 +21,7 @@
 
 #include "consensus/yac/transport/impl/network_impl.hpp"
 #include "consensus/yac/transport/yac_pb_converters.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
 
 using ::testing::_;
 using ::testing::InvokeWithoutArgs;

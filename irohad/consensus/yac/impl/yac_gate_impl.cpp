@@ -16,8 +16,13 @@
  */
 
 #include "consensus/yac/impl/yac_gate_impl.hpp"
-
+#include "consensus/yac/cluster_order.hpp"
+#include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
+#include "consensus/yac/yac_hash_provider.hpp"
+#include "consensus/yac/yac_peer_orderer.hpp"
+#include "network/block_loader.hpp"
+#include "simulator/block_creator.hpp"
 
 namespace iroha {
   namespace consensus {

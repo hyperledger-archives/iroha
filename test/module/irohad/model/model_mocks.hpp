@@ -19,6 +19,8 @@
 #define IROHA_MODEL_MOCKS_HPP
 
 #include <gmock/gmock.h>
+#include "ametsuchi/wsv_command.hpp"
+#include "ametsuchi/wsv_query.hpp"
 #include "model/command.hpp"
 #include "model/model_crypto_provider.hpp"
 #include "model/query_execution.hpp"

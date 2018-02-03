@@ -20,8 +20,8 @@
 
 #include <vector>
 
-#include "consensus/yac/yac_hash_provider.hpp"
-#include "model/signature.hpp"
+#include "consensus/yac/yac_hash_provider.hpp"  // for YacHash
+#include "model/signature.hpp"                  // for model::Signature
 
 namespace iroha {
   namespace consensus {

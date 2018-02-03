@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-#include <fstream>
-#include <iostream>
-
 #include <gflags/gflags.h>
 #include <boost/filesystem.hpp>
+#include <fstream>
+#include <iostream>
 
 #include "client.hpp"
 #include "common/assert_config.hpp"

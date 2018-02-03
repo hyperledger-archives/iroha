@@ -19,11 +19,15 @@
 #define IROHA_PEER_QUERY_HPP
 
 #include <memory>
+#include <nonstd/optional.hpp>
 #include <vector>
-#include "ametsuchi/wsv_query.hpp"
-#include "model/peer.hpp"
 
 namespace iroha {
+
+  namespace model {
+    struct Peer;
+  }
+
   namespace ametsuchi {
 
     /**

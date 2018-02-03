@@ -18,10 +18,12 @@
 #ifndef IROHA_CLI_GRPC_RESPONSE_HANDLER_HPP
 #define IROHA_CLI_GRPC_RESPONSE_HANDLER_HPP
 
-#include "client.hpp"
-#include "logger/logger.hpp"
 #include "query_response_handler.hpp"
 #include "transaction_response_handler.hpp"
+
+namespace spdlog {
+  class logger;
+}
 
 namespace iroha_cli {
   class GrpcResponseHandler {

@@ -21,27 +21,24 @@
 #include "ametsuchi/storage.hpp"
 
 #include <cmath>
-#include <shared_mutex>
-
 #include <cpp_redis/cpp_redis>
 #include <nonstd/optional.hpp>
 #include <pqxx/pqxx>
-#include "ametsuchi/impl/flat_file/flat_file.hpp"
+#include <shared_mutex>
+
 #include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
 
+    class FlatFile;
+
     struct ConnectionContext {
       ConnectionContext(std::unique_ptr<FlatFile> block_store,
                         std::unique_ptr<cpp_redis::client> index,
                         std::unique_ptr<pqxx::lazyconnection> pg_lazy,
-                        std::unique_ptr<pqxx::nontransaction> pg_nontx)
-          : block_store(std::move(block_store)),
-            index(std::move(index)),
-            pg_lazy(std::move(pg_lazy)),
-            pg_nontx(std::move(pg_nontx)) {}
+                        std::unique_ptr<pqxx::nontransaction> pg_nontx);
 
       std::unique_ptr<FlatFile> block_store;
       std::unique_ptr<cpp_redis::client> index;

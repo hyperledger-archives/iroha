@@ -24,7 +24,10 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "parser/parser.hpp"
+
+namespace parser {
+  nonstd::optional<std::string> parseFirstCommand(std::string line);
+}
 
 namespace iroha_cli {
   namespace interactive {

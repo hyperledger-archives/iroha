@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-#include <utility>
+#include "amount/amount.hpp"
 
 #include <logger/logger.hpp>
 #include <regex>
-#include "amount/amount.hpp"
+#include <utility>
 
 namespace iroha {
 
   // to raise to power integer values
-  int ipow(int base, int exp) {
+  static int ipow(int base, int exp) {
     int result = 1;
     while (exp != 0) {
       if (exp & 1) {
@@ -37,10 +37,10 @@ namespace iroha {
     return result;
   }
 
-  uint256_t getJointUint256(uint64_t first,
-                            uint64_t second,
-                            uint64_t third,
-                            uint64_t fourth) {
+  static uint256_t getJointUint256(uint64_t first,
+                                   uint64_t second,
+                                   uint64_t third,
+                                   uint64_t fourth) {
     // join 4 uint64_t into single uint256_t by means of logic or operator
     uint256_t res(0);
     res |= first;

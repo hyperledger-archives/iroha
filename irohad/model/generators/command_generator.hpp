@@ -21,12 +21,19 @@
 #include <memory>
 #include "amount/amount.hpp"
 #include "generator/generator.hpp"
-#include "model/account.hpp"
-#include "model/command.hpp"
 
 namespace iroha {
+
+  class Amount;
+
   namespace model {
+
+    struct Peer;
+    struct Command;
+    struct Account;
+
     namespace generators {
+
       class CommandGenerator {
        public:
         std::shared_ptr<Command> generateAddPeer(const Peer &peer);

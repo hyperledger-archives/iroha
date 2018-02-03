@@ -23,6 +23,8 @@
 #include <boost/format.hpp>
 #include <cpp_redis/cpp_redis>
 
+#include "model/transaction.hpp"  // for model::Transaction::CommandsType
+
 namespace iroha {
   namespace ametsuchi {
     class RedisBlockIndex : public BlockIndex {

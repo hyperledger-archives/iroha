@@ -18,16 +18,19 @@
 #ifndef IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
 #define IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
 
-#include <cpp_redis/cpp_redis>
 #include "ametsuchi/block_query.hpp"
-#include "ametsuchi/impl/flat_file/flat_file.hpp"
+
+#include <boost/optional.hpp>
+#include <cpp_redis/cpp_redis>
 
 #include "model/converters/json_block_factory.hpp"
 
-#include <boost/optional.hpp>
 
 namespace iroha {
   namespace ametsuchi {
+
+    class FlatFile;
+
     /**
      * Class which implements BlockQuery with a Redis backend.
      */

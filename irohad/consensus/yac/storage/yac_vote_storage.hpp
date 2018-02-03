@@ -23,14 +23,14 @@
 #include <unordered_set>
 #include <vector>
 
-#include "consensus/yac/messages.hpp"
-#include "consensus/yac/storage/storage_result.hpp"
-#include "consensus/yac/storage/yac_common.hpp"
-#include "consensus/yac/storage/yac_proposal_storage.hpp"
+#include "consensus/yac/messages.hpp"  // because messages passed by value
+#include "consensus/yac/storage/storage_result.hpp"  // for Answer
+#include "consensus/yac/storage/yac_common.hpp"      // for ProposalHash
 
 namespace iroha {
   namespace consensus {
     namespace yac {
+      class YacProposalStorage;
 
       /**
        * Class provide storage for votes and useful methods for it.

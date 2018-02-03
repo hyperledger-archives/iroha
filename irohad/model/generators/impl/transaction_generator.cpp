@@ -16,12 +16,11 @@
  */
 
 #include "model/generators/transaction_generator.hpp"
-
 #include "crypto/keys_manager_impl.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "datetime/time.hpp"
-
 #include "model/commands/append_role.hpp"
+#include "model/peer.hpp"
 
 namespace iroha {
   namespace model {

@@ -15,9 +15,12 @@
  * limitations under the License.
  */
 
+#include "ametsuchi/impl/peer_query_wsv.hpp"
+
 #include <utility>
 
-#include "ametsuchi/impl/peer_query_wsv.hpp"
+#include "ametsuchi/wsv_query.hpp"
+#include "model/peer.hpp"
 
 namespace iroha {
   namespace ametsuchi {

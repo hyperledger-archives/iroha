@@ -19,7 +19,6 @@
 #define IROHA_FLAT_FILE_HPP
 
 #include <atomic>
-#include <boost/optional.hpp>
 #include <memory>
 #include <nonstd/optional.hpp>
 #include <string>
