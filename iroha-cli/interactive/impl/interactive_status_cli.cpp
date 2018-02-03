@@ -16,6 +16,9 @@
  */
 
 #include "interactive/interactive_status_cli.hpp"
+
+#include <boost/assert.hpp>
+
 #include "client.hpp"
 #include "common/byteutils.hpp"
 
