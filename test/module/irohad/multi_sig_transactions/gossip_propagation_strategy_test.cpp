@@ -97,13 +97,21 @@ PropagationData subscribeAndEmit(nonstd::optional<PropagationData> data,
  * Checks the emitted data is being subset of peers
  * @param emitted is data from observable
  * @param peersId is a collection of peers
+ * @return true if the emitted data is a peer subset
  */
-void validateEmitted(const PropagationData &emitted,
+bool validateEmitted(const PropagationData &emitted,
                      const std::vector<std::string> &peersId) {
-  std::for_each(emitted.begin(), emitted.end(), [&peersId](const auto &v) {
-    EXPECT_NE(std::find(peersId.begin(), peersId.end(), v.address),
-              peersId.end());
-  });
+  return std::find_if(
+             emitted.begin(),
+             emitted.end(),
+             [&peersId, flag = true ](const auto &v) mutable {
+               if (flag
+                   and std::find(peersId.begin(), peersId.end(), v.address)
+                       == peersId.end())
+                 flag = false;
+               return flag;
+             })
+      != emitted.end();
 }
 
 /**
@@ -123,7 +131,7 @@ TEST(GossipPropagationStrategyTest, EmittingAllPeers) {
   ASSERT_GE(peers.size(), emitted.size());
   // because emitted size should be increased by amount at once
   ASSERT_FALSE(emitted.size() % amount);
-  validateEmitted(emitted, peersId);
+  ASSERT_TRUE(validateEmitted(emitted, peersId));
 }
 
 /**
@@ -141,7 +149,7 @@ TEST(GossipPropagationStrategyTest, EmitEvenOnOddPeers) {
 
   ASSERT_EQ(emitted.size(), take * amount);
   ASSERT_LE(peers.size(), emitted.size());
-  validateEmitted(emitted, peersId);
+  ASSERT_TRUE(validateEmitted(emitted, peersId));
 }
 
 /**
@@ -198,6 +206,6 @@ TEST(GossipPropagationStrategyTest, MultipleSubsEmission) {
   std::for_each(range.begin(), range.end(), [&](auto i) {
     ths[i].join();
     ASSERT_EQ(result[i].size(), take * amount);
-    validateEmitted(result[i], peersId);
+    ASSERT_TRUE(validateEmitted(result[i], peersId));
   });
 }
