@@ -19,11 +19,13 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <boost/range/irange.hpp>
 #include <iterator>
 #include <memory>
 #include <numeric>
 #include <rxcpp/rx.hpp>
 #include <string>
+#include <thread>
 #include <vector>
 #include "ametsuchi/peer_query.hpp"
 #include "model/peer.hpp"
@@ -57,20 +59,13 @@ PropagationData generate(std::vector<std::string> &ids, size_t num) {
 }
 
 /**
- * Perform subscription and the emitting from created strategy
- * @param data retrieved from the PeerProvider
- * @param period of the strategy
+ * Perform subscription and the emitting from specified strategy
+ * @param strategy is emitter source
  * @param take is amount taken from the strategy emitter
  * @return emitted data
  */
-PropagationData subscribe_and_emit(nonstd::optional<PropagationData> data,
-                                   std::chrono::milliseconds period,
-                                   uint32_t amount,
-                                   uint32_t take) {
-  auto query = std::make_shared<MockPeerQuery>();
-  EXPECT_CALL(*query, getLedgerPeers()).WillRepeatedly(testing::Return(data));
-  GossipPropagationStrategy strategy(query, period, amount);
-
+PropagationData subscribeAndEmit(GossipPropagationStrategy &strategy,
+                                 uint32_t take) {
   PropagationData emitted;
   auto subscriber = rxcpp::make_subscriber<Peers>([&emitted](auto v) {
     std::copy(v.begin(), v.end(), std::back_inserter(emitted));
@@ -78,6 +73,45 @@ PropagationData subscribe_and_emit(nonstd::optional<PropagationData> data,
   strategy.emitter().take(take).as_blocking().subscribe(subscriber);
 
   return emitted;
+}
+
+/**
+ * Perform subscription and the emitting from created strategy
+ * @param data retrieved from the PeerProvider
+ * @param period of the strategy
+ * @param amount emit per once
+ * @param take is amount taken from the strategy emitter
+ * @return emitted data
+ */
+PropagationData subscribeAndEmit(nonstd::optional<PropagationData> data,
+                                 std::chrono::milliseconds period,
+                                 uint32_t amount,
+                                 uint32_t take) {
+  auto query = std::make_shared<MockPeerQuery>();
+  EXPECT_CALL(*query, getLedgerPeers()).WillRepeatedly(testing::Return(data));
+  GossipPropagationStrategy strategy(query, period, amount);
+  return subscribeAndEmit(strategy, take);
+}
+
+/**
+ * Checks the emitted data is being subset of peers
+ * @param emitted is data from observable
+ * @param peersId is a collection of peers
+ * @return true if the emitted data is a peer subset
+ */
+bool validateEmitted(const PropagationData &emitted,
+                     const std::vector<std::string> &peersId) {
+  return std::find_if(
+             emitted.begin(),
+             emitted.end(),
+             [&peersId, flag = true ](const auto &v) mutable {
+               if (flag
+                   and std::find(peersId.begin(), peersId.end(), v.address)
+                       == peersId.end())
+                 flag = false;
+               return flag;
+             })
+      != emitted.end();
 }
 
 /**
@@ -91,16 +125,13 @@ TEST(GossipPropagationStrategyTest, EmittingAllPeers) {
   std::vector<std::string> peersId;
   PropagationData peers = generate(peersId, peers_size);
 
-  auto emitted = subscribe_and_emit(peers, 1ms, amount, take);
+  auto emitted = subscribeAndEmit(peers, 1ms, amount, take);
 
   // emitted.size() can be less than peers.size()
   ASSERT_GE(peers.size(), emitted.size());
   // because emitted size should be increased by amount at once
   ASSERT_FALSE(emitted.size() % amount);
-  std::for_each(emitted.begin(), emitted.end(), [&peersId](const auto &v) {
-    ASSERT_NE(std::find(peersId.begin(), peersId.end(), v.address),
-              peersId.end());
-  });
+  ASSERT_TRUE(validateEmitted(emitted, peersId));
 }
 
 /**
@@ -114,14 +145,11 @@ TEST(GossipPropagationStrategyTest, EmitEvenOnOddPeers) {
   std::vector<std::string> peersId;
   PropagationData peers = generate(peersId, peers_size);
 
-  auto emitted = subscribe_and_emit(peers, 1ms, amount, take);
+  auto emitted = subscribeAndEmit(peers, 1ms, amount, take);
 
   ASSERT_EQ(emitted.size(), take * amount);
   ASSERT_LE(peers.size(), emitted.size());
-  std::for_each(emitted.begin(), emitted.end(), [&peersId](const auto &v) {
-    ASSERT_NE(std::find(peersId.begin(), peersId.end(), v.address),
-              peersId.end());
-  });
+  ASSERT_TRUE(validateEmitted(emitted, peersId));
 }
 
 /**
@@ -130,7 +158,7 @@ TEST(GossipPropagationStrategyTest, EmitEvenOnOddPeers) {
  * @then ensure that empty peer list is emitted
  */
 TEST(GossipPropagationStrategyTest, EmptyEmitting) {
-  auto emitted = subscribe_and_emit(PropagationData{}, 1ms, 1, 13);
+  auto emitted = subscribeAndEmit(PropagationData{}, 1ms, 1, 13);
   ASSERT_EQ(emitted.size(), 0);
 }
 
@@ -140,6 +168,44 @@ TEST(GossipPropagationStrategyTest, EmptyEmitting) {
  * @then ensure that empty peer list is emitted
  */
 TEST(GossipPropagationStrategyTest, ErrorEmitting) {
-  auto emitted = subscribe_and_emit(nonstd::nullopt, 1ms, 1, 13);
+  auto emitted = subscribeAndEmit(nonstd::nullopt, 1ms, 1, 13);
   ASSERT_EQ(emitted.size(), 0);
+}
+
+/**
+ * @given list of peers and
+ *        strategy that emits two peers
+ * @when strategy emits more than peers available
+ * @then ensure that there's been emitted peers
+ */
+TEST(GossipPropagationStrategyTest, MultipleSubsEmission) {
+  auto peers_size = 10, amount = 2, take = 10;
+  constexpr auto threads = 10;
+  std::vector<std::string> peersId;
+  PropagationData peers = generate(peersId, peers_size);
+
+  // subscribers for the propagation emitter
+  std::thread ths[threads];
+  // Emitted data
+  PropagationData result[threads];
+  auto range = boost::irange(0, threads);
+
+  auto query = std::make_shared<MockPeerQuery>();
+  EXPECT_CALL(*query, getLedgerPeers()).WillRepeatedly(testing::Return(peers));
+  GossipPropagationStrategy strategy(query, 1ms, amount);
+
+  // Create separate subscriber for every thread
+  // Use result[i] as storage for emitent for i-th one
+  std::transform(range.begin(), range.end(), std::begin(ths), [&](auto i) {
+    return std::thread([ take, &res = result[i], &strategy ] {
+      res = subscribeAndEmit(strategy, take);
+    });
+  });
+
+  // Wait until all thread is finished and ensure all threads have emitted peers
+  std::for_each(range.begin(), range.end(), [&](auto i) {
+    ths[i].join();
+    ASSERT_EQ(result[i].size(), take * amount);
+    ASSERT_TRUE(validateEmitted(result[i], peersId));
+  });
 }

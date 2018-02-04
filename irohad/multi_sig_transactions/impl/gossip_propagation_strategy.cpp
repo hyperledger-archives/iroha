@@ -32,6 +32,7 @@ namespace iroha {
   GossipPropagationStrategy::GossipPropagationStrategy(
       PeerProvider query, std::chrono::milliseconds period, uint32_t amount)
       : query(query),
+        non_visited({}),
         emitent(rxcpp::observable<>::interval(steady_clock::now(), period)
                     .map([this, amount](int) {
                       PropagationData vec;
@@ -51,14 +52,20 @@ namespace iroha {
     return emitent.subscribe_on(rxcpp::observe_on_new_thread());
   }
 
+  GossipPropagationStrategy::~GossipPropagationStrategy() {
+    // Make sure that emitent callback have finish and haven't started yet
+    std::lock_guard<std::mutex> lock(m);
+    query.reset();
+  }
+
   bool GossipPropagationStrategy::initQueue() {
     return query->getLedgerPeers() |
-               [](auto &data) -> boost::optional<PropagationData> {
+               [](auto &&data) -> boost::optional<PropagationData> {
       if (data.size() == 0) {
         return {};
       }
-      return data;
-    } | [this](auto &data) -> bool {  // nullopt implicitly casts to false
+      return std::move(data);
+    } | [this](auto &&data) -> bool {  // nullopt implicitly casts to false
       this->last_data = std::move(data);
       this->non_visited.resize(this->last_data.size());
       std::iota(this->non_visited.begin(), this->non_visited.end(), 0);
@@ -70,12 +77,15 @@ namespace iroha {
   }
 
   OptPeer GossipPropagationStrategy::visit() {
-    if (non_visited.empty() and not initQueue()) {
-      // either PeerProvider doesn't gives peers
+    // Make sure that dtor isn't running
+    std::lock_guard<std::mutex> lock(m);
+    if (not query or (non_visited.empty() and not initQueue())) {
+      // either PeerProvider doesn't gives peers / dtor have been called
       return {};
     }
     // or non_visited non-empty
     BOOST_ASSERT(not non_visited.empty());
+    BOOST_ASSERT(non_visited.back() < last_data.size());
 
     auto el = last_data[non_visited.back()];
     non_visited.pop_back();

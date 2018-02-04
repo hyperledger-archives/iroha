@@ -20,7 +20,9 @@
 #include "multi_sig_transactions/storage/mst_storage.hpp"
 
 namespace iroha {
-  MstStorage::MstStorage() { log_ = logger::log("MstStorage"); }
+  MstStorage::MstStorage() {
+    log_ = logger::log("MstStorage");
+  }
 
   MstState MstStorage::apply(const model::Peer &target_peer,
                              const MstState &new_state) {

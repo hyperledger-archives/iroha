@@ -46,6 +46,8 @@ namespace iroha {
                      std::shared_ptr<PropagationStrategy> strategy,
                      std::shared_ptr<MstTimeProvider> time_provider);
 
+    ~FairMstProcessor();
+
     // ------------------------| MstProcessor override |------------------------
 
     auto propagateTransactionImpl(const DataType transaction)
@@ -65,8 +67,6 @@ namespace iroha {
 
     // ----------------------------| end override |-----------------------------
 
-    virtual ~FairMstProcessor() = default;
-
    private:
     // -----------------------------| private api |-----------------------------
 
@@ -74,7 +74,7 @@ namespace iroha {
      * Invoke when propagation strategy emit new data
      * @param data - propagated data
      */
-    void onPropagate(const PropagationStrategy::PropagationData& data);
+    void onPropagate(const PropagationStrategy::PropagationData &data);
 
     // -------------------------------| fields |--------------------------------
     std::shared_ptr<iroha::network::MstTransport> transport_;
@@ -94,6 +94,9 @@ namespace iroha {
 
     /// use for share expired transactions
     rxcpp::subjects::subject<DataType> expired_subject_;
+
+    /// use for tracking the propagation subscription
+    rxcpp::composite_subscription propagation_subscriber_;
   };
 }  // namespace iroha
 
