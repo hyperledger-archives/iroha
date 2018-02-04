@@ -18,6 +18,7 @@
 #ifndef IROHA_HASHABLE_HPP
 #define IROHA_HASHABLE_HPP
 
+#include <boost/optional.hpp>
 #include "cryptography/hash.hpp"
 #include "cryptography/hash_providers/sha3_256.hpp"
 #include "interfaces/base/primitive.hpp"
@@ -55,6 +56,9 @@ namespace shared_model {
        * @return hash of object.
        */
       virtual const HashType &hash() const {
+        if (hash_ == boost::none) {
+          hash_.emplace(HashProvider::makeHash(blob()));
+        }
         return *hash_;
       }
 
@@ -74,8 +78,7 @@ namespace shared_model {
       }
 
      protected:
-      detail::LazyInitializer<HashType> hash_ = detail::makeLazyInitializer(
-          [this] { return HashProvider::makeHash(blob()); });
+      mutable boost::optional<HashType> hash_;
     };
   }  // namespace interface
 }  // namespace shared_model
