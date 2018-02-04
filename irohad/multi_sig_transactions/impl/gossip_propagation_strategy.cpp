@@ -53,6 +53,7 @@ namespace iroha {
   }
 
   GossipPropagationStrategy::~GossipPropagationStrategy() {
+    // Make sure that emitent callback have finish and haven't started yet
     std::lock_guard<std::mutex> lock(m);
     query.reset();
   }
@@ -76,9 +77,10 @@ namespace iroha {
   }
 
   OptPeer GossipPropagationStrategy::visit() {
+    // Make sure that dtor isn't running
     std::lock_guard<std::mutex> lock(m);
     if (not query or (non_visited.empty() and not initQueue())) {
-      // either PeerProvider doesn't gives peers
+      // either PeerProvider doesn't gives peers / dtor have been called
       return {};
     }
     // or non_visited non-empty

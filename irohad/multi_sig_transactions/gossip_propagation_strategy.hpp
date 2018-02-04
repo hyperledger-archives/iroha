@@ -55,17 +55,29 @@ namespace iroha {
 
     // --------------------------| end override |---------------------------
    private:
+    /**
+     * Source of peers for propagation
+     */
     PeerProvider query;
+
     /**
      * Cache of peer provider's data
      */
     PropagationData last_data;
+
     /**
      * Queue that contains non-emitted indexes of peers
      */
     std::vector<size_t> non_visited;
+
+    /*
+     * Observable for the emitting propagated data
+     */
     rxcpp::observable<PropagationData> emitent;
 
+    /*
+     * Mutex for handling observable stopping
+     */
     std::mutex m;
 
     /**
