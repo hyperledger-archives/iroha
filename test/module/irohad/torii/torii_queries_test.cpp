@@ -18,7 +18,6 @@ limitations under the License.
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
-
 // to compare pb amount and iroha amount
 #include "model/converters/pb_common.hpp"
 
@@ -26,7 +25,7 @@ limitations under the License.
 #include "model/permissions.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
-#include "torii_utils/query_client.hpp"
+#include "torii/query_client.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
@@ -120,9 +119,35 @@ class ToriiQueriesTest : public testing::Test {
 };
 
 /**
+ * Given a Query Synchronous Client
+ * When copied, moved, copy and move assigned
+ * Then final object works as the first one
+ */
+TEST_F(ToriiQueriesTest, QueryClient) {
+  iroha::protocol::QueryResponse response;
+  auto query = iroha::protocol::Query();
+
+  query.mutable_payload()->set_creator_account_id("accountA");
+  query.mutable_payload()->mutable_get_account()->set_account_id("accountB");
+  query.mutable_signature()->set_pubkey(pubkey_test);
+  query.mutable_signature()->set_signature(signature_test);
+
+  auto client1 = torii_utils::QuerySyncClient(Ip, Port);
+  //Copy ctor
+  torii_utils::QuerySyncClient client2(client1);
+  //copy assignment
+  auto client3 = client2;
+  //move ctor
+  torii_utils::QuerySyncClient client4(std::move(client3));
+  //move assignment
+  auto client5 = std::move(client4);
+  auto stat = client5.Find(query, response);
+  ASSERT_TRUE(stat.ok());
+}
+
+/**
  * Test for error response
  */
-
 TEST_F(ToriiQueriesTest, FindWhenResponseInvalid) {
   EXPECT_CALL(*statelessValidatorMock,
               validate(A<const iroha::model::Query &>()))
@@ -525,6 +550,8 @@ TEST_F(ToriiQueriesTest, FindManyTimesWhereQueryServiceSync) {
               validate(A<const iroha::model::Query &>()))
       .WillOnce(Return(false));
 
+  auto client = torii_utils::QuerySyncClient(Ip, Port);
+
   for (size_t i = 0; i < TimesFind; ++i) {
     iroha::protocol::QueryResponse response;
     auto query = iroha::protocol::Query();
@@ -535,7 +562,7 @@ TEST_F(ToriiQueriesTest, FindManyTimesWhereQueryServiceSync) {
     query.mutable_signature()->set_pubkey(pubkey_test);
     query.mutable_signature()->set_signature(signature_test);
 
-    auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query, response);
+    auto stat = client.Find(query, response);
     ASSERT_TRUE(stat.ok());
     // Must return Error Response
     ASSERT_EQ(response.error_response().reason(),

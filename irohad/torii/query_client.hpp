@@ -31,8 +31,13 @@ namespace torii_utils {
    */
   class QuerySyncClient {
    public:
-    QuerySyncClient(const std::string &ip, const int port);
-    ~QuerySyncClient();
+    QuerySyncClient(const std::string &ip, size_t port);
+
+    QuerySyncClient(const QuerySyncClient&);
+    QuerySyncClient& operator=(QuerySyncClient);
+
+    QuerySyncClient(QuerySyncClient&&) noexcept ;
+    QuerySyncClient&operator=(QuerySyncClient&&) noexcept ;
 
     /**
      * requests query to a torii server and returns response (blocking, sync)
@@ -41,15 +46,15 @@ namespace torii_utils {
      * @return grpc::Status
      */
     grpc::Status Find(const iroha::protocol::Query &query,
-                      iroha::protocol::QueryResponse &response);
+                      iroha::protocol::QueryResponse &response) const;
 
    private:
-    grpc::ClientContext context_;
-    std::unique_ptr<iroha::protocol::QueryService::Stub> stub_;
-    grpc::CompletionQueue completionQueue_;
-    grpc::Status status_;
-  };
+    void swap(QuerySyncClient& lhs, QuerySyncClient& rhs);
 
+    std::string ip_;
+    size_t port_;
+    std::unique_ptr<iroha::protocol::QueryService::Stub> stub_;
+  };
   /**
    * QueryAsyncClient
 

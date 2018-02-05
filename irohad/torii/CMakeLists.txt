@@ -14,12 +14,19 @@
 
 add_subdirectory(processor)
 
+add_library(query_client STATIC query_client.cpp)
+
 add_library(command_client command_client.cpp)
 target_link_libraries(command_client
     torii_service
     endpoint
     model
     )
+
+target_link_libraries(query_client
+        torii_service
+        endpoint
+        )
 
 add_library(torii_service
     torii_service_handler.cpp

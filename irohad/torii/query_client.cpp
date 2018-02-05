@@ -15,22 +15,36 @@ limitations under the License.
 #include <grpc++/grpc++.h>
 #include <thread>
 
-#include "network/grpc_call.hpp"
+#include "torii/query_client.hpp"
 #include "torii/torii_service_handler.hpp"
-#include "torii_utils/query_client.hpp"
 
 namespace torii_utils {
 
   using iroha::protocol::Query;
   using iroha::protocol::QueryResponse;
 
-  QuerySyncClient::QuerySyncClient(const std::string &ip, const int port)
-      : stub_(iroha::protocol::QueryService::NewStub(
+  QuerySyncClient::QuerySyncClient(const std::string &ip, size_t port)
+      : ip_(ip),
+        port_(port),
+        stub_(iroha::protocol::QueryService::NewStub(
             grpc::CreateChannel(ip + ":" + std::to_string(port),
                                 grpc::InsecureChannelCredentials()))) {}
 
-  QuerySyncClient::~QuerySyncClient() {
-    completionQueue_.Shutdown();
+  QuerySyncClient::QuerySyncClient(const QuerySyncClient &rhs)
+      : QuerySyncClient(rhs.ip_, rhs.port_) {}
+
+  QuerySyncClient &QuerySyncClient::operator=(QuerySyncClient rhs) {
+    swap(*this, rhs);
+    return *this;
+  }
+
+  QuerySyncClient::QuerySyncClient(QuerySyncClient &&rhs) noexcept {
+    swap(*this, rhs);
+  }
+
+  QuerySyncClient &QuerySyncClient::operator=(QuerySyncClient &&rhs) noexcept {
+    swap(*this, rhs);
+    return *this;
   }
 
   /**
@@ -40,30 +54,16 @@ namespace torii_utils {
    * @return grpc::Status
    */
   grpc::Status QuerySyncClient::Find(const iroha::protocol::Query &query,
-                                     QueryResponse &response) {
-    std::unique_ptr<grpc::ClientAsyncResponseReader<iroha::protocol::
-                                                        QueryResponse>>
-        rpc(stub_->AsyncFind(&context_, query, &completionQueue_));
+                                     QueryResponse &response) const {
+    grpc::ClientContext context;
+    return stub_->Find(&context, query, &response);
+  }
 
-    using State = network::UntypedCall<torii::ToriiServiceHandler>::State;
-
-    rpc->Finish(
-        &response, &status_, (void *)static_cast<int>(State::ResponseSent));
-
-    void *got_tag;
-    bool ok = false;
-
-    /**
-     * pulls a new rpc response. If no response, blocks this thread.
-     */
-    if (!completionQueue_.Next(&got_tag, &ok)) {
-      throw std::runtime_error("CompletionQueue::Next() returns error");
-    }
-
-    assert(got_tag == (void *)static_cast<int>(State::ResponseSent));
-    assert(ok);
-
-    return status_;
+  void QuerySyncClient::swap(QuerySyncClient &lhs, QuerySyncClient &rhs) {
+    using std::swap;
+    swap(lhs.ip_, rhs.ip_);
+    swap(lhs.port_, rhs.port_);
+    swap(lhs.stub_, rhs.stub_);
   }
 
 }  // namespace torii_utils
