@@ -59,9 +59,10 @@ namespace iroha {
           | boost::adaptors::filtered(
                 [](const auto &cmd) { return bool(cmd); });
 
+      bool all_executed = true;
       boost::for_each(transfers, [&](const auto &cmd) {
         for (const auto &id : {cmd->src_account_id, cmd->dest_account_id}) {
-          this->indexAccountIdHeight(id, height);
+          all_executed &= this->indexAccountIdHeight(id, height);
         }
 
         auto ids = {account_id, cmd->src_account_id, cmd->dest_account_id};
@@ -75,9 +76,10 @@ namespace iroha {
               + transaction_.quote(id) + ", " + transaction_.quote(height)
               + ", " + transaction_.quote(cmd->asset_id) + ", "
               + transaction_.quote(index) + ");");
+          all_executed &= res != nonstd::nullopt;
         });
       });
-      return true;
+      return all_executed;
     }
 
     void PostgresBlockIndex::index(const model::Block &block) {
