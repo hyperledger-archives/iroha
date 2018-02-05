@@ -81,8 +81,8 @@ namespace torii {
         });
   }
 
-  void CommandService::ToriiAsync(iroha::protocol::Transaction const &request,
-                                  google::protobuf::Empty &empty) {
+  void CommandService::Torii(iroha::protocol::Transaction const &request,
+                             google::protobuf::Empty &empty) {
     auto iroha_tx = pb_factory_->deserialize(request);
     auto tx_hash = iroha::hash(*iroha_tx).to_string();
 
@@ -99,9 +99,16 @@ namespace torii {
     tx_processor_->transactionHandle(iroha_tx);
   }
 
-  void CommandService::StatusAsync(
-      iroha::protocol::TxStatusRequest const &request,
-      iroha::protocol::ToriiResponse &response) {
+  grpc::Status CommandService::Torii(
+      grpc::ServerContext *context,
+      const iroha::protocol::Transaction *request,
+      google::protobuf::Empty *response) {
+    Torii(*request, *response);
+    return grpc::Status::OK;
+  }
+
+  void CommandService::Status(iroha::protocol::TxStatusRequest const &request,
+                              iroha::protocol::ToriiResponse &response) {
     auto resp = cache_->findItem(request.tx_hash());
     if (resp) {
       response.CopyFrom(*resp);
@@ -116,4 +123,11 @@ namespace torii {
     }
   }
 
+  grpc::Status CommandService::Status(
+      grpc::ServerContext *context,
+      const iroha::protocol::TxStatusRequest *request,
+      iroha::protocol::ToriiResponse *response) {
+    Status(*request, *response);
+    return grpc::Status::OK;
+  }
 }  // namespace torii

@@ -256,7 +256,7 @@ void Irohad::initQueryService() {
 }
 
 /**
- * Run iroha deamon
+ * Run iroha daemon
  */
 void Irohad::run() {
   // Initializing torii server
@@ -278,7 +278,9 @@ void Irohad::run() {
   internal_server = builder.BuildAndStart();
   // Run torii server
   server_thread = std::thread([this] {
-    torii_server->run(std::move(command_service), std::move(query_service));
+    torii_server->append(std::move(command_service))
+        .append(std::move(query_service))
+        .run();
   });
   log_->info("===> iroha initialized");
   // Wait until servers shutdown

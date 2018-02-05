@@ -21,12 +21,17 @@ limitations under the License.
 #include "module/irohad/validation/validation_mocks.hpp"
 
 #include <endpoint.pb.h>
-#include <main/server_runner.hpp>
+#include "main/server_runner.hpp"
 
 #include "torii/command_client.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 
+#include "torii/command_client.hpp"
+#include "torii/command_service.hpp"
+#include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/query_client.hpp"
+#include "torii/query_service.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
@@ -85,8 +90,6 @@ class ToriiServiceTest : public testing::Test {
               pcsMock, statelessValidatorMock);
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
-      auto command_service = std::make_unique<torii::CommandService>(
-          pb_tx_factory, tx_processor, storageMock);
 
       //----------- Query Service ----------
       auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
@@ -100,16 +103,18 @@ class ToriiServiceTest : public testing::Test {
       auto pb_query_resp_factory =
           std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
-      auto query_service = std::make_unique<torii::QueryService>(
-          pb_query_factory, pb_query_resp_factory, qpi);
-
       EXPECT_CALL(*storageMock, getBlockQuery())
           .WillRepeatedly(Return(block_query));
       EXPECT_CALL(*block_query, getTxByHashSync(_))
           .WillRepeatedly(Return(boost::none));
 
       //----------- Server run ----------------
-      runner->run(std::move(command_service), std::move(query_service));
+      runner
+          ->append(std::make_unique<torii::CommandService>(
+              pb_tx_factory, tx_processor, storageMock))
+          .append(std::make_unique<torii::QueryService>(
+              pb_query_factory, pb_query_resp_factory, qpi))
+          .run();
     });
 
     runner->waitForServersReady();
@@ -135,25 +140,23 @@ class ToriiServiceTest : public testing::Test {
   std::shared_ptr<MockStatelessValidator> statelessValidatorMock;
 };
 
-
 /**
  * @given chain of CommandClient copies and moves
  * @when status is asked
  * @then grpc returns ok
  */
 TEST_F(ToriiServiceTest, CommandClient) {
-
   iroha::protocol::TxStatusRequest tx_request;
   iroha::protocol::ToriiResponse toriiResponse;
 
   auto client1 = torii::CommandSyncClient(Ip, Port);
-  //Copy ctor
+  // Copy ctor
   torii::CommandSyncClient client2(client1);
-  //copy assignment
+  // copy assignment
   auto client3 = client2;
-  //move ctor
+  // move ctor
   torii::CommandSyncClient client4(std::move(client3));
-  //move assignment
+  // move assignment
   auto client5 = std::move(client4);
   auto stat = client5.Status(tx_request, toriiResponse);
 

@@ -132,7 +132,7 @@ TEST_F(TxPipelineIntegrationTest, GetTransactionsTest) {
   ASSERT_TRUE(pb_query.has_value());
 
   iroha::protocol::QueryResponse response;
-  irohad->getQueryService()->FindAsync(pb_query.value(), response);
+  irohad->getQueryService()->Find(pb_query.value(), response);
   ASSERT_EQ(1, response.transactions_response().transactions().size());
   const auto got_pb_tx = response.transactions_response().transactions()[0];
   ASSERT_EQ(given_tx, *PbTransactionFactory{}.deserialize(got_pb_tx));

@@ -18,14 +18,9 @@
 #include <grpc++/grpc++.h>
 #include <grpc++/server_builder.h>
 #include "torii/command_service.hpp"
-#include "torii/torii_service_handler.hpp"
 
 #ifndef MAIN_SERVER_RUNNER_HPP
 #define MAIN_SERVER_RUNNER_HPP
-
-namespace torii {
-  class ToriiServiceHandler;
-}
 
 /**
  * Class runs Torii server for handling queries and commands.
@@ -39,17 +34,16 @@ class ServerRunner {
   explicit ServerRunner(const std::string &address);
 
   /**
-   * Destructor. Shutdown the server.
+   * Adds a new grpc service to be run.
+   * @param service - service to append.
+   * @return reference to this with service appended
    */
-  ~ServerRunner();
+  ServerRunner &append(std::unique_ptr<grpc::Service> service);
 
   /**
    * Initialize the server and run main loop.
-   * @param commandService - service for command handler
-   * @param queryService - service for query handler
    */
-  void run(std::unique_ptr<torii::CommandService> commandService,
-           std::unique_ptr<torii::QueryService> queryService);
+  void run();
 
   /**
    * Release the completion queues and shutdown the server.
@@ -67,7 +61,7 @@ class ServerRunner {
   std::condition_variable serverInstanceCV_;
 
   std::string serverAddress_;
-  std::unique_ptr<torii::ToriiServiceHandler> toriiServiceHandler_;
+  std::vector<std::unique_ptr<grpc::Service>> services_;
 };
 
 #endif  // MAIN_SERVER_RUNNER_HPP

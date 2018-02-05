@@ -36,7 +36,7 @@ namespace torii {
    * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in
    * this class.
    */
-  class CommandService {
+  class CommandService : public iroha::protocol::CommandService::Service {
    public:
     CommandService(
         std::shared_ptr<iroha::model::converters::PbTransactionFactory>
@@ -51,11 +51,20 @@ namespace torii {
      * @param request - Transaction
      * @param response - ToriiResponse
      */
-    void ToriiAsync(iroha::protocol::Transaction const &request,
+    void Torii(iroha::protocol::Transaction const &request,
                     google::protobuf::Empty &response);
 
-    void StatusAsync(iroha::protocol::TxStatusRequest const &request,
+    void Status(iroha::protocol::TxStatusRequest const &request,
                      iroha::protocol::ToriiResponse &response);
+
+    virtual grpc::Status Torii(grpc::ServerContext *context,
+                               const iroha::protocol::Transaction *request,
+                               google::protobuf::Empty *response) override;
+
+    virtual grpc::Status Status(
+        grpc::ServerContext *context,
+        const iroha::protocol::TxStatusRequest *request,
+        iroha::protocol::ToriiResponse *response) override;
 
    private:
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;

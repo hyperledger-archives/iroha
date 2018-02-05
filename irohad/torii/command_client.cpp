@@ -11,13 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <thread>
-
-#include <grpc++/grpc++.h>
-
-#include "block.pb.h"
-#include "torii/command_client.hpp"
-#include "torii/torii_service_handler.hpp"
+#include <torii/command_client.hpp>
 
 namespace torii {
 
@@ -60,8 +54,6 @@ namespace torii {
     grpc::ClientContext context;
     return stub_->Status(&context, request, &response);
   }
-
-
 
   void  CommandSyncClient::swap(CommandSyncClient& lhs, CommandSyncClient& rhs) {
     using std::swap;
