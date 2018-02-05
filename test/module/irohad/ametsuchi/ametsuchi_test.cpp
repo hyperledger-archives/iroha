@@ -244,9 +244,10 @@ TEST_F(AmetsuchiTest, SampleTest) {
   validateAccountAsset(wsv, user2id, assetid, iroha::Amount(100, 2));
 
   // Block store tests
+  auto hashes = {block1hash, block2hash};
   validateCalls(
       blocks->getBlocks(1, 2),
-      [ i = 0, hashes = {block1hash, block2hash} ](auto eachBlock) mutable {
+      [i = 0, &hashes](auto eachBlock) mutable {
         EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
         ++i;
       },
@@ -394,9 +395,10 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   validateAccountAsset(wsv, user3id, asset2id, iroha::Amount(150, 2));
   validateAccountAsset(wsv, user1id, asset2id, iroha::Amount(10, 2));
 
-  // Block store tests
+  // Block store test
+  auto hashes = {block1hash, block2hash, block3hash};
   validateCalls(blocks->getBlocks(1, 3),
-                [ i = 0, hashes = {block1hash, block2hash, block3hash} ](
+                [i = 0, &hashes](
                     auto eachBlock) mutable {
                   EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
                   ++i;
