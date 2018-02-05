@@ -18,8 +18,6 @@
 #ifndef IROHA_MUTABLE_STORAGE_IMPL_HPP
 #define IROHA_MUTABLE_STORAGE_IMPL_HPP
 
-#include "ametsuchi/mutable_storage.hpp"
-
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
 #include <unordered_map>

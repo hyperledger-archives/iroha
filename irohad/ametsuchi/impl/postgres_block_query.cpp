@@ -16,6 +16,8 @@
  */
 
 #include "ametsuchi/impl/postgres_block_query.hpp"
+#include <boost/range/adaptor/transformed.hpp>
+#include <boost/range/algorithm/for_each.hpp>
 #include "model/sha3_hash.hpp"
 
 namespace iroha {
@@ -74,18 +76,17 @@ namespace iroha {
 
     std::vector<iroha::model::Block::BlockHeightType>
     PostgresBlockQuery::getBlockIds(const std::string &account_id) {
-      std::vector<uint64_t> block_ids;
       return execute_(
                  "SELECT DISTINCT height FROM height_by_account_set WHERE "
-                 "account_id = '"
-                 + account_id + "';")
-                 | [&block_ids](const auto &result)
+                 "account_id = "
+                 + transaction_.quote(account_id) + ";")
+                 | [&](const auto &result)
                  -> std::vector<iroha::model::Block::BlockHeightType> {
         return transform<iroha::model::Block::BlockHeightType>(
             result, [&](const auto &row) {
-              pqxx::binarystring height_reply(row.at("height"));
-              auto height = std::stoul(height_reply.str());
-              return height;
+              // return std::stoul(row.at("height").c_str());
+              return row.at("height")
+                  .template as<iroha::model::Block::BlockHeightType>();
             });
       };
     }
@@ -99,9 +100,11 @@ namespace iroha {
                       + ";")
                  | [&](const auto &result)
                  -> boost::optional<iroha::model::Block::BlockHeightType> {
-        return result.size() == 0 ? boost::none
-                                  : boost::optional<uint64_t>(std::stoul(
-                                        result[0].at("height").c_str()));
+        const auto &height = result[0].at("height");
+        if (result.size() == 0 or height.is_null()) {
+          return {};
+        }
+        return height.template as<iroha::model::Block::BlockHeightType>();
       };
     }
 
@@ -109,23 +112,17 @@ namespace iroha {
         const rxcpp::subscriber<model::Transaction> &subscriber,
         uint64_t block_id) {
       return [this, &subscriber, block_id](pqxx::result &result) {
-        std::vector<std::string> tx_ids_reply;
-        tx_ids_reply.reserve(result.size());
-        for (pqxx::result::const_iterator i = result.begin(); i != result.end();
-             ++i)
-          tx_ids_reply.push_back((*i).at("index").as<std::string>());
-
-        block_store_.get(block_id) | [](auto bytes) {
+        auto block = block_store_.get(block_id) | [](auto bytes) {
           return model::converters::stringToJson(bytesToString(bytes));
-        } | [this](const auto &json) {
-          return serializer_.deserialize(json);
-        } | [&](const auto &block) {
-          for (const auto &tx_reply : tx_ids_reply) {
-            auto tx_id = std::stoul(tx_reply);
-            auto &&tx = block.transactions.at(tx_id);
-            subscriber.on_next(tx);
-          }
-        };
+        } | [this](const auto &json) { return serializer_.deserialize(json); };
+        boost::for_each(
+            result | boost::adaptors::transformed([&block](const auto &x) {
+              return x.at("index").template as<size_t>();
+            }),
+            [&](auto x) {
+              const auto &tx = block->transactions.at(x);
+              subscriber.on_next(tx);
+            });
       };
     }
 
@@ -139,7 +136,7 @@ namespace iroha {
               return;
             }
 
-            for (auto block_id : block_ids) {
+            for (const auto &block_id : block_ids) {
               execute_(
                   "SELECT DISTINCT index FROM index_by_creator_height WHERE "
                   "creator_id = "
@@ -162,7 +159,7 @@ namespace iroha {
           return;
         }
 
-        for (auto block_id : block_ids) {
+        for (const auto &block_id : block_ids) {
           // create key for querying redis
           execute_(
               "SELECT DISTINCT index FROM index_by_id_height_asset WHERE id = "

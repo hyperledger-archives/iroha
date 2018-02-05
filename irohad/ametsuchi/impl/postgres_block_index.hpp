@@ -19,8 +19,8 @@
 #define IROHA_POSTGRES_BLOCK_INDEX_HPP
 
 #include "ametsuchi/impl/block_index.hpp"
+#include "ametsuchi/impl/postgres_wsv_common.hpp"
 #include "logger/logger.hpp"
-#include "postgres_wsv_common.hpp"
 
 #include <boost/format.hpp>
 #include <pqxx/nontransaction>
@@ -39,7 +39,7 @@ namespace iroha {
        * @param account_id of transaction creator
        * @param height of block
        */
-      void indexAccountIdHeight(const std::string &account_id,
+      auto indexAccountIdHeight(const std::string &account_id,
                                 const std::string &height);
 
       /**
@@ -51,7 +51,7 @@ namespace iroha {
        * @param index of transaction in the block
        * @param commands in the transaction
        */
-      void indexAccountAssets(const std::string &account_id,
+      auto indexAccountAssets(const std::string &account_id,
                               const std::string &height,
                               const std::string &index,
                               const model::Transaction::CommandsType &commands);
@@ -60,6 +60,11 @@ namespace iroha {
       logger::Logger log_;
       using ExecuteType = decltype(makeExecute(transaction_, log_));
       ExecuteType execute_;
+
+      // TODO: refactor to return Result when it is introduced IR-744
+      bool execute(const std::string &statement) noexcept {
+        return execute_(statement).has_value();
+      }
     };
   }  // namespace ametsuchi
 }  // namespace iroha

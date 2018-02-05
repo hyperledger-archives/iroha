@@ -37,54 +37,20 @@ namespace iroha {
           log_(logger::log("PostgresBlockIndex")),
           execute_{makeExecute(transaction_, log_)} {}
 
-    void PostgresBlockIndex::index(const model::Block &block) {
-      const auto &height = std::to_string(block.height);
-      boost::for_each(block.transactions | boost::adaptors::indexed(0),
-                      [&](const auto &tx) {
-                        const auto &creator_id = tx.value().creator_account_id;
-                        const auto &hash = iroha::hash(tx.value()).to_string();
-                        const auto &index = std::to_string(tx.index());
-
-                        // tx hash -> block where hash is stored
-                        execute_("INSERT INTO height_by_hash(hash, height) VALUES ("
-                                 + transaction_.quote(
-                                pqxx::binarystring(hash.data(), hash.size()))
-                                 + ", " + transaction_.quote(height) + ");");
-
-                        this->indexAccountIdHeight(creator_id, height);
-
-                        // to make index account_id:height -> list of tx indexes
-                        // (where tx is placed in the block)
-                        execute_(
-                            "INSERT INTO index_by_creator_height(creator_id, "
-                            "height, index) "
-                            "VALUES ("
-                            + transaction_.quote(creator_id) + ", "
-                            + transaction_.quote(height) + ", "
-                            + transaction_.quote(index) + ");");
-
-                        this->indexAccountAssets(
-                            creator_id, height, index, tx.value().commands);
-                      });
-    }
-
-    void PostgresBlockIndex::indexAccountIdHeight(const std::string &account_id,
+    auto PostgresBlockIndex::indexAccountIdHeight(const std::string &account_id,
                                                   const std::string &height) {
-      execute_(
+      return this->execute(
           "INSERT INTO height_by_account_set(account_id, height) "
           "VALUES ("
           + transaction_.quote(account_id) + ", " + transaction_.quote(height)
           + ");");
     }
 
-    void PostgresBlockIndex::indexAccountAssets(
+    auto PostgresBlockIndex::indexAccountAssets(
         const std::string &account_id,
         const std::string &height,
         const std::string &index,
         const model::Transaction::CommandsType &commands) {
-      using UserAssetsType =
-          std::unordered_map<std::string, std::unordered_set<std::string>>;
-
       // flat map abstract commands to transfers
       auto transfers =
           commands | boost::adaptors::transformed([](const auto &cmd) {
@@ -93,24 +59,56 @@ namespace iroha {
           | boost::adaptors::filtered(
                 [](const auto &cmd) { return bool(cmd); });
 
-      boost::accumulate(
-          transfers, UserAssetsType{}, [&](auto &&acc, const auto &cmd) {
-            for (const auto &id : {cmd->src_account_id, cmd->dest_account_id}) {
-              this->indexAccountIdHeight(id, height);
-            }
+      boost::for_each(transfers, [&](const auto &cmd) {
+        for (const auto &id : {cmd->src_account_id, cmd->dest_account_id}) {
+          this->indexAccountIdHeight(id, height);
+        }
 
-            auto ids = {account_id, cmd->src_account_id, cmd->dest_account_id};
-            // flat map accounts to unindexed keys
-            boost::for_each(ids, [&](const auto &id) {
-              execute_(
-                  "INSERT INTO index_by_id_height_asset(id, height, asset_id, "
-                  "index) "
-                  "VALUES ("
-                  + transaction_.quote(id) + ", " + transaction_.quote(height)
-                  + ", " + transaction_.quote(cmd->asset_id) + ", "
-                  + transaction_.quote(index) + ");");
-            });
-            return std::forward<decltype(acc)>(acc);
+        auto ids = {account_id, cmd->src_account_id, cmd->dest_account_id};
+        // flat map accounts to unindexed keys
+        boost::for_each(ids, [&](const auto &id) {
+          auto res = execute_(
+              "INSERT INTO index_by_id_height_asset(id, "
+              "height, asset_id, "
+              "index) "
+              "VALUES ("
+              + transaction_.quote(id) + ", " + transaction_.quote(height)
+              + ", " + transaction_.quote(cmd->asset_id) + ", "
+              + transaction_.quote(index) + ");");
+        });
+      });
+      return true;
+    }
+
+    void PostgresBlockIndex::index(const model::Block &block) {
+      const auto &height = std::to_string(block.height);
+      boost::for_each(
+          block.transactions | boost::adaptors::indexed(0),
+          [&](const auto &tx) {
+            const auto &creator_id = tx.value().creator_account_id;
+            const auto &hash = iroha::hash(tx.value()).to_string();
+            const auto &index = std::to_string(tx.index());
+
+            // tx hash -> block where hash is stored
+            this->execute("INSERT INTO height_by_hash(hash, height) VALUES ("
+                          + transaction_.quote(
+                                pqxx::binarystring(hash.data(), hash.size()))
+                          + ", " + transaction_.quote(height) + ");");
+
+            this->indexAccountIdHeight(creator_id, height);
+
+            // to make index account_id:height -> list of tx indexes
+            // (where tx is placed in the block)
+            execute_(
+                "INSERT INTO index_by_creator_height(creator_id, "
+                "height, index) "
+                "VALUES ("
+                + transaction_.quote(creator_id) + ", "
+                + transaction_.quote(height) + ", " + transaction_.quote(index)
+                + ");");
+
+            this->indexAccountAssets(
+                creator_id, height, index, tx.value().commands);
           });
     }
   }  // namespace ametsuchi
