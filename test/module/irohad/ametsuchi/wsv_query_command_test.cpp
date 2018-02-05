@@ -17,6 +17,10 @@
 
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
+#include "model/account.hpp"
+#include "model/domain.hpp"
+#include "model/peer.hpp"
+#include "model/asset.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 
 namespace iroha {

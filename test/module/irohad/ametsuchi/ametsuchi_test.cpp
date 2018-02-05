@@ -19,20 +19,19 @@
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/combine.hpp>
 
-#include <model/commands/create_role.hpp>
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
+#include "ametsuchi/impl/redis_block_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
+#include "ametsuchi/mutable_storage.hpp"
 #include "common/byteutils.hpp"
 #include "framework/test_subscriber.hpp"
-#include "model/commands/add_asset_quantity.hpp"
-#include "model/commands/add_peer.hpp"
-#include "model/commands/add_signatory.hpp"
-#include "model/commands/create_account.hpp"
-#include "model/commands/create_asset.hpp"
-#include "model/commands/create_domain.hpp"
-#include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_quorum.hpp"
-#include "model/commands/transfer_asset.hpp"
+#include "model/account.hpp"
+#include "model/account_asset.hpp"
+#include "model/asset.hpp"
+#include "model/commands/all.hpp"
 #include "model/converters/pb_block_factory.hpp"
+#include "model/domain.hpp"
+#include "model/peer.hpp"
 #include "model/permissions.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
@@ -243,9 +242,10 @@ TEST_F(AmetsuchiTest, SampleTest) {
   validateAccountAsset(wsv, user2id, assetid, iroha::Amount(100, 2));
 
   // Block store tests
+  auto hashes = {block1hash, block2hash};
   validateCalls(
       blocks->getBlocks(1, 2),
-      [i = 0, hashes = {block1hash, block2hash}](auto eachBlock) mutable {
+      [i = 0, &hashes](auto eachBlock) mutable {
         EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
         ++i;
       },
@@ -391,9 +391,10 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   validateAccountAsset(wsv, user3id, asset2id, iroha::Amount(150, 2));
   validateAccountAsset(wsv, user1id, asset2id, iroha::Amount(10, 2));
 
-  // Block store tests
+  // Block store test
+  auto hashes = {block1hash, block2hash, block3hash};
   validateCalls(blocks->getBlocks(1, 3),
-                [i = 0, hashes = {block1hash, block2hash, block3hash}](
+                [i = 0, &hashes](
                     auto eachBlock) mutable {
                   EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
                   ++i;

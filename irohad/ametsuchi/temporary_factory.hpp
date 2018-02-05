@@ -19,10 +19,11 @@
 #define IROHA_TEMPORARY_FACTORY_HPP
 
 #include <memory>
-#include "ametsuchi/temporary_wsv.hpp"
 
 namespace iroha {
   namespace ametsuchi {
+
+    class TemporaryWsv;
 
     class TemporaryFactory {
      public:

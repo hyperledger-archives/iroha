@@ -17,9 +17,9 @@
 #ifndef IROHA_REMOVE_SIGNATORY_HPP
 #define IROHA_REMOVE_SIGNATORY_HPP
 
-#include <common/types.hpp>
-#include <model/command.hpp>
 #include <string>
+#include "common/types.hpp"
+#include "model/command.hpp"
 
 namespace iroha {
   namespace model {
@@ -31,14 +31,14 @@ namespace iroha {
       /**
        * Account to remove from
        */
-      std::string account_id{};
+      std::string account_id;
 
       /**
        * Public key of signatory to remove.
        * Note: This public key must be attach to account.
        * There must be at least two signatories to perform this operation.
        */
-      pubkey_t pubkey{};
+      pubkey_t pubkey;
 
       bool operator==(const Command &command) const override;
 

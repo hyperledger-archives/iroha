@@ -25,6 +25,8 @@
 #include <boost/format.hpp>
 #include <pqxx/nontransaction>
 
+#include "model/transaction.hpp"  // for model::Transaction::CommandsType
+
 namespace iroha {
   namespace ametsuchi {
     class PostgresBlockIndex : public BlockIndex {

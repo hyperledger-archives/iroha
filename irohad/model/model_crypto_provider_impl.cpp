@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include "model_crypto_provider_impl.hpp"
+#include "model/model_crypto_provider_impl.hpp"
+#include <algorithm>
 #include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
-
 #include "model/queries/get_account.hpp"
 #include "model/queries/get_account_assets.hpp"
 #include "model/queries/get_asset_info.hpp"

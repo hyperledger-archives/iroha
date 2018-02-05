@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include "validator/domain_name_validator.hpp"
-
 #include <boost/spirit/include/qi.hpp>
+
+#include "validator/domain_name_validator.hpp"
 
 namespace validator {
   bool isValidDomainName(const std::string &str) {

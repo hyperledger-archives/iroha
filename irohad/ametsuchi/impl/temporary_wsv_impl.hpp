@@ -23,10 +23,15 @@
 
 #include "ametsuchi/temporary_wsv.hpp"
 #include "logger/logger.hpp"
-#include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
+
+  namespace model {
+    class CommandExecutorFactory;
+  }
+
   namespace ametsuchi {
+
     class TemporaryWsvImpl : public TemporaryWsv {
      public:
       TemporaryWsvImpl(

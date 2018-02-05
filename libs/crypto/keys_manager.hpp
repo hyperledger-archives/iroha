@@ -18,11 +18,11 @@
 #ifndef IROHA_CLI_KEYS_MANAGER_HPP
 #define IROHA_CLI_KEYS_MANAGER_HPP
 
+#include <string>
 #include <nonstd/optional.hpp>
 
-#include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
-
 namespace iroha {
+  struct keypair_t;
 
   class KeysManager {
    public:

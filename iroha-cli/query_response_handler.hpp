@@ -17,12 +17,17 @@
 
 #ifndef IROHA_CLI_QUERY_RESPONSE_HANDLER_HPP
 #define IROHA_CLI_QUERY_RESPONSE_HANDLER_HPP
+
 #include <map>
 #include <memory>
 #include <typeindex>
 #include <unordered_map>
-#include "logger/logger.hpp"
+
 #include "responses.pb.h"
+
+namespace spdlog {
+  class logger;
+}
 
 namespace iroha_cli {
   /*

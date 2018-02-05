@@ -18,6 +18,8 @@
 #ifndef IROHA_RESULT_HPP
 #define IROHA_RESULT_HPP
 
+#include <boost/variant.hpp>
+
 #include "common/visitor.hpp"
 
 /*
@@ -48,7 +50,7 @@ namespace iroha {
       }
     };
 
-    template<>
+    template <>
     struct Value<void> {};
 
     template <typename E>
@@ -60,7 +62,7 @@ namespace iroha {
       }
     };
 
-    template<>
+    template <>
     struct Error<void> {};
 
     /**

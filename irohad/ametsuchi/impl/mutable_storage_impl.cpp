@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
 #include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 
 #include "model/sha3_hash.hpp"
+#include "ametsuchi/wsv_command.hpp"
 
 namespace iroha {
   namespace ametsuchi {

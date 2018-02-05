@@ -17,6 +17,12 @@
 
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 
+#include "model/account.hpp"
+#include "model/account_asset.hpp"
+#include "model/asset.hpp"
+#include "model/domain.hpp"
+#include "model/peer.hpp"
+
 namespace iroha {
   namespace ametsuchi {
 
@@ -27,22 +33,27 @@ namespace iroha {
 
     bool PostgresWsvCommand::insertRole(const std::string &role_name) {
       return execute("INSERT INTO role(role_id) VALUES ("
-                     + transaction_.quote(role_name) + ");");
+                     + transaction_.quote(role_name)
+                     + ");");
     }
 
     bool PostgresWsvCommand::insertAccountRole(const std::string &account_id,
                                                const std::string &role_name) {
       return execute(
           "INSERT INTO account_has_roles(account_id, role_id) VALUES ("
-          + transaction_.quote(account_id) + ", "
-          + transaction_.quote(role_name) + ");");
+          + transaction_.quote(account_id)
+          + ", "
+          + transaction_.quote(role_name)
+          + ");");
     }
 
     bool PostgresWsvCommand::deleteAccountRole(const std::string &account_id,
                                                const std::string &role_name) {
       return execute("DELETE FROM account_has_roles WHERE account_id="
                      + transaction_.quote(account_id)
-                     + "AND role_id=" + transaction_.quote(role_name) + ";");
+                     + "AND role_id="
+                     + transaction_.quote(role_name)
+                     + ";");
     }
 
     bool PostgresWsvCommand::insertRolePermissions(
@@ -69,9 +80,12 @@ namespace iroha {
           "INSERT INTO "
           "account_has_grantable_permissions(permittee_account_id, "
           "account_id, permission_id) VALUES ("
-          + transaction_.quote(permittee_account_id) + ", "
-          + transaction_.quote(account_id) + ", "
-          + transaction_.quote(permission_id) + ");");
+          + transaction_.quote(permittee_account_id)
+          + ", "
+          + transaction_.quote(account_id)
+          + ", "
+          + transaction_.quote(permission_id)
+          + ");");
     }
 
     bool PostgresWsvCommand::deleteAccountGrantablePermission(
@@ -82,21 +96,28 @@ namespace iroha {
           "DELETE FROM public.account_has_grantable_permissions WHERE "
           "permittee_account_id="
           + transaction_.quote(permittee_account_id)
-          + " AND account_id=" + transaction_.quote(account_id)
-          + " AND permission_id=" + transaction_.quote(permission_id) + " ;");
+          + " AND account_id="
+          + transaction_.quote(account_id)
+          + " AND permission_id="
+          + transaction_.quote(permission_id)
+          + " ;");
     }
 
     bool PostgresWsvCommand::insertAccount(const model::Account &account) {
       return execute(
           "INSERT INTO account(account_id, domain_id, quorum, "
           "transaction_count, data) VALUES ("
-          + transaction_.quote(account.account_id) + ", "
-          + transaction_.quote(account.domain_id) + ", "
+          + transaction_.quote(account.account_id)
+          + ", "
+          + transaction_.quote(account.domain_id)
+          + ", "
           + transaction_.quote(account.quorum)
           + ", "
           // Transaction counter
-          + transaction_.quote(default_tx_counter) + ", "
-          + transaction_.quote(account.json_data) + ");");
+          + transaction_.quote(default_tx_counter)
+          + ", "
+          + transaction_.quote(account.json_data)
+          + ");");
     }
 
     bool PostgresWsvCommand::insertAsset(const model::Asset &asset) {
@@ -104,9 +125,13 @@ namespace iroha {
       return execute(
           "INSERT INTO asset(asset_id, domain_id, \"precision\", data) "
           "VALUES ("
-          + transaction_.quote(asset.asset_id) + ", "
-          + transaction_.quote(asset.domain_id) + ", "
-          + transaction_.quote(precision) + ", " + /*asset.data*/ "NULL"
+          + transaction_.quote(asset.asset_id)
+          + ", "
+          + transaction_.quote(asset.domain_id)
+          + ", "
+          + transaction_.quote(precision)
+          + ", "
+          + /*asset.data*/ "NULL"
           + ");");
     }
 
@@ -133,7 +158,8 @@ namespace iroha {
         const std::string &account_id, const pubkey_t &signatory) {
       return execute(
           "INSERT INTO account_has_signatory(account_id, public_key) VALUES ("
-          + transaction_.quote(account_id) + ", "
+          + transaction_.quote(account_id)
+          + ", "
           + transaction_.quote(
                 pqxx::binarystring(signatory.data(), signatory.size()))
           + ");");
@@ -142,7 +168,8 @@ namespace iroha {
     bool PostgresWsvCommand::deleteAccountSignatory(
         const std::string &account_id, const pubkey_t &signatory) {
       return execute("DELETE FROM account_has_signatory WHERE account_id = "
-                     + transaction_.quote(account_id) + " AND public_key = "
+                     + transaction_.quote(account_id)
+                     + " AND public_key = "
                      + transaction_.quote(pqxx::binarystring(signatory.data(),
                                                              signatory.size()))
                      + ";");
@@ -163,21 +190,26 @@ namespace iroha {
       return execute("INSERT INTO peer(public_key, address) VALUES ("
                      + transaction_.quote(pqxx::binarystring(
                            peer.pubkey.data(), peer.pubkey.size()))
-                     + ", " + transaction_.quote(peer.address) + ");");
+                     + ", "
+                     + transaction_.quote(peer.address)
+                     + ");");
     }
 
     bool PostgresWsvCommand::deletePeer(const model::Peer &peer) {
       return execute("DELETE FROM peer WHERE public_key = "
                      + transaction_.quote(pqxx::binarystring(
                            peer.pubkey.data(), peer.pubkey.size()))
-                     + " AND address = " + transaction_.quote(peer.address)
+                     + " AND address = "
+                     + transaction_.quote(peer.address)
                      + ";");
     }
 
     bool PostgresWsvCommand::insertDomain(const model::Domain &domain) {
       return execute("INSERT INTO domain(domain_id, default_role) VALUES ("
-                     + transaction_.quote(domain.domain_id) + ", "
-                     + transaction_.quote(domain.default_role) + ");");
+                     + transaction_.quote(domain.domain_id)
+                     + ", "
+                     + transaction_.quote(domain.default_role)
+                     + ");");
     }
 
     bool PostgresWsvCommand::updateAccount(const model::Account &account) {
@@ -200,11 +232,16 @@ namespace iroha {
           "UPDATE account SET data = jsonb_set(CASE WHEN data ?"
           + transaction_.quote(creator_account_id)
           + " THEN data ELSE jsonb_set(data, "
-          + transaction_.quote("{" + creator_account_id + "}") + ","
-          + transaction_.quote("{}") + ") END,"
+          + transaction_.quote("{" + creator_account_id + "}")
+          + ","
+          + transaction_.quote("{}")
+          + ") END,"
           + transaction_.quote("{" + creator_account_id + ", " + key + "}")
-          + "," + transaction_.quote("\"" + val + "\"")
-          + ") WHERE account_id=" + transaction_.quote(account_id) + ";");
+          + ","
+          + transaction_.quote("\"" + val + "\"")
+          + ") WHERE account_id="
+          + transaction_.quote(account_id)
+          + ";");
     }
   }  // namespace ametsuchi
 }  // namespace iroha

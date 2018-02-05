@@ -16,6 +16,7 @@
  */
 
 #include "grpc_response_handler.hpp"
+#include "logger/logger.hpp"
 
 using namespace grpc;
 namespace iroha_cli {

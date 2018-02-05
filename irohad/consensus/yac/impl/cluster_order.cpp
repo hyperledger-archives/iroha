@@ -39,13 +39,21 @@ namespace iroha {
         return order_.at(index_);
       }
 
-      bool ClusterOrdering::hasNext() {
+      bool ClusterOrdering::hasNext() const {
         return index_ != order_.size();
       }
 
       ClusterOrdering &ClusterOrdering::switchToNext() {
         ++index_;
         return *this;
+      }
+
+      std::vector<model::Peer> ClusterOrdering::getPeers() const {
+        return order_;
+      }
+
+      size_t ClusterOrdering::getNumberOfPeers() const {
+        return order_.size();
       }
     }  // namespace yac
   }    // namespace consensus

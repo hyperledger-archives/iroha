@@ -27,9 +27,16 @@
 #include "model/converters/json_block_factory.hpp"
 
 #include <boost/optional.hpp>
+#include <cpp_redis/cpp_redis>
+
+#include "model/converters/json_block_factory.hpp"
+
 
 namespace iroha {
   namespace ametsuchi {
+
+    class FlatFile;
+
     /**
      * Class which implements BlockQuery with a Redis backend.
      */

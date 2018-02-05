@@ -18,7 +18,9 @@
 #ifndef IROHA_VISITOR_HPP
 #define IROHA_VISITOR_HPP
 
-#include <boost/variant.hpp>
+#include <boost/variant/apply_visitor.hpp>  // for boost::apply_visitor
+#include <type_traits>                      // for std::decay
+#include <utility>                          // for std::forward
 
 namespace iroha {
 

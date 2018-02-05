@@ -19,17 +19,18 @@ properties([parameters([
     pipelineTriggers([cron('@weekly')])])
 pipeline {
     environment {
+        CCACHE_DIR = '/opt/.ccache'
         SORABOT_TOKEN = credentials('SORABOT_TOKEN')
         SONAR_TOKEN = credentials('SONAR_TOKEN')
         CODECOV_TOKEN = credentials('CODECOV_TOKEN')
         DOCKERHUB = credentials('DOCKERHUB')
         DOCKER_IMAGE = 'hyperledger/iroha-docker-develop:v1'
 
-        IROHA_NETWORK = "iroha-${GIT_COMMIT}"
-        IROHA_POSTGRES_HOST = "pg-${GIT_COMMIT}"
+        IROHA_NETWORK = "iroha-${GIT_COMMIT}-${BUILD_NUMBER}"
+        IROHA_POSTGRES_HOST = "pg-${GIT_COMMIT}-${BUILD_NUMBER}"
         IROHA_POSTGRES_USER = "pg-user-${GIT_COMMIT}"
         IROHA_POSTGRES_PASSWORD = "${GIT_COMMIT}"
-        IROHA_REDIS_HOST = "redis-${GIT_COMMIT}"
+        IROHA_REDIS_HOST = "redis-${GIT_COMMIT}-${BUILD_NUMBER}"
         IROHA_POSTGRES_PORT = 5432
         IROHA_REDIS_PORT = 6379
     }
@@ -67,7 +68,7 @@ pipeline {
                                 + " -e IROHA_REDIS_HOST=${env.IROHA_REDIS_HOST}" 
                                 + " -e IROHA_REDIS_PORT=${env.IROHA_REDIS_PORT}" 
                                 + " --network=${env.IROHA_NETWORK}"
-                                + " -v /var/jenkins/ccache:/tmp/ccache") {
+                                + " -v /var/jenkins/ccache:${CCACHE_DIR}") {
 
                             def scmVars = checkout scm
                             env.IROHA_VERSION = "0x${scmVars.GIT_COMMIT}"
@@ -123,7 +124,7 @@ pipeline {
 
                             //stash(allowEmpty: true, includes: 'build/compile_commands.json', name: 'Compile commands')
                             //stash(allowEmpty: true, includes: 'build/reports/', name: 'Reports')
-                            archive(includes: 'build/bin/,compile_commands.json')
+                            //archive(includes: 'build/bin/,compile_commands.json')
                             }
                         }
                     }

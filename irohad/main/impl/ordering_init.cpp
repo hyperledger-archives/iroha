@@ -16,6 +16,7 @@
  */
 
 #include "main/impl/ordering_init.hpp"
+#include "model/peer.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 
 namespace iroha {

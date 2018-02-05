@@ -25,12 +25,13 @@
 
 #include <nonstd/optional.hpp>
 #include <pqxx/pqxx>
-#include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
+
+    class FlatFile;
 
     struct ConnectionContext {
       ConnectionContext(std::unique_ptr<FlatFile> block_store,
@@ -39,6 +40,7 @@ namespace iroha {
           : block_store(std::move(block_store)),
             pg_lazy(std::move(pg_lazy)),
             pg_nontx(std::move(pg_nontx)) {}
+                        std::unique_ptr<pqxx::nontransaction> pg_nontx);
 
       std::unique_ptr<FlatFile> block_store;
       std::unique_ptr<pqxx::lazyconnection> pg_lazy;

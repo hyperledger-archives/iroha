@@ -67,6 +67,8 @@ namespace shared_model {
         return new Impl(Proto(*proto_));
       }
 
+      using TransportType = Proto;
+
       const Proto &getTransport() const {
         return *proto_;
       }

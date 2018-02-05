@@ -17,8 +17,7 @@
 #ifndef IROHA_CREATE_DOMAIN_HPP
 #define IROHA_CREATE_DOMAIN_HPP
 
-#include <model/command.hpp>
-#include <model/domain.hpp>
+#include "model/command.hpp"
 
 namespace iroha {
   namespace model {

@@ -19,6 +19,7 @@
 #include "common/types.hpp"
 #include "endpoint.pb.h"
 #include "model/sha3_hash.hpp"
+#include "ametsuchi/block_query.hpp"
 
 namespace torii {
 

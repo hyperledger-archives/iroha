@@ -19,12 +19,13 @@
 #define IROHA_YAC_PEER_ORDERER_HPP
 
 #include <nonstd/optional.hpp>
-#include "consensus/yac/cluster_order.hpp"
-#include "consensus/yac/yac_hash_provider.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
+
+      class ClusterOrdering;
+      class YacHash;
 
       /**
        * Interface responsible for creating order for yac consensus

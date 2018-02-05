@@ -18,12 +18,13 @@
 #ifndef IROHA_ADD_PEER_HPP
 #define IROHA_ADD_PEER_HPP
 
-#include <common/types.hpp>
 #include "model/command.hpp"
 #include "model/peer.hpp"
 
 namespace iroha {
   namespace model {
+
+    struct Peer;
 
     /**
      * Provide user's intent for adding peer to current network

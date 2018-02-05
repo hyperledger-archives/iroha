@@ -18,6 +18,7 @@
 #include "interactive/interactive_transaction_cli.hpp"
 
 #include <fstream>
+#include <utility>
 #include "client.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/commands/append_role.hpp"
@@ -29,8 +30,10 @@
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_transaction_factory.hpp"
 #include "model/converters/pb_common.hpp"
+#include "model/model_crypto_provider.hpp"  // for ModelCryptoProvider
 #include "model/permissions.hpp"
 #include "model/sha3_hash.hpp"
+#include "parser/parser.hpp"  // for parser::ParseValue
 
 using namespace iroha::model;
 
@@ -152,7 +155,8 @@ namespace iroha_cli {
       result_desciption.insert(
           {BACK_CODE, "Go back and start a new transaction"});
 
-      result_params_descriptions = getCommonParamsMap();
+      result_params_descriptions =
+          getCommonParamsMap(default_peer_ip_, default_port_);
 
       result_params_descriptions.insert({ADD_CMD, {}});
       result_params_descriptions.insert({BACK_CODE, {}});
@@ -171,10 +175,14 @@ namespace iroha_cli {
 
     InteractiveTransactionCli::InteractiveTransactionCli(
         const std::string &creator_account,
+        const std::string &default_peer_ip,
+        int default_port,
         uint64_t tx_counter,
         const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
         : current_context_(MAIN),
           creator_(creator_account),
+          default_peer_ip_(default_peer_ip),
+          default_port_(default_port),
           tx_counter_(tx_counter),
           provider_(provider) {
       log_ = logger::log("InteractiveTransactionCli");
@@ -245,7 +253,9 @@ namespace iroha_cli {
       auto create_account = parser::parseValue<bool>(params[8]);
 
       if (not(read_self and edit_self and read_all and transfer_receive
-              and asset_create and create_domain and roles
+              and asset_create
+              and create_domain
+              and roles
               and create_account)) {
         std::cout << "Wrong format for permission" << std::endl;
         return nullptr;
@@ -455,7 +465,8 @@ namespace iroha_cli {
 
     bool InteractiveTransactionCli::parseSendToIroha(
         std::vector<std::string> params) {
-      auto address = parseIrohaPeerParams(params);
+      auto address = parseIrohaPeerParams(
+          std::move(params), default_peer_ip_, default_port_);
       if (not address.has_value()) {
         return true;
       }
