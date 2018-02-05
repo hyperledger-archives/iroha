@@ -18,7 +18,6 @@ limitations under the License.
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
-
 // to compare pb amount and iroha amount
 #include "model/converters/pb_common.hpp"
 
@@ -120,7 +119,9 @@ class ToriiQueriesTest : public testing::Test {
 };
 
 /**
- * Test Query Client
+ * Given a Query Synchronous Client
+ * When copied, moved, copy and move assigned
+ * Then final object works as the first one
  */
 TEST_F(ToriiQueriesTest, QueryClient) {
   iroha::protocol::QueryResponse response;

@@ -14,7 +14,6 @@
 
 add_subdirectory(processor)
 
-
 add_library(query_client STATIC query_client.cpp)
 
 add_library(command_client command_client.cpp)

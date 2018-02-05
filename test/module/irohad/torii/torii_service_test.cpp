@@ -21,16 +21,10 @@ limitations under the License.
 #include "module/irohad/validation/validation_mocks.hpp"
 
 #include <endpoint.pb.h>
-#include <queries.pb.h>
-#include <atomic>
-#include <chrono>
 #include <main/server_runner.hpp>
-#include <memory>
-#include <thread>
-#include <torii/command_client.hpp>
-#include <torii/command_service.hpp>
-#include <torii/processor/query_processor_impl.hpp>
-#include <torii/query_client.hpp>
+
+#include "torii/command_client.hpp"
+#include "torii/processor/query_processor_impl.hpp"
 
 #include "torii/processor/transaction_processor_impl.hpp"
 
