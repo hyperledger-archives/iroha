@@ -553,15 +553,13 @@ TEST_F(FieldValidatorTest, QueryFieldsValidation) {
  * meaningful message
  */
 TEST_F(FieldValidatorTest, QueryContainerFieldsValidation) {
-  iroha::protocol::Query proto_tx;
+  iroha::protocol::Query query_tx;
 
   // iterate over all fields in transaction
   iterateContainer(
       [] { return iroha::protocol::Query::descriptor(); },
       [&](auto field) {
-        auto field_desc = field->message_type();
-        EXPECT_NE(nullptr, field_desc);
-        return proto_tx.GetReflection()->MutableMessage(&proto_tx, field);
+        return query_tx.GetReflection()->MutableMessage(&query_tx, field);
       },
       [this](auto field, auto) {
         // Skip oneof types
