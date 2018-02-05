@@ -27,13 +27,18 @@
 #include <thread>
 #include <vector>
 #include "crypto/keys_manager_impl.hpp"
+#include "cryptography/blob.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "cryptography/keypair.hpp"
 #include "framework/integration_framework/iroha_instance.hpp"
 #include "logger/logger.hpp"
-#include "model/block.hpp"
-#include "model/generators/command_generator.hpp"
-#include "model/proposal.hpp"
-#include "model/transaction.hpp"
+
+#include "backend/protobuf/block.hpp"
+#include "backend/protobuf/proposal.hpp"
+#include "backend/protobuf/queries/proto_query.hpp"
+#include "backend/protobuf/query_responses/proto_query_response.hpp"
+#include "backend/protobuf/transaction.hpp"
+#include "backend/protobuf/transaction_responses/proto_tx_response.hpp"
 
 namespace integration_framework {
 
@@ -46,19 +51,23 @@ namespace integration_framework {
 
    public:
     IntegrationTestFramework &setInitialState(
-        const iroha::keypair_t &keypair = iroha::create_keypair());
-    IntegrationTestFramework &setInitialState(const iroha::keypair_t &keypair,
-                                              const iroha::model::Block &block);
+        const shared_model::crypto::Keypair &keypair);
+    IntegrationTestFramework &setInitialState(
+        const shared_model::crypto::Keypair &keypair,
+        const shared_model::interface::Block &block);
 
     template <typename Lambda>
-    IntegrationTestFramework &sendTx(iroha::model::Transaction tx,
+    IntegrationTestFramework &sendTx(const shared_model::proto::Transaction &tx,
                                      Lambda validation);
-    IntegrationTestFramework &sendTx(iroha::model::Transaction tx);
+    IntegrationTestFramework &sendTx(
+        const shared_model::proto::Transaction &tx);
+    shared_model::proto::TransactionResponse getTxStatus(
+        const shared_model::crypto::Hash &hash);
 
     template <typename Lambda>
-    IntegrationTestFramework &sendQuery(const iroha::model::Query &qry,
+    IntegrationTestFramework &sendQuery(const shared_model::proto::Query &qry,
                                         Lambda validation);
-    IntegrationTestFramework &sendQuery(const iroha::model::Query &qry);
+    IntegrationTestFramework &sendQuery(const shared_model::proto::Query &qry);
 
     template <typename Lambda>
     IntegrationTestFramework &checkProposal(Lambda validation);
@@ -113,56 +122,13 @@ namespace integration_framework {
 
   template <typename Lambda>
   IntegrationTestFramework &IntegrationTestFramework::sendTx(
-      iroha::model::Transaction tx, Lambda validation) {
+      const shared_model::proto::Transaction &tx, Lambda validation) {
     log_->info("send transaction");
-    // deserialize
-    auto pb_tx = iroha::model::converters::PbTransactionFactory().serialize(tx);
-    // send
-    {
-      google::protobuf::Empty response;
-      iroha_instance_->getIrohaInstance()->getCommandService()->ToriiAsync(
-          pb_tx, response);
-    }
+    google::protobuf::Empty response;
+    iroha_instance_->getIrohaInstance()->getCommandService()->ToriiAsync(
+        tx.getTransport(), response);
     // fetch status of transaction
-    iroha::model::TransactionResponse::Status status;
-    {
-      iroha::protocol::TxStatus proto_status;
-      iroha::protocol::TxStatusRequest request;
-      request.set_tx_hash(iroha::hash(tx).to_string());
-      iroha::protocol::ToriiResponse response;
-      iroha_instance_->getIrohaInstance()->getCommandService()->StatusAsync(
-          request, response);
-      proto_status = response.tx_status();
-
-      switch (proto_status) {
-        case iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED:
-          status =
-              iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED;
-          break;
-        case iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS:
-          status =
-              iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS;
-          break;
-        case iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED:
-          status =
-              iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED;
-          break;
-        case iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS:
-          status =
-              iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS;
-          break;
-        case iroha::protocol::TxStatus::COMMITTED:
-          status = iroha::model::TransactionResponse::COMMITTED;
-          break;
-        case iroha::protocol::TxStatus::IN_PROGRESS:
-          status = iroha::model::TransactionResponse::IN_PROGRESS;
-          break;
-        case iroha::protocol::TxStatus::NOT_RECEIVED:
-        default:
-          status = iroha::model::TransactionResponse::NOT_RECEIVED;
-          break;
-      }
-    }
+    shared_model::proto::TransactionResponse status = getTxStatus(tx.hash());
     // check validation function
     validation(status);
     return *this;
@@ -170,22 +136,16 @@ namespace integration_framework {
 
   template <typename Lambda>
   IntegrationTestFramework &IntegrationTestFramework::sendQuery(
-      const iroha::model::Query &qry, Lambda validation) {
-    using iroha::operator|;
+      const shared_model::proto::Query &qry, Lambda validation) {
     log_->info("send query");
-    // serialize without calling destructor on passed reference
-    auto pb_qry = iroha::model::converters::PbQueryFactory().serialize(
-        std::shared_ptr<const iroha::model::Query>(&qry, [](auto) {}));
-    // send
-    iroha::protocol::QueryResponse pb_response;
+
+    iroha::protocol::QueryResponse response;
     iroha_instance_->getIrohaInstance()->getQueryService()->FindAsync(
-        *pb_qry, pb_response);
-    // deserialize
-    auto response =
-        iroha::model::converters::PbQueryResponseFactory().deserialize(
-            pb_response);
-    // check validation function
-    validation(**response);
+        qry.getTransport(), response);
+    auto query_response =
+        shared_model::proto::QueryResponse(std::move(response));
+
+    validation(query_response);
     return *this;
   }
 

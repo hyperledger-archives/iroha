@@ -17,36 +17,66 @@
 
 #include "framework/integration_framework/integration_test_framework.hpp"
 
+#include <memory>
+#include "builders/protobuf/block.hpp"
+#include "builders/protobuf/proposal.hpp"
+#include "builders/protobuf/transaction.hpp"
+#include "cryptography/hash_providers/sha3_256.hpp"
+#include "datetime/time.hpp"
+// TODO (@l4l) IR-874 create more confort way for permssion-dependent proto
+// building
+#include "model/permissions.hpp"
+
+using namespace shared_model::crypto;
+using namespace std::literals::string_literals;
+
 namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
-      const iroha::keypair_t &keypair) {
-    iroha::model::Block b;
-    iroha::model::generators::CommandGenerator gen;
-    iroha::model::Transaction tx;
-    for (auto v :
-         {gen.generateAddPeer("0.0.0.0:0", keypair.pubkey),
-          gen.generateCreateUserRole(default_role),
-          gen.generateCreateDomain(default_domain, default_role),
-          gen.generateCreateAccount("admin", default_domain, keypair.pubkey),
-          gen.generateCreateAsset("coin", default_domain, 1)}) {
-      tx.commands.push_back(std::move(v));
-    }
-    b.transactions = {tx};
-    b.height = 1;
-    b.txs_number = 1;
-    b.hash = iroha::hash(b);
-    return setInitialState(keypair, b);
+      const shared_model::crypto::Keypair &key) {
+    auto genesis_tx =
+        shared_model::proto::TransactionBuilder()
+            .creatorAccountId("admin@test")
+            .txCounter(1)
+            .createdTime(iroha::time::now())
+            .addPeer("0.0.0.0:123", key.publicKey())
+            .createRole(
+                default_role,
+                // TODO (@l4l) IR-874 create more confort way for
+                // permssion-dependent proto building
+                std::vector<std::string>{iroha::model::can_create_domain,
+                                         iroha::model::can_create_account,
+                                         iroha::model::can_add_peer,
+                                         iroha::model::can_receive,
+                                         iroha::model::can_transfer})
+            .createDomain(default_domain, default_role)
+            .createAccount("admin", default_domain, key.publicKey())
+            .createAsset("coin", default_domain, 1)
+            .build()
+            .signAndAddSignature(key);
+    auto genesis_block =
+        shared_model::proto::BlockBuilder()
+            .transactions(
+                std::vector<shared_model::proto::Transaction>{genesis_tx})
+            .txNumber(1)
+            .height(1)
+            .prevHash(Sha3_256::makeHash(Blob("")))
+            .createdTime(iroha::time::now())
+            .build()
+            .signAndAddSignature(key);
+    return setInitialState(key, genesis_block);
   }
 
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
-      const iroha::keypair_t &keypair, const iroha::model::Block &block) {
+      const Keypair &keypair, const shared_model::interface::Block &block) {
     log_->info("init state");
     // peer initialization
-    iroha_instance_->initPipeline(keypair);
+    std::shared_ptr<iroha::keypair_t> old_key(keypair.makeOldModel());
+    iroha_instance_->initPipeline(*old_key);
     log_->info("created pipeline");
     // iroha_instance_->clearLedger();
     // log_->info("cleared ledger");
-    iroha_instance_->makeGenesis(block);
+    std::shared_ptr<iroha::model::Block> old_block(block.makeOldModel());
+    iroha_instance_->makeGenesis(*old_block);
     log_->info("added genesis block");
 
     // subscribing for components
@@ -75,25 +105,36 @@ namespace integration_framework {
     return *this;
   }
 
+  shared_model::proto::TransactionResponse
+  IntegrationTestFramework::getTxStatus(
+      const shared_model::crypto::Hash &hash) {
+    iroha::protocol::TxStatusRequest request;
+    request.set_tx_hash(shared_model::crypto::toBinaryString(hash));
+    iroha::protocol::ToriiResponse response;
+    iroha_instance_->getIrohaInstance()->getCommandService()->StatusAsync(
+        request, response);
+    return shared_model::proto::TransactionResponse(std::move(response));
+  }
+
   IntegrationTestFramework &IntegrationTestFramework::sendTx(
-      iroha::model::Transaction tx) {
-    sendTx(tx, [](auto) {});
+      const shared_model::proto::Transaction &tx) {
+    sendTx(tx, [](const auto &) {});
     return *this;
   }
 
   IntegrationTestFramework &IntegrationTestFramework::sendQuery(
-      const iroha::model::Query &qry) {
+      const shared_model::proto::Query &qry) {
     sendQuery(qry, [](const auto &) {});
     return *this;
   }
 
   IntegrationTestFramework &IntegrationTestFramework::skipProposal() {
-    checkProposal([](const iroha::model::Proposal &) {});
+    checkProposal([](const auto &) {});
     return *this;
   }
 
   IntegrationTestFramework &IntegrationTestFramework::skipBlock() {
-    checkBlock([](const iroha::model::Block &) {});
+    checkBlock([](const auto &) {});
     return *this;
   }
 

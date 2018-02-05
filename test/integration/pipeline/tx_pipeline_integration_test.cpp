@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+#include "backend/protobuf/transaction.hpp"
+#include "builders/protobuf/queries.hpp"
+#include "builders/protobuf/transaction.hpp"
+#include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "datetime/time.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
 #include "integration/pipeline/tx_pipeline_integration_test_fixture.hpp"
@@ -139,23 +143,32 @@ TEST_F(TxPipelineIntegrationTest, GetTransactionsTest) {
   ASSERT_EQ(given_tx, *PbTransactionFactory{}.deserialize(got_pb_tx));
 }
 
+constexpr auto kUser = "user@test";
+constexpr auto kAsset = "asset#domain";
+
+const auto kAdminOldKeypair = iroha::create_keypair();
+const shared_model::crypto::Keypair kAdminKeypair(
+    shared_model::crypto::PublicKey(kAdminOldKeypair.pubkey.to_string()),
+    shared_model::crypto::PrivateKey(kAdminOldKeypair.privkey.to_string()));
+
 /**
- * @given unsigned empty GetAccount query
- * AND default-initialized IntegrationTestFramework
+ * @given GetAccount query AND default-initialized IntegrationTestFramework
  * @when query is sent to the framework
- * @then query response is STATELESS_INVALID
+ * @then no error occurs
  */
-TEST(PipelineIntegrationTest, SendQueryWithValidation) {
-  iroha::model::GetAccount query;
+TEST(PipelineIntegrationTest, SendQuery) {
+  auto query = shared_model::proto::QueryBuilder()
+                   .createdTime(iroha::time::now())
+                   .creatorAccountId(kUser)
+                   .queryCounter(1)
+                   .getAccount(kUser)
+                   .build()
+                   .signAndAddSignature(
+                       shared_model::crypto::DefaultCryptoAlgorithmType::
+                           generateKeypair());
   integration_framework::IntegrationTestFramework()
-      .setInitialState()
-      .sendQuery(query,
-                 [](const auto &res) {
-                   auto err_res =
-                       dynamic_cast<const iroha::model::ErrorResponse &>(res);
-                   ASSERT_EQ(iroha::model::ErrorResponse::STATELESS_INVALID,
-                             err_res.reason);
-                 })
+      .setInitialState(kAdminKeypair)
+      .sendQuery(query)
       .done();
 }
 
@@ -165,19 +178,23 @@ TEST(PipelineIntegrationTest, SendQueryWithValidation) {
  * @then receive STATELESS_VALIDATION_SUCCESS status on that tx
  */
 TEST(PipelineIntegrationTest, SendTx) {
-  iroha::model::generators::CommandGenerator gen;
+  auto tx = shared_model::proto::TransactionBuilder()
+                .createdTime(iroha::time::now())
+                .creatorAccountId(kUser)
+                .txCounter(1)
+                .addAssetQuantity(kUser, kAsset, "1.0")
+                .build()
+                .signAndAddSignature(
+                    shared_model::crypto::DefaultCryptoAlgorithmType::
+                        generateKeypair());
 
-  iroha::model::Transaction tx;
-  tx.created_ts = iroha::time::now();
-  tx.commands.push_back(gen.generateAddAssetQuantity(
-      "user", "test", iroha::Amount().createFromString("0").value()));
-
-  auto check = [](auto status) {
-    ASSERT_EQ(iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS,
-              status);
+  auto check = [](auto &status) {
+    ASSERT_NO_THROW(
+        boost::get<shared_model::detail::PolymorphicWrapper<
+            shared_model::interface::StatelessValidTxResponse>>(status.get()));
   };
   integration_framework::IntegrationTestFramework()
-      .setInitialState()
+      .setInitialState(kAdminKeypair)
       .sendTx(tx, check)
       .done();
 }
