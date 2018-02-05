@@ -22,6 +22,8 @@
 #include <pqxx/nontransaction>
 #include <unordered_map>
 
+#include "ametsuchi/mutable_storage.hpp"
+#include "model/execution/command_executor_factory.hpp"
 #include "logger/logger.hpp"
 
 namespace iroha {

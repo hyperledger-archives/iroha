@@ -19,6 +19,7 @@
 #define IROHA_POSTGRES_WSV_COMMON_HPP
 
 #include <pqxx/nontransaction>
+#include <nonstd/optional.hpp>
 #include "logger/logger.hpp"
 
 namespace iroha {
