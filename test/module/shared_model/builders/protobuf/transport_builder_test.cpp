@@ -15,19 +15,20 @@
  * limitations under the License.
  */
 
-#include "builders/protobuf/transport_builder.hpp"
 #include <gtest/gtest.h>
+
 #include "block.pb.h"
-#include "test_block_builder.hpp"
-#include "test_proposal_builder.hpp"
-#include "test_query_builder.hpp"
-#include "test_transaction_builder.hpp"
+#include "builders/protobuf/transport_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_query_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 using namespace shared_model;
 using namespace iroha::expected;
 
 class TransportBuilderTest : public ::testing::Test {
- public:
+ protected:
   void SetUp() override {
     created_time = iroha::time::now();
     account_id = "account@domain";
@@ -35,52 +36,100 @@ class TransportBuilderTest : public ::testing::Test {
     counter = 1048576;
     hash = std::string(32, '0');
     height = 1;
+
+    invalid_account_id = "some#invalid?account@@id";
   }
 
-  Transaction createTransaction() {
-    TestTransactionBuilder builder;
-    auto tx = builder.createdTime(created_time)
-                  .txCounter(counter)
-                  .creatorAccountId(account_id)
-                  .setAccountQuorum(account_id, quorum)
-                  .build();
-    return tx;
+  auto createTransaction() {
+    return TestTransactionBuilder()
+        .createdTime(created_time)
+        .txCounter(counter)
+        .creatorAccountId(account_id)
+        .setAccountQuorum(account_id, quorum)
+        .build();
   }
 
-  Query createQuery() {
-    TestQueryBuilder builder;
-
-    auto query = builder.createdTime(created_time)
-                     .creatorAccountId(account_id)
-                     .getAccount(account_id)
-                     .queryCounter(counter)
-                     .build();
-    return query;
+  auto createInvalidTransaction() {
+    return TestTransactionBuilder()
+        .createdTime(created_time)
+        .txCounter(counter)
+        .creatorAccountId(invalid_account_id)
+        .setAccountQuorum(account_id, quorum)
+        .build();
   }
 
-  Block createBlock() {
-    TestBlockBuilder builder;
-
-    auto block =
-        builder.transactions(std::vector<Transaction>({createTransaction()}))
-            .txNumber(1)
-            .height(1)
-            .prevHash(crypto::Hash("asd"))
-            .createdTime(created_time)
-            .build();
-    return block;
+  auto createQuery() {
+    return TestQueryBuilder()
+        .createdTime(created_time)
+        .creatorAccountId(account_id)
+        .getAccount(account_id)
+        .queryCounter(counter)
+        .build();
   }
 
-  Proposal createProposal() {
-    TestProposalBuilder builder;
+  auto createInvalidQuery() {
+    return TestQueryBuilder()
+        .createdTime(created_time)
+        .creatorAccountId(invalid_account_id)
+        .getAccount(invalid_account_id)
+        .queryCounter(counter)
+        .build();
+  }
 
-    auto proposal =
-        builder.transactions(std::vector<Transaction>({createTransaction()}))
-            .height(1)
-            .createdTime(created_time)
-            .build();
+  auto createBlock() {
+    return TestBlockBuilder()
+        .transactions(std::vector<Transaction>({createTransaction()}))
+        .txNumber(1)
+        .height(1)
+        .prevHash(crypto::Hash("asd"))
+        .createdTime(created_time)
+        .build();
+  }
 
-    return proposal;
+  auto createInvalidBlock() {
+    return TestBlockBuilder()
+        .transactions(std::vector<Transaction>({createTransaction()}))
+        .txNumber(1)
+        .height(1)
+        .prevHash(crypto::Hash("asd"))
+        .createdTime(123)  // invalid time
+        .build();
+  }
+
+  auto createProposal() {
+    return TestProposalBuilder()
+        .transactions(std::vector<Transaction>({createTransaction()}))
+        .height(1)
+        .createdTime(created_time)
+        .build();
+  }
+
+  auto createInvalidProposal() {
+    return TestProposalBuilder()
+        .transactions(std::vector<Transaction>({createTransaction()}))
+        .height(1)
+        .createdTime(123)  // invalid time
+        .build();
+  }
+
+  /**
+   * Receives model object, gets transport from it, converts transport into
+   * model object and checks if original and obtained model objects are the same
+   * @tparam T model object type
+   * @tparam SV validator type
+   * @param orig_model
+   * @param successCase function invoking if value exists
+   * @param failCase function invoking when error returned
+   */
+  template <typename T, typename SV>
+  void testTransport(T orig_model,
+                     std::function<void(const Value<T> &)> successCase,
+                     std::function<void(const Error<std::string> &)> failCase) {
+    auto proto_model = orig_model.getTransport();
+
+    auto built_model = TransportBuilder<T, SV>().build(proto_model);
+
+    built_model.match(successCase, failCase);
   }
 
  protected:
@@ -91,9 +140,10 @@ class TransportBuilderTest : public ::testing::Test {
   std::string hash;
   uint64_t height;
 
-  std::function<void(const Error<std::string> &)> failCase =
-      [](const Error<std::string> &message) { FAIL() << message.error; };
+  std::string invalid_account_id;
 };
+
+//-------------------------------------TRANSACTION-------------------------------------
 
 /**
  * @given valid proto object of transaction
@@ -101,20 +151,30 @@ class TransportBuilderTest : public ::testing::Test {
  * @then original and built objects are equal
  */
 TEST_F(TransportBuilderTest, TransactionCreationTest) {
-  auto orig_tx = createTransaction();
-  auto proto_tx = orig_tx.getTransport();
-
-  TransportBuilder<proto::Transaction, validation::DefaultTransactionValidator>
-      transport_builder(proto_tx);
-
-  auto built_tx = transport_builder.build();
-  built_tx.match(
-      [&orig_tx](const Value<Transaction> &tx) {
-        ASSERT_EQ(tx.value.getTransport().SerializeAsString(),
-                  orig_tx.getTransport().SerializeAsString());
+  auto orig_model = createTransaction();
+  testTransport<decltype(orig_model), validation::DefaultTransactionValidator>(
+      orig_model,
+      [&orig_model](const Value<decltype(orig_model)> &model) {
+        ASSERT_EQ(model.value.getTransport().SerializeAsString(),
+                  orig_model.getTransport().SerializeAsString());
       },
-      failCase);
+      [](const Error<std::string> &) { FAIL(); });
 }
+
+/**
+ * @given invalid proto object of transaction
+ * @when transport builder constructs model object from it
+ * @then error case is executed
+ */
+TEST_F(TransportBuilderTest, InvalidTransactionCreationTest) {
+  auto orig_model = createInvalidTransaction();
+  testTransport<decltype(orig_model), validation::DefaultTransactionValidator>(
+      orig_model,
+      [](const Value<decltype(orig_model)>) { FAIL(); },
+      [](const Error<std::string> &) { SUCCEED(); });
+}
+
+//-------------------------------------QUERY-------------------------------------
 
 /**
  * @given valid proto object of query
@@ -122,20 +182,30 @@ TEST_F(TransportBuilderTest, TransactionCreationTest) {
  * @then original and built objects are equal
  */
 TEST_F(TransportBuilderTest, QueryCreationTest) {
-  auto orig_query = createQuery();
-  auto proto_query = orig_query.getTransport();
-
-  TransportBuilder<proto::Query, validation::DefaultQueryValidator>
-      transport_builder(proto_query);
-
-  auto built_query = transport_builder.build();
-  built_query.match(
-      [&orig_query](const Value<Query> &query) {
-        ASSERT_EQ(query.value.getTransport().SerializeAsString(),
-                  orig_query.getTransport().SerializeAsString());
+  auto orig_model = createQuery();
+  testTransport<decltype(orig_model), validation::DefaultQueryValidator>(
+      orig_model,
+      [&orig_model](const Value<decltype(orig_model)> &model) {
+        ASSERT_EQ(model.value.getTransport().SerializeAsString(),
+                  orig_model.getTransport().SerializeAsString());
       },
-      failCase);
+      [](const Error<std::string> &) { FAIL(); });
 }
+
+/**
+ * @given invalid proto object of query
+ * @when transport builder constructs model object from it
+ * @then error case is executed
+ */
+TEST_F(TransportBuilderTest, InvalidQueryCreationTest) {
+  auto orig_model = createInvalidQuery();
+  testTransport<decltype(orig_model), validation::DefaultQueryValidator>(
+      orig_model,
+      [](const Value<decltype(orig_model)>) { FAIL(); },
+      [](const Error<std::string> &) { SUCCEED(); });
+}
+
+//-------------------------------------BLOCK-------------------------------------
 
 /**
  * @given valid proto object of block
@@ -143,20 +213,17 @@ TEST_F(TransportBuilderTest, QueryCreationTest) {
  * @then original and built objects are equal
  */
 TEST_F(TransportBuilderTest, BlockCreationTest) {
-  auto orig_block = createBlock();
-  auto proto_block = orig_block.getTransport();
-
-  TransportBuilder<proto::Block, validation::DefaultBlockValidator>
-      transport_builder(proto_block);
-
-  auto built_block = transport_builder.build();
-  built_block.match(
-      [&orig_block](const Value<Block> &block) {
-        ASSERT_EQ(block.value.getTransport().SerializeAsString(),
-                  orig_block.getTransport().SerializeAsString());
+  auto orig_model = createBlock();
+  testTransport<decltype(orig_model), validation::DefaultBlockValidator>(
+      orig_model,
+      [&orig_model](const Value<decltype(orig_model)> &model) {
+        ASSERT_EQ(model.value.getTransport().SerializeAsString(),
+                  orig_model.getTransport().SerializeAsString());
       },
-      failCase);
+      [](const Error<std::string> &) { FAIL(); });
 }
+
+//-------------------------------------PROPOSAL-------------------------------------
 
 /**
  * @given valid proto object of proposal
@@ -164,17 +231,12 @@ TEST_F(TransportBuilderTest, BlockCreationTest) {
  * @then original and built objects are equal
  */
 TEST_F(TransportBuilderTest, ProposalCreationTest) {
-  auto orig_proposal = createProposal();
-  auto proto_proposal = orig_proposal.getTransport();
-
-  TransportBuilder<proto::Proposal, validation::DefaultProposalValidator>
-      transport_builder(proto_proposal);
-
-  auto built_proposal = transport_builder.build();
-  built_proposal.match(
-      [&orig_proposal](const Value<Proposal> &proposal) {
-        ASSERT_EQ(proposal.value.getTransport().SerializeAsString(),
-                  orig_proposal.getTransport().SerializeAsString());
+  auto orig_model = createProposal();
+  testTransport<decltype(orig_model), validation::DefaultProposalValidator>(
+      orig_model,
+      [&orig_model](const Value<decltype(orig_model)> &model) {
+        ASSERT_EQ(model.value.getTransport().SerializeAsString(),
+                  orig_model.getTransport().SerializeAsString());
       },
-      failCase);
+      [](const Error<std::string> &) { FAIL(); });
 }

@@ -33,25 +33,24 @@ namespace shared_model {
     template <typename T, typename SV>
     class TransportBuilder {
      public:
-      TransportBuilder(typename T::TransportType transport,
-                       const SV &validator = SV())
-          : transport_(transport), stateless_validator_(validator) {}
+      TransportBuilder(const SV &validator = SV())
+          : stateless_validator_(validator) {}
 
       /**
        * Builds result from transport object
        * @return value if transport object is valid and error message otherwise
        */
-      iroha::expected::Result<T, std::string> build() {
+      iroha::expected::Result<T, std::string> build(
+          typename T::TransportType transport) {
         auto answer = stateless_validator_.validate(
-            detail::makePolymorphic<T>(transport_));
+            detail::makePolymorphic<T>(transport));
         if (answer.hasErrors()) {
           return iroha::expected::makeError(answer.reason());
         }
-        return iroha::expected::makeValue(T(std::move(transport_)));
+        return iroha::expected::makeValue(T(std::move(transport)));
       }
 
      private:
-      typename T::TransportType transport_;
       SV stateless_validator_;
     };
 
