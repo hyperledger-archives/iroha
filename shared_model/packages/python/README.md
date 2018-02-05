@@ -1,11 +1,11 @@
 # Python client library example
 
 ## How to install iroha python library
-If you want latest release:
+To install latest release:
 ```bash
 pip install iroha
 ```
-If you want developer version:
+To install developer version:
 ```bash
 pip install -i https://testpypi.python.org/pypi iroha
 ```
