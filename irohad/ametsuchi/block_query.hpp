@@ -43,7 +43,7 @@ namespace iroha {
        * @param account_id - account_id (accountName@domainName)
        * @return observable of Model Transaction
        */
-      virtual rxcpp::observable<shared_model::Transaction> getAccountTransactions(
+      virtual rxcpp::observable<model::Transaction> getAccountTransactions(
           const std::string &account_id) = 0;
 
       /**
