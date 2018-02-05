@@ -8,8 +8,14 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 import shutil
-import git
+import multiprocessing
 
+IROHA_REPO = "https://github.com/hyperledger/iroha"
+IROHA_BRANCH = "develop"
+
+IROHA_CMAKE_ARGS = dict(
+    SWIG_PYTHON="ON",
+)
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
@@ -28,10 +34,8 @@ class CMakeBuild(build_ext):
             self.build_extension(ext)
 
     def clone(self):
-        repo_url = "https://github.com/hyperledger/iroha"
-        if os.path.isdir("iroha"):
-            return
-        subprocess.check_call('git clone {} -b develop --depth 1'.format(repo_url).split())
+        if not os.path.isdir("iroha"):
+            subprocess.check_call('git clone {} -b {} --depth 1'.format(IROHA_REPO, IROHA_BRANCH).split())
 
     def build_extension(self, ext):
         self.clone()
@@ -44,12 +48,14 @@ class CMakeBuild(build_ext):
         build_args = ['--config', cfg]
 
 
-        cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg, '-DSWIG_PYTHON=ON']
-        build_args += '--target irohapy -- -j4'.split(' ')
+        cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
+        for key, value in IROHA_CMAKE_ARGS.iteritems():
+            cmake_args.append("-D{}={}".format(key,value))
+
+        build_args += '--target irohapy -- -j{}'.format(multiprocessing.cpu_count()).split(' ')
 
         env = os.environ.copy()
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
-                                                              self.distribution.get_version())
+
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
@@ -63,7 +69,6 @@ if __name__ == "__main__":
         author='Soramitsu Co Ltd',
         author_email='savva@soramitsu.co.jp',
         description='Python library for Hyperledger Iroha',
-        long_description='',
         ext_modules=[CMakeExtension('iroha', 'iroha')],
         cmdclass=dict(build_ext=CMakeBuild),
         zip_safe=False,
