@@ -100,11 +100,12 @@ namespace iroha {
                       + ";")
                  | [&](const auto &result)
                  -> boost::optional<iroha::model::Block::BlockHeightType> {
-        const auto &height = result[0].at("height");
-        if (result.size() == 0 or height.is_null()) {
-          return {};
+        if (result.size() == 0) {
+          return boost::none;
         }
-        return height.template as<iroha::model::Block::BlockHeightType>();
+        return result[0]
+            .at("height")
+            .template as<iroha::model::Block::BlockHeightType>();
       };
     }
 
