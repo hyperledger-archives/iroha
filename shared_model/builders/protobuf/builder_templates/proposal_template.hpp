@@ -22,12 +22,12 @@
 #include "interfaces/common_objects/types.hpp"
 #include "validators/default_validator.hpp"
 
-#include "ordering.pb.h"
+#include "proposal.pb.h"
 
 namespace shared_model {
   namespace proto {
 
-  /**
+    /**
      * Template proposal builder for creating new types of proposal builders by
      * means of replacing template parameters
      * @tparam S -- field counter for checking that all required fields are set
@@ -36,10 +36,6 @@ namespace shared_model {
     template <int S = 0, typename SV = validation::DefaultProposalValidator>
     class TemplateProposalBuilder {
      private:
-      template <class T>
-      using w = detail::PolymorphicWrapper<T>;
-      using TransactionContainer = std::vector<w<Transaction>>;
-
       template <int, typename>
       friend class TemplateProposalBuilder;
 
@@ -48,7 +44,7 @@ namespace shared_model {
       template <int s>
       using NextBuilder = TemplateProposalBuilder<S | (1 << s), SV>;
 
-      iroha::ordering::proto::Proposal proposal_;
+      iroha::protocol::Proposal proposal_;
       SV stateless_validator_;
 
       template <int Sp>
@@ -78,10 +74,12 @@ namespace shared_model {
             [&](auto &proposal) { proposal.set_height(height); });
       }
 
-      auto transactions(const TransactionContainer &transactions) const {
+      template <class T>
+      auto transactions(const T &transactions) const {
         return transform<Transactions>([&](auto &proposal) {
           for (const auto &tx : transactions) {
-            proposal.mutable_transactions()->Add(tx->getTransport());
+            new (proposal.add_transactions())
+                iroha::protocol::Transaction(tx.getTransport());
           }
         });
       }
@@ -99,7 +97,7 @@ namespace shared_model {
         if (answer.hasErrors()) {
           throw std::invalid_argument(answer.reason());
         }
-        return Proposal(iroha::ordering::proto::Proposal(proposal_));
+        return Proposal(iroha::protocol::Proposal(proposal_));
       }
 
       static const int total = RequiredFields::TOTAL;
