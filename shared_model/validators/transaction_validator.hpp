@@ -267,6 +267,9 @@ namespace shared_model {
               "Transaction should contain at least one command");
         }
 
+        field_validator_.validateSignatures(
+            tx_reason, tx->signatures(), tx->blob());
+
         field_validator_.validateCreatorAccountId(tx_reason,
                                                   tx->creatorAccountId());
         field_validator_.validateCreatedTime(tx_reason, tx->createdTime());
