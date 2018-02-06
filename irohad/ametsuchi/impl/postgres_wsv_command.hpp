@@ -18,12 +18,12 @@
 #ifndef IROHA_POSTGRES_WSV_COMMAND_HPP
 #define IROHA_POSTGRES_WSV_COMMAND_HPP
 
-#include "ametsuchi/wsv_command.hpp"  // for WsvCommand
+#include "ametsuchi/wsv_command.hpp"
 
 #include <set>
 #include <string>
 
-#include "ametsuchi/impl/postgres_wsv_common.hpp"  // for makeExecute
+#include "ametsuchi/impl/postgres_wsv_common.hpp"
 #include "logger/logger.hpp"
 
 namespace iroha {
