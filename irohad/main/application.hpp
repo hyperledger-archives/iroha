@@ -67,8 +67,6 @@ class Irohad {
    * @param keypair - public and private keys for crypto provider
    */
   Irohad(const std::string &block_store_dir,
-         const std::string &redis_host,
-         size_t redis_port,
          const std::string &pg_conn,
          size_t torii_port,
          size_t internal_port,
@@ -126,8 +124,6 @@ class Irohad {
 
   // constructor dependencies
   std::string block_store_dir_;
-  std::string redis_host_;
-  size_t redis_port_;
   std::string pg_conn_;
   size_t torii_port_;
   size_t internal_port_;

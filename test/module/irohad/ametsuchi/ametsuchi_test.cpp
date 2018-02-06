@@ -20,7 +20,7 @@
 #include <boost/range/combine.hpp>
 
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-#include "ametsuchi/impl/redis_block_query.hpp"
+#include "ametsuchi/impl/postgres_block_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/mutable_storage.hpp"
 #include "common/byteutils.hpp"
@@ -154,8 +154,7 @@ void apply(S &&storage, const Block &block) {
 
 TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   // Commit block => get block => observable completed
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage = StorageImpl::create(block_store_path, pgopt_);
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
@@ -171,8 +170,7 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
 }
 
 TEST_F(AmetsuchiTest, SampleTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage = StorageImpl::create(block_store_path, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -264,8 +262,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
 }
 
 TEST_F(AmetsuchiTest, PeerTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage = StorageImpl::create(block_store_path, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -287,8 +284,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
 }
 
 TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage = StorageImpl::create(block_store_path, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -422,8 +418,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
 }
 
 TEST_F(AmetsuchiTest, AddSignatoryTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage = StorageImpl::create(block_store_path, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -668,8 +663,7 @@ TEST_F(AmetsuchiTest, TestingStorageWhenInsertBlock) {
       "Test case: create storage "
       "=> insert block "
       "=> assert that inserted");
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage = StorageImpl::create(block_store_path, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   ASSERT_EQ(0, wsv->getPeers().value().size());
@@ -702,8 +696,7 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
       "Test case: create storage "
       "=> insert block "
       "=> assert that inserted");
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage = StorageImpl::create(block_store_path, pgopt_);
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   ASSERT_EQ(0, wsv->getPeers().value().size());
@@ -722,8 +715,7 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
   storage->dropStorage();
 
   ASSERT_EQ(0, wsv->getPeers().value().size());
-  auto new_storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto new_storage = StorageImpl::create(block_store_path, pgopt_);
   ASSERT_EQ(0, wsv->getPeers().value().size());
   new_storage->dropStorage();
 }
@@ -735,8 +727,7 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
  * with some other hash is not found.
  */
 TEST_F(AmetsuchiTest, FindTxByHashTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storage = StorageImpl::create(block_store_path, pgopt_);
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
@@ -790,6 +781,8 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   auto tx1hash = iroha::hash(tx1).to_string();
   auto tx2hash = iroha::hash(tx2).to_string();
   auto tx3hash = "some garbage";
+
+  auto tx1check = *blocks->getTxByHashSync(tx1hash);
 
   ASSERT_EQ(*blocks->getTxByHashSync(tx1hash), tx1);
   ASSERT_EQ(*blocks->getTxByHashSync(tx2hash), tx2);
