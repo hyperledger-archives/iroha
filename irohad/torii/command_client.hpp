@@ -29,13 +29,13 @@ namespace torii {
    */
   class CommandSyncClient {
    public:
-    CommandSyncClient(const std::string& ip, size_t port);
+    CommandSyncClient(const std::string &ip, size_t port);
 
-    CommandSyncClient(const CommandSyncClient&);
-    CommandSyncClient& operator=(CommandSyncClient);
+    CommandSyncClient(const CommandSyncClient &);
+    CommandSyncClient &operator=(CommandSyncClient);
 
-    CommandSyncClient(CommandSyncClient&&) noexcept ;
-    CommandSyncClient&operator=(CommandSyncClient&&) noexcept ;
+    CommandSyncClient(CommandSyncClient &&) noexcept;
+    CommandSyncClient &operator=(CommandSyncClient &&) noexcept;
 
     /**
      * requests tx to a torii server and returns response (blocking, sync)
@@ -52,13 +52,22 @@ namespace torii {
     grpc::Status Status(const iroha::protocol::TxStatusRequest &tx,
                         iroha::protocol::ToriiResponse &response) const;
 
+    /**
+     * Acquires stream of transaction statuses from the request
+     * moment until final.
+     * @param tx - transaction to send.
+     * @param response - vector of all statuses during tx pipeline.
+     */
+    void StatusStream(
+        const iroha::protocol::TxStatusRequest &tx,
+        std::vector<iroha::protocol::ToriiResponse> &response) const;
+
    private:
-    void swap(CommandSyncClient& lhs, CommandSyncClient& rhs);
+    void swap(CommandSyncClient &lhs, CommandSyncClient &rhs);
     std::string ip_;
     size_t port_;
     std::unique_ptr<iroha::protocol::CommandService::Stub> stub_;
   };
-
 
 }  // namespace torii
 

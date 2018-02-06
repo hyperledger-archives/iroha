@@ -344,3 +344,79 @@ TEST_F(ToriiServiceTest, CheckHash) {
     ASSERT_EQ(toriiResponse.tx_hash(), hash);
   }
 }
+
+/**
+ * @given torii service and one valid transaction
+ * @when starting StatusStream and then sending transaction to Iroha
+ * @then ensure that response will have at least 3 statuses
+ * (it should contain STATELESS_VALIDATION_SUCCESS, STATEFUL_VALIDATION_SUCCESS
+ * and COMMITTED) and the last status should be COMMITTED
+ */
+TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
+  EXPECT_CALL(*statelessValidatorMock,
+              validate(A<const iroha::model::Transaction &>()))
+      .WillRepeatedly(Return(true));
+
+  iroha::model::converters::PbTransactionFactory tx_factory;
+  auto client = torii::CommandSyncClient(Ip, Port);
+
+  auto new_tx = iroha::protocol::Transaction();
+  auto payload = new_tx.mutable_payload();
+  payload->set_tx_counter(1);
+  payload->set_creator_account_id("accountA");
+
+  auto iroha_tx = tx_factory.deserialize(new_tx);
+  std::string txhash = iroha::hash(*iroha_tx).to_string();
+
+  std::vector<iroha::protocol::ToriiResponse> torii_response;
+  std::thread t([&]() {
+    iroha::protocol::TxStatusRequest tx_request;
+    tx_request.set_tx_hash(txhash);
+    client.StatusStream(tx_request, torii_response);
+  });
+
+  client.Torii(new_tx);
+
+  std::vector<iroha::model::Transaction> txs;
+  txs.push_back(*iroha_tx);
+  iroha::model::Proposal proposal(txs);
+  prop_notifier_.get_subscriber().on_next(proposal);
+
+  iroha::model::Block block;
+  block.transactions.push_back(*iroha_tx);
+
+  // create commit from block notifier's observable
+  rxcpp::subjects::subject<iroha::model::Block> block_notifier_;
+  Commit commit = block_notifier_.get_observable();
+
+  // invoke on next of commit_notifier by sending new block to commit
+  commit_notifier_.get_subscriber().on_next(commit);
+  block_notifier_.get_subscriber().on_next(block);
+
+  block_notifier_.get_subscriber().on_completed();
+  t.join();
+
+  ASSERT_GE(torii_response.size(), 3);
+  ASSERT_EQ(torii_response.back().tx_status(),
+            iroha::protocol::TxStatus::COMMITTED);
+}
+
+/**
+ * @given torii service and fake transaction hash
+ * @when sending streaming request for this hash
+ * @then ensure that response will have exactly 1 status - NOT_RECEIVED
+ */
+TEST_F(ToriiServiceTest, StreamingNoTx) {
+  auto client = torii::CommandSyncClient(Ip, Port);
+  std::vector<iroha::protocol::ToriiResponse> torii_response;
+  std::thread t([&]() {
+    iroha::protocol::TxStatusRequest tx_request;
+    tx_request.set_tx_hash("0123456789abcdef");
+    client.StatusStream(tx_request, torii_response);
+  });
+
+  t.join();
+  ASSERT_EQ(torii_response.size(), 1);
+  ASSERT_EQ(torii_response.at(0).tx_status(),
+            iroha::protocol::TxStatus::NOT_RECEIVED);
+}
