@@ -88,7 +88,7 @@ namespace torii {
     auto iroha_tx = pb_factory_->deserialize(request);
     auto tx_hash = iroha::hash(*iroha_tx).to_string();
 
-    if (cache_->findItem(tx_hash)) {
+    if (cache_->findItem(tx_hash) and iroha_tx->quorum < 2) {
       return;
     }
 
