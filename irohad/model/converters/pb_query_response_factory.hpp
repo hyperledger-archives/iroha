@@ -18,9 +18,10 @@
 #ifndef IROHA_PB_QUERY_RESPONSE_FACTORY_HPP
 #define IROHA_PB_QUERY_RESPONSE_FACTORY_HPP
 
-#include <responses.pb.h>
-#include <model/account_asset.hpp>
 #include <nonstd/optional.hpp>
+
+#include "model/account_asset.hpp"
+#include "model/common.hpp"
 #include "model/queries/responses/account_assets_response.hpp"
 #include "model/queries/responses/account_detail_response.hpp"
 #include "model/queries/responses/account_response.hpp"
@@ -29,6 +30,7 @@
 #include "model/queries/responses/roles_response.hpp"
 #include "model/queries/responses/signatories_response.hpp"
 #include "model/queries/responses/transactions_response.hpp"
+#include "responses.pb.h"
 
 namespace iroha {
   namespace model {
@@ -41,6 +43,8 @@ namespace iroha {
        public:
         nonstd::optional<protocol::QueryResponse> serialize(
             const std::shared_ptr<QueryResponse> query_response) const;
+        optional_ptr<QueryResponse> deserialize(
+            const protocol::QueryResponse &query_response) const;
 
         protocol::Account serializeAccount(const model::Account &account) const;
         model::Account deserializeAccount(
@@ -94,6 +98,8 @@ namespace iroha {
 
         protocol::ErrorResponse serializeErrorResponse(
             const model::ErrorResponse &errorResponse) const;
+        model::ErrorResponse deserializeErrorResponse(
+            const protocol::ErrorResponse &response) const;
       };
     }  // namespace converters
   }    // namespace model

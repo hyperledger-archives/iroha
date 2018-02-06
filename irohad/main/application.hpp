@@ -52,8 +52,6 @@ class Irohad {
   /**
    * Constructor that initializes common iroha pipeline
    * @param block_store_dir - folder where blocks will be stored
-   * @param redis_host - host of redis connection
-   * @param redis_port - port of redis connection
    * @param pg_conn - initialization string for postgre
    * @param torii_port - port for torii binding
    * @param internal_port - port for internal communication - ordering service,
