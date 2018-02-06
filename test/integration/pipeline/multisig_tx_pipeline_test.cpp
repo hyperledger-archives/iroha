@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,7 +79,7 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
    * @param account is name of new account
    * @param signers is a list of account signers
    * @param quorum is number of signatories required for valid tx
-   * @return true if succesful
+   * @return true if successful
    */
   bool createMultiQuorumAccount(std::string account,
                                 std::initializer_list<std::string> signers,
@@ -105,8 +105,8 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
   }
 
   /**
-   * Perform model tx sending, and waiting for a commit
-   * @param tx is transaction for sending
+   * Send model tx, and wait for a commit
+   * @param tx is transaction to be sent
    * @param timeout is waiting time for commit
    * @return true if commit happened
    */
@@ -126,8 +126,8 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
 
  private:
   /**
-   * Perform model tx sending
-   * @param tx is transaction for sending
+   * Send model tx
+   * @param tx is transaction to be sent
    */
   void send(const Transaction &tx) {
     auto pb_tx = iroha::model::converters::PbTransactionFactory().serialize(tx);
@@ -138,7 +138,7 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
 };
 
 /**
- * Creates new signed copy of transaction
+ * Creates a new signed copy of transaction
  * @param tx is a base transaction
  * @param account is an account for searching the keypair
  */
@@ -153,7 +153,8 @@ Transaction sign(const Transaction &tx, const std::string &account) {
 }
 
 /**
- * @given multisignature account, its signer AND tx with AddAssetQuantity
+ * @given multisignature account, its signer
+ *        AND tx with an AddAssetQuantity command
  * @when sending with author signature and then with signer's one
  * @then firstly there's no commit then it is
  */
