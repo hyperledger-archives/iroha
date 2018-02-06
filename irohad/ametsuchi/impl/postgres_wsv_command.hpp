@@ -88,7 +88,7 @@ namespace iroha {
        */
       template <typename Function>
       WsvCommandResult makeCommandResult(
-          expected::Result<pqxx::result, std::string> result,
+          expected::Result<pqxx::result, std::string> &&result,
           Function &&error_generator) const noexcept {
         return result.match(
             [](expected::Value<pqxx::result> v) -> WsvCommandResult {

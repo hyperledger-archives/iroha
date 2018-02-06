@@ -85,6 +85,12 @@ class CommandValidateExecuteTest : public ::testing::Test {
         *command, *wsv_query, *wsv_command, creator.account_id);
   }
 
+  // return result with empty errpr message
+  WsvCommandResult makeEmptyError() {
+    return WsvCommandResult(iroha::expected::makeError(""));
+  }
+
+
   Amount max_amount{
       std::numeric_limits<boost::multiprecision::uint256_t>::max(), 2};
   std::string admin_id = "admin@test", account_id = "test@test",
@@ -517,7 +523,7 @@ TEST_F(AddSignatoryTest, InvalidWhenSameKey) {
       .WillOnce(Return(true));
   add_signatory->pubkey.fill(2);
   EXPECT_CALL(*wsv_command, insertSignatory(add_signatory->pubkey))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
 
   ASSERT_NO_THROW(checkErrorCase(validateAndExecute()));
 }
@@ -657,7 +663,7 @@ TEST_F(CreateAssetTest, InvalidWhenNoPermissions) {
  */
 TEST_F(CreateAssetTest, InvalidWhenAssetInsertionFails) {
   EXPECT_CALL(*wsv_command, insertAsset(_))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
 
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
@@ -704,7 +710,7 @@ TEST_F(CreateDomainTest, InvalidWhenNoPermissions) {
  */
 TEST_F(CreateDomainTest, InvalidWhenDomainInsertionFails) {
   EXPECT_CALL(*wsv_command, insertDomain(_))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
 
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
@@ -904,7 +910,7 @@ TEST_F(RemoveSignatoryTest, InvalidWhenAccountSignatoryDeletionFails) {
   EXPECT_CALL(*wsv_command,
               deleteAccountSignatory(remove_signatory->account_id,
                                      remove_signatory->pubkey))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
 
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
@@ -1482,7 +1488,7 @@ TEST_F(AddPeerTest, InvalidCaseWhenNoPermissions) {
  */
 TEST_F(AddPeerTest, InvalidCaseWhenInsertPeerFails) {
   EXPECT_CALL(*wsv_command, insertPeer(_))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
 
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
@@ -1548,7 +1554,7 @@ TEST_F(CreateRoleTest, InvalidCaseWhenWrongRoleName) {
  */
 TEST_F(CreateRoleTest, InvalidCaseWhenRoleInsertionFails) {
   EXPECT_CALL(*wsv_command, insertRole(create_role->role_name))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
 
@@ -1654,7 +1660,7 @@ TEST_F(AppendRoleTest, InvalidCaseInsertAccountRoleFails) {
   EXPECT_CALL(
       *wsv_command,
       insertAccountRole(exact_command->account_id, exact_command->role_name))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
 
@@ -1698,7 +1704,7 @@ TEST_F(DetachRoleTest, InvalidCaseWhenDeleteAccountRoleFails) {
   EXPECT_CALL(
       *wsv_command,
       deleteAccountRole(exact_command->account_id, exact_command->role_name))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
 
@@ -1745,7 +1751,7 @@ TEST_F(GrantPermissionTest, InvalidCaseWhenInsertGrantablePermissionFails) {
               insertAccountGrantablePermission(exact_command->account_id,
                                                creator.account_id,
                                                exact_command->permission_name))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
 
@@ -1792,7 +1798,7 @@ TEST_F(RevokePermissionTest, InvalidCaseDeleteAccountPermissionvFails) {
               deleteAccountGrantablePermission(exact_command->account_id,
                                                creator.account_id,
                                                exact_command->permission_name))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }
 
@@ -1862,6 +1868,6 @@ TEST_F(SetAccountDetailTest, InvalidWhenSetAccountKVFails) {
   EXPECT_CALL(
       *wsv_command,
       setAccountKV(cmd->account_id, creator.account_id, cmd->key, cmd->value))
-      .WillOnce(Return(WsvCommandResult(iroha::expected::makeError(""))));
+      .WillOnce(Return(makeEmptyError()));
   ASSERT_NO_THROW(checkErrorCase(execute()));
 }

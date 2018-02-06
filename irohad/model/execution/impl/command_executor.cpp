@@ -38,6 +38,7 @@
 #include "model/permissions.hpp"
 #include "validator/domain_name_validator.hpp"
 
+using namespace std::string_literals;
 using namespace iroha::ametsuchi;
 using iroha::expected::makeError;
 
@@ -161,7 +162,7 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto cmd_value = static_cast<const CreateRole &>(command);
 
-      auto result = commands.insertRole(cmd_value.role_name) | [&]() {
+      auto result = commands.insertRole(cmd_value.role_name) | [&] {
         return commands.insertRolePermissions(cmd_value.role_name,
                                               cmd_value.permissions);
       };
@@ -310,7 +311,7 @@ namespace iroha {
         auto new_balance =
             account_asset_value.balance + add_asset_quantity.amount;
         if (not new_balance.has_value()) {
-          return makeExecutionResult(std::string("amount overflows balance"));
+          return makeExecutionResult("amount overflows balance"s);
         }
         account_asset->balance = new_balance.value();
       }
@@ -380,7 +381,7 @@ namespace iroha {
       auto new_balance =
           account_asset_value.balance - subtract_asset_quantity.amount;
       if (not new_balance.has_value()) {
-        return makeExecutionResult(std::string("not sufficient amount"));
+        return makeExecutionResult("not sufficient amount"s);
       }
       account_asset->balance = new_balance.value();
 
@@ -446,7 +447,7 @@ namespace iroha {
         const std::string &creator_account_id) {
       auto add_signatory = static_cast<const AddSignatory &>(command);
 
-      auto result = commands.insertSignatory(add_signatory.pubkey) | [&]() {
+      auto result = commands.insertSignatory(add_signatory.pubkey) | [&] {
         return commands.insertAccountSignatory(add_signatory.account_id,
                                                add_signatory.pubkey);
       };
@@ -504,12 +505,12 @@ namespace iroha {
                 .str());
       }
       // TODO: remove insert signatory from here ?
-      auto result = commands.insertSignatory(create_account.pubkey) | [&]() {
+      auto result = commands.insertSignatory(create_account.pubkey) | [&] {
         return commands.insertAccount(account);
-      } | [&]() {
+      } | [&] {
         return commands.insertAccountSignatory(account.account_id,
                                                create_account.pubkey);
-      } | [&]() {
+      } | [&] {
         return commands.insertAccountRole(account.account_id,
                                           domain.value().default_role);
       };
@@ -641,7 +642,7 @@ namespace iroha {
       // Delete will fail if account signatory doesn't exist
       auto result = commands.deleteAccountSignatory(remove_signatory.account_id,
                                                     remove_signatory.pubkey)
-          | [&]() { return commands.deleteSignatory(remove_signatory.pubkey); };
+          | [&] { return commands.deleteSignatory(remove_signatory.pubkey); };
       return makeExecutionResult(result);
     }
 
@@ -819,7 +820,7 @@ namespace iroha {
       auto src_balance = src_account_asset.value().balance;
       auto new_src_balance = src_balance - transfer_asset.amount;
       if (not new_src_balance.has_value()) {
-        return makeExecutionResult(std::string("not enough assets on source account"));
+        return makeExecutionResult("not enough assets on source account"s);
       }
       src_balance = new_src_balance.value();
       // Set new balance for source account
@@ -849,7 +850,7 @@ namespace iroha {
         dest_AccountAsset.balance = dest_balance;
       }
 
-      auto result = commands.upsertAccountAsset(dest_AccountAsset) | [&]() {
+      auto result = commands.upsertAccountAsset(dest_AccountAsset) | [&] {
         return commands.upsertAccountAsset(src_account_asset.value());
       };
 

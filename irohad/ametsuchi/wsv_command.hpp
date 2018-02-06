@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,35 +54,32 @@ namespace iroha {
       /**
        * Insert role entity
        * @param role_name
-       * @return true if insert successful
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual WsvCommandResult insertRole(
-          const std::string &role_name) = 0;
+      virtual WsvCommandResult insertRole(const std::string &role_name) = 0;
 
       /**
        * Bind account and role
        * @param account_id
        * @param role_name
-       * @return true if insert successful
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult insertAccountRole(
-          const std::string &account_id,
-          const std::string &role_name) = 0;
+          const std::string &account_id, const std::string &role_name) = 0;
       /**
        * Unbind account and role
        * @param account_id
        * @param role_name
-       * @return true if delete successful
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult deleteAccountRole(
-          const std::string &account_id,
-          const std::string &role_name) = 0;
+          const std::string &account_id, const std::string &role_name) = 0;
 
       /**
        * Bind role and permissions
        * @param role_id
        * @param permissions
-       * @return true is insert successful, false otherwise
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult insertRolePermissions(
           const std::string &role_id,
@@ -93,7 +90,7 @@ namespace iroha {
        * @param permittee_account_id to who give the grant permission
        * @param account_id on which account
        * @param permission_id what permission
-       * @return true is execution is successful
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult insertAccountGrantablePermission(
           const std::string &permittee_account_id,
@@ -106,7 +103,7 @@ namespace iroha {
        * granted
        * @param account_id on which account
        * @param permission_id what permission
-       * @return true is execution is successful
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult deleteAccountGrantablePermission(
           const std::string &permittee_account_id,
@@ -116,18 +113,16 @@ namespace iroha {
       /**
        *
        * @param account
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual WsvCommandResult insertAccount(
-          const model::Account &account) = 0;
+      virtual WsvCommandResult insertAccount(const model::Account &account) = 0;
 
       /**
        *
        * @param account
-       * @return true if no error occurred, false otherwise
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual WsvCommandResult updateAccount(
-          const model::Account &account) = 0;
+      virtual WsvCommandResult updateAccount(const model::Account &account) = 0;
 
       /**
        * @param account_id  account in which update key value
@@ -135,7 +130,7 @@ namespace iroha {
        * account_id
        * @param key - key to set
        * @param val - value of the key/value pair
-       * @return true if no error occurred, false otherwise
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult setAccountKV(
           const std::string &account_id,
@@ -146,15 +141,14 @@ namespace iroha {
       /**
        *
        * @param asset
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual WsvCommandResult insertAsset(
-          const model::Asset &asset) = 0;
+      virtual WsvCommandResult insertAsset(const model::Asset &asset) = 0;
 
       /**
        * Update or insert account asset
        * @param asset
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult upsertAccountAsset(
           const model::AccountAsset &asset) = 0;
@@ -162,60 +156,55 @@ namespace iroha {
       /**
        *
        * @param signatory
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual WsvCommandResult insertSignatory(
-          const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult insertSignatory(const pubkey_t &signatory) = 0;
 
       /**
        * Insert account signatory relationship
        * @param account_id
        * @param signatory
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult insertAccountSignatory(
-          const std::string &account_id,
-          const pubkey_t &signatory) = 0;
+          const std::string &account_id, const pubkey_t &signatory) = 0;
 
       /**
        * Delete account signatory relationship
        * @param account_id
        * @param signatory
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult deleteAccountSignatory(
-          const std::string &account_id,
-          const pubkey_t &signatory) = 0;
+          const std::string &account_id, const pubkey_t &signatory) = 0;
 
       /**
        * Delete signatory
        * @param signatory
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual WsvCommandResult deleteSignatory(
-          const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult deleteSignatory(const pubkey_t &signatory) = 0;
 
       /**
        *
        * @param peer
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult insertPeer(const model::Peer &peer) = 0;
 
       /**
        *
        * @param peer
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
       virtual WsvCommandResult deletePeer(const model::Peer &peer) = 0;
 
       /**
        *
        * @param peer
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual WsvCommandResult insertDomain(
-          const model::Domain &domain) = 0;
+      virtual WsvCommandResult insertDomain(const model::Domain &domain) = 0;
     };
 
   }  // namespace ametsuchi

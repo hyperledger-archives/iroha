@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-#include <boost/format.hpp>
-
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
+
+#include <boost/format.hpp>
 
 namespace iroha {
   namespace ametsuchi {
@@ -36,7 +36,7 @@ namespace iroha {
         return (boost::format("failed to insert role: '%s'") % role_name).str();
       };
 
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::insertAccountRole(
@@ -53,7 +53,7 @@ namespace iroha {
             .str();
       };
 
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::deleteAccountRole(
@@ -62,13 +62,14 @@ namespace iroha {
                              + transaction_.quote(account_id) + "AND role_id="
                              + transaction_.quote(role_name) + ";");
       auto message_gen = [&] {
-        return (boost::format("failed to delete account role, account id: %s, "
-                              "role name: '%s'")
+        return (boost::format(
+                    "failed to delete account role, account id: '%s', "
+                    "role name: '%s'")
                 % account_id % role_name)
             .str();
       };
 
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::insertRolePermissions(
@@ -78,29 +79,29 @@ namespace iroha {
             + transaction_.quote(permission) + ")";
       };
 
+      // generate string with all permissions,
+      // applying transform_func to each permission
+      auto generate_perm_string = [&permissions](auto transform_func) {
+        return std::accumulate(std::next(permissions.begin()),
+                               permissions.end(),
+                               transform_func(*permissions.begin()),
+                               [&transform_func](auto &res, auto &perm) {
+                                 return res + ", " + transform_func(perm);
+                               });
+      };
+
       auto result = execute_(
           "INSERT INTO role_has_permissions(role_id, permission_id) VALUES "
-          + std::accumulate(
-                std::next(permissions.begin()),
-                permissions.end(),
-                entry(*permissions.begin()),
-                [&entry](auto acc, auto x) { return acc + ", " + entry(x); })
-          + ";");
-
-      auto all_permissions =
-          std::accumulate(std::next(permissions.begin()),
-                          permissions.end(),
-                          *permissions.begin(),
-                          [](auto res, auto b) { return res + ", " + b; });
+          + generate_perm_string(entry) + ";");
 
       auto message_gen = [&] {
         return (boost::format("failed to insert role permissions, role "
-                              "id: '%s', permissions: %s")
-                % role_id % all_permissions)
+                              "id: '%s', permissions: [%s]")
+                % role_id % generate_perm_string([](auto &a) { return a; }))
             .str();
       };
 
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::insertAccountGrantablePermission(
@@ -124,7 +125,7 @@ namespace iroha {
             .str();
       };
 
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::deleteAccountGrantablePermission(
@@ -147,7 +148,7 @@ namespace iroha {
             .str();
       };
 
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::insertAccount(
@@ -175,7 +176,7 @@ namespace iroha {
             .str();
       };
 
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::insertAsset(
@@ -196,7 +197,7 @@ namespace iroha {
             .str();
       };
 
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::upsertAccountAsset(
@@ -217,7 +218,7 @@ namespace iroha {
             .str();
       };
 
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::insertSignatory(
@@ -228,11 +229,11 @@ namespace iroha {
                              + ") ON CONFLICT DO NOTHING;");
 
       auto message_gen = [&] {
-        return (boost::format("failed to insert signatory, hex string: '%s'")
+        return (boost::format("failed to insert signatory, signatory hex string: '%s'")
                 % signatory.to_hexstring())
             .str();
       };
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::insertAccountSignatory(
@@ -250,7 +251,7 @@ namespace iroha {
                 % account_id % signatory.to_hexstring())
             .str();
       };
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::deleteAccountSignatory(
@@ -268,7 +269,7 @@ namespace iroha {
                 % account_id % signatory.to_hexstring())
             .str();
       };
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::deleteSignatory(
@@ -283,11 +284,11 @@ namespace iroha {
                     + transaction_.quote(public_key) + ");");
 
       auto message_gen = [&] {
-        return (boost::format("failed to delete signatory, hex string: '%s'")
+        return (boost::format("failed to delete signatory, signatory hex string: '%s'")
                 % signatory.to_hexstring())
             .str();
       };
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::insertPeer(const model::Peer &peer) {
@@ -302,7 +303,7 @@ namespace iroha {
                 % peer.pubkey.to_hexstring() % peer.address)
             .str();
       };
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::deletePeer(const model::Peer &peer) {
@@ -318,7 +319,7 @@ namespace iroha {
                 % peer.pubkey.to_hexstring() % peer.address)
             .str();
       };
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::insertDomain(
@@ -334,7 +335,7 @@ namespace iroha {
                 % domain.domain_id % domain.default_role)
             .str();
       };
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::updateAccount(
@@ -355,7 +356,7 @@ namespace iroha {
                 % account.account_id % account.quorum)
             .str();
       };
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
 
     WsvCommandResult PostgresWsvCommand::setAccountKV(
@@ -380,7 +381,7 @@ namespace iroha {
                 % account_id % creator_account_id % key % val)
             .str();
       };
-      return makeCommandResult(result, message_gen);
+      return makeCommandResult(std::move(result), message_gen);
     }
   }  // namespace ametsuchi
 }  // namespace iroha
