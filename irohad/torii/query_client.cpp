@@ -11,12 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <block.pb.h>
-#include <grpc++/grpc++.h>
-#include <thread>
-
 #include "torii/query_client.hpp"
-#include "torii/torii_service_handler.hpp"
 
 namespace torii_utils {
 

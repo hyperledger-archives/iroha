@@ -195,7 +195,7 @@ class TxPipelineIntegrationTestFixture
         iroha::model::converters::PbTransactionFactory().serialize(transaction);
 
     google::protobuf::Empty response;
-    irohad->getCommandService()->ToriiAsync(pb_tx, response);
+    irohad->getCommandService()->Torii(pb_tx, response);
   }
 };
 

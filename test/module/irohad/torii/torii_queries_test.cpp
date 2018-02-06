@@ -14,18 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <generator/generator.hpp>
+#include "generator/generator.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 // to compare pb amount and iroha amount
 #include "model/converters/pb_common.hpp"
+#include "model/converters/pb_query_factory.hpp"
+#include "model/converters/pb_query_response_factory.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 
 #include "main/server_runner.hpp"
 #include "model/permissions.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
 #include "torii/query_client.hpp"
+#include "torii/query_service.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
@@ -70,9 +74,6 @@ class ToriiQueriesTest : public testing::Test {
       auto pb_tx_factory =
           std::make_shared<iroha::model::converters::PbTransactionFactory>();
 
-      auto command_service = std::make_unique<torii::CommandService>(
-          pb_tx_factory, tx_processor, storageMock);
-
       //----------- Query Service ----------
 
       auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
@@ -86,11 +87,13 @@ class ToriiQueriesTest : public testing::Test {
       auto pb_query_resp_factory =
           std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
-      auto query_service = std::make_unique<torii::QueryService>(
-          pb_query_factory, pb_query_resp_factory, qpi);
-
       //----------- Server run ----------------
-      runner->run(std::move(command_service), std::move(query_service));
+      runner
+          ->append(std::make_unique<torii::CommandService>(
+              pb_tx_factory, tx_processor, storageMock))
+          .append(std::make_unique<torii::QueryService>(
+              pb_query_factory, pb_query_resp_factory, qpi))
+          .run();
     });
 
     runner->waitForServersReady();
@@ -133,13 +136,13 @@ TEST_F(ToriiQueriesTest, QueryClient) {
   query.mutable_signature()->set_signature(signature_test);
 
   auto client1 = torii_utils::QuerySyncClient(Ip, Port);
-  //Copy ctor
+  // Copy ctor
   torii_utils::QuerySyncClient client2(client1);
-  //copy assignment
+  // copy assignment
   auto client3 = client2;
-  //move ctor
+  // move ctor
   torii_utils::QuerySyncClient client4(std::move(client3));
-  //move assignment
+  // move assignment
   auto client5 = std::move(client4);
   auto stat = client5.Find(query, response);
   ASSERT_TRUE(stat.ok());
@@ -148,6 +151,7 @@ TEST_F(ToriiQueriesTest, QueryClient) {
 /**
  * Test for error response
  */
+
 TEST_F(ToriiQueriesTest, FindWhenResponseInvalid) {
   EXPECT_CALL(*statelessValidatorMock,
               validate(A<const iroha::model::Query &>()))
