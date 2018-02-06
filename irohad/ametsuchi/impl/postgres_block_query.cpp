@@ -84,7 +84,6 @@ namespace iroha {
                  -> std::vector<iroha::model::Block::BlockHeightType> {
         return transform<iroha::model::Block::BlockHeightType>(
             result, [&](const auto &row) {
-              // return std::stoul(row.at("height").c_str());
               return row.at("height")
                   .template as<iroha::model::Block::BlockHeightType>();
             });

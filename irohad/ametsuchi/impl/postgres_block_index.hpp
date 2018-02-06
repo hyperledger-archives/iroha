@@ -63,9 +63,9 @@ namespace iroha {
       using ExecuteType = decltype(makeExecute(transaction_, log_));
       ExecuteType execute_;
 
-      // TODO: refactor to return Result when it is introduced IR-744
+      // TODO: refactor to return Result when it is introduced IR-775
       bool execute(const std::string &statement) noexcept {
-        return execute_(statement).has_value();
+        return static_cast<bool>(execute_(statement));
       }
     };
   }  // namespace ametsuchi

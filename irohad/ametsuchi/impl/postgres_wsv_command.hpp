@@ -23,7 +23,7 @@
 #include <set>
 #include <string>
 
-#include "ametsuchi/impl/postgres_wsv_common.hpp" // for makeExecute
+#include "ametsuchi/impl/postgres_wsv_common.hpp"  // for makeExecute
 #include "logger/logger.hpp"
 
 namespace iroha {
@@ -34,7 +34,7 @@ namespace iroha {
     struct Domain;
     struct Peer;
     struct AccountAsset;
-  }
+  }  // namespace model
 
   namespace ametsuchi {
 
@@ -88,9 +88,9 @@ namespace iroha {
       using ExecuteType = decltype(makeExecute(transaction_, log_));
       ExecuteType execute_;
 
-      // TODO: refactor to return Result when it is introduced IR-744
+      // TODO: refactor to return Result when it is introduced IR-775
       bool execute(const std::string &statement) noexcept {
-        return execute_(statement).has_value();
+        return static_cast<bool>(execute_(statement));
       }
     };
   }  // namespace ametsuchi

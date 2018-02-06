@@ -22,7 +22,6 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/numeric.hpp>
-#include <unordered_map>
 #include <unordered_set>
 
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
@@ -59,27 +58,30 @@ namespace iroha {
           | boost::adaptors::filtered(
                 [](const auto &cmd) { return bool(cmd); });
 
-      bool all_executed = true;
-      boost::for_each(transfers, [&](const auto &cmd) {
-        for (const auto &id : {cmd->src_account_id, cmd->dest_account_id}) {
-          all_executed &= this->indexAccountIdHeight(id, height);
-        }
+      return std::accumulate(
+          transfers.begin(),
+          transfers.end(),
+          true,
+          [&](auto &status, const auto &cmd) {
+            for (const auto &id : {cmd->src_account_id, cmd->dest_account_id}) {
+              status &= this->indexAccountIdHeight(id, height);
+            }
 
-        auto ids = {account_id, cmd->src_account_id, cmd->dest_account_id};
-        // flat map accounts to unindexed keys
-        boost::for_each(ids, [&](const auto &id) {
-          auto res = execute_(
-              "INSERT INTO index_by_id_height_asset(id, "
-              "height, asset_id, "
-              "index) "
-              "VALUES ("
-              + transaction_.quote(id) + ", " + transaction_.quote(height)
-              + ", " + transaction_.quote(cmd->asset_id) + ", "
-              + transaction_.quote(index) + ");");
-          all_executed &= res != nonstd::nullopt;
-        });
-      });
-      return all_executed;
+            auto ids = {account_id, cmd->src_account_id, cmd->dest_account_id};
+            // flat map accounts to unindexed keys
+            boost::for_each(ids, [&](const auto &id) {
+              auto res = execute_(
+                  "INSERT INTO index_by_id_height_asset(id, "
+                  "height, asset_id, "
+                  "index) "
+                  "VALUES ("
+                  + transaction_.quote(id) + ", " + transaction_.quote(height)
+                  + ", " + transaction_.quote(cmd->asset_id) + ", "
+                  + transaction_.quote(index) + ");");
+              status &= res != boost::none;
+            });
+            return status;
+          });
     }
 
     void PostgresBlockIndex::index(const model::Block &block) {

@@ -17,7 +17,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
-#include "ametsuchi/impl/flat_file/flat_file.hpp"  // for FlatFile
 #include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_block_query.hpp"
 #include "framework/test_subscriber.hpp"
