@@ -16,6 +16,7 @@
  */
 
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "builders/protobuf/proposal.hpp"
 #include "model/peer.hpp"
 
 namespace iroha {
@@ -34,8 +35,9 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::onTransaction(
-        const model::Transaction &transaction) {
-      queue_.push(transaction);
+        const shared_model::proto::Transaction &transaction) {
+      queue_.push(
+          std::make_shared<shared_model::proto::Transaction>(transaction));
 
       if (queue_.unsafe_size() >= max_size_) {
         handle.unsubscribe();
@@ -44,19 +46,21 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::generateProposal() {
-      auto txs = decltype(std::declval<model::Proposal>().transactions)();
-      for (model::Transaction tx;
-           txs.size() < max_size_ and queue_.try_pop(tx);) {
-        txs.push_back(std::move(tx));
+      std::vector<shared_model::proto::Transaction> poped_tx;
+      for (std::shared_ptr<shared_model::proto::Transaction> tx;
+           poped_tx.size() < max_size_ and queue_.try_pop(tx);) {
+        poped_tx.push_back(std::move(*tx));
       }
 
-      model::Proposal proposal(txs);
-      proposal.height = proposal_height++;
-
-      publishProposal(std::move(proposal));
+      publishProposal(shared_model::proto::ProposalBuilder()
+                          .height(proposal_height++)
+                          .createdTime(iroha::time::now())
+                          .transactions(poped_tx)
+                          .build());
     }
 
-    void OrderingServiceImpl::publishProposal(model::Proposal &&proposal) {
+    void OrderingServiceImpl::publishProposal(
+        shared_model::proto::Proposal &&proposal) {
       std::vector<std::string> peers;
 
       auto lst = wsv_->getLedgerPeers().value();

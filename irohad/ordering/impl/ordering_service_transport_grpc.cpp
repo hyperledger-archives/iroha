@@ -16,6 +16,12 @@
  */
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 
+#include <boost/range/adaptor/transformed.hpp>
+
+#include "backend/protobuf/from_old_model.hpp"
+#include "builders/protobuf/proposal.hpp"
+#include "datetime/time.hpp"
+
 using namespace iroha::ordering;
 using namespace iroha::protocol;
 using namespace iroha::model;
@@ -33,14 +39,16 @@ grpc::Status OrderingServiceTransportGrpc::onTransaction(
   if (subscriber_.expired()) {
     log_->error("No subscriber");
   } else {
-    subscriber_.lock()->onTransaction(*factory_.deserialize(*request));
+    subscriber_.lock()->onTransaction(
+        shared_model::proto::Transaction(*request));
   }
 
   return ::grpc::Status::OK;
 }
 
 void OrderingServiceTransportGrpc::publishProposal(
-    model::Proposal &&proposal, const std::vector<std::string> &peers) {
+    shared_model::proto::Proposal &&proposal,
+    const std::vector<std::string> &peers) {
   std::unordered_map<std::string,
                      std::unique_ptr<proto::OrderingGateTransportGrpc::Stub>>
       peers_map;
@@ -50,18 +58,23 @@ void OrderingServiceTransportGrpc::publishProposal(
         grpc::CreateChannel(peer, grpc::InsecureChannelCredentials()));
   }
 
-  protocol::Proposal pb_proposal;
-  pb_proposal.set_height(proposal.height);
-  for (const auto &tx : proposal.transactions) {
-    new (pb_proposal.add_transactions())
-        protocol::Transaction(factory_.serialize(tx));
-  }
+  auto pb_proposal =
+      shared_model::proto::ProposalBuilder()
+          .height(proposal.height())
+          .createdTime(iroha::time::now())
+          .transactions(proposal.transactions()
+                        | boost::adaptors::transformed([](auto iface_tx) {
+                            std::unique_ptr<iroha::model::Transaction> old_tx(
+                                iface_tx->makeOldModel());
+                            return shared_model::proto::from_old(*old_tx);
+                          }))
+          .build();
 
   for (const auto &peer : peers_map) {
     auto call = new AsyncClientCall;
 
-    call->response_reader =
-        peer.second->AsynconProposal(&call->context, pb_proposal, &cq_);
+    call->response_reader = peer.second->AsynconProposal(
+        &call->context, pb_proposal.getTransport(), &cq_);
 
     call->response_reader->Finish(&call->reply, &call->status, call);
   }

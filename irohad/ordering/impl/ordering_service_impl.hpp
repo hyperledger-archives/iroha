@@ -59,7 +59,8 @@ namespace iroha {
        * Enqueues transaction and publishes corresponding event
        * @param transaction
        */
-      void onTransaction(const model::Transaction &transaction) override;
+      void onTransaction(
+          const shared_model::proto::Transaction &transaction) override;
 
       ~OrderingServiceImpl() override;
 
@@ -68,7 +69,7 @@ namespace iroha {
        * Transform model proposal to transport object and send to peers
        * @param proposal - object for propagation
        */
-      void publishProposal(model::Proposal &&proposal) override;
+      void publishProposal(shared_model::proto::Proposal &&proposal) override;
 
      private:
       /**
@@ -90,7 +91,8 @@ namespace iroha {
       rxcpp::composite_subscription handle;
       std::shared_ptr<ametsuchi::PeerQuery> wsv_;
 
-      tbb::concurrent_queue<model::Transaction> queue_;
+      tbb::concurrent_queue<std::shared_ptr<shared_model::proto::Transaction>>
+          queue_;
 
       /**
        * max number of txs in proposal

@@ -28,6 +28,11 @@
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 
+#include "builders/protobuf/proposal.hpp"
+#include "builders/protobuf/transaction.hpp"
+#include "module/shared_model/validators//validators.hpp"
+#include "validators/default_validator.hpp"
+
 using namespace iroha;
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -35,18 +40,18 @@ using namespace iroha::network;
 using namespace iroha::ametsuchi;
 using namespace std::chrono_literals;
 
-using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
+using ::testing::_;
 
 static logger::Logger log_ = logger::testLog("OrderingService");
 
 class MockOrderingServiceTransport : public network::OrderingServiceTransport {
  public:
-  void publishProposal(model::Proposal &&proposal,
+  void publishProposal(shared_model::proto::Proposal &&proposal,
                        const std::vector<std::string> &peers) override {
     publishProposal(proposal, peers);
   };
@@ -57,7 +62,7 @@ class MockOrderingServiceTransport : public network::OrderingServiceTransport {
   }
 
   MOCK_METHOD2(publishProposal,
-               void(const model::Proposal &proposal,
+               void(const shared_model::proto::Proposal &proposal,
                     const std::vector<std::string> &peers));
 
   std::weak_ptr<network::OrderingServiceNotification> subscriber_;
@@ -72,6 +77,15 @@ class OrderingServiceTest : public ::testing::Test {
   void SetUp() override {
     wsv = std::make_shared<MockPeerQuery>();
     fake_transport = std::make_shared<MockOrderingServiceTransport>();
+  }
+
+  auto empty_tx() {
+    constexpr auto kTotal = 15;
+    return shared_model::proto::TemplateTransactionBuilder<
+               kTotal,
+               shared_model::validation::TransactionAlwaysValidValidator,
+               shared_model::proto::Transaction>()
+        .build();
   }
 
   std::shared_ptr<MockOrderingServiceTransport> fake_transport;
@@ -95,7 +109,8 @@ TEST_F(OrderingServiceTest, SimpleTest) {
 
   EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(1);
 
-  fake_transport->publishProposal(model::Proposal({}), {});
+  fake_transport->publishProposal(
+      shared_model::proto::TemplateProposalBuilder<7>().build(), {});
 }
 
 TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
@@ -119,7 +134,7 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
       .WillRepeatedly(Return(std::vector<Peer>{peer}));
 
   for (size_t i = 0; i < 10; ++i) {
-    ordering_service->onTransaction(model::Transaction());
+    ordering_service->onTransaction(empty_tx());
   }
 
   std::unique_lock<std::mutex> lock(m);
@@ -147,13 +162,13 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
       }));
 
   for (size_t i = 0; i < 8; ++i) {
-    ordering_service->onTransaction(model::Transaction());
+    ordering_service->onTransaction(empty_tx());
   }
 
   std::unique_lock<std::mutex> lk(m);
   cv.wait_for(lk, 10s);
 
-  ordering_service->onTransaction(model::Transaction());
-  ordering_service->onTransaction(model::Transaction());
+  ordering_service->onTransaction(empty_tx());
+  ordering_service->onTransaction(empty_tx());
   cv.wait_for(lk, 10s);
 }
