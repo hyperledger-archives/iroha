@@ -42,8 +42,14 @@ class KVTest : public AmetsuchiTest {
  protected:
   void SetUp() override {
     AmetsuchiTest::SetUp();
-    storage =
-        StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+    auto storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+    storageResult.match(
+        [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+          storage = _storage.value;
+        }, [](iroha::expected::Error<std::string> &error) {
+          ASSERT_TRUE(0);
+        }
+    );
     ASSERT_TRUE(storage);
     blocks = storage->getBlockQuery();
     wsv_query = storage->getWsvQuery();
@@ -93,7 +99,15 @@ class KVTest : public AmetsuchiTest {
     block1.txs_number = block1.transactions.size();
 
     {
-      auto ms = storage->createMutableStorage();
+      std::unique_ptr<MutableStorage> ms;
+      auto storageResult = storage->createMutableStorage();
+      storageResult.match(
+          [&](iroha::expected::Value<std::unique_ptr<MutableStorage>> &_storage) {
+            ms = std::move(_storage.value);
+          }, [](iroha::expected::Error<std::string> &error) {
+            ASSERT_TRUE(0);
+          }
+      );
       ms->apply(block1, [](const auto &blk, auto &query, const auto &top_hash) {
         return true;
       });
