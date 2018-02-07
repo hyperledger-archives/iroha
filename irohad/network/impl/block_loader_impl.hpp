@@ -38,12 +38,12 @@ namespace iroha {
           std::shared_ptr<ametsuchi::BlockQuery> block_query,
           std::shared_ptr<model::ModelCryptoProvider> crypto_provider);
 
-      rxcpp::observable<model::Block> retrieveBlocks(
-          model::Peer::KeyType peer_pubkey) override;
+      rxcpp::observable<shared_model::interface::Commit> retrieveBlocks(
+          shared_model::crypto::PublicKey peer_pubkey) override;
 
-      nonstd::optional<model::Block> retrieveBlock(
-          model::Peer::KeyType peer_pubkey,
-          model::Block::HashType block_hash) override;
+      nonstd::optional<shared_model::interface::Commit> retrieveBlock(
+          shared_model::crypto::PublicKey peer_pubkey,
+          shared_model::interface::Block::HashType block_hash) override;
 
      private:
       /**
@@ -51,7 +51,8 @@ namespace iroha {
        * @param pubkey - public key of requested peer
        * @return peer, if it was found, otherwise nullopt
        */
-      nonstd::optional<model::Peer> findPeer(model::Peer::KeyType pubkey);
+      nonstd::optional<model::Peer> findPeer(
+          shared_model::crypto::PublicKey pubkey);
       /**
        * Get or create a RPC stub for connecting to peer
        * @param peer for connecting
@@ -59,7 +60,6 @@ namespace iroha {
        */
       proto::Loader::Stub &getPeerStub(const model::Peer &peer);
 
-      model::converters::PbBlockFactory factory_;
       std::unordered_map<model::Peer, std::unique_ptr<proto::Loader::Stub>>
           peer_connections_;
       std::shared_ptr<ametsuchi::PeerQuery> peer_query_;

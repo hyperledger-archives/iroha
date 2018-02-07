@@ -20,8 +20,8 @@
 
 #include <rxcpp/rx-observable.hpp>
 
-#include "model/block.hpp"
-#include "model/peer.hpp"
+#include "cryptography/public_key.hpp"
+#include "interfaces/iroha_internal/commit.hpp"
 
 namespace iroha {
   namespace network {
@@ -36,8 +36,8 @@ namespace iroha {
        * @param peer_pubkey - peer for requesting blocks
        * @return
        */
-      virtual rxcpp::observable<model::Block> retrieveBlocks(
-          model::Peer::KeyType peer_pubkey) = 0;
+      virtual rxcpp::observable<shared_model::interface::Commit> retrieveBlocks(
+          shared_model::crypto::PublicKey peer_pubkey) = 0;
 
       /**
        * Retrieve block by its block_hash from given peer
@@ -45,9 +45,9 @@ namespace iroha {
        * @param block_hash - requested block hash
        * @return block on success, nullopt on failure
        */
-      virtual nonstd::optional<model::Block> retrieveBlock(
-          model::Peer::KeyType peer_pubkey,
-          model::Block::HashType block_hash) = 0;
+      virtual nonstd::optional<shared_model::interface::Commit> retrieveBlock(
+          shared_model::crypto::PublicKey peer_pubkey,
+          shared_model::interface::Block::HashType block_hash) = 0;
 
       virtual ~BlockLoader() = default;
     };
