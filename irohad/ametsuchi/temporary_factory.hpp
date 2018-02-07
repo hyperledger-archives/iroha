@@ -19,6 +19,7 @@
 #define IROHA_TEMPORARY_FACTORY_HPP
 
 #include <memory>
+#include "common/result.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -34,7 +35,7 @@ namespace iroha {
        * Temporary state might be used for transaction validation.
        * @return Created temporary wsv
        */
-      virtual std::unique_ptr<TemporaryWsv> createTemporaryWsv() = 0;
+      virtual expected::Result<std::unique_ptr<TemporaryWsv>, std::string> createTemporaryWsv() = 0;
 
       virtual ~TemporaryFactory() = default;
     };

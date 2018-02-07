@@ -61,7 +61,7 @@ namespace iroha {
           std::size_t redis_port,
           std::string postgres_connection);
 
-      std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
+      expected::Result<std::unique_ptr<TemporaryWsv>, std::string> createTemporaryWsv() override;
 
       std::unique_ptr<MutableStorage> createMutableStorage() override;
 

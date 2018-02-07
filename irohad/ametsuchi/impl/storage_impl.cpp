@@ -25,6 +25,12 @@
 #include "model/converters/json_common.hpp"
 #include "model/execution/command_executor_factory.hpp"  // for CommandExecutorFactory
 
+using iroha::expected::Error;
+using iroha::expected::Result;
+using iroha::expected::Value;
+using iroha::expected::makeError;
+using iroha::expected::makeValue;
+
 namespace iroha {
   namespace ametsuchi {
 
@@ -69,11 +75,11 @@ namespace iroha {
           "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;");
     }
 
-    std::unique_ptr<TemporaryWsv> StorageImpl::createTemporaryWsv() {
+    expected::Result<std::unique_ptr<TemporaryWsv>, std::string> StorageImpl::createTemporaryWsv() {
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
         log_->error(kCommandExecutorError);
-        return nullptr;
+        return makeError(kCommandExecutorError);
       }
 
       auto postgres_connection =
@@ -82,15 +88,17 @@ namespace iroha {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
         log_->error(kPsqlBroken, e.what());
-        return nullptr;
+        return makeError(kPsqlBroken);
       }
       auto wsv_transaction =
           std::make_unique<pqxx::nontransaction>(*postgres_connection, kTmpWsv);
 
-      return std::make_unique<TemporaryWsvImpl>(
-          std::move(postgres_connection),
-          std::move(wsv_transaction),
-          std::move(command_executors.value()));
+      return makeValue<std::unique_ptr<TemporaryWsv>>(
+          std::make_unique<TemporaryWsvImpl>(
+              std::move(postgres_connection),
+              std::move(wsv_transaction),
+              std::move(command_executors.value()))
+      );
     }
 
     std::unique_ptr<MutableStorage> StorageImpl::createMutableStorage() {
