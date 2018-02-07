@@ -37,7 +37,13 @@ namespace iroha {
 
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
       log_->info("processing commit");
-      auto storage = mutableFactory_->createMutableStorage();
+      auto storageResult = mutableFactory_->createMutableStorage();
+      std::unique_ptr<ametsuchi::MutableStorage> storage;
+      storageResult.match(
+          [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>> &_storage) {
+            storage = std::move(_storage.value);
+          }, [](expected::Error<std::string> &error) {}
+      );
       if (not storage) {
         log_->error("Cannot create mutable storage");
         return;
@@ -54,7 +60,13 @@ namespace iroha {
         // Block can't be applied to current storage
         // Download all missing blocks
         for (auto signature : commit_message.sigs) {
-          storage = mutableFactory_->createMutableStorage();
+          auto storageResult = mutableFactory_->createMutableStorage();
+          std::unique_ptr<ametsuchi::MutableStorage> storage;
+          storageResult.match(
+              [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>> &_storage) {
+                storage = std::move(_storage.value);
+              }, [](expected::Error<std::string> &error) {}
+          );
           if (not storage) {
             log_->error("cannot create storage");
             return;

@@ -55,7 +55,7 @@ namespace iroha {
           std::string postgres_options);
 
      public:
-      static std::shared_ptr<StorageImpl> create(
+      static expected::Result<std::shared_ptr<StorageImpl>, std::string> create(
           std::string block_store_dir,
           std::string redis_host,
           std::size_t redis_port,
@@ -63,7 +63,7 @@ namespace iroha {
 
       expected::Result<std::unique_ptr<TemporaryWsv>, std::string> createTemporaryWsv() override;
 
-      std::unique_ptr<MutableStorage> createMutableStorage() override;
+      expected::Result<std::unique_ptr<MutableStorage>, std::string> createMutableStorage() override;
 
       virtual bool insertBlock(model::Block block) override;
 

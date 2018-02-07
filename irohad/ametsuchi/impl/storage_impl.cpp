@@ -25,6 +25,8 @@
 #include "model/converters/json_common.hpp"
 #include "model/execution/command_executor_factory.hpp"  // for CommandExecutorFactory
 
+#include <boost/format.hpp>
+
 using iroha::expected::Error;
 using iroha::expected::Result;
 using iroha::expected::Value;
@@ -88,7 +90,7 @@ namespace iroha {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
         log_->error(kPsqlBroken, e.what());
-        return makeError(kPsqlBroken);
+        return makeError((boost::format(kPsqlBroken) % e.what()).str());
       }
       auto wsv_transaction =
           std::make_unique<pqxx::nontransaction>(*postgres_connection, kTmpWsv);
@@ -101,11 +103,11 @@ namespace iroha {
       );
     }
 
-    std::unique_ptr<MutableStorage> StorageImpl::createMutableStorage() {
+    expected::Result<std::unique_ptr<MutableStorage>, std::string> StorageImpl::createMutableStorage() {
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
         log_->error(kCommandExecutorError);
-        return nullptr;
+        return makeError(kCommandExecutorError);
       }
 
       auto postgres_connection =
@@ -114,7 +116,7 @@ namespace iroha {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
         log_->error(kPsqlBroken, e.what());
-        return nullptr;
+        return makeError((boost::format(kPsqlBroken) % e.what()).str());
       }
       auto wsv_transaction =
           std::make_unique<pqxx::nontransaction>(*postgres_connection, kTmpWsv);
@@ -124,7 +126,7 @@ namespace iroha {
         index->connect(redis_host_, redis_port_);
       } catch (const cpp_redis::redis_error &e) {
         log_->error(kRedisBroken, redis_host_, redis_port_, e.what());
-        return nullptr;
+        return makeError((boost::format(kRedisBroken) % redis_host_ % redis_port_ % e.what()).str());
       }
 
       nonstd::optional<hash256_t> top_hash;
@@ -134,24 +136,34 @@ namespace iroha {
           .as_blocking()
           .subscribe([&top_hash](auto block) { top_hash = block.hash; });
 
-      return std::make_unique<MutableStorageImpl>(
+      return makeValue<std::unique_ptr<MutableStorage>>(
+          std::make_unique<MutableStorageImpl>(
           top_hash.value_or(hash256_t{}),
           std::move(index),
           std::move(postgres_connection),
           std::move(wsv_transaction),
-          std::move(command_executors.value()));
+          std::move(command_executors.value()))
+      );
     }
 
     bool StorageImpl::insertBlock(model::Block block) {
       log_->info("create mutable storage");
-      auto storage = createMutableStorage();
-      auto inserted = storage->apply(
-          block,
-          [](const auto &current_block, auto &query, const auto &top_hash) {
-            return true;
-          });
-      log_->info("block inserted: {}", inserted);
-      commit(std::move(storage));
+      auto storageResult = createMutableStorage();
+      bool inserted = false;
+      storageResult.match(
+          [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>> &storage) {
+            inserted = storage.value->apply(
+                block,
+                [](const auto &current_block, auto &query, const auto &top_hash) {
+                  return true;
+                });
+            log_->info("block inserted: {}", inserted);
+            commit(std::move(storage.value));
+          }, [&](expected::Error<std::string> &error) {
+            log_->error("Cannot create mutable storage");
+          }
+      );
+
       return inserted;
     }
 
@@ -239,7 +251,7 @@ DROP TABLE IF EXISTS role;
           std::move(wsv_transaction));
     }
 
-    std::shared_ptr<StorageImpl> StorageImpl::create(
+    expected::Result<std::shared_ptr<StorageImpl>, std::string> StorageImpl::create(
         std::string block_store_dir,
         std::string redis_host,
         std::size_t redis_port,
@@ -247,10 +259,10 @@ DROP TABLE IF EXISTS role;
       auto ctx = initConnections(
           block_store_dir, redis_host, redis_port, postgres_options);
       if (not ctx.has_value()) {
-        return nullptr;
+        return makeError("Failed to connect to PostgreSql");
       }
 
-      return std::shared_ptr<StorageImpl>(
+      return makeValue(std::shared_ptr<StorageImpl>(
           new StorageImpl(block_store_dir,
                           redis_host,
                           redis_port,
@@ -258,7 +270,7 @@ DROP TABLE IF EXISTS role;
                           std::move(ctx->block_store),
                           std::move(ctx->index),
                           std::move(ctx->pg_lazy),
-                          std::move(ctx->pg_nontx)));
+                          std::move(ctx->pg_nontx))));
     }
 
     void StorageImpl::commit(std::unique_ptr<MutableStorage> mutableStorage) {
