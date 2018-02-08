@@ -86,11 +86,9 @@ namespace torii {
         });
   }
 
-  void CommandService::Torii(iroha::protocol::Transaction const &request,
-                             google::protobuf::Empty &empty) {
-    auto iroha_tx = pb_factory_->deserialize(request);
-    auto tx_hash =
-        iroha::hash<iroha::protocol::Transaction>(request).to_string();
+  void CommandService::Torii(iroha::protocol::Transaction const &tx) {
+    auto iroha_tx = pb_factory_->deserialize(tx);
+    auto tx_hash = iroha::hash<iroha::protocol::Transaction>(tx).to_string();
 
     if (cache_->findItem(tx_hash)) {
       return;
@@ -109,7 +107,7 @@ namespace torii {
       grpc::ServerContext *context,
       const iroha::protocol::Transaction *request,
       google::protobuf::Empty *response) {
-    Torii(*request, *response);
+    Torii(*request);
     return grpc::Status::OK;
   }
 

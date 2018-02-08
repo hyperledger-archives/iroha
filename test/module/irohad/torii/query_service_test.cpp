@@ -87,8 +87,6 @@ TEST_F(QueryServiceTest, InvalidWhenDuplicateHash) {
   EXPECT_CALL(*query_processor, queryHandle(_)).WillOnce(Return());
 
   init();
-
-  //TODO luckychess 03.02.2018 is this OK?
   query_service->Find(query, response);
   query_service->Find(query, response);
 }
