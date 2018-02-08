@@ -69,7 +69,7 @@ namespace iroha {
           "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;");
     }
 
-    expected::Result<std::unique_ptr<TemporaryWsv>, std::string> StorageImpl::createTemporaryWsv() {
+    Result<std::unique_ptr<TemporaryWsv>, std::string> StorageImpl::createTemporaryWsv() {
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
         log_->error(kCommandExecutorError);
@@ -95,7 +95,7 @@ namespace iroha {
       );
     }
 
-    expected::Result<std::unique_ptr<MutableStorage>, std::string> StorageImpl::createMutableStorage() {
+    Result<std::unique_ptr<MutableStorage>, std::string> StorageImpl::createMutableStorage() {
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
         log_->error(kCommandExecutorError);
@@ -134,7 +134,7 @@ namespace iroha {
       auto storageResult = createMutableStorage();
       bool inserted = false;
       storageResult.match(
-          [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>> &storage) {
+          [&](Value<std::unique_ptr<ametsuchi::MutableStorage>> &storage) {
             inserted = storage.value->apply(
                 block,
                 [](const auto &current_block, auto &query, const auto &top_hash) {
@@ -142,7 +142,7 @@ namespace iroha {
                 });
             log_->info("block inserted: {}", inserted);
             commit(std::move(storage.value));
-          }, [&](expected::Error<std::string> &error) {
+          }, [&](Error<std::string> &error) {
             log_->error("Cannot create mutable storage");
           }
       );
@@ -219,7 +219,7 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
           std::move(wsv_transaction));
     }
 
-    expected::Result<std::shared_ptr<StorageImpl>, std::string> StorageImpl::create(
+    Result<std::shared_ptr<StorageImpl>, std::string> StorageImpl::create(
         std::string block_store_dir,
         std::string postgres_options) {
       auto ctx = initConnections(block_store_dir, postgres_options);
