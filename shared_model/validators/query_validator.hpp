@@ -172,8 +172,6 @@ namespace shared_model {
         std::string qry_reason_name = "Query";
         ReasonsGroupType qry_reason(qry_reason_name, GroupedReasons());
 
-        field_validator_.validateSignatures(
-            qry_reason, qry->signatures(), qry->blob());
         field_validator_.validateCreatorAccountId(qry_reason,
                                                   qry->creatorAccountId());
         field_validator_.validateCreatedTime(qry_reason, qry->createdTime());
