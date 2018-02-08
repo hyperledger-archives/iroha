@@ -141,18 +141,7 @@ namespace torii {
       iroha::protocol::TxStatusRequest const &request,
       grpc::ServerWriter<iroha::protocol::ToriiResponse> &response_writer) {
     auto resp = cache_->findItem(request.tx_hash());
-    if (resp) {
-      if (resp->tx_status()
-              == iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED
-          or resp->tx_status()
-              == iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED
-          or resp->tx_status() == iroha::protocol::TxStatus::NOT_RECEIVED
-          or resp->tx_status() == iroha::protocol::TxStatus::COMMITTED) {
-        response_writer.WriteLast(*resp, grpc::WriteOptions());
-        return;
-      }
-      response_writer.Write(*resp);
-    }
+    checkCacheAndSend(resp, response_writer);
 
     bool finished = false;
     auto subscription = rxcpp::composite_subscription();
@@ -167,67 +156,25 @@ namespace torii {
         .filter([&request_hash](auto response) {
           return response->tx_hash == request_hash;
         })
-        .subscribe(
-            subscription,
-            [&](std::shared_ptr<iroha::model::TransactionResponse>
-                    iroha_response) {
-              iroha::protocol::ToriiResponse resp_sub;
-              resp_sub.set_tx_hash(request_hash);
+        .subscribe(subscription,
+                   [&](std::shared_ptr<iroha::model::TransactionResponse>
+                           iroha_response) {
+                     iroha::protocol::ToriiResponse resp_sub;
+                     resp_sub.set_tx_hash(request_hash);
+                     auto proto_status =
+                         convertStatusToProto(iroha_response->current_status);
+                     resp_sub.set_tx_status(proto_status);
 
-              switch (iroha_response->current_status) {
-                case iroha::model::TransactionResponse::
-                    STATELESS_VALIDATION_FAILED:
-                  resp_sub.set_tx_status(
-                      iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
-                  response_writer.WriteLast(resp_sub, grpc::WriteOptions());
-                  subscription.unsubscribe();
-                  finished = true;
-                  cv.notify_one();
-                  break;
-                case iroha::model::TransactionResponse::
-                    STATELESS_VALIDATION_SUCCESS:
-                  resp_sub.set_tx_status(
-                      iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
-                  response_writer.Write(resp_sub);
-                  break;
-                case iroha::model::TransactionResponse::
-                    STATEFUL_VALIDATION_FAILED:
-                  resp_sub.set_tx_status(
-                      iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED);
-                  response_writer.WriteLast(resp_sub, grpc::WriteOptions());
-                  subscription.unsubscribe();
-                  finished = true;
-                  cv.notify_one();
-                  break;
-                case iroha::model::TransactionResponse::
-                    STATEFUL_VALIDATION_SUCCESS:
-                  resp_sub.set_tx_status(
-                      iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
-                  response_writer.Write(resp_sub);
-                  break;
-                case iroha::model::TransactionResponse::COMMITTED:
-                  resp_sub.set_tx_status(iroha::protocol::TxStatus::COMMITTED);
-                  response_writer.WriteLast(resp_sub, grpc::WriteOptions());
-                  subscription.unsubscribe();
-                  finished = true;
-                  cv.notify_one();
-                  break;
-                case iroha::model::TransactionResponse::IN_PROGRESS:
-                  resp_sub.set_tx_status(
-                      iroha::protocol::TxStatus::IN_PROGRESS);
-                  response_writer.Write(resp_sub);
-                  break;
-                case iroha::model::TransactionResponse::NOT_RECEIVED:
-                default:
-                  resp_sub.set_tx_status(
-                      iroha::protocol::TxStatus::NOT_RECEIVED);
-                  response_writer.WriteLast(resp_sub, grpc::WriteOptions());
-                  subscription.unsubscribe();
-                  finished = true;
-                  cv.notify_one();
-                  break;
-              }
-            });
+                     if (isFinalStatus(proto_status)) {
+                       response_writer.WriteLast(resp_sub,
+                                                 grpc::WriteOptions());
+                       subscription.unsubscribe();
+                       finished = true;
+                       cv.notify_one();
+                     } else {
+                       response_writer.Write(resp_sub);
+                     }
+                   });
 
     std::mutex wait_subscription;
     std::unique_lock<std::mutex> lock(wait_subscription);
@@ -254,6 +201,61 @@ namespace torii {
       grpc::ServerWriter<iroha::protocol::ToriiResponse> *response_writer) {
     StatusStream(*request, *response_writer);
     return grpc::Status::OK;
+  }
+
+  void CommandService::checkCacheAndSend(
+      boost::optional<iroha::protocol::ToriiResponse> &resp,
+      grpc::ServerWriter<iroha::protocol::ToriiResponse> &response_writer)
+      const {
+    if (resp) {
+      if (resp->tx_status()
+              == iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED
+          or resp->tx_status()
+              == iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED
+          or resp->tx_status() == iroha::protocol::TxStatus::NOT_RECEIVED
+          or resp->tx_status() == iroha::protocol::TxStatus::COMMITTED) {
+        response_writer.WriteLast(*resp, grpc::WriteOptions());
+        return;
+      }
+      response_writer.Write(*resp);
+    }
+  }
+
+  iroha::protocol::TxStatus CommandService::convertStatusToProto(
+      iroha::model::TransactionResponse::Status &status) {
+    iroha::protocol::TxStatus proto_status;
+    switch (status) {
+      case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
+        proto_status = iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED;
+        break;
+      case iroha::model::TransactionResponse::STATELESS_VALIDATION_SUCCESS:
+        proto_status = iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS;
+        break;
+      case iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED:
+        proto_status = iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED;
+        break;
+      case iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS:
+        proto_status = iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS;
+        break;
+      case iroha::model::TransactionResponse::IN_PROGRESS:
+        proto_status = iroha::protocol::TxStatus::IN_PROGRESS;
+        break;
+      case iroha::model::TransactionResponse::COMMITTED:
+        proto_status = iroha::protocol::TxStatus::COMMITTED;
+        break;
+      case iroha::model::TransactionResponse::NOT_RECEIVED:
+      default:
+        proto_status = iroha::protocol::TxStatus::NOT_RECEIVED;
+        break;
+    }
+    return proto_status;
+  }
+
+  bool CommandService::isFinalStatus(iroha::protocol::TxStatus &status) {
+    return status == iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED
+        or status == iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED
+        or status == iroha::protocol::TxStatus::NOT_RECEIVED
+        or status == iroha::protocol::TxStatus::COMMITTED;
   }
 
 }  // namespace torii

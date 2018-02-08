@@ -130,6 +130,17 @@ namespace torii {
         override;
 
    private:
+    void checkCacheAndSend(
+        boost::optional<iroha::protocol::ToriiResponse> &resp,
+        grpc::ServerWriter<iroha::protocol::ToriiResponse> &response_writer)
+        const;
+
+    iroha::protocol::TxStatus convertStatusToProto(
+        iroha::model::TransactionResponse::Status &status);
+
+    bool isFinalStatus(iroha::protocol::TxStatus &status);
+
+   private:
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
     std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
     std::shared_ptr<iroha::ametsuchi::Storage> storage_;
