@@ -47,6 +47,8 @@ using namespace iroha::network;
 using namespace iroha::validation;
 using namespace iroha::ametsuchi;
 
+using namespace std::chrono_literals;
+
 using Commit = rxcpp::observable<iroha::model::Block>;
 
 class CustomPeerCommunicationServiceMock : public PeerCommunicationService {
@@ -111,7 +113,7 @@ class ToriiServiceTest : public testing::Test {
       //----------- Server run ----------------
       runner
           ->append(std::make_unique<torii::CommandService>(
-              pb_tx_factory, tx_processor, storageMock))
+              pb_tx_factory, tx_processor, storageMock, 1s, 10s))
           .append(std::make_unique<torii::QueryService>(
               pb_query_factory, pb_query_resp_factory, qpi))
           .run();
@@ -369,6 +371,9 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
   std::string txhash = iroha::hash(*iroha_tx).to_string();
 
   std::vector<iroha::protocol::ToriiResponse> torii_response;
+  // StatusStream is a blocking call and returns only when the last status
+  // (Committed in this case) will be received. We start request before
+  // transaction sending so we need in a separate thread for it.
   std::thread t([&]() {
     iroha::protocol::TxStatusRequest tx_request;
     tx_request.set_tx_hash(txhash);

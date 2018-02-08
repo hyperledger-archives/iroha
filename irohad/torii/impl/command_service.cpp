@@ -24,18 +24,20 @@
 #include "model/sha3_hash.hpp"
 #include "torii/command_service.hpp"
 
-using namespace std::chrono_literals;
-
 namespace torii {
 
   CommandService::CommandService(
       std::shared_ptr<iroha::model::converters::PbTransactionFactory>
           pb_factory,
-      std::shared_ptr<iroha::torii::TransactionProcessor> txProcessor,
-      std::shared_ptr<iroha::ametsuchi::Storage> storage)
+      std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor,
+      std::shared_ptr<iroha::ametsuchi::Storage> storage,
+      std::chrono::duration<uint64_t> start_tx_processing_duration,
+      std::chrono::duration<uint64_t> finish_tx_processing_duration)
       : pb_factory_(pb_factory),
-        tx_processor_(txProcessor),
+        tx_processor_(tx_processor),
         storage_(storage),
+        start_tx_processing_duration_(start_tx_processing_duration),
+        finish_tx_processing_duration_(finish_tx_processing_duration),
         cache_(std::make_shared<
                iroha::cache::Cache<std::string,
                                    iroha::protocol::ToriiResponse>>()) {
@@ -156,6 +158,11 @@ namespace torii {
     auto subscription = rxcpp::composite_subscription();
     auto request_hash = request.tx_hash();
 
+    // condition variable to ensure that current method will not return before
+    // transaction is processed or a timeout reached. It blocks current thread
+    // and waits for thread from subscribe() to unblock.
+    std::condition_variable cv;
+
     tx_processor_->transactionNotifier()
         .filter([&request_hash](auto response) {
           return response->tx_hash == request_hash;
@@ -175,7 +182,7 @@ namespace torii {
                   response_writer.WriteLast(resp_sub, grpc::WriteOptions());
                   subscription.unsubscribe();
                   finished = true;
-                  cv_.notify_one();
+                  cv.notify_one();
                   break;
                 case iroha::model::TransactionResponse::
                     STATELESS_VALIDATION_SUCCESS:
@@ -190,7 +197,7 @@ namespace torii {
                   response_writer.WriteLast(resp_sub, grpc::WriteOptions());
                   subscription.unsubscribe();
                   finished = true;
-                  cv_.notify_one();
+                  cv.notify_one();
                   break;
                 case iroha::model::TransactionResponse::
                     STATEFUL_VALIDATION_SUCCESS:
@@ -203,7 +210,7 @@ namespace torii {
                   response_writer.WriteLast(resp_sub, grpc::WriteOptions());
                   subscription.unsubscribe();
                   finished = true;
-                  cv_.notify_one();
+                  cv.notify_one();
                   break;
                 case iroha::model::TransactionResponse::IN_PROGRESS:
                   resp_sub.set_tx_status(
@@ -217,15 +224,16 @@ namespace torii {
                   response_writer.WriteLast(resp_sub, grpc::WriteOptions());
                   subscription.unsubscribe();
                   finished = true;
-                  cv_.notify_one();
+                  cv.notify_one();
                   break;
               }
             });
 
-    std::unique_lock<std::mutex> lock(wait_subscription_);
+    std::mutex wait_subscription;
+    std::unique_lock<std::mutex> lock(wait_subscription);
     // One second should be enough to at least start tx processing.
     // Otherwise we think there is no such tx at all.
-    cv_.wait_for(lock, 1s);
+    cv.wait_for(lock, start_tx_processing_duration_);
     if (not finished) {
       if (not resp) {
         subscription.unsubscribe();
@@ -234,7 +242,8 @@ namespace torii {
         resp_none.set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
         response_writer.WriteLast(resp_none, grpc::WriteOptions());
       } else {
-        cv_.wait_for(lock, 10s);
+        // Tx processing was started but still unfinished. We give it more time.
+        cv.wait_for(lock, finish_tx_processing_duration_);
       }
     }
   }

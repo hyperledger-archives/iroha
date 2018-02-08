@@ -50,6 +50,8 @@ using namespace iroha::validation;
 using namespace iroha::model::converters;
 using namespace iroha::model;
 
+using namespace std::chrono_literals;
+
 class ClientServerTest : public testing::Test {
  public:
   virtual void SetUp() {
@@ -95,7 +97,7 @@ class ClientServerTest : public testing::Test {
       //----------- Server run ----------------
       runner
           ->append(std::make_unique<torii::CommandService>(
-              pb_tx_factory, tx_processor, storageMock))
+              pb_tx_factory, tx_processor, storageMock, 1s, 10s))
           .append(std::make_unique<torii::QueryService>(
               pb_query_factory, pb_query_resp_factory, qpi))
           .run();

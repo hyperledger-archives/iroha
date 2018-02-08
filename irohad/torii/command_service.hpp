@@ -37,14 +37,21 @@ namespace torii {
     /**
      * Creates a new instance of CommandService
      * @param pb_factory - model->protobuf and vice versa converter
-     * @param txProcessor - processor of received transactions
+     * @param tx_processor - processor of received transactions
      * @param storage - storage to request transactions outside the cache
+     * @param start_tx_processing_duration - maximum time between getting a
+     * StatusStream request and receiving at least one status about processing
+     * of corresponding transaction
+     * @param finish_tx_processing_duration - maximum transaction processing
+     * time. Generally is should be a time of one proposal propagation.
      */
     CommandService(
         std::shared_ptr<iroha::model::converters::PbTransactionFactory>
             pb_factory,
-        std::shared_ptr<iroha::torii::TransactionProcessor> txProcessor,
-        std::shared_ptr<iroha::ametsuchi::Storage> storage);
+        std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor,
+        std::shared_ptr<iroha::ametsuchi::Storage> storage,
+        std::chrono::duration<uint64_t> start_tx_processing_duration,
+        std::chrono::duration<uint64_t> finish_tx_processing_duration);
 
     /**
      * Disable copying in any way to prevent potential issues with common
@@ -126,11 +133,11 @@ namespace torii {
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
     std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
     std::shared_ptr<iroha::ametsuchi::Storage> storage_;
+    std::chrono::duration<uint64_t> start_tx_processing_duration_;
+    std::chrono::duration<uint64_t> finish_tx_processing_duration_;
     std::shared_ptr<
         iroha::cache::Cache<std::string, iroha::protocol::ToriiResponse>>
         cache_;
-    std::mutex wait_subscription_;
-    std::condition_variable cv_;
   };
 
 }  // namespace torii
