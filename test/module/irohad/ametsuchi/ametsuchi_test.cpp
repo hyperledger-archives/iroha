@@ -20,7 +20,7 @@
 #include <boost/range/combine.hpp>
 
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-#include "ametsuchi/impl/redis_block_query.hpp"
+#include "ametsuchi/impl/postgres_block_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/mutable_storage.hpp"
 #include "common/byteutils.hpp"
@@ -163,7 +163,7 @@ void apply(S &&storage, const Block &block) {
 TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   // Commit block => get block => observable completed
   std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
@@ -187,7 +187,7 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
 
 TEST_F(AmetsuchiTest, SampleTest) {
   std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
@@ -287,7 +287,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
 
 TEST_F(AmetsuchiTest, PeerTest) {
   std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
@@ -317,7 +317,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
 
 TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
@@ -459,7 +459,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
 
 TEST_F(AmetsuchiTest, AddSignatoryTest) {
   std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
@@ -712,7 +712,7 @@ TEST_F(AmetsuchiTest, TestingStorageWhenInsertBlock) {
       "=> insert block "
       "=> assert that inserted");
   std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
@@ -753,7 +753,7 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
       "=> insert block "
       "=> assert that inserted");
   std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
@@ -780,7 +780,7 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
 
   ASSERT_EQ(0, wsv->getPeers().value().size());
   std::shared_ptr<StorageImpl> new_storage;
-  auto new_storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto new_storageResult = StorageImpl::create(block_store_path, pgopt_);
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         new_storage = _storage.value;
@@ -788,7 +788,6 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
         ASSERT_TRUE(0);
       }
   );
-
   ASSERT_EQ(0, wsv->getPeers().value().size());
   new_storage->dropStorage();
 }
@@ -801,7 +800,7 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
  */
 TEST_F(AmetsuchiTest, FindTxByHashTest) {
   std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
@@ -862,6 +861,8 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   auto tx1hash = iroha::hash(tx1).to_string();
   auto tx2hash = iroha::hash(tx2).to_string();
   auto tx3hash = "some garbage";
+
+  auto tx1check = *blocks->getTxByHashSync(tx1hash);
 
   ASSERT_EQ(*blocks->getTxByHashSync(tx1hash), tx1);
   ASSERT_EQ(*blocks->getTxByHashSync(tx2hash), tx2);

@@ -119,7 +119,7 @@ TEST_F(OrderingGateTest, ProposalReceivedByGateWhenSent) {
   wrapper.subscribe();
 
   grpc::ServerContext context;
-  iroha::ordering::proto::Proposal proposal;
+  iroha::protocol::Proposal proposal;
 
   google::protobuf::Empty response;
 

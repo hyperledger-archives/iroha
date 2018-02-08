@@ -21,7 +21,7 @@
 #include <string>
 
 #include "torii/command_client.hpp"
-#include "torii_utils/query_client.hpp"
+#include "torii/query_client.hpp"
 
 namespace iroha {
   namespace model {

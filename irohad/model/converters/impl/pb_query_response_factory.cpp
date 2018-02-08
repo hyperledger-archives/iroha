@@ -86,6 +86,41 @@ namespace iroha {
         return response;
       }
 
+      optional_ptr<model::QueryResponse> PbQueryResponseFactory::deserialize(
+          const protocol::QueryResponse &response) const {
+        auto p = [](auto &&o) {
+          using ResponseType = decltype(o);
+          std::shared_ptr<QueryResponse> result =
+              std::make_shared<std::remove_reference_t<ResponseType>>(
+                  std::forward<ResponseType>(o));
+          return result;
+        };
+        switch (response.response_case()) {
+          case protocol::QueryResponse::kAccountAssetsResponse:
+            return p(deserializeAccountAssetResponse(
+                response.account_assets_response()));
+          case protocol::QueryResponse::kAccountDetailResponse:
+            return p(deserializeAccountDetailResponse(
+                response.account_detail_response()));
+          case protocol::QueryResponse::kAccountResponse:
+            return p(deserializeAccountResponse(response.account_response()));
+          case protocol::QueryResponse::kErrorResponse:
+            return p(deserializeErrorResponse(response.error_response()));
+          case protocol::QueryResponse::kSignatoriesResponse:
+            return p(deserializeSignatoriesResponse(
+                response.signatories_response()));
+          case protocol::QueryResponse::kAssetResponse:
+            return p(deserializeAssetResponse(response.asset_response()));
+          case protocol::QueryResponse::kRolesResponse:
+            return p(deserializeRolesResponse(response.roles_response()));
+          case protocol::QueryResponse::kRolePermissionsResponse:
+            return p(deserializeRolePermissionsResponse(
+                response.role_permissions_response()));
+          default:
+            return nonstd::nullopt;
+        }
+      }
+
       protocol::Account PbQueryResponseFactory::serializeAccount(
           const model::Account &account) const {
         protocol::Account pb_account;
@@ -320,6 +355,43 @@ namespace iroha {
             break;
         }
         return pb_response;
+      }
+
+      model::ErrorResponse PbQueryResponseFactory::deserializeErrorResponse(
+          const protocol::ErrorResponse &response) const {
+        model::ErrorResponse result{};
+        switch (response.reason()) {
+          case protocol::ErrorResponse_Reason_STATELESS_INVALID:
+            result.reason = ErrorResponse::STATELESS_INVALID;
+            break;
+          case protocol::ErrorResponse_Reason_STATEFUL_INVALID:
+            result.reason = ErrorResponse::STATEFUL_INVALID;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ACCOUNT:
+            result.reason = ErrorResponse::NO_ACCOUNT;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ACCOUNT_ASSETS:
+            result.reason = ErrorResponse::NO_ACCOUNT_ASSETS;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ACCOUNT_DETAIL:
+            result.reason = ErrorResponse::NO_ACCOUNT_DETAIL;
+            break;
+          case protocol::ErrorResponse_Reason_NO_SIGNATORIES:
+            result.reason = ErrorResponse::NO_SIGNATORIES;
+            break;
+          case protocol::ErrorResponse_Reason_NOT_SUPPORTED:
+            result.reason = ErrorResponse::NOT_SUPPORTED;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ASSET:
+            result.reason = ErrorResponse::NO_ASSET;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ROLES:
+            result.reason = ErrorResponse::NO_ROLES;
+            break;
+          default:
+            break;
+        }
+        return result;
       }
     }  // namespace converters
   }    // namespace model

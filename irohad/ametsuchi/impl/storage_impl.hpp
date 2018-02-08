@@ -21,11 +21,10 @@
 #include "ametsuchi/storage.hpp"
 
 #include <cmath>
-#include <cpp_redis/cpp_redis>
-#include <nonstd/optional.hpp>
-#include <pqxx/pqxx>
 #include <shared_mutex>
 
+#include <nonstd/optional.hpp>
+#include <pqxx/pqxx>
 #include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
 
@@ -36,12 +35,10 @@ namespace iroha {
 
     struct ConnectionContext {
       ConnectionContext(std::unique_ptr<FlatFile> block_store,
-                        std::unique_ptr<cpp_redis::client> index,
                         std::unique_ptr<pqxx::lazyconnection> pg_lazy,
                         std::unique_ptr<pqxx::nontransaction> pg_nontx);
 
       std::unique_ptr<FlatFile> block_store;
-      std::unique_ptr<cpp_redis::client> index;
       std::unique_ptr<pqxx::lazyconnection> pg_lazy;
       std::unique_ptr<pqxx::nontransaction> pg_nontx;
     };
@@ -49,17 +46,11 @@ namespace iroha {
     class StorageImpl : public Storage {
      protected:
       static nonstd::optional<ConnectionContext> initConnections(
-          std::string block_store_dir,
-          std::string redis_host,
-          std::size_t redis_port,
-          std::string postgres_options);
+          std::string block_store_dir, std::string postgres_options);
 
      public:
       static expected::Result<std::shared_ptr<StorageImpl>, std::string> create(
-          std::string block_store_dir,
-          std::string redis_host,
-          std::size_t redis_port,
-          std::string postgres_connection);
+          std::string block_store_dir, std::string postgres_connection);
 
       expected::Result<std::unique_ptr<TemporaryWsv>, std::string> createTemporaryWsv() override;
 
@@ -77,11 +68,8 @@ namespace iroha {
 
      protected:
       StorageImpl(std::string block_store_dir,
-                  std::string redis_host,
-                  std::size_t redis_port,
                   std::string postgres_options,
                   std::unique_ptr<FlatFile> block_store,
-                  std::unique_ptr<cpp_redis::client> index,
                   std::unique_ptr<pqxx::lazyconnection> wsv_connection,
                   std::unique_ptr<pqxx::nontransaction> wsv_transaction);
 
@@ -91,17 +79,10 @@ namespace iroha {
       const std::string block_store_dir_;
 
       // db info
-      const std::string redis_host_;
-      const std::size_t redis_port_;
       const std::string postgres_options_;
 
      private:
       std::unique_ptr<FlatFile> block_store_;
-
-      /**
-       * Redis connection
-       */
-      std::unique_ptr<cpp_redis::client> index_;
 
       /**
        * Pg connection with direct transaction management
@@ -182,6 +163,26 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
     account_id character varying(197) NOT NULL REFERENCES account,
     permission_id character varying(45),
     PRIMARY KEY (permittee_account_id, account_id, permission_id)
+);
+CREATE TABLE IF NOT EXISTS height_by_hash (
+    hash bytea,
+    height text
+);
+CREATE TABLE IF NOT EXISTS height_by_account_set (
+    account_id text,
+    height text
+);
+CREATE TABLE IF NOT EXISTS index_by_creator_height (
+    id serial,
+    creator_id text,
+    height text,
+    index text
+);
+CREATE TABLE IF NOT EXISTS index_by_id_height_asset (
+    id text,
+    height text,
+    asset_id text,
+    index text
 );
 )";
     };

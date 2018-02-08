@@ -1,4 +1,4 @@
-# Copyright 2017 Soramitsu Co., Ltd.
+# Copyright 2018 Soramitsu Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,4 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(protobuf)
+addtest(transport_builder_test
+    transport_builder_test.cpp
+    )
+target_link_libraries(transport_builder_test
+    shared_model_proto_builders
+    shared_model_stateless_validation
+    )

@@ -30,8 +30,6 @@ namespace config_members {
   const char *InternalPort = "internal_port";
   const char *KeyPairPath = "key_pair_path";
   const char *PgOpt = "pg_opt";
-  const char *RedisHost = "redis_host";
-  const char *RedisPort = "redis_port";
   const char *MaxProposalSize = "max_proposal_size";
   const char *ProposalDelay = "proposal_delay";
   const char *VoteDelay = "vote_delay";
@@ -72,16 +70,6 @@ inline rapidjson::Document parse_iroha_config(const std::string &conf_path) {
   ac::assert_fatal(doc.HasMember(mbr::PgOpt), ac::no_member_error(mbr::PgOpt));
   ac::assert_fatal(doc[mbr::PgOpt].IsString(),
                    ac::type_error(mbr::PgOpt, kStrType));
-
-  ac::assert_fatal(doc.HasMember(mbr::RedisHost),
-                   ac::no_member_error(mbr::RedisHost));
-  ac::assert_fatal(doc[mbr::RedisHost].IsString(),
-                   ac::type_error(mbr::RedisHost, kStrType));
-
-  ac::assert_fatal(doc.HasMember(mbr::RedisPort),
-                   ac::no_member_error(mbr::RedisPort));
-  ac::assert_fatal(doc[mbr::RedisPort].IsUint(),
-                   ac::type_error(mbr::RedisPort, kUintType));
 
   ac::assert_fatal(doc.HasMember(mbr::MaxProposalSize),
                    ac::no_member_error(mbr::MaxProposalSize));
