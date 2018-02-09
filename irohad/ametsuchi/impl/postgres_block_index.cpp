@@ -86,10 +86,9 @@ namespace iroha {
 
     void PostgresBlockIndex::index(
         const w<shared_model::interface::Block> block) {
-      auto bl = block;  // block->makeOldModel();
-      const auto &height = std::to_string(bl->height());
+      const auto &height = std::to_string(block->height());
       boost::for_each(
-          bl->transactions() | boost::adaptors::indexed(0),
+          block->transactions() | boost::adaptors::indexed(0),
           [&](const auto &tx) {
             const auto &creator_id = tx.value()->creatorAccountId();
             const auto &hash = tx.value()->hash();
