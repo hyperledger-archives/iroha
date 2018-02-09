@@ -25,8 +25,10 @@
 #include <unordered_set>
 
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
-#include "model/commands/transfer_asset.hpp"
 #include "model/sha3_hash.hpp"
+
+#include "shared_model/interfaces/iroha_internal/block.hpp"
+#include "shared_model/interfaces/commands/transfer_asset.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -45,29 +47,27 @@ namespace iroha {
           + ");");
     }
 
-    auto PostgresBlockIndex::indexAccountAssets(
-        const std::string &account_id,
-        const std::string &height,
-        const std::string &index,
-        const model::Transaction::CommandsType &commands) {
+    auto PostgresBlockIndex::indexAccountAssets(const std::string &account_id,
+                                                const std::string &height,
+                                                const std::string &index,
+                                                const CommandsType &commands) {
       // flat map abstract commands to transfers
       auto transfers =
-          commands | boost::adaptors::transformed([](const auto &cmd) {
-            return std::dynamic_pointer_cast<model::TransferAsset>(cmd);
-          })
-          | boost::adaptors::filtered(
-                [](const auto &cmd) { return bool(cmd); });
+          commands | boost::adaptors::filtered([](const auto &cmd) {
+            return cmd->get().which() == 15;
+          });
 
       return std::accumulate(
           transfers.begin(),
           transfers.end(),
           true,
           [&](auto &status, const auto &cmd) {
-            for (const auto &id : {cmd->src_account_id, cmd->dest_account_id}) {
+            auto command = boost::get<w<shared_model::interface::TransferAsset>>(cmd->get());
+            for (const auto &id : {command->srcAccountId(), command->destAccountId()}) {
               status &= this->indexAccountIdHeight(id, height);
             }
 
-            auto ids = {account_id, cmd->src_account_id, cmd->dest_account_id};
+            auto ids = {account_id, command->srcAccountId(), command->destAccountId()};
             // flat map accounts to unindexed keys
             boost::for_each(ids, [&](const auto &id) {
               auto res = execute_(
@@ -76,7 +76,7 @@ namespace iroha {
                   "index) "
                   "VALUES ("
                   + transaction_.quote(id) + ", " + transaction_.quote(height)
-                  + ", " + transaction_.quote(cmd->asset_id) + ", "
+                  + ", " + transaction_.quote(command->assetId()) + ", "
                   + transaction_.quote(index) + ");");
               status &= res != boost::none;
             });
@@ -84,19 +84,25 @@ namespace iroha {
           });
     }
 
-    void PostgresBlockIndex::index(const model::Block &block) {
-      const auto &height = std::to_string(block.height);
+    void PostgresBlockIndex::index(
+        const w<shared_model::interface::Block> block) {
+      auto bl = block;  // block->makeOldModel();
+      const auto &height = std::to_string(bl->height());
       boost::for_each(
-          block.transactions | boost::adaptors::indexed(0),
+          bl->transactions() | boost::adaptors::indexed(0),
           [&](const auto &tx) {
-            const auto &creator_id = tx.value().creator_account_id;
-            const auto &hash = iroha::hash(tx.value()).to_string();
+            const auto &creator_id = tx.value()->creatorAccountId();
+            const auto &hash = tx.value()->hash();
             const auto &index = std::to_string(tx.index());
 
+            std::string tmp;
+            for (const auto c : hash.blob()) {
+              tmp += c;
+            }
             // tx hash -> block where hash is stored
             this->execute("INSERT INTO height_by_hash(hash, height) VALUES ("
                           + transaction_.quote(
-                                pqxx::binarystring(hash.data(), hash.size()))
+                                pqxx::binarystring(tmp.data(), hash.size()))
                           + ", " + transaction_.quote(height) + ");");
 
             this->indexAccountIdHeight(creator_id, height);
@@ -112,7 +118,7 @@ namespace iroha {
                 + ");");
 
             this->indexAccountAssets(
-                creator_id, height, index, tx.value().commands);
+                creator_id, height, index, tx.value()->commands());
           });
     }
   }  // namespace ametsuchi

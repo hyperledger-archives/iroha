@@ -22,6 +22,9 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+#include "shared_model/backend/protobuf/from_old_model.hpp"
+#include "shared_model/interfaces/iroha_internal/block.hpp"
+
 
 using namespace framework::test_subscriber;
 
@@ -55,7 +58,11 @@ namespace iroha {
         file->add(block.height,
                   iroha::stringToBytes(model::converters::jsonToString(
                       model::converters::JsonBlockFactory().serialize(block))));
-        index->index(block);
+        auto bl =
+            shared_model::detail::makePolymorphic<shared_model::proto::Block>(
+                shared_model::proto::from_old(block));
+
+        index->index(bl);
       }
 
       std::unique_ptr<pqxx::nontransaction> transaction;
@@ -172,7 +179,7 @@ namespace iroha {
 
       auto wrapper = make_test_subscriber<CallExact>(
           blocks->getAccountAssetTransactions(creator1, asset), 2);
-      wrapper.subscribe([i = 0, this](auto val) mutable {
+      wrapper.subscribe([ i = 0, this ](auto val) mutable {
         ASSERT_EQ(tx_hashes.at(i), iroha::hash(val));
         ++i;
       });

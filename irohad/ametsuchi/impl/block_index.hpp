@@ -18,12 +18,22 @@
 #ifndef IROHA_BLOCK_INDEX_HPP
 #define IROHA_BLOCK_INDEX_HPP
 
+#include "shared_model/utils/polymorphic_wrapper.hpp"
+
+namespace shared_model {
+  namespace interface {
+    class Block;
+  }
+}
 namespace iroha {
   namespace model {
     struct Block;
   }
 
   namespace ametsuchi {
+    template <class T>
+    using w = shared_model::detail::PolymorphicWrapper<T>;
+
     /**
      * Internal interface for modifying index on blocks and transactions
      */
@@ -35,7 +45,7 @@ namespace iroha {
        * Add block to index
        * @param block to be indexed
        */
-      virtual void index(const model::Block &block) = 0;
+      virtual void index(const w<shared_model::interface::Block>) = 0;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

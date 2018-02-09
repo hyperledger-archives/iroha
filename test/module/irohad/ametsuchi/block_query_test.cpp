@@ -22,10 +22,14 @@
 #include "framework/test_subscriber.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+#include "shared_model/backend/protobuf/from_old_model.hpp"
+#include "shared_model/interfaces/iroha_internal/block.hpp"
+
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
 using namespace framework::test_subscriber;
+
 
 class BlockQueryTest : public AmetsuchiTest {
  protected:
@@ -86,7 +90,10 @@ class BlockQueryTest : public AmetsuchiTest {
       file->add(b.height,
                 iroha::stringToBytes(converters::jsonToString(
                     converters::JsonBlockFactory().serialize(b))));
-      index->index(b);
+      auto bl =
+              shared_model::detail::makePolymorphic<shared_model::proto::Block>(
+                      shared_model::proto::from_old(b));
+      index->index(bl);
       blocks_total++;
     }
   }

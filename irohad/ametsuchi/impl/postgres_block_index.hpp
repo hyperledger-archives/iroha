@@ -27,13 +27,23 @@
 
 #include "model/transaction.hpp"  // for model::Transaction::CommandsType
 
+namespace shared_model {
+  namespace  interface {
+    class Command;
+  }
+}
 namespace iroha {
   namespace ametsuchi {
     class PostgresBlockIndex : public BlockIndex {
+      /// Type of command
+      using CommandType = w<shared_model::interface::Command>;
+
+      /// Type of ordered collection of commands
+      using CommandsType = std::vector<CommandType>;
      public:
       explicit PostgresBlockIndex(pqxx::nontransaction &transaction);
 
-      void index(const model::Block &block) override;
+      void index(const w<shared_model::interface::Block> block) override;
 
      private:
       /**
@@ -56,7 +66,7 @@ namespace iroha {
       auto indexAccountAssets(const std::string &account_id,
                               const std::string &height,
                               const std::string &index,
-                              const model::Transaction::CommandsType &commands);
+                              const CommandsType &commands);
 
       pqxx::nontransaction &transaction_;
       logger::Logger log_;

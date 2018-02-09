@@ -20,3 +20,5 @@ target_link_libraries(ametsuchi
     command_execution
     boost
     )
+
+target_include_directories(ametsuchi PUBLIC ${CMAKE_SOURCE_DIR})

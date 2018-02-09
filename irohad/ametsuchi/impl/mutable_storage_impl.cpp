@@ -21,8 +21,9 @@
 
 #include "model/execution/command_executor_factory.hpp"
 
-#include "ametsuchi/wsv_command.hpp"
 #include "model/sha3_hash.hpp"
+#include "shared_model/backend/protobuf/from_old_model.hpp"
+#include "shared_model/interfaces/iroha_internal/block.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -47,6 +48,10 @@ namespace iroha {
         const model::Block &block,
         std::function<bool(const model::Block &, WsvQuery &, const hash256_t &)>
             function) {
+      auto bl =
+          shared_model::detail::makePolymorphic<shared_model::proto::Block>(
+              shared_model::proto::from_old(block));
+
       auto execute_transaction = [this](auto &transaction) {
         auto execute_command = [this, &transaction](auto command) {
           auto result =
@@ -72,7 +77,7 @@ namespace iroha {
 
       if (result) {
         block_store_.insert(std::make_pair(block.height, block));
-        block_index_->index(block);
+        block_index_->index(bl);
 
         top_hash_ = block.hash;
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");
