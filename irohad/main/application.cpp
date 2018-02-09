@@ -236,7 +236,7 @@ void Irohad::initTransactionCommandService() {
       std::make_shared<TransactionProcessorImpl>(pcs, stateless_validator);
 
   command_service = std::make_unique<::torii::CommandService>(
-      pb_tx_factory, tx_processor, storage, 1s, 10s);
+      pb_tx_factory, tx_processor, storage, proposal_delay_);
 
   log_->info("[Init] => command service");
 }

@@ -35,7 +35,6 @@ limitations under the License.
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
-
 constexpr size_t TimesToriiBlocking = 5;
 
 using ::testing::_;
@@ -48,6 +47,7 @@ using namespace iroha::validation;
 using namespace iroha::ametsuchi;
 
 using namespace std::chrono_literals;
+constexpr std::chrono::milliseconds proposal_delay = 10s;
 
 using Commit = rxcpp::observable<iroha::model::Block>;
 
@@ -113,7 +113,7 @@ class ToriiServiceTest : public testing::Test {
       //----------- Server run ----------------
       runner
           ->append(std::make_unique<torii::CommandService>(
-              pb_tx_factory, tx_processor, storageMock, 1s, 10s))
+              pb_tx_factory, tx_processor, storageMock, proposal_delay))
           .append(std::make_unique<torii::QueryService>(
               pb_query_factory, pb_query_resp_factory, qpi))
           .run();

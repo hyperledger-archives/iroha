@@ -1,18 +1,19 @@
-/*
-Copyright 2017 Soramitsu Co., Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
+ * http://soramitsu.co.jp
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef TORII_COMMAND_SERVICE_HPP
 #define TORII_COMMAND_SERVICE_HPP
@@ -39,19 +40,14 @@ namespace torii {
      * @param pb_factory - model->protobuf and vice versa converter
      * @param tx_processor - processor of received transactions
      * @param storage - storage to request transactions outside the cache
-     * @param start_tx_processing_duration - maximum time between getting a
-     * StatusStream request and receiving at least one status about processing
-     * of corresponding transaction
-     * @param finish_tx_processing_duration - maximum transaction processing
-     * time. Generally is should be a time of one proposal propagation.
+     * @param proposal_delay - time of a one proposal propagation.
      */
     CommandService(
         std::shared_ptr<iroha::model::converters::PbTransactionFactory>
             pb_factory,
         std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor,
         std::shared_ptr<iroha::ametsuchi::Storage> storage,
-        std::chrono::duration<uint64_t> start_tx_processing_duration,
-        std::chrono::duration<uint64_t> finish_tx_processing_duration);
+        std::chrono::milliseconds proposal_delay);
 
     /**
      * Disable copying in any way to prevent potential issues with common
@@ -131,21 +127,21 @@ namespace torii {
 
    private:
     void checkCacheAndSend(
-        boost::optional<iroha::protocol::ToriiResponse> &resp,
+        const boost::optional<iroha::protocol::ToriiResponse> &resp,
         grpc::ServerWriter<iroha::protocol::ToriiResponse> &response_writer)
         const;
 
     iroha::protocol::TxStatus convertStatusToProto(
-        iroha::model::TransactionResponse::Status &status);
+        const iroha::model::TransactionResponse::Status &status);
 
-    bool isFinalStatus(iroha::protocol::TxStatus &status);
+    bool isFinalStatus(const iroha::protocol::TxStatus &status) const;
 
    private:
     std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
     std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
     std::shared_ptr<iroha::ametsuchi::Storage> storage_;
-    std::chrono::duration<uint64_t> start_tx_processing_duration_;
-    std::chrono::duration<uint64_t> finish_tx_processing_duration_;
+    std::chrono::milliseconds proposal_delay_;
+    std::chrono::milliseconds start_tx_processing_duration_;
     std::shared_ptr<
         iroha::cache::Cache<std::string, iroha::protocol::ToriiResponse>>
         cache_;

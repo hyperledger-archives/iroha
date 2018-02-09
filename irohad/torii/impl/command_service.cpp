@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +24,8 @@
 #include "model/sha3_hash.hpp"
 #include "torii/command_service.hpp"
 
+using namespace std::chrono_literals;
+
 namespace torii {
 
   CommandService::CommandService(
@@ -31,13 +33,12 @@ namespace torii {
           pb_factory,
       std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor,
       std::shared_ptr<iroha::ametsuchi::Storage> storage,
-      std::chrono::duration<uint64_t> start_tx_processing_duration,
-      std::chrono::duration<uint64_t> finish_tx_processing_duration)
+      std::chrono::milliseconds proposal_delay)
       : pb_factory_(pb_factory),
         tx_processor_(tx_processor),
         storage_(storage),
-        start_tx_processing_duration_(start_tx_processing_duration),
-        finish_tx_processing_duration_(finish_tx_processing_duration),
+        proposal_delay_(proposal_delay),
+        start_tx_processing_duration_(1s),
         cache_(std::make_shared<
                iroha::cache::Cache<std::string,
                                    iroha::protocol::ToriiResponse>>()) {
@@ -54,36 +55,9 @@ namespace torii {
             cache_->addItem(iroha_response->tx_hash, response);
             return;
           }
-          switch (iroha_response->current_status) {
-            case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
-              res->set_tx_status(
-                  iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
-              break;
-            case iroha::model::TransactionResponse::
-                STATELESS_VALIDATION_SUCCESS:
-              res->set_tx_status(
-                  iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
-              break;
-            case iroha::model::TransactionResponse::STATEFUL_VALIDATION_FAILED:
-              res->set_tx_status(
-                  iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED);
-              break;
-            case iroha::model::TransactionResponse::STATEFUL_VALIDATION_SUCCESS:
-              res->set_tx_status(
-                  iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
-              break;
-            case iroha::model::TransactionResponse::COMMITTED:
-              res->set_tx_status(iroha::protocol::TxStatus::COMMITTED);
-              break;
-            case iroha::model::TransactionResponse::IN_PROGRESS:
-              res->set_tx_status(iroha::protocol::TxStatus::IN_PROGRESS);
-              break;
-            case iroha::model::TransactionResponse::NOT_RECEIVED:
-            default:
-              res->set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
-              break;
-          }
 
+          auto proto_status = convertStatusToProto(iroha_response->current_status);
+          res->set_tx_status(proto_status);
           cache_->addItem(iroha_response->tx_hash, *res);
         });
   }
@@ -147,9 +121,9 @@ namespace torii {
     auto subscription = rxcpp::composite_subscription();
     auto request_hash = request.tx_hash();
 
-    // condition variable to ensure that current method will not return before
-    // transaction is processed or a timeout reached. It blocks current thread
-    // and waits for thread from subscribe() to unblock.
+    /// condition variable to ensure that current method will not return before
+    /// transaction is processed or a timeout reached. It blocks current thread
+    /// and waits for thread from subscribe() to unblock.
     std::condition_variable cv;
 
     tx_processor_->transactionNotifier()
@@ -178,8 +152,9 @@ namespace torii {
 
     std::mutex wait_subscription;
     std::unique_lock<std::mutex> lock(wait_subscription);
-    // One second should be enough to at least start tx processing.
-    // Otherwise we think there is no such tx at all.
+    /// we expect that start_tx_processing_duration_ will be enough
+    /// to at least start tx processing.
+    /// Otherwise we think there is no such tx at all.
     cv.wait_for(lock, start_tx_processing_duration_);
     if (not finished) {
       if (not resp) {
@@ -189,8 +164,9 @@ namespace torii {
         resp_none.set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);
         response_writer.WriteLast(resp_none, grpc::WriteOptions());
       } else {
-        // Tx processing was started but still unfinished. We give it more time.
-        cv.wait_for(lock, finish_tx_processing_duration_);
+        /// Tx processing was started but still unfinished. We give it
+        /// 2*proposal_delay time until timeout.
+        cv.wait_for(lock, 2 * proposal_delay_);
       }
     }
   }
@@ -204,16 +180,11 @@ namespace torii {
   }
 
   void CommandService::checkCacheAndSend(
-      boost::optional<iroha::protocol::ToriiResponse> &resp,
+      const boost::optional<iroha::protocol::ToriiResponse> &resp,
       grpc::ServerWriter<iroha::protocol::ToriiResponse> &response_writer)
       const {
     if (resp) {
-      if (resp->tx_status()
-              == iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED
-          or resp->tx_status()
-              == iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED
-          or resp->tx_status() == iroha::protocol::TxStatus::NOT_RECEIVED
-          or resp->tx_status() == iroha::protocol::TxStatus::COMMITTED) {
+      if (isFinalStatus(resp->tx_status())) {
         response_writer.WriteLast(*resp, grpc::WriteOptions());
         return;
       }
@@ -222,7 +193,7 @@ namespace torii {
   }
 
   iroha::protocol::TxStatus CommandService::convertStatusToProto(
-      iroha::model::TransactionResponse::Status &status) {
+      const iroha::model::TransactionResponse::Status &status) {
     iroha::protocol::TxStatus proto_status;
     switch (status) {
       case iroha::model::TransactionResponse::STATELESS_VALIDATION_FAILED:
@@ -251,11 +222,16 @@ namespace torii {
     return proto_status;
   }
 
-  bool CommandService::isFinalStatus(iroha::protocol::TxStatus &status) {
-    return status == iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED
-        or status == iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED
-        or status == iroha::protocol::TxStatus::NOT_RECEIVED
-        or status == iroha::protocol::TxStatus::COMMITTED;
+  bool CommandService::isFinalStatus(
+      const iroha::protocol::TxStatus &status) const {
+    using namespace iroha::protocol;
+    std::vector<TxStatus> final_statuses = {
+        TxStatus::STATELESS_VALIDATION_FAILED,
+        TxStatus::STATEFUL_VALIDATION_FAILED,
+        TxStatus::NOT_RECEIVED,
+        TxStatus::COMMITTED};
+    return (std::find(
+               std::begin(final_statuses), std::end(final_statuses), status))
+        != std::end(final_statuses);
   }
-
 }  // namespace torii
