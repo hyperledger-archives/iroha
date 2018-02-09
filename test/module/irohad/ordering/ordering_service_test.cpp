@@ -23,9 +23,11 @@
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 
+#include "mock_ordering_service_persistent_state.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "ametsuchi/ordering_service_persistent_state.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 
 using namespace iroha;
@@ -35,12 +37,12 @@ using namespace iroha::network;
 using namespace iroha::ametsuchi;
 using namespace std::chrono_literals;
 
-using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
+using ::testing::_;
 
 static logger::Logger log_ = logger::testLog("OrderingService");
 
@@ -72,9 +74,12 @@ class OrderingServiceTest : public ::testing::Test {
   void SetUp() override {
     wsv = std::make_shared<MockPeerQuery>();
     fake_transport = std::make_shared<MockOrderingServiceTransport>();
+    fake_persistent_state =
+        std::make_shared<MockOrderingServicePersistentState>();
   }
 
   std::shared_ptr<MockOrderingServiceTransport> fake_transport;
+  std::shared_ptr<MockOrderingServicePersistentState> fake_persistent_state;
   std::condition_variable cv;
   std::mutex m;
   std::string address{"0.0.0.0:50051"};
@@ -90,7 +95,7 @@ TEST_F(OrderingServiceTest, SimpleTest) {
   const size_t commit_delay = 1000;
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, fake_transport);
+      wsv, max_proposal, commit_delay, fake_transport, fake_persistent_state);
   fake_transport->subscribe(ordering_service);
 
   EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(1);
@@ -103,7 +108,7 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   const size_t commit_delay = 1000;
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, fake_transport);
+      wsv, max_proposal, commit_delay, fake_transport, fake_persistent_state);
   fake_transport->subscribe(ordering_service);
 
   // Init => proposal size 5 => 2 proposals after 10 transactions
@@ -136,7 +141,7 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   const size_t commit_delay = 400;
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, fake_transport);
+      wsv, max_proposal, commit_delay, fake_transport, fake_persistent_state);
   fake_transport->subscribe(ordering_service);
 
   EXPECT_CALL(*fake_transport, publishProposal(_, _))

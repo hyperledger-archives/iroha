@@ -16,6 +16,7 @@
  */
 
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "ametsuchi/ordering_service_persistent_state.hpp"
 #include "model/peer.hpp"
 
 namespace iroha {
@@ -24,13 +25,17 @@ namespace iroha {
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
         size_t max_size,
         size_t delay_milliseconds,
-        std::shared_ptr<network::OrderingServiceTransport> transport)
+        std::shared_ptr<network::OrderingServiceTransport> transport,
+        std::shared_ptr<ametsuchi::OrderingServicePersistentState> persistent_state)
         : wsv_(wsv),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),
           transport_(transport),
-          proposal_height(2) {
+          persistent_state_(persistent_state) {
       updateTimer();
+
+      // restore state of ordering service from persistent storage
+      proposal_height = persistent_state_->loadProposalHeight().value();
     }
 
     void OrderingServiceImpl::onTransaction(
@@ -52,6 +57,10 @@ namespace iroha {
 
       model::Proposal proposal(txs);
       proposal.height = proposal_height++;
+
+      // Save proposal height in persistent storage.
+      // In case of restart it reloads state.
+      persistent_state_->saveProposalHeight(proposal_height);
 
       publishProposal(std::move(proposal));
     }

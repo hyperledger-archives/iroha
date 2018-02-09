@@ -25,13 +25,16 @@
 
 #include <nonstd/optional.hpp>
 #include <pqxx/pqxx>
+
 #include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
+
 
 namespace iroha {
   namespace ametsuchi {
 
     class FlatFile;
+    class OrderingServicePersistentState;
 
     struct ConnectionContext {
       ConnectionContext(std::unique_ptr<FlatFile> block_store,
@@ -66,6 +69,9 @@ namespace iroha {
 
       std::shared_ptr<BlockQuery> getBlockQuery() const override;
 
+      std::shared_ptr<OrderingServicePersistentState>
+      getOrderingServicePersistentState() const override;
+
      protected:
       StorageImpl(std::string block_store_dir,
                   std::string postgres_options,
@@ -94,6 +100,8 @@ namespace iroha {
       std::shared_ptr<WsvQuery> wsv_;
 
       std::shared_ptr<BlockQuery> blocks_;
+
+      std::shared_ptr<OrderingServicePersistentState> ordering_state_;
 
       model::converters::JsonBlockFactory serializer_;
 
@@ -184,6 +192,11 @@ CREATE TABLE IF NOT EXISTS index_by_id_height_asset (
     asset_id text,
     index text
 );
+CREATE TABLE IF NOT EXISTS ordering_service_state (
+    proposal_height bigserial
+);
+INSERT INTO ordering_service_state
+VALUES (2); -- start height (1 for genesis)
 )";
     };
   }  // namespace ametsuchi

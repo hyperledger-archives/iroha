@@ -16,12 +16,13 @@
  */
 
 #include "framework/test_subscriber.hpp"
+#include "mock_ordering_service_persistent_state.hpp"
+#include "model/asset.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
-#include "model/asset.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -41,6 +42,7 @@ class OrderingGateServiceTest : public ::testing::Test {
     gate_transport->subscribe(gate);
 
     service_transport = std::make_shared<OrderingServiceTransportGrpc>();
+    persistent_state = std::make_shared<MockOrderingServicePersistentState>();
     counter = 2;
   }
 
@@ -110,6 +112,7 @@ class OrderingGateServiceTest : public ::testing::Test {
   Peer peer;
   std::shared_ptr<OrderingGateTransportGrpc> gate_transport;
   std::shared_ptr<OrderingServiceTransportGrpc> service_transport;
+  std::shared_ptr<OrderingServicePersistentState> persistent_state;
 };
 
 TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
@@ -122,7 +125,7 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   const size_t commit_delay = 400;
 
   service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport);
+      wsv, max_proposal, commit_delay, service_transport, persistent_state);
   service_transport->subscribe(service);
 
   start();
@@ -164,7 +167,7 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   const size_t commit_delay = 1000;
 
   service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport);
+      wsv, max_proposal, commit_delay, service_transport, persistent_state);
   service_transport->subscribe(service);
 
   start();

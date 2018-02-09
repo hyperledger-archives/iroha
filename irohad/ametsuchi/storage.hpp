@@ -31,6 +31,7 @@ namespace iroha {
 
     class BlockQuery;
     class WsvQuery;
+    class OrderingServicePersistentState;
 
     /**
      * Storage interface, which allows queries on current committed state, and
@@ -41,6 +42,13 @@ namespace iroha {
       virtual std::shared_ptr<WsvQuery> getWsvQuery() const = 0;
 
       virtual std::shared_ptr<BlockQuery> getBlockQuery() const = 0;
+
+      /**
+       * Get storage for ordering storage state
+       * @return storage for ordering service state
+       */
+      virtual std::shared_ptr<OrderingServicePersistentState>
+      getOrderingServicePersistentState() const = 0;
 
       /**
        * Raw insertion of blocks without validation

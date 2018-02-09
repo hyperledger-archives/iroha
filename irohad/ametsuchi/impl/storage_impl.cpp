@@ -19,11 +19,12 @@
 
 #include "ametsuchi/impl/flat_file/flat_file.hpp"  // for FlatFile
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
-#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/postgres_block_query.hpp"
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "model/converters/json_common.hpp"
 #include "model/execution/command_executor_factory.hpp"  // for CommandExecutorFactory
+#include "postgres_ordering_service_persistent_state.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -53,7 +54,10 @@ namespace iroha {
           wsv_transaction_(std::move(wsv_transaction)),
           wsv_(std::make_shared<PostgresWsvQuery>(*wsv_transaction_)),
           blocks_(std::make_shared<PostgresBlockQuery>(*wsv_transaction_,
-                                                       *block_store_)) {
+                                                       *block_store_)),
+          ordering_state_(
+              std::make_shared<PostgresOrderingServicePersistentState>(
+                  *wsv_transaction_)) {
       log_ = logger::log("StorageImpl");
 
       wsv_transaction_->exec(init_);
@@ -148,6 +152,7 @@ DROP TABLE IF EXISTS height_by_hash;
 DROP TABLE IF EXISTS height_by_account_set;
 DROP TABLE IF EXISTS index_by_creator_height;
 DROP TABLE IF EXISTS index_by_id_height_asset;
+DROP TABLE IF EXISTS ordering_service_state;
 )";
 
       // erase db
@@ -167,8 +172,7 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
     }
 
     nonstd::optional<ConnectionContext> StorageImpl::initConnections(
-        std::string block_store_dir,
-        std::string postgres_options) {
+        std::string block_store_dir, std::string postgres_options) {
       auto log_ = logger::log("StorageImpl:initConnection");
       log_->info("Start storage creation");
 
@@ -200,8 +204,7 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
     }
 
     std::shared_ptr<StorageImpl> StorageImpl::create(
-        std::string block_store_dir,
-        std::string postgres_options) {
+        std::string block_store_dir, std::string postgres_options) {
       auto ctx = initConnections(block_store_dir, postgres_options);
       if (not ctx.has_value()) {
         return nullptr;
@@ -235,6 +238,11 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
 
     std::shared_ptr<BlockQuery> StorageImpl::getBlockQuery() const {
       return blocks_;
+    }
+
+    std::shared_ptr<OrderingServicePersistentState>
+    StorageImpl::getOrderingServicePersistentState() const {
+      return ordering_state_;
     }
   }  // namespace ametsuchi
 }  // namespace iroha

@@ -18,24 +18,25 @@
 #ifndef IROHA_ORDERING_SERVICE_IMPL_HPP
 #define IROHA_ORDERING_SERVICE_IMPL_HPP
 
-#include <tbb/concurrent_queue.h>
 #include <memory>
 #include <unordered_map>
 
-#include "network/impl/async_grpc_client.hpp"
-#include "network/ordering_service.hpp"
-#include "network/ordering_service_transport.hpp"
+#include <tbb/concurrent_queue.h>
+#include <rxcpp/rx.hpp>
 
 #include "ametsuchi/peer_query.hpp"
-#include "ordering.grpc.pb.h"
-
-#include <rxcpp/rx.hpp>
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/proposal.hpp"
 #include "network/impl/async_grpc_client.hpp"
+#include "network/ordering_service.hpp"
+#include "network/ordering_service_transport.hpp"
 #include "ordering.grpc.pb.h"
 
 namespace iroha {
+
+  namespace ametsuchi {
+    class OrderingServicePersistentState;
+  }
   namespace ordering {
 
     /**
@@ -45,6 +46,7 @@ namespace iroha {
      * Sends proposal by given timer interval and proposal size
      * @param delay_milliseconds timer delay
      * @param max_size proposal size
+     * @param persistent_state - storage for persistent state of ordering service
      */
     class OrderingServiceImpl : public network::OrderingService {
      public:
@@ -52,7 +54,8 @@ namespace iroha {
           std::shared_ptr<ametsuchi::PeerQuery> wsv,
           size_t max_size,
           size_t delay_milliseconds,
-          std::shared_ptr<network::OrderingServiceTransport> transport);
+          std::shared_ptr<network::OrderingServiceTransport> transport,
+          std::shared_ptr<ametsuchi::OrderingServicePersistentState> persistent_state);
 
       /**
        * Process transaction received from network
@@ -102,6 +105,16 @@ namespace iroha {
        */
       const size_t delay_milliseconds_;
       std::shared_ptr<network::OrderingServiceTransport> transport_;
+
+      /**
+       * Persistense storage for proposal counter.
+       * In case of relaunch, ordering server will enumerate proposals consecutively.
+       */
+      std::shared_ptr<ametsuchi::OrderingServicePersistentState> persistent_state_;
+
+      /**
+       * Proposal counter
+       */
       size_t proposal_height;
     };
   }  // namespace ordering

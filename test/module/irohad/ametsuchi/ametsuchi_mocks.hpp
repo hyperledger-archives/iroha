@@ -28,11 +28,10 @@
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
 #include "model/account.hpp"
-#include "model/asset.hpp"
-#include "model/peer.hpp"
-#include "model/domain.hpp"
 #include "model/account_asset.hpp"
-
+#include "model/asset.hpp"
+#include "model/domain.hpp"
+#include "model/peer.hpp"
 
 #include <boost/optional.hpp>
 
@@ -189,6 +188,9 @@ namespace iroha {
      public:
       MOCK_CONST_METHOD0(getWsvQuery, std::shared_ptr<WsvQuery>(void));
       MOCK_CONST_METHOD0(getBlockQuery, std::shared_ptr<BlockQuery>(void));
+      MOCK_CONST_METHOD0(
+          getOrderingServicePersistentState,
+          std::shared_ptr<OrderingServicePersistentState>(void));
       MOCK_METHOD0(createTemporaryWsv, std::unique_ptr<TemporaryWsv>(void));
       MOCK_METHOD0(createMutableStorage, std::unique_ptr<MutableStorage>(void));
       MOCK_METHOD1(doCommit, void(MutableStorage *storage));
