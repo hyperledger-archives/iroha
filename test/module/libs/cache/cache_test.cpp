@@ -132,3 +132,44 @@ TEST(CacheTest, FindVeryOldTransaction) {
   }
   ASSERT_EQ(cache.findItem("0"), boost::none);
 }
+
+// Test with custom type
+struct Key {
+  std::string info;
+
+  bool operator==(const Key &a) const {
+    return info == a.info;
+  }
+};
+
+// Hash stratefy for key type
+namespace std {
+  template <>
+  struct hash<Key> {
+    std::size_t operator()(const Key &a) const {
+      // dumb hash function
+      return a.info.size();
+    }
+  };
+}  // namespace std
+
+/**
+ * @given key of custom type with custom hasher
+ * @when object with this type is added to cache
+ * @then value corresponding to this key is found
+ */
+TEST(CacheTest, CustomHasher) {
+  Cache<Key, std::string> cache;
+
+  Key key;
+  key.info = "key";
+
+  std::string value = "value";
+
+  cache.addItem(key, value);
+
+  auto val = cache.findItem(key);
+
+  ASSERT_TRUE(val);
+  ASSERT_EQ(val.value(), value);
+}
