@@ -149,9 +149,9 @@ TEST_F(SynchronizerTest, ValidWhenBlockValidationFailure) {
 
   EXPECT_CALL(*block_loader, retrieveBlocks(_))
       .WillOnce(Return(rxcpp::observable<>::just(
-          static_cast<shared_model::interface::Commit>(
-              std::make_shared<shared_model::proto::Block>(
-                  shared_model::proto::from_old(test_block))))));
+          iroha::makeWrapper<shared_model::interface::Block,
+                             shared_model::proto::Block>(
+              shared_model::proto::from_old(test_block)))));
 
   EXPECT_CALL(*consensus_gate, on_commit())
       .WillOnce(Return(rxcpp::observable<>::empty<Block>()));

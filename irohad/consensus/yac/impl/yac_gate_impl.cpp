@@ -100,7 +100,7 @@ namespace iroha {
                                     {model_hash.begin(), model_hash.end()}));
                             // if load is successful
                             if (block.has_value()) {
-                              std::shared_ptr<iroha::model::Block> old_block(
+                              std::unique_ptr<iroha::model::Block> old_block(
                                   block.value()->makeOldModel());
                               subscriber.on_next(*old_block);
                             }

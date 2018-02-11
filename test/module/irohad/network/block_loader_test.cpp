@@ -177,7 +177,7 @@ TEST_F(BlockLoaderTest, ValidWhenBlockPresent) {
   auto block = loader->retrieveBlock(peer_key, requested.hash());
 
   ASSERT_TRUE(block.has_value());
-  ASSERT_EQ(*block.value(), requested);
+  ASSERT_EQ(*block.value().operator->(), requested);
 }
 
 TEST_F(BlockLoaderTest, ValidWhenBlockMissing) {

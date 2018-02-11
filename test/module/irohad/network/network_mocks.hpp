@@ -39,12 +39,12 @@ namespace iroha {
     class MockBlockLoader : public BlockLoader {
      public:
       MOCK_METHOD1(retrieveBlocks,
-                   rxcpp::observable<shared_model::interface::Commit>(
-                       shared_model::crypto::PublicKey));
+                   rxcpp::observable<Wrapper<shared_model::interface::Block>>(
+                       const shared_model::crypto::PublicKey &));
       MOCK_METHOD2(retrieveBlock,
-                   nonstd::optional<shared_model::interface::Commit>(
-                       shared_model::crypto::PublicKey,
-                       shared_model::interface::Block::HashType));
+                   nonstd::optional<Wrapper<shared_model::interface::Block>>(
+                       const shared_model::crypto::PublicKey &,
+                       const shared_model::interface::Block::HashType &));
     };
 
     class MockOrderingGate : public OrderingGate {
