@@ -65,7 +65,7 @@ class CMakeBuild(build_ext):
 if __name__ == "__main__":
     setup(
         name='iroha',
-        version='0.0.21t',
+        version='0.0.23',
         author='Soramitsu Co Ltd',
         author_email='savva@soramitsu.co.jp',
         description='Python library for Hyperledger Iroha',
