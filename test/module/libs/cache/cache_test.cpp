@@ -143,15 +143,12 @@ struct Key {
 };
 
 // Hash stratefy for key type
-namespace std {
-  template <>
-  struct hash<Key> {
-    std::size_t operator()(const Key &a) const {
-      // dumb hash function
-      return a.info.size();
-    }
-  };
-}  // namespace std
+struct KeyHasher {
+  std::size_t operator()(const Key &a) const {
+    // dumb hash function
+    return a.info.size();
+  }
+};
 
 /**
  * @given key of custom type with custom hasher
@@ -159,7 +156,7 @@ namespace std {
  * @then value corresponding to this key is found
  */
 TEST(CacheTest, CustomHasher) {
-  Cache<Key, std::string> cache;
+  Cache<Key, std::string, KeyHasher> cache;
 
   Key key;
   key.info = "key";
