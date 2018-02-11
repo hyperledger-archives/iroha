@@ -94,10 +94,8 @@ namespace iroha {
             const auto &hash = tx.value()->hash();
             const auto &index = std::to_string(tx.index());
 
-            std::string tmp;
-            for (const auto c : hash.blob()) {
-              tmp += c;
-            }
+            const auto& blob = hash.blob();
+            std::string tmp{blob.begin(), blob.end()};
             // tx hash -> block where hash is stored
             this->execute("INSERT INTO height_by_hash(hash, height) VALUES ("
                           + transaction_.quote(
