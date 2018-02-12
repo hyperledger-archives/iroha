@@ -30,7 +30,6 @@ using namespace iroha::ametsuchi;
 using namespace iroha::model;
 using namespace framework::test_subscriber;
 
-
 class BlockQueryTest : public AmetsuchiTest {
  protected:
   void SetUp() override {

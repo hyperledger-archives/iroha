@@ -28,13 +28,16 @@
 #include "model/transaction.hpp"  // for model::Transaction::CommandsType
 
 namespace shared_model {
-  namespace  interface {
+  namespace interface {
     class Command;
   }
 }
 namespace iroha {
   namespace ametsuchi {
     class PostgresBlockIndex : public BlockIndex {
+      template <class T>
+      using w = shared_model::detail::PolymorphicWrapper<T>;
+
       /// Type of command
       using CommandType = w<shared_model::interface::Command>;
 

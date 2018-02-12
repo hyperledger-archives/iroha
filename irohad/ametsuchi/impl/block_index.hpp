@@ -18,26 +18,24 @@
 #ifndef IROHA_BLOCK_INDEX_HPP
 #define IROHA_BLOCK_INDEX_HPP
 
-#include "shared_model/utils/polymorphic_wrapper.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 
 namespace shared_model {
   namespace interface {
     class Block;
-  }
-}
-namespace iroha {
-  namespace model {
-    struct Block;
-  }
+  }  // namespace interface
+}  // namespace shared_model
 
+namespace iroha {
   namespace ametsuchi {
-    template <class T>
-    using w = shared_model::detail::PolymorphicWrapper<T>;
 
     /**
      * Internal interface for modifying index on blocks and transactions
      */
     class BlockIndex {
+      template <class T>
+      using w = shared_model::detail::PolymorphicWrapper<T>;
+
      public:
       virtual ~BlockIndex() = default;
 

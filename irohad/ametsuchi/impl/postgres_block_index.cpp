@@ -54,7 +54,7 @@ namespace iroha {
       // flat map abstract commands to transfers
       auto transfers =
           commands | boost::adaptors::filtered([](const auto &cmd) {
-            return cmd->get().which() == 15;
+            return cmd->get().type() == typeid(w<shared_model::interface::TransferAsset>);
           });
 
       return std::accumulate(
@@ -63,9 +63,9 @@ namespace iroha {
           true,
           [&](auto &status, const auto &cmd) {
             auto command = boost::get<w<shared_model::interface::TransferAsset>>(cmd->get());
-            for (const auto &id : {command->srcAccountId(), command->destAccountId()}) {
-              status &= this->indexAccountIdHeight(id, height);
-            }
+            status &= this->indexAccountIdHeight(command->srcAccountId(), height) &
+                    this->indexAccountIdHeight(command->destAccountId(), height);
+
 
             auto ids = {account_id, command->srcAccountId(), command->destAccountId()};
             // flat map accounts to unindexed keys
