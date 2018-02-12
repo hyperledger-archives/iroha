@@ -65,7 +65,8 @@ namespace iroha {
             notifier_.get_subscriber().on_next(
                 validator_->validate(proposal, *(temporaryStorage.value))
             );
-          }, [](expected::Error<std::string> &error) {
+          }, [&](expected::Error<std::string> &error) {
+            log_->error(error.error);
             throw std::runtime_error(error.error);
           }
       );

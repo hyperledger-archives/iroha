@@ -66,7 +66,6 @@ namespace iroha {
     expected::Result<std::unique_ptr<TemporaryWsv>, std::string> StorageImpl::createTemporaryWsv() {
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
-        log_->error(kCommandExecutorError);
         return expected::makeError(kCommandExecutorError);
       }
 
@@ -75,7 +74,6 @@ namespace iroha {
       try {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
-        log_->error(kPsqlBroken, e.what());
         return expected::makeError((boost::format(kPsqlBroken) % e.what()).str());
       }
       auto wsv_transaction =
@@ -92,7 +90,6 @@ namespace iroha {
     expected::Result<std::unique_ptr<MutableStorage>, std::string> StorageImpl::createMutableStorage() {
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
-        log_->error(kCommandExecutorError);
         return expected::makeError(kCommandExecutorError);
       }
 
@@ -101,7 +98,6 @@ namespace iroha {
       try {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
-        log_->error(kPsqlBroken, e.what());
         return expected::makeError((boost::format(kPsqlBroken) % e.what()).str());
       }
       auto wsv_transaction =
@@ -137,7 +133,7 @@ namespace iroha {
             log_->info("block inserted: {}", inserted);
             commit(std::move(storage.value));
           }, [&](expected::Error<std::string> &error) {
-            log_->error("Cannot create mutable storage");
+            log_->error(error.error);
           }
       );
 
