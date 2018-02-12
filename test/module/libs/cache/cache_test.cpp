@@ -133,7 +133,7 @@ TEST(CacheTest, FindVeryOldTransaction) {
   ASSERT_EQ(cache.findItem("0"), boost::none);
 }
 
-// Test with custom type
+/// Custom key type for the test
 struct Key {
   std::string info;
 
@@ -142,7 +142,7 @@ struct Key {
   }
 };
 
-// Hash stratefy for key type
+/// Hash strategy for the key type
 struct KeyHasher {
   std::size_t operator()(const Key &a) const {
     // dumb hash function

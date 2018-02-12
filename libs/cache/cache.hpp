@@ -24,6 +24,13 @@
 
 namespace iroha {
   namespace cache {
+
+  /**
+   * Cache for arbitrary types
+   * @tparam KeyType type of key objects
+   * @tparam ValueType type of value objects
+   * @tparam KeyHash hasher for keys
+   */
     template <typename KeyType, typename ValueType, typename KeyHash = std::hash<KeyType>>
     class Cache
         : public AbstractCache<KeyType, ValueType, Cache<KeyType, ValueType, KeyHash>> {
