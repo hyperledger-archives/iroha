@@ -27,12 +27,6 @@
 
 namespace shared_model {
   namespace validation {
-    using DefaultSignableTransactionValidator =
-        SignableTransactionValidator<FieldValidator,
-                                     CommandValidatorVisitor<FieldValidator>>;
-    using DefaultSignableQueryValidator =
-        SignableQueryValidator<FieldValidator,
-                               QueryValidatorVisitor<FieldValidator>>;
     using DefaultTransactionValidator =
         TransactionValidator<FieldValidator,
                              CommandValidatorVisitor<FieldValidator>>;
@@ -41,6 +35,17 @@ namespace shared_model {
     using DefaultProposalValidator = ProposalValidator;
 
     using DefaultBlockValidator = BlockValidator;
+
+    using DefaultSignableTransactionValidator = SignableModelValidator<
+        DefaultTransactionValidator,
+        detail::PolymorphicWrapper<interface::Transaction>,
+        FieldValidator>;
+
+    using DefaultSignableQueryValidator =
+        SignableModelValidator<DefaultQueryValidator,
+                               detail::PolymorphicWrapper<interface::Query>,
+                               FieldValidator>;
+
   }  // namespace validation
 }  // namespace shared_model
 

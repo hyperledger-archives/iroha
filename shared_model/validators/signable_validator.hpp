@@ -24,62 +24,22 @@
 namespace shared_model {
   namespace validation {
 
-    template <typename FieldValidator, typename CommandValidator>
-    class SignableTransactionValidator
-        : public TransactionValidator<FieldValidator, CommandValidator> {
+    template <typename ModelValidator, typename Model, typename FieldValidator>
+    class SignableModelValidator : public ModelValidator {
+      // using ModelValidator::ModelValidator;
      public:
-      SignableTransactionValidator(
-          const FieldValidator &fieldValidator = FieldValidator())
-          : fieldValidator_(fieldValidator),
-            TransactionValidator<FieldValidator, CommandValidator>(
-                fieldValidator_) {}
-
-      Answer validate(
-          detail::PolymorphicWrapper<interface::Transaction> tx) const {
-        Answer answer =
-            TransactionValidator<FieldValidator, CommandValidator>::validate(
-                tx);
-        std::string tx_reason_name = "Signature";
-        ReasonsGroupType tx_reason(tx_reason_name, GroupedReasons());
-        fieldValidator_.validateSignatures(
-            tx_reason, tx->signatures(), tx->blob());
-        if (not tx_reason.second.empty()) {
-          answer.addReason(std::move(tx_reason));
+      Answer validate(const Model &model) const {
+        auto answer = ModelValidator::validate(model);
+        std::string reason_name = "Signature";
+        ReasonsGroupType reason(reason_name, GroupedReasons());
+        FieldValidator().validateSignatures(
+            reason, model->signatures(), model->blob());
+        if (not reason.second.empty()) {
+          answer.addReason(std::move(reason));
         }
         return answer;
       }
-
-     private:
-      FieldValidator fieldValidator_;
     };
-
-    template <typename FieldValidator, typename QueryFieldValidator>
-    class SignableQueryValidator
-        : public QueryValidator<FieldValidator, QueryFieldValidator> {
-     public:
-      SignableQueryValidator(
-          const FieldValidator &fieldValidator = FieldValidator())
-          : fieldValidator_(fieldValidator),
-            QueryValidator<FieldValidator, QueryFieldValidator>(
-                fieldValidator_) {}
-
-      Answer validate(detail::PolymorphicWrapper<interface::Query> qry) const {
-        Answer answer =
-            QueryValidator<FieldValidator, QueryFieldValidator>::validate(qry);
-        std::string qry_reason_name = "Signature";
-        ReasonsGroupType qry_reason(qry_reason_name, GroupedReasons());
-        fieldValidator_.validateSignatures(
-            qry_reason, qry->signatures(), qry->blob());
-        if (not qry_reason.second.empty()) {
-          answer.addReason(std::move(qry_reason));
-        }
-        return answer;
-      }
-
-     private:
-      FieldValidator fieldValidator_;
-    };
-
   }  // namespace validation
 }  // namespace shared_model
 #endif  // IROHA_SHARED_MODEL_SIGNABLE_VALIDATOR_HPP

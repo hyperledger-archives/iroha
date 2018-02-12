@@ -236,7 +236,7 @@ namespace shared_model {
       for (const auto &signature : signatures) {
         if (not shared_model::crypto::CryptoVerifier<>::verify(
                 signature->signedData(), source, signature->publicKey())) {
-          auto message = (boost::format("Wrong signature with public key %s")
+          auto message = (boost::format("Wrong signature with %s")
                           % signature->publicKey().toString())
                              .str();
           reason.second.push_back(message);
