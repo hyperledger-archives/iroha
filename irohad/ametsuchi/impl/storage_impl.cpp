@@ -27,12 +27,6 @@
 
 #include <boost/format.hpp>
 
-using iroha::expected::Error;
-using iroha::expected::Result;
-using iroha::expected::Value;
-using iroha::expected::makeError;
-using iroha::expected::makeValue;
-
 namespace iroha {
   namespace ametsuchi {
 
@@ -69,11 +63,11 @@ namespace iroha {
           "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;");
     }
 
-    Result<std::unique_ptr<TemporaryWsv>, std::string> StorageImpl::createTemporaryWsv() {
+    expected::Result<std::unique_ptr<TemporaryWsv>, std::string> StorageImpl::createTemporaryWsv() {
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
         log_->error(kCommandExecutorError);
-        return makeError(kCommandExecutorError);
+        return expected::makeError(kCommandExecutorError);
       }
 
       auto postgres_connection =
@@ -82,12 +76,12 @@ namespace iroha {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
         log_->error(kPsqlBroken, e.what());
-        return makeError((boost::format(kPsqlBroken) % e.what()).str());
+        return expected::makeError((boost::format(kPsqlBroken) % e.what()).str());
       }
       auto wsv_transaction =
           std::make_unique<pqxx::nontransaction>(*postgres_connection, kTmpWsv);
 
-      return makeValue<std::unique_ptr<TemporaryWsv>>(
+      return expected::makeValue<std::unique_ptr<TemporaryWsv>>(
           std::make_unique<TemporaryWsvImpl>(
               std::move(postgres_connection),
               std::move(wsv_transaction),
@@ -95,11 +89,11 @@ namespace iroha {
       );
     }
 
-    Result<std::unique_ptr<MutableStorage>, std::string> StorageImpl::createMutableStorage() {
+    expected::Result<std::unique_ptr<MutableStorage>, std::string> StorageImpl::createMutableStorage() {
       auto command_executors = model::CommandExecutorFactory::create();
       if (not command_executors.has_value()) {
         log_->error(kCommandExecutorError);
-        return makeError(kCommandExecutorError);
+        return expected::makeError(kCommandExecutorError);
       }
 
       auto postgres_connection =
@@ -108,7 +102,7 @@ namespace iroha {
         postgres_connection->activate();
       } catch (const pqxx::broken_connection &e) {
         log_->error(kPsqlBroken, e.what());
-        return makeError((boost::format(kPsqlBroken) % e.what()).str());
+        return expected::makeError((boost::format(kPsqlBroken) % e.what()).str());
       }
       auto wsv_transaction =
           std::make_unique<pqxx::nontransaction>(*postgres_connection, kTmpWsv);
@@ -120,7 +114,7 @@ namespace iroha {
           .as_blocking()
           .subscribe([&top_hash](auto block) { top_hash = block.hash; });
 
-      return makeValue<std::unique_ptr<MutableStorage>>(
+      return expected::makeValue<std::unique_ptr<MutableStorage>>(
           std::make_unique<MutableStorageImpl>(
           top_hash.value_or(hash256_t{}),
           std::move(postgres_connection),
@@ -134,7 +128,7 @@ namespace iroha {
       auto storageResult = createMutableStorage();
       bool inserted = false;
       storageResult.match(
-          [&](Value<std::unique_ptr<ametsuchi::MutableStorage>> &storage) {
+          [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>> &storage) {
             inserted = storage.value->apply(
                 block,
                 [](const auto &current_block, auto &query, const auto &top_hash) {
@@ -142,7 +136,7 @@ namespace iroha {
                 });
             log_->info("block inserted: {}", inserted);
             commit(std::move(storage.value));
-          }, [&](Error<std::string> &error) {
+          }, [&](expected::Error<std::string> &error) {
             log_->error("Cannot create mutable storage");
           }
       );
@@ -219,15 +213,15 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
           std::move(wsv_transaction));
     }
 
-    Result<std::shared_ptr<StorageImpl>, std::string> StorageImpl::create(
+    expected::Result<std::shared_ptr<StorageImpl>, std::string> StorageImpl::create(
         std::string block_store_dir,
         std::string postgres_options) {
       auto ctx = initConnections(block_store_dir, postgres_options);
       if (not ctx.has_value()) {
-        return makeError("Failed to connect to PostgreSql");
+        return expected::makeError("Failed to connect to PostgreSql");
       }
 
-      return makeValue(std::shared_ptr<StorageImpl>(
+      return expected::makeValue(std::shared_ptr<StorageImpl>(
           new StorageImpl(block_store_dir,
                           postgres_options,
                           std::move(ctx->block_store),

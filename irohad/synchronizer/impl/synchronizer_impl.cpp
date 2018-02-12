@@ -42,10 +42,12 @@ namespace iroha {
       storageResult.match(
           [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>> &_storage) {
             storage = std::move(_storage.value);
-          }, [](expected::Error<std::string> &error) {}
+          }, [&](expected::Error<std::string> &error) {
+            storage = nullptr;
+            log_->error(error.error);
+          }
       );
       if (not storage) {
-        log_->error("Cannot create mutable storage");
         return;
       }
       if (validator_->validateBlock(commit_message, *storage)) {
@@ -65,10 +67,12 @@ namespace iroha {
           storageResult.match(
               [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>> &_storage) {
                 storage = std::move(_storage.value);
-              }, [](expected::Error<std::string> &error) {}
+              }, [&](expected::Error<std::string> &error) {
+                storage = nullptr;
+                log_->error(error.error);
+              }
           );
           if (not storage) {
-            log_->error("cannot create storage");
             return;
           }
           auto chain = blockLoader_->retrieveBlocks(signature.pubkey);
