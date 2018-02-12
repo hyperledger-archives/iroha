@@ -69,9 +69,8 @@ namespace iroha {
       const size_t default_tx_counter = 0;
 
       pqxx::nontransaction &transaction_;
-      logger::Logger log_;
 
-      using ExecuteType = decltype(makeExecuteResult(transaction_, log_));
+      using ExecuteType = decltype(makeExecuteResult(transaction_));
       ExecuteType execute_;
 
       /**

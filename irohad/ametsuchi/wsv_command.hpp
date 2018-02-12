@@ -32,7 +32,10 @@ namespace iroha {
   namespace ametsuchi {
 
     /**
-     * Error returned by WSV functions
+     * Error returned by wsv command.
+     * It is a string which contains what action has failed (e.g, "failed to
+     * insert role"), and an error which was provided by underlying
+     * implementation (e.g, database exception info)
      */
     using WsvError = std::string;
 

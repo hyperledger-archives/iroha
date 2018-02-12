@@ -23,8 +23,9 @@
 namespace framework {
   namespace expected {
     /**
-     * Returns value from Result or throws exception if result contains
-     * error
+     * @param
+     * @throws bad_get exception if result contains error
+     * @return value from result
      */
     template <typename ResultType>
     typename ResultType::ValueType checkValueCase(const ResultType &result) {
@@ -32,8 +33,9 @@ namespace framework {
     }
 
     /**
-     * Returns error from result or throws exception in case result contains
-     * value
+     * @param
+     * @throws bad_get exception if result contains value
+     * @return error from result
      */
     template <typename ResultType>
     typename ResultType::ErrorType checkErrorCase(const ResultType &result) {

@@ -24,8 +24,7 @@ namespace iroha {
 
     PostgresWsvCommand::PostgresWsvCommand(pqxx::nontransaction &transaction)
         : transaction_(transaction),
-          log_(logger::log("PostgresWsvCommand")),
-          execute_{makeExecuteResult(transaction_, log_)} {}
+          execute_{makeExecuteResult(transaction_)} {}
 
     WsvCommandResult PostgresWsvCommand::insertRole(
         const std::string &role_name) {

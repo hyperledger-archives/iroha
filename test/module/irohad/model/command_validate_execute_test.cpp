@@ -85,7 +85,7 @@ class CommandValidateExecuteTest : public ::testing::Test {
         *command, *wsv_query, *wsv_command, creator.account_id);
   }
 
-  // return result with empty errpr message
+  /// return result with empty error message
   WsvCommandResult makeEmptyError() {
     return WsvCommandResult(iroha::expected::makeError(""));
   }

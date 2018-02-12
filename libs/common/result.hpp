@@ -136,19 +136,6 @@ namespace iroha {
     }
 
     /**
-     * Bind operator overload for functions which return void. Does nothing in
-     * error case, or executes function in a value case
-     * @param f function which returns void
-     */
-    template <typename T, typename E, typename Procedure>
-    constexpr auto operator|(Result<T, E> r, Procedure &&f) ->
-        typename std::enable_if<
-            std::is_same<decltype(f(std::declval<T>())), void>::value>::type {
-      return r.match([&f](const Value<T> &v) { f(v.value); },
-                     [](const Error<E> &e) {});
-    }
-
-    /**
      * Bind operator overload for functions which do not accept anything as a
      * parameter. Allows execution of a sequence of unrelated functions, given
      * that all of them return Result

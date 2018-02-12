@@ -32,14 +32,12 @@ namespace iroha {
      * @return Result with pqxx::result in value case, or exception message
      * if exception was caught
      */
-    inline auto makeExecuteResult(pqxx::nontransaction &transaction,
-                                  logger::Logger &logger) noexcept {
+    inline auto makeExecuteResult(pqxx::nontransaction &transaction) noexcept {
       return [&](const std::string &statement) noexcept
           ->expected::Result<pqxx::result, std::string> {
         try {
           return expected::makeValue(transaction.exec(statement));
         } catch (const std::exception &e) {
-          logger->error(e.what());
           return expected::makeError(e.what());
         }
       };

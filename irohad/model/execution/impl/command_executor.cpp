@@ -820,7 +820,10 @@ namespace iroha {
       auto src_balance = src_account_asset.value().balance;
       auto new_src_balance = src_balance - transfer_asset.amount;
       if (not new_src_balance.has_value()) {
-        return makeExecutionResult("not enough assets on source account"s);
+        return makeExecutionResult(
+            (boost::format("not enough assets on source account '%s'")
+             % transfer_asset.src_account_id)
+                .str());
       }
       src_balance = new_src_balance.value();
       // Set new balance for source account
