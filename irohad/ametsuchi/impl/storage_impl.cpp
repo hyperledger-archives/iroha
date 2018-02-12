@@ -19,8 +19,8 @@
 
 #include "ametsuchi/impl/flat_file/flat_file.hpp"  // for FlatFile
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
-#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/postgres_block_query.hpp"
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "model/converters/json_common.hpp"
 #include "model/execution/command_executor_factory.hpp"  // for CommandExecutorFactory
@@ -108,7 +108,12 @@ namespace iroha {
       blocks_->getTopBlocks(1)
           .subscribe_on(rxcpp::observe_on_new_thread())
           .as_blocking()
-          .subscribe([&top_hash](auto block) { top_hash = block.hash; });
+          .subscribe([&top_hash](auto block) {
+            top_hash = hash256_t();
+            std::copy(block->hash().blob().begin(),
+                      block->hash().blob().end(),
+                      top_hash->data());
+          });
 
       return std::make_unique<MutableStorageImpl>(
           top_hash.value_or(hash256_t{}),
@@ -167,8 +172,7 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
     }
 
     nonstd::optional<ConnectionContext> StorageImpl::initConnections(
-        std::string block_store_dir,
-        std::string postgres_options) {
+        std::string block_store_dir, std::string postgres_options) {
       auto log_ = logger::log("StorageImpl:initConnection");
       log_->info("Start storage creation");
 
@@ -200,8 +204,7 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
     }
 
     std::shared_ptr<StorageImpl> StorageImpl::create(
-        std::string block_store_dir,
-        std::string postgres_options) {
+        std::string block_store_dir, std::string postgres_options) {
       auto ctx = initConnections(block_store_dir, postgres_options);
       if (not ctx.has_value()) {
         return nullptr;

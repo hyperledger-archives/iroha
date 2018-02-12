@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 #include "generator/generator.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
@@ -502,11 +503,16 @@ TEST_F(ToriiQueriesTest, FindTransactionsWhenValid) {
   account.account_id = "accountA";
 
   auto txs_observable = rxcpp::observable<>::iterate([account] {
-    std::vector<iroha::model::Transaction> result;
+    std::vector<shared_model::detail::PolymorphicWrapper<
+        shared_model::interface::Transaction>>
+        result;
     for (size_t i = 0; i < 3; ++i) {
-      iroha::model::Transaction current;
-      current.creator_account_id = account.account_id;
-      current.tx_counter = i;
+      auto current = shared_model::detail::makePolymorphic<
+          shared_model::proto::Transaction>(
+          TestTransactionBuilder()
+              .creatorAccountId(account.account_id)
+              .txCounter(i)
+              .build());
       result.push_back(current);
     }
     return result;

@@ -18,9 +18,11 @@
 #include <gtest/gtest.h>
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/combine.hpp>
+#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
-#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/postgres_block_query.hpp"
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/mutable_storage.hpp"
 #include "common/byteutils.hpp"
@@ -75,7 +77,7 @@ void validateAccountTransactions(B &&blocks,
                                  int command_count) {
   validateCalls(
       blocks->getAccountTransactions(account),
-      [&](const auto &tx) { EXPECT_EQ(tx.commands.size(), command_count); },
+      [&](const auto &tx) { EXPECT_EQ(tx->commands().size(), command_count); },
       call_count,
       " for " + account);
 }
@@ -97,7 +99,7 @@ void validateAccountAssetTransactions(B &&blocks,
                                       int command_count) {
   validateCalls(
       blocks->getAccountAssetTransactions(account, asset),
-      [&](const auto &tx) { EXPECT_EQ(tx.commands.size(), command_count); },
+      [&](const auto &tx) { EXPECT_EQ(tx->commands().size(), command_count); },
       call_count,
       " for " + account + " " + asset);
 }
@@ -146,9 +148,10 @@ void validateAccount(W &&wsv,
  * @param block to apply
  */
 template <typename S>
-void apply(S &&storage, const Block &block) {
+void apply(S &&storage, const shared_model::interface::Block &block) {
   auto ms = storage->createMutableStorage();
-  ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
+  ms->apply(*std::unique_ptr<iroha::model::Block>(block.makeOldModel()),
+            [](const auto &, auto &, const auto &) { return true; });
   storage->commit(std::move(ms));
 }
 
@@ -158,8 +161,11 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
-  Block block;
-  block.height = 1;
+  auto block = TestBlockBuilder()
+                   .height(1)
+                   .txNumber(0)
+                   .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+                   .build();
 
   apply(storage, block);
 
@@ -174,6 +180,8 @@ TEST_F(AmetsuchiTest, SampleTest) {
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
+  TestTransactionBuilder tx_builder;
+  TestBlockBuilder block_builder;
 
   const auto domain = "ru", user1name = "user1", user2name = "user2",
              user1id = "user1@ru", user2id = "user2@ru", assetname = "RUB",
@@ -182,74 +190,66 @@ TEST_F(AmetsuchiTest, SampleTest) {
   std::string account, src_account, dest_account, asset;
   iroha::Amount amount;
 
-  // Tx 1
-  Transaction txn;
-  txn.creator_account_id = "admin1";
+  // Block 1
+  auto block1 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>(
+              {tx_builder.creatorAccountId("admin1")
+                   .createRole(
+                       "user",
+                       std::set<std::string>{
+                           can_add_peer, can_create_asset, can_get_my_account})
+                   .createDomain(domain, "user")
+                   .createAccount(
+                       user1name,
+                       domain,
+                       shared_model::crypto::PublicKey(std::string("0", 32)))
+                   .build()}))
+          .height(1)
+          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .txNumber(1)
+          .build();
+  auto block1hash = block1.hash();
 
-  // Create domain ru
-  txn.commands.push_back(std::make_shared<CreateRole>(
-      "user",
-      std::set<std::string>{
-          can_add_peer, can_create_asset, can_get_my_account}));
-  txn.commands.push_back(std::make_shared<CreateDomain>(domain, "user"));
-
-  // Create account user1
-  txn.commands.push_back(cmd_gen.generateCreateAccount(user1name, domain, {}));
-
-  // Compose block
-  Block block;
-  block.transactions.push_back(txn);
-  block.height = 1;
-  block.prev_hash.fill(0);
-  auto block1hash = iroha::hash(block);
-  block.hash = block1hash;
-  block.txs_number = block.transactions.size();
-
-  apply(storage, block);
+  apply(storage, block1);
 
   validateAccount(wsv, user1id, domain);
 
-  // Tx 2
-  txn = Transaction();
-  txn.creator_account_id = "admin2";
+  // Block 2
+  auto block2 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>(
+              {tx_builder.creatorAccountId("admin2")
+                   .createAccount(
+                       user2name,
+                       domain,
+                       shared_model::crypto::PublicKey(std::string("0", 32)))
+                   .createAsset(assetname, domain, 1)
+                   .addAssetQuantity(user1id, assetid, "150.0")
+                   .transferAsset(
+                       user1id, user2id, assetid, "Transfer asset", "100.0")
+                   .build()}))
+          .height(2)
+          .prevHash(block1hash)
+          .txNumber(1)
+          .build();
 
-  // Create account user2
-  txn.commands.push_back(cmd_gen.generateCreateAccount(user2name, domain, {}));
+  auto block2hash = block2.hash();
 
-  // Create asset RUB#ru
-  txn.commands.push_back(cmd_gen.generateCreateAsset(assetname, domain, 2));
-
-  // Add RUB#ru to user1
-  txn.commands.push_back(cmd_gen.generateAddAssetQuantity(
-      user1id, assetid, iroha::Amount(150, 2)));
-
-  // Transfer asset from user 1
-  txn.commands.push_back(cmd_gen.generateTransferAsset(
-      user1id, user2id, assetid, iroha::Amount(100, 2)));
-
-  // Compose block
-  block = Block();
-  block.transactions.push_back(txn);
-  block.height = 2;
-  block.prev_hash = block1hash;
-  auto block2hash = iroha::hash(block);
-  block.hash = block2hash;
-  block.txs_number = block.transactions.size();
-
-  apply(storage, block);
-
-  validateAccountAsset(wsv, user1id, assetid, iroha::Amount(50, 2));
-  validateAccountAsset(wsv, user2id, assetid, iroha::Amount(100, 2));
+  apply(storage, block2);
+  validateAccountAsset(
+      wsv, user1id, assetid, *iroha::Amount::createFromString("50.0"));
+  validateAccountAsset(
+      wsv, user2id, assetid, *iroha::Amount::createFromString("100.0"));
 
   // Block store tests
   auto hashes = {block1hash, block2hash};
-  validateCalls(
-      blocks->getBlocks(1, 2),
-      [i = 0, &hashes](auto eachBlock) mutable {
-        EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
-        ++i;
-      },
-      2);
+  validateCalls(blocks->getBlocks(1, 2),
+                [i = 0, &hashes](auto eachBlock) mutable {
+                  EXPECT_EQ(*(hashes.begin() + i), eachBlock->hash());
+                  ++i;
+                },
+                2);
 
   validateAccountTransactions(blocks, "admin1", 1, 3);
   validateAccountTransactions(blocks, "admin2", 1, 4);
@@ -266,21 +266,29 @@ TEST_F(AmetsuchiTest, PeerTest) {
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
-  Transaction txn;
-  AddPeer addPeer;
-  addPeer.peer.pubkey.at(0) = 1;
-  addPeer.peer.address = "192.168.0.1:50051";
-  txn.commands.push_back(std::make_shared<AddPeer>(addPeer));
+  auto txn = TestTransactionBuilder()
+                 .addPeer("192.168.9.1:50051",
+                          shared_model::crypto::PublicKey(std::string("0", 32)))
+                 .build();
 
-  Block block;
-  block.transactions.push_back(txn);
+  auto block =
+      TestBlockBuilder()
+          .txNumber(1)
+          .transactions(std::vector<shared_model::proto::Transaction>{txn})
+          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .build();
 
   apply(storage, block);
 
   auto peers = wsv->getPeers();
   ASSERT_TRUE(peers);
   ASSERT_EQ(peers->size(), 1);
-  ASSERT_EQ(peers->at(0), addPeer.peer);
+  ASSERT_EQ(peers->at(0).address, "192.168.9.1:50051");
+
+  iroha::blob_t<32> pubkey;
+  std::string key = std::string("0", 32);
+  std::copy(key.begin(), key.end(), pubkey.begin());
+  ASSERT_EQ(peers->at(0).pubkey, pubkey);
 }
 
 TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
@@ -299,41 +307,39 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   iroha::Amount amount;
 
   // 1st tx
-  Transaction txn;
-  txn.creator_account_id = admin;
+  auto txn1 =
+      TestTransactionBuilder()
+          .creatorAccountId(admin)
+          .createRole("user",
+                      std::set<std::string>{
+                          can_add_peer, can_create_asset, can_get_my_account})
+          .createDomain(domain, "user")
+          .createAccount(user1name,
+                         domain,
+                         shared_model::crypto::PublicKey(std::string("0", 32)))
+          .createAccount(user2name,
+                         domain,
+                         shared_model::crypto::PublicKey(std::string("0", 32)))
+          .createAccount(user3name,
+                         domain,
+                         shared_model::crypto::PublicKey(std::string("0", 32)))
+          .createAsset(asset1name, domain, 1)
+          .createAsset(asset2name, domain, 1)
+          .addAssetQuantity(user1id, asset1id, "300.0")
+          .addAssetQuantity(user2id, asset2id, "250.0")
+          .build();
 
-  // Create domain
-  txn.commands.push_back(std::make_shared<CreateRole>(
-      "user",
-      std::set<std::string>{
-          can_add_peer, can_create_asset, can_get_my_account}));
-  txn.commands.push_back(cmd_gen.generateCreateDomain(domain, "user"));
+  auto block1 =
+      TestBlockBuilder()
+          .height(1)
+          .transactions(std::vector<shared_model::proto::Transaction>({txn1}))
+          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .txNumber(1)
+          .build();
 
-  // Create accounts
-  for (const auto &name : {user1name, user2name, user3name}) {
-    txn.commands.push_back(cmd_gen.generateCreateAccount(name, domain, {}));
-  }
+  auto block1hash = block1.hash();
 
-  // Create assets
-  for (const auto &name : {asset1name, asset2name}) {
-    txn.commands.push_back(cmd_gen.generateCreateAsset(name, domain, 2));
-  }
-
-  // Add amounts to users
-  txn.commands.push_back(cmd_gen.generateAddAssetQuantity(
-      user1id, asset1id, iroha::Amount(300, 2)));
-  txn.commands.push_back(cmd_gen.generateAddAssetQuantity(
-      user2id, asset2id, iroha::Amount(250, 2)));
-
-  Block block;
-  block.transactions.push_back(txn);
-  block.height = 1;
-  block.prev_hash.fill(0);
-  auto block1hash = iroha::hash(block);
-  block.hash = block1hash;
-  block.txs_number = static_cast<uint16_t>(block.transactions.size());
-
-  apply(storage, block);
+  apply(storage, block1);
 
   // Check querying accounts
   for (const auto &id : {user1id, user2id, user3id}) {
@@ -341,62 +347,67 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   }
 
   // Check querying assets for users
-  validateAccountAsset(wsv, user1id, asset1id, iroha::Amount(300, 2));
-  validateAccountAsset(wsv, user2id, asset2id, iroha::Amount(250, 2));
+  validateAccountAsset(
+      wsv, user1id, asset1id, *iroha::Amount::createFromString("300.0"));
+  validateAccountAsset(
+      wsv, user2id, asset2id, *iroha::Amount::createFromString("250.0"));
 
   // 2th tx (user1 -> user2 # asset1)
-  txn = Transaction();
-  txn.creator_account_id = user1id;
+  auto txn2 =
+      TestTransactionBuilder()
+          .creatorAccountId(user1id)
+          .transferAsset(user1id, user2id, asset1id, "Transfer asset", "120.0")
+          .build();
+  auto block2 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>({txn2}))
+          .height(2)
+          .prevHash(block1hash)
+          .txNumber(1)
+          .build();
+  auto block2hash = block2.hash();
 
-  // Create transfer asset from user 1 to user 2
-  txn.commands.push_back(cmd_gen.generateTransferAsset(
-      user1id, user2id, asset1id, iroha::Amount(120, 2)));
-
-  block = Block();
-  block.transactions.push_back(txn);
-  block.height = 2;
-  block.prev_hash = block1hash;
-  auto block2hash = iroha::hash(block);
-  block.hash = block2hash;
-  block.txs_number = static_cast<uint16_t>(block.transactions.size());
-
-  apply(storage, block);
+  apply(storage, block2);
 
   // Check account asset after transfer assets
-  validateAccountAsset(wsv, user1id, asset1id, iroha::Amount(180, 2));
-  validateAccountAsset(wsv, user2id, asset1id, iroha::Amount(120, 2));
+  validateAccountAsset(
+      wsv, user1id, asset1id, *iroha::Amount::createFromString("180.0"));
+  validateAccountAsset(
+      wsv, user2id, asset1id, *iroha::Amount::createFromString("120.0"));
 
   // 3rd tx
   //   (user2 -> user3 # asset2)
   //   (user2 -> user1 # asset2)
-  txn = Transaction();
-  txn.creator_account_id = user2id;
+  auto txn3 =
+      TestTransactionBuilder()
+          .creatorAccountId(user2id)
+          .transferAsset(user2id, user3id, asset2id, "Transfer asset", "150.0")
+          .transferAsset(user2id, user1id, asset2id, "Transfer asset", "10.0")
+          .build();
 
-  txn.commands.push_back(cmd_gen.generateTransferAsset(
-      user2id, user3id, asset2id, iroha::Amount(150, 2)));
-  txn.commands.push_back(cmd_gen.generateTransferAsset(
-      user2id, user1id, asset2id, iroha::Amount(10, 2)));
+  auto block3 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>({txn3}))
+          .height(3)
+          .prevHash(block2hash)
+          .txNumber(1)
+          .build();
+  auto block3hash = block3.hash();
 
-  block = Block();
-  block.transactions.push_back(txn);
-  block.height = 3;
-  block.prev_hash = block2hash;
-  auto block3hash = iroha::hash(block);
-  block.hash = block3hash;
-  block.txs_number = static_cast<uint16_t>(block.transactions.size());
+  apply(storage, block3);
 
-  apply(storage, block);
-
-  validateAccountAsset(wsv, user2id, asset2id, iroha::Amount(90, 2));
-  validateAccountAsset(wsv, user3id, asset2id, iroha::Amount(150, 2));
-  validateAccountAsset(wsv, user1id, asset2id, iroha::Amount(10, 2));
+  validateAccountAsset(
+      wsv, user2id, asset2id, *iroha::Amount::createFromString("90.0"));
+  validateAccountAsset(
+      wsv, user3id, asset2id, *iroha::Amount::createFromString("150.0"));
+  validateAccountAsset(
+      wsv, user1id, asset2id, *iroha::Amount::createFromString("10.0"));
 
   // Block store test
   auto hashes = {block1hash, block2hash, block3hash};
   validateCalls(blocks->getBlocks(1, 3),
-                [i = 0, &hashes](
-                    auto eachBlock) mutable {
-                  EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
+                [i = 0, &hashes](auto eachBlock) mutable {
+                  EXPECT_EQ(*(hashes.begin() + i), eachBlock->hash());
                   ++i;
                 },
                 3);
@@ -422,73 +433,66 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
-  iroha::pubkey_t pubkey1, pubkey2;
-  pubkey1.at(0) = 1;
-  pubkey2.at(0) = 2;
+  //  iroha::pubkey_t pubkey1, pubkey2;
+  //  pubkey1.at(0) = 1;
+  //  pubkey2.at(0) = 2;
+
+  shared_model::crypto::PublicKey pubkey1(std::string("1", 32));
+  shared_model::crypto::PublicKey pubkey2(std::string("2", 32));
 
   auto user1id = "user1@domain";
   auto user2id = "user2@domain";
 
   // 1st tx (create user1 with pubkey1)
-  CreateRole createRole;
-  createRole.role_name = "user";
-  createRole.permissions = {can_add_peer, can_create_asset, can_get_my_account};
+  auto txn1 =
+      TestTransactionBuilder()
+          .creatorAccountId("admin1")
+          .createRole("user",
+                      std::set<std::string>{
+                          can_add_peer, can_create_asset, can_get_my_account})
+          .createDomain("domain", "user")
+          .createAccount("user1", "domain", pubkey1)
+          .build();
+  auto block1 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>({txn1}))
+          .height(1)
+          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .txNumber(1)
+          .build();
+  auto block1hash = block1.hash();
 
-  Transaction txn;
-  txn.creator_account_id = "admin1";
-
-  txn.commands.push_back(std::make_shared<CreateRole>(createRole));
-  CreateDomain createDomain;
-  createDomain.domain_id = "domain";
-  createDomain.user_default_role = "user";
-  txn.commands.push_back(std::make_shared<CreateDomain>(createDomain));
-
-  CreateAccount createAccount;
-  createAccount.account_name = "user1";
-  createAccount.domain_id = "domain";
-  createAccount.pubkey = pubkey1;
-  txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
-
-  Block block;
-  block.transactions.push_back(txn);
-  block.height = 1;
-  block.prev_hash.fill(0);
-  auto block1hash = iroha::hash(block);
-  block.hash = block1hash;
-  block.txs_number = block.transactions.size();
-
-  apply(storage, block);
+  apply(storage, block1);
 
   {
     auto account = wsv->getAccount(user1id);
     ASSERT_TRUE(account);
     ASSERT_EQ(account->account_id, user1id);
-    ASSERT_EQ(account->domain_id, createAccount.domain_id);
+    ASSERT_EQ(account->domain_id, "domain");
 
     auto signatories = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 1);
-    ASSERT_EQ(signatories->at(0), pubkey1);
+    ASSERT_EQ(signatories->at(0),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
   }
 
   // 2nd tx (add sig2 to user1)
-  txn = Transaction();
-  txn.creator_account_id = user1id;
+  auto txn2 = TestTransactionBuilder()
+                  .creatorAccountId(user1id)
+                  .addSignatory(user1id, pubkey2)
+                  .build();
 
-  auto addSignatory = AddSignatory();
-  addSignatory.account_id = user1id;
-  addSignatory.pubkey = pubkey2;
-  txn.commands.push_back(std::make_shared<AddSignatory>(addSignatory));
+  auto block2 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>({txn2}))
+          .height(2)
+          .prevHash(block1hash)
+          .txNumber(1)
+          .build();
+  auto block2hash = block2.hash();
 
-  block = Block();
-  block.transactions.push_back(txn);
-  block.height = 2;
-  block.prev_hash = block1hash;
-  auto block2hash = iroha::hash(block);
-  block.hash = block2hash;
-  block.txs_number = block.transactions.size();
-
-  apply(storage, block);
+  apply(storage, block2);
 
   {
     auto account = wsv->getAccount(user1id);
@@ -497,29 +501,28 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     auto signatories = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 2);
-    ASSERT_EQ(signatories->at(0), pubkey1);
-    ASSERT_EQ(signatories->at(1), pubkey2);
+    ASSERT_EQ(signatories->at(0),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
+    ASSERT_EQ(signatories->at(1),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey2)));
   }
 
   // 3rd tx (create user2 with pubkey1 that is same as user1's key)
-  txn = Transaction();
-  txn.creator_account_id = "admin2";
+  auto txn3 = TestTransactionBuilder()
+                  .creatorAccountId("admin2")
+                  .createAccount("user2", "domain", pubkey1)
+                  .build();
 
-  createAccount = CreateAccount();
-  createAccount.account_name = "user2";
-  createAccount.domain_id = "domain";
-  createAccount.pubkey = pubkey1;  // same as user1's pubkey1
-  txn.commands.push_back(std::make_shared<CreateAccount>(createAccount));
+  auto block3 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>({txn3}))
+          .height(3)
+          .prevHash(block2hash)
+          .txNumber(1)
+          .build();
+  auto block3hash = block3.hash();
 
-  block = Block();
-  block.transactions.push_back(txn);
-  block.height = 3;
-  block.prev_hash = block2hash;
-  auto block3hash = iroha::hash(block);
-  block.hash = block3hash;
-  block.txs_number = block.transactions.size();
-
-  apply(storage, block);
+  apply(storage, block3);
 
   {
     auto account1 = wsv->getAccount(user1id);
@@ -531,33 +534,34 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     auto signatories1 = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories1);
     ASSERT_EQ(signatories1->size(), 2);
-    ASSERT_EQ(signatories1->at(0), pubkey1);
-    ASSERT_EQ(signatories1->at(1), pubkey2);
+    ASSERT_EQ(signatories1->at(0),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
+    ASSERT_EQ(signatories1->at(1),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey2)));
 
     auto signatories2 = wsv->getSignatories(user2id);
     ASSERT_TRUE(signatories2);
     ASSERT_EQ(signatories2->size(), 1);
-    ASSERT_EQ(signatories2->at(0), pubkey1);
+    ASSERT_EQ(signatories2->at(0),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
   }
 
   // 4th tx (remove pubkey1 from user1)
-  txn = Transaction();
-  txn.creator_account_id = user1id;
+  auto txn4 = TestTransactionBuilder()
+                  .creatorAccountId(user1id)
+                  .removeSignatory(user1id, pubkey1)
+                  .build();
 
-  auto removeSignatory = RemoveSignatory();
-  removeSignatory.account_id = user1id;
-  removeSignatory.pubkey = pubkey1;
-  txn.commands.push_back(std::make_shared<RemoveSignatory>(removeSignatory));
+  auto block4 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>({txn4}))
+          .height(4)
+          .prevHash(block3hash)
+          .txNumber(1)
+          .build();
+  auto block4hash = block4.hash();
 
-  block = Block();
-  block.transactions.push_back(txn);
-  block.height = 4;
-  block.prev_hash = block3hash;
-  auto block4hash = iroha::hash(block);
-  block.hash = block4hash;
-  block.txs_number = block.transactions.size();
-
-  apply(storage, block);
+  apply(storage, block4);
 
   {
     auto account = wsv->getAccount(user1id);
@@ -567,38 +571,34 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     auto signatories1 = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories1);
     ASSERT_EQ(signatories1->size(), 1);
-    ASSERT_EQ(signatories1->at(0), pubkey2);
+    ASSERT_EQ(signatories1->at(0),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey2)));
 
     // user2 still has pubkey1.
     auto signatories2 = wsv->getSignatories(user2id);
     ASSERT_TRUE(signatories2);
     ASSERT_EQ(signatories2->size(), 1);
-    ASSERT_EQ(signatories2->at(0), pubkey1);
+    ASSERT_EQ(signatories2->at(0),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
   }
 
   // 5th tx (add sig2 to user2 and set quorum = 1)
-  txn = Transaction();
-  txn.creator_account_id = user2id;
+  auto txn5 = TestTransactionBuilder()
+                  .creatorAccountId(user1id)
+                  .addSignatory(user2id, pubkey2)
+                  .setAccountQuorum(user2id, 2)
+                  .build();
 
-  addSignatory = AddSignatory();
-  addSignatory.account_id = user2id;
-  addSignatory.pubkey = pubkey2;
-  txn.commands.push_back(std::make_shared<AddSignatory>(addSignatory));
+  auto block5 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>({txn5}))
+          .height(5)
+          .prevHash(block4hash)
+          .txNumber(1)
+          .build();
+  auto block5hash = block5.hash();
 
-  auto seqQuorum = SetQuorum();
-  seqQuorum.account_id = user2id;
-  seqQuorum.new_quorum = 2;
-  txn.commands.push_back(std::make_shared<SetQuorum>(seqQuorum));
-
-  block = Block();
-  block.transactions.push_back(txn);
-  block.height = 5;
-  block.prev_hash = block4hash;
-  auto block5hash = iroha::hash(block);
-  block.hash = block5hash;
-  block.txs_number = block.transactions.size();
-
-  apply(storage, block);
+  apply(storage, block5);
 
   {
     auto account = wsv->getAccount(user2id);
@@ -609,51 +609,54 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     auto signatories = wsv->getSignatories(user2id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 2);
-    ASSERT_EQ(signatories->at(0), pubkey1);
-    ASSERT_EQ(signatories->at(1), pubkey2);
+    ASSERT_EQ(signatories->at(0),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
+    ASSERT_EQ(signatories->at(1),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey2)));
   }
 
   // 6th tx (remove sig2 fro user2: This must success)
-  txn = Transaction();
-  txn.creator_account_id = user2id;
+  auto txn6 = TestTransactionBuilder()
+                  .creatorAccountId(user2id)
+                  .removeSignatory(user2id, pubkey2)
+                  .setAccountQuorum(user2id, 2)
+                  .build();
 
-  removeSignatory = RemoveSignatory();
-  removeSignatory.account_id = user2id;
-  removeSignatory.pubkey = pubkey2;
-  txn.commands.push_back(std::make_shared<RemoveSignatory>(removeSignatory));
+  auto block6 =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>({txn6}))
+          .height(6)
+          .prevHash(block5hash)
+          .txNumber(1)
+          .build();
+  auto block6hash = block6.hash();
 
-  block = Block();
-  block.transactions.push_back(txn);
-  block.height = 6;
-  block.prev_hash = block5hash;
-  auto block6hash = iroha::hash(block);
-  block.hash = block6hash;
-  block.txs_number = block.transactions.size();
-
-  apply(storage, block);
+  apply(storage, block6);
 
   {
     // user2 only has pubkey1.
     auto signatories = wsv->getSignatories(user2id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 1);
-    ASSERT_EQ(signatories->at(0), pubkey1);
+    ASSERT_EQ(signatories->at(0),
+              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
   }
 }
 
-Block getBlock() {
-  Transaction txn;
-  txn.creator_account_id = "admin1";
-  AddPeer add_peer;
-  add_peer.peer.address = "192.168.0.0";
-  txn.commands.push_back(std::make_shared<AddPeer>(add_peer));
-  Block block;
-  block.transactions.push_back(txn);
-  block.height = 1;
-  block.prev_hash.fill(0);
-  auto block1hash = iroha::hash(block);
-  block.txs_number = block.transactions.size();
-  block.hash = block1hash;
+shared_model::proto::Block getBlock() {
+  auto txn = TestTransactionBuilder()
+                 .creatorAccountId("admin1")
+                 .addPeer("192.168.0.0",
+                          shared_model::crypto::PublicKey(std::string("0", 32)))
+                 .build();
+
+  auto block =
+      TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>({txn}))
+          .height(1)
+          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .txNumber(1)
+          .build();
   return block;
 }
 
@@ -670,7 +673,8 @@ TEST_F(AmetsuchiTest, TestingStorageWhenInsertBlock) {
 
   log->info("Try insert block");
 
-  auto inserted = storage->insertBlock(getBlock());
+  auto inserted = storage->insertBlock(
+      *std::unique_ptr<iroha::model::Block>(getBlock().makeOldModel()));
   ASSERT_TRUE(inserted);
 
   log->info("Request ledger information");
@@ -703,7 +707,8 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
 
   log->info("Try insert block");
 
-  auto inserted = storage->insertBlock(getBlock());
+  auto inserted = storage->insertBlock(
+      *std::unique_ptr<iroha::model::Block>(getBlock().makeOldModel()));
   ASSERT_TRUE(inserted);
 
   log->info("Request ledger information");
@@ -731,60 +736,52 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
-  iroha::pubkey_t pubkey1, pubkey2;
-  pubkey1.at(0) = 1;
-  pubkey2.at(0) = 2;
+  shared_model::crypto::PublicKey pubkey1(std::string("1", 32));
+  shared_model::crypto::PublicKey pubkey2(std::string("2", 32));
 
-  CreateRole createRole;
-  createRole.role_name = "user";
-  createRole.permissions = {can_add_peer, can_create_asset, can_get_my_account};
+  auto txn1 =
+      TestTransactionBuilder()
+          .creatorAccountId("admin1")
+          .createRole("user",
+                      std::set<std::string>{
+                          can_add_peer, can_create_asset, can_get_my_account})
+          .createDomain("domain", "user")
+          .createAccount("user1", "domain", pubkey1)
+          .build();
 
-  Transaction tx1;
-  tx1.creator_account_id = "admin1";
+  auto txn2 =
+      TestTransactionBuilder()
+          .creatorAccountId("admin1")
+          .createRole("user2",
+                      std::set<std::string>{
+                          can_add_peer, can_create_asset, can_get_my_account})
+          .createDomain("domain2", "user")
+          .build();
 
-  tx1.commands.push_back(std::make_shared<CreateRole>(createRole));
-  CreateDomain createDomain;
-  createDomain.domain_id = "domain";
-  createDomain.user_default_role = "user";
-  tx1.commands.push_back(std::make_shared<CreateDomain>(createDomain));
-
-  CreateAccount createAccount;
-  createAccount.account_name = "user1";
-  createAccount.domain_id = "domain";
-  createAccount.pubkey = pubkey1;
-  tx1.commands.push_back(std::make_shared<CreateAccount>(createAccount));
-
-  CreateRole createRole2;
-  createRole2.role_name = "user2";
-  createRole2.permissions = {
-      can_add_peer, can_create_asset, can_get_my_account};
-
-  Transaction tx2;
-  tx2.commands.push_back(std::make_shared<CreateRole>(createRole2));
-  CreateDomain createDomain2;
-  createDomain2.domain_id = "domain2";
-  createDomain2.user_default_role = "user";
-  tx2.commands.push_back(std::make_shared<CreateDomain>(createDomain2));
-
-  Block block;
-  block.transactions.push_back(tx1);
-  block.transactions.push_back(tx2);
-  block.height = 1;
-  block.prev_hash.fill(0);
-  block.txs_number = block.transactions.size();
-  block.hash = iroha::hash(block);
+  auto block = TestBlockBuilder()
+                   .transactions(std::vector<shared_model::proto::Transaction>(
+                       {txn1, txn2}))
+                   .height(1)
+                   .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+                   .txNumber(2)
+                   .build();
 
   apply(storage, block);
 
   // TODO: 31.10.2017 luckychess move tx3hash case into a separate test after
   // ametsuchi_test redesign
-  auto tx1hash = iroha::hash(tx1).to_string();
-  auto tx2hash = iroha::hash(tx2).to_string();
+  auto tx1hash =
+      std::string{txn1.hash().blob().begin(), txn1.hash().blob().end()};
+  auto tx2hash =
+      std::string{txn2.hash().blob().begin(), txn2.hash().blob().end()};
   auto tx3hash = "some garbage";
 
   auto tx1check = *blocks->getTxByHashSync(tx1hash);
 
-  ASSERT_EQ(*blocks->getTxByHashSync(tx1hash), tx1);
-  ASSERT_EQ(*blocks->getTxByHashSync(tx2hash), tx2);
+  auto tx1 = *blocks->getTxByHashSync(tx1hash);
+  auto tx2 = *blocks->getTxByHashSync(tx2hash);
+
+  ASSERT_EQ(*tx1.operator->(), txn1);
+  ASSERT_EQ(*tx2.operator->(), txn2);
   ASSERT_EQ(blocks->getTxByHashSync(tx3hash), boost::none);
 }

@@ -28,11 +28,10 @@
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
 #include "model/account.hpp"
-#include "model/asset.hpp"
-#include "model/peer.hpp"
-#include "model/domain.hpp"
 #include "model/account_asset.hpp"
-
+#include "model/asset.hpp"
+#include "model/domain.hpp"
+#include "model/peer.hpp"
 
 #include <boost/optional.hpp>
 
@@ -123,23 +122,34 @@ namespace iroha {
 
     class MockBlockQuery : public BlockQuery {
      public:
-      MOCK_METHOD1(
-          getAccountTransactions,
-          rxcpp::observable<model::Transaction>(const std::string &account_id));
+      MOCK_METHOD1(getAccountTransactions,
+                   rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+                       shared_model::interface::Transaction>>(
+                       const std::string &account_id));
       MOCK_METHOD1(
           getTxByHashSync,
-          boost::optional<model::Transaction>(const std::string &hash));
-      MOCK_METHOD2(
-          getAccountAssetTransactions,
-          rxcpp::observable<model::Transaction>(const std::string &account_id,
-                                                const std::string &asset_id));
-      MOCK_METHOD1(getTransactions,
-                   rxcpp::observable<boost::optional<model::Transaction>>(
-                       const std::vector<iroha::hash256_t> &tx_hashes));
+          boost::optional<shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Transaction>>(const std::string &hash));
+      MOCK_METHOD2(getAccountAssetTransactions,
+                   rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+                       shared_model::interface::Transaction>>(
+                       const std::string &account_id,
+                       const std::string &asset_id));
+      MOCK_METHOD1(
+          getTransactions,
+          rxcpp::observable<
+              boost::optional<shared_model::detail::PolymorphicWrapper<
+                  shared_model::interface::Transaction>>>(
+              const std::vector<shared_model::crypto::Hash> &tx_hashes));
       MOCK_METHOD2(getBlocks,
-                   rxcpp::observable<model::Block>(uint32_t, uint32_t));
-      MOCK_METHOD1(getBlocksFrom, rxcpp::observable<model::Block>(uint32_t));
-      MOCK_METHOD1(getTopBlocks, rxcpp::observable<model::Block>(uint32_t));
+                   rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+                       shared_model::interface::Block>>(uint32_t, uint32_t));
+      MOCK_METHOD1(getBlocksFrom,
+                   rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+                       shared_model::interface::Block>>(uint32_t));
+      MOCK_METHOD1(getTopBlocks,
+                   rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+                       shared_model::interface::Block>>(uint32_t));
     };
 
     class MockTemporaryFactory : public TemporaryFactory {
