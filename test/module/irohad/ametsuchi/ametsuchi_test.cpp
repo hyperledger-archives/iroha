@@ -19,8 +19,8 @@
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/combine.hpp>
 
-#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/postgres_block_query.hpp"
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/mutable_storage.hpp"
 #include "common/byteutils.hpp"
@@ -152,10 +152,8 @@ void apply(S &&storage, const Block &block) {
   storageResult.match(
       [&](iroha::expected::Value<std::unique_ptr<MutableStorage>> &_storage) {
         ms = std::move(_storage.value);
-      }, [](iroha::expected::Error<std::string> &error) {
-        FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
   storage->commit(std::move(ms));
 }
@@ -167,10 +165,8 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
-      }, [](iroha::expected::Error<std::string> &error) {
-        FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
@@ -191,10 +187,8 @@ TEST_F(AmetsuchiTest, SampleTest) {
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
-      }, [](iroha::expected::Error<std::string> &error) {
-        FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -267,13 +261,12 @@ TEST_F(AmetsuchiTest, SampleTest) {
 
   // Block store tests
   auto hashes = {block1hash, block2hash};
-  validateCalls(
-      blocks->getBlocks(1, 2),
-      [i = 0, &hashes](auto eachBlock) mutable {
-        EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
-        ++i;
-      },
-      2);
+  validateCalls(blocks->getBlocks(1, 2),
+                [ i = 0, &hashes ](auto eachBlock) mutable {
+                  EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
+                  ++i;
+                },
+                2);
 
   validateAccountTransactions(blocks, "admin1", 1, 3);
   validateAccountTransactions(blocks, "admin2", 1, 4);
@@ -291,10 +284,8 @@ TEST_F(AmetsuchiTest, PeerTest) {
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
-      }, [](iroha::expected::Error<std::string> &error) {
-        FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -321,10 +312,8 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
-      }, [](iroha::expected::Error<std::string> &error) {
-        FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -434,8 +423,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   // Block store test
   auto hashes = {block1hash, block2hash, block3hash};
   validateCalls(blocks->getBlocks(1, 3),
-                [i = 0, &hashes](
-                    auto eachBlock) mutable {
+                [ i = 0, &hashes ](auto eachBlock) mutable {
                   EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
                   ++i;
                 },
@@ -463,10 +451,8 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
-      }, [](iroha::expected::Error<std::string> &error) {
-        FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -716,10 +702,8 @@ TEST_F(AmetsuchiTest, TestingStorageWhenInsertBlock) {
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
-      }, [](iroha::expected::Error<std::string> &error) {
-        FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   ASSERT_EQ(0, wsv->getPeers().value().size());
@@ -757,10 +741,8 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
-      }, [](iroha::expected::Error<std::string> &error) {
-        FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   ASSERT_EQ(0, wsv->getPeers().value().size());
@@ -784,10 +766,8 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         new_storage = _storage.value;
-      }, [](iroha::expected::Error<std::string> &error) {
-        FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ASSERT_EQ(0, wsv->getPeers().value().size());
   new_storage->dropStorage();
 }
@@ -804,10 +784,8 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   storageResult.match(
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
-      }, [](iroha::expected::Error<std::string> &error) {
-       FAIL();
-      }
-  );
+      },
+      [](iroha::expected::Error<std::string> &error) { FAIL(); });
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 

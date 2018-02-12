@@ -52,9 +52,11 @@ namespace iroha {
       static expected::Result<std::shared_ptr<StorageImpl>, std::string> create(
           std::string block_store_dir, std::string postgres_connection);
 
-      expected::Result<std::unique_ptr<TemporaryWsv>, std::string> createTemporaryWsv() override;
+      expected::Result<std::unique_ptr<TemporaryWsv>, std::string>
+      createTemporaryWsv() override;
 
-      expected::Result<std::unique_ptr<MutableStorage>, std::string> createMutableStorage() override;
+      expected::Result<std::unique_ptr<MutableStorage>, std::string>
+      createMutableStorage() override;
 
       virtual bool insertBlock(model::Block block) override;
 

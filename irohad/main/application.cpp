@@ -110,10 +110,10 @@ void Irohad::initStorage() {
   storageResult.match(
       [&](expected::Value<std::shared_ptr<ametsuchi::StorageImpl>> &_storage) {
         storage = _storage.value;
-      }, [](expected::Error<std::string> &error) {
+      },
+      [](expected::Error<std::string> &error) {
         throw std::runtime_error(error.error);
-      }
-  );
+      });
 
   log_->info("[Init] => storage", logger::logBool(storage));
 }

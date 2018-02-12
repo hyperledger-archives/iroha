@@ -61,15 +61,15 @@ namespace iroha {
       }
       auto temporaryStorageResult = ametsuchi_factory_->createTemporaryWsv();
       temporaryStorageResult.match(
-          [&](expected::Value<std::unique_ptr<ametsuchi::TemporaryWsv>> &temporaryStorage) {
+          [&](expected::Value<std::unique_ptr<ametsuchi::TemporaryWsv>>
+                  &temporaryStorage) {
             notifier_.get_subscriber().on_next(
-                validator_->validate(proposal, *(temporaryStorage.value))
-            );
-          }, [&](expected::Error<std::string> &error) {
+                validator_->validate(proposal, *(temporaryStorage.value)));
+          },
+          [&](expected::Error<std::string> &error) {
             log_->error(error.error);
             throw std::runtime_error(error.error);
-          }
-      );
+          });
     }
 
     void Simulator::process_verified_proposal(model::Proposal proposal) {

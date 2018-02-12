@@ -33,7 +33,8 @@ namespace iroha {
        * Mutable storage is the only way to commit the block to the ledger.
        * @return Created Result with mutable storage or error string
        */
-      virtual expected::Result<std::unique_ptr<MutableStorage>, std::string> createMutableStorage() = 0;
+      virtual expected::Result<std::unique_ptr<MutableStorage>, std::string>
+      createMutableStorage() = 0;
 
       /**
        * Commit mutable storage to Ametsuchi.

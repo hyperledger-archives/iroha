@@ -40,13 +40,12 @@ namespace iroha {
       auto storageResult = mutableFactory_->createMutableStorage();
       std::unique_ptr<ametsuchi::MutableStorage> storage;
       storageResult.match(
-          [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>> &_storage) {
-            storage = std::move(_storage.value);
-          }, [&](expected::Error<std::string> &error) {
+          [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>>
+                  &_storage) { storage = std::move(_storage.value); },
+          [&](expected::Error<std::string> &error) {
             storage = nullptr;
             log_->error(error.error);
-          }
-      );
+          });
       if (not storage) {
         return;
       }
@@ -65,13 +64,12 @@ namespace iroha {
           auto storageResult = mutableFactory_->createMutableStorage();
           std::unique_ptr<ametsuchi::MutableStorage> storage;
           storageResult.match(
-              [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>> &_storage) {
-                storage = std::move(_storage.value);
-              }, [&](expected::Error<std::string> &error) {
+              [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>>
+                      &_storage) { storage = std::move(_storage.value); },
+              [&](expected::Error<std::string> &error) {
                 storage = nullptr;
                 log_->error(error.error);
-              }
-          );
+              });
           if (not storage) {
             return;
           }
