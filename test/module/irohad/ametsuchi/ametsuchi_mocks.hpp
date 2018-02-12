@@ -165,9 +165,7 @@ namespace iroha {
      * when required to return object wrapped in Result.
      */
     expected::Result<std::unique_ptr<MutableStorage>, std::string> createMockMutableStorage() {
-      return  expected::Result<std::unique_ptr<MutableStorage>, std::string>(
-          expected::makeValue<std::unique_ptr<MutableStorage>>(std::move(std::make_unique<MockMutableStorage>()))
-      );
+          return expected::makeValue<std::unique_ptr<MutableStorage>>(std::move(std::make_unique<MockMutableStorage>()));
     }
 
     class MockMutableFactory : public MutableFactory {

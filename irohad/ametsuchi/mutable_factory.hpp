@@ -31,7 +31,7 @@ namespace iroha {
       /**
        * Creates a mutable storage from the current state.
        * Mutable storage is the only way to commit the block to the ledger.
-       * @return Created mutable storage
+       * @return Created Result with mutable storage or error string
        */
       virtual expected::Result<std::unique_ptr<MutableStorage>, std::string> createMutableStorage() = 0;
 

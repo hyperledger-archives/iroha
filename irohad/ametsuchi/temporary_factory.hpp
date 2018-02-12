@@ -33,7 +33,7 @@ namespace iroha {
        * Temporary state will be not committed and will be erased on destructor
        * call.
        * Temporary state might be used for transaction validation.
-       * @return Created temporary wsv
+       * @return Created Result with temporary wsv or string error
        */
       virtual expected::Result<std::unique_ptr<TemporaryWsv>, std::string> createTemporaryWsv() = 0;
 
