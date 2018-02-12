@@ -28,6 +28,8 @@ using namespace iroha::torii;
 using namespace iroha::model::converters;
 using namespace iroha::consensus::yac;
 
+using namespace std::chrono_literals;
+
 /**
  * Configuring iroha daemon
  */
@@ -229,7 +231,7 @@ void Irohad::initTransactionCommandService() {
       std::make_shared<TransactionProcessorImpl>(pcs, stateless_validator);
 
   command_service = std::make_unique<::torii::CommandService>(
-      pb_tx_factory, tx_processor, storage);
+      pb_tx_factory, tx_processor, storage, proposal_delay_);
 
   log_->info("[Init] => command service");
 }
