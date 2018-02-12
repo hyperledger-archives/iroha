@@ -58,23 +58,11 @@ void OrderingServiceTransportGrpc::publishProposal(
         grpc::CreateChannel(peer, grpc::InsecureChannelCredentials()));
   }
 
-  auto pb_proposal =
-      shared_model::proto::ProposalBuilder()
-          .height(proposal.height())
-          .createdTime(iroha::time::now())
-          .transactions(proposal.transactions()
-                        | boost::adaptors::transformed([](auto iface_tx) {
-                            std::unique_ptr<iroha::model::Transaction> old_tx(
-                                iface_tx->makeOldModel());
-                            return shared_model::proto::from_old(*old_tx);
-                          }))
-          .build();
-
   for (const auto &peer : peers_map) {
     auto call = new AsyncClientCall;
 
     call->response_reader = peer.second->AsynconProposal(
-        &call->context, pb_proposal.getTransport(), &cq_);
+        &call->context, proposal.getTransport(), &cq_);
 
     call->response_reader->Finish(&call->reply, &call->status, call);
   }
