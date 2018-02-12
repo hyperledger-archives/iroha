@@ -45,7 +45,7 @@ namespace iroha {
 
     class StorageImpl : public Storage {
      protected:
-      static nonstd::optional<ConnectionContext> initConnections(
+      static expected::Result<ConnectionContext, std::string> initConnections(
           std::string block_store_dir, std::string postgres_options);
 
      public:
