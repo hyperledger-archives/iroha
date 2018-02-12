@@ -44,6 +44,7 @@ namespace iroha {
        * @param peer_pubkey - peer for requesting blocks
        * @param block_hash - requested block hash
        * @return block on success, nullopt on failure
+       * TODO 14/02/17 (@l4l) IR-960 rework method with returning result
        */
       virtual nonstd::optional<Wrapper<shared_model::interface::Block>>
       retrieveBlock(

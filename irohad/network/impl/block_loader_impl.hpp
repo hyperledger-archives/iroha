@@ -49,6 +49,7 @@ namespace iroha {
        * Retrieve peers from database, and find the requested peer by pubkey
        * @param pubkey - public key of requested peer
        * @return peer, if it was found, otherwise nullopt
+       * TODO 14/02/17 (@l4l) IR-960 rework method with returning result
        */
       nonstd::optional<model::Peer> findPeer(
           const shared_model::crypto::PublicKey &pubkey);
