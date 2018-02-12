@@ -152,7 +152,7 @@ class TransportBuilderTest : public ::testing::Test {
  */
 TEST_F(TransportBuilderTest, TransactionCreationTest) {
   auto orig_model = createTransaction();
-  testTransport<decltype(orig_model), validation::DefaultTransactionValidator>(
+  testTransport<decltype(orig_model), validation::DefaultSignableTransactionValidator>(
       orig_model,
       [&orig_model](const Value<decltype(orig_model)> &model) {
         ASSERT_EQ(model.value.getTransport().SerializeAsString(),
@@ -168,7 +168,7 @@ TEST_F(TransportBuilderTest, TransactionCreationTest) {
  */
 TEST_F(TransportBuilderTest, InvalidTransactionCreationTest) {
   auto orig_model = createInvalidTransaction();
-  testTransport<decltype(orig_model), validation::DefaultTransactionValidator>(
+  testTransport<decltype(orig_model), validation::DefaultSignableTransactionValidator>(
       orig_model,
       [](const Value<decltype(orig_model)>) { FAIL(); },
       [](const Error<std::string> &) { SUCCEED(); });
@@ -183,7 +183,7 @@ TEST_F(TransportBuilderTest, InvalidTransactionCreationTest) {
  */
 TEST_F(TransportBuilderTest, QueryCreationTest) {
   auto orig_model = createQuery();
-  testTransport<decltype(orig_model), validation::DefaultQueryValidator>(
+  testTransport<decltype(orig_model), validation::DefaultSignableQueryValidator>(
       orig_model,
       [&orig_model](const Value<decltype(orig_model)> &model) {
         ASSERT_EQ(model.value.getTransport().SerializeAsString(),
@@ -199,7 +199,7 @@ TEST_F(TransportBuilderTest, QueryCreationTest) {
  */
 TEST_F(TransportBuilderTest, InvalidQueryCreationTest) {
   auto orig_model = createInvalidQuery();
-  testTransport<decltype(orig_model), validation::DefaultQueryValidator>(
+  testTransport<decltype(orig_model), validation::DefaultSignableQueryValidator>(
       orig_model,
       [](const Value<decltype(orig_model)>) { FAIL(); },
       [](const Error<std::string> &) { SUCCEED(); });
