@@ -16,6 +16,7 @@
  */
 
 #include "torii/query_service.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include "common/types.hpp"
 #include "model/sha3_hash.hpp"
 
@@ -33,10 +34,14 @@ namespace torii {
     // Subscribe on result from iroha
     query_processor_->queryNotifier().subscribe([this](auto iroha_response) {
       // Find client to respond
-      auto res = handler_map_.find(iroha_response->query_hash.to_string());
+      auto old_reponse = iroha_response.makeOldModel();
+      auto res = handler_map_.find(old_reponse->query_hash.to_string());
       // Serialize to proto an return to response
       res->second =
-          pb_query_response_factory_->serialize(iroha_response).value();
+          pb_query_response_factory_
+              ->serialize(
+                  std::shared_ptr<iroha::model::QueryResponse>(old_reponse))
+              .value();
 
     });
   }
@@ -57,7 +62,7 @@ namespace torii {
         // Query - response relationship
         handler_map_.emplace(hash, response);
         // Send query to iroha
-        query_processor_->queryHandle(query);
+        query_processor_->queryHandle(shared_model::proto::from_old(*query));
       }
       response.set_query_hash(hash);
     };
