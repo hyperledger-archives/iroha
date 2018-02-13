@@ -17,10 +17,14 @@ limitations under the License.
 #define IROHA_VALIDATION_STATEFUL_VALIDATOR_HPP
 
 #include "ametsuchi/temporary_wsv.hpp"
+#include "interfaces/iroha_internal/proposal.hpp"
 #include "model/proposal.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 
 namespace iroha {
   namespace validation {
+
+    using namespace shared_model;
 
     /**
      * Interface for performing stateful validation
@@ -38,8 +42,10 @@ namespace iroha {
        * all changes after removing wsv will be ignored
        * @return proposal with valid transactions
        */
-      virtual model::Proposal validate(
-          const model::Proposal &proposal,
+      virtual shared_model::detail::PolymorphicWrapper<interface::Proposal>
+      validate(
+          const shared_model::detail::PolymorphicWrapper<interface::Proposal>
+              &proposal,
           ametsuchi::TemporaryWsv &temporaryWsv) = 0;
     };
   }  // namespace validation

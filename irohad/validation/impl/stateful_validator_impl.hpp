@@ -17,7 +17,12 @@
 #ifndef IROHA_STATEFUL_VALIDATIOR_IMPL_HPP
 #define IROHA_STATEFUL_VALIDATIOR_IMPL_HPP
 
+#include "backend/protobuf/transaction.hpp"
+#include "interfaces/base/signable.hpp"
+#include "builders/protobuf/transport_builder.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 #include "validation/stateful_validator.hpp"
+#include "validators/default_validator.hpp"
 
 #include "logger/logger.hpp"
 
@@ -40,8 +45,10 @@ namespace iroha {
        * all changes after removing wsv will be ignored
        * @return proposal with valid transactions
        */
-      model::Proposal validate(const model::Proposal &proposal,
-                               ametsuchi::TemporaryWsv &temporaryWsv) override;
+      shared_model::detail::PolymorphicWrapper<interface::Proposal> validate(
+          const shared_model::detail::PolymorphicWrapper<interface::Proposal>
+              &proposal,
+          ametsuchi::TemporaryWsv &temporaryWsv) override;
 
      private:
       /**
@@ -52,8 +59,8 @@ namespace iroha {
        * pubkeys
        */
       bool signaturesSubset(
-          const model::Transaction::SignaturesType &signatures,
-          const std::vector<pubkey_t> &public_keys);
+          const shared_model::interface::Transaction::SignatureSetType &signatures,
+          const std::vector<crypto::PublicKey> &public_keys);
 
       logger::Logger log_;
     };

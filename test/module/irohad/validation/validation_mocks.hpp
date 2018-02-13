@@ -19,6 +19,8 @@
 #define IROHA_VALIDATION_MOCKS_HPP
 
 #include <gmock/gmock.h>
+#include "interfaces/iroha_internal/proposal.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 #include "validation/chain_validator.hpp"
 #include "validation/stateful_validator.hpp"
 #include "validation/stateless_validator.hpp"
@@ -34,8 +36,11 @@ namespace iroha {
     class MockStatefulValidator : public validation::StatefulValidator {
      public:
       MOCK_METHOD2(validate,
-                   model::Proposal(const model::Proposal &,
-                                   ametsuchi::TemporaryWsv &));
+                   shared_model::detail::PolymorphicWrapper<
+                       shared_model::interface::Proposal>(
+                       const shared_model::detail::PolymorphicWrapper<
+                           shared_model::interface::Proposal> &,
+                       ametsuchi::TemporaryWsv &));
     };
 
     class MockChainValidator : public ChainValidator {

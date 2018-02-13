@@ -16,7 +16,9 @@
  */
 
 #include "simulator/impl/simulator.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include "model/sha3_hash.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 
 namespace iroha {
   namespace simulator {
@@ -63,8 +65,12 @@ namespace iroha {
       temporaryStorageResult.match(
           [&](expected::Value<std::unique_ptr<ametsuchi::TemporaryWsv>>
                   &temporaryStorage) {
-            notifier_.get_subscriber().on_next(
-                validator_->validate(proposal, *(temporaryStorage.value)));
+            auto validated_proposal =
+                validator_->validate(shared_model::detail::makePolymorphic<
+                                         shared_model::proto::Proposal>(
+                    shared_model::proto::from_old(proposal)),
+                                     *(temporaryStorage.value));
+            notifier_.get_subscriber().on_next(*validated_proposal->makeOldModel());
           },
           [&](expected::Error<std::string> &error) {
             log_->error(error.error);
