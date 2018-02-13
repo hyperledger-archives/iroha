@@ -20,10 +20,18 @@ target_link_libraries(transport_builder_test
     shared_model_stateless_validation
     )
 
-addtest(common_objects_proto_builders_test
+addtest(proto_peer_builder_test
         common_objects/proto_peer_builder_test.cpp
         )
 
-target_link_libraries(common_objects_proto_builders_test
+addtest(proto_account_builder_test
+        common_objects/proto_account_builder_test.cpp
+        )
+
+target_link_libraries(proto_peer_builder_test
+        shared_model_proto_builders
+        )
+
+target_link_libraries(proto_account_builder_test
         shared_model_proto_builders
         )

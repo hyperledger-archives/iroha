@@ -21,8 +21,11 @@
 #include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 #include "validators/field_validator.hpp"
 
+// TODO: Add mocks for template parameters
+// TODO: Add more test cases
+
 TEST(PeerBuilderTest, StatelessValidAddressCreation) {
-  // TODO: Replace with mocks
+
   shared_model::builder::PeerBuilder<shared_model::proto::PeerBuilder,
                                      shared_model::validation::FieldValidator>
       builder;
