@@ -153,7 +153,9 @@ void apply(S &&storage, const Block &block) {
       [&](iroha::expected::Value<std::unique_ptr<MutableStorage>> &_storage) {
         ms = std::move(_storage.value);
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "MutableStorage: " << error.error;
+      });
   ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
   storage->commit(std::move(ms));
 }
@@ -166,7 +168,9 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
@@ -188,7 +192,9 @@ TEST_F(AmetsuchiTest, SampleTest) {
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -285,7 +291,9 @@ TEST_F(AmetsuchiTest, PeerTest) {
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -313,7 +321,9 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -452,7 +462,9 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -703,7 +715,9 @@ TEST_F(AmetsuchiTest, TestingStorageWhenInsertBlock) {
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   ASSERT_EQ(0, wsv->getPeers().value().size());
@@ -742,7 +756,9 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   ASSERT_EQ(0, wsv->getPeers().value().size());
@@ -767,7 +783,9 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         new_storage = _storage.value;
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_EQ(0, wsv->getPeers().value().size());
   new_storage->dropStorage();
 }
@@ -785,7 +803,9 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
       [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](iroha::expected::Error<std::string> &error) { FAIL(); });
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 

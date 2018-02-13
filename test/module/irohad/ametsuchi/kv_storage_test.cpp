@@ -47,7 +47,9 @@ class KVTest : public AmetsuchiTest {
         [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
           storage = _storage.value;
         },
-        [](iroha::expected::Error<std::string> &error) { ASSERT_TRUE(0); });
+        [](iroha::expected::Error<std::string> &error) {
+          FAIL() << "StorageImpl: " << error.error;
+        });
     ASSERT_TRUE(storage);
     blocks = storage->getBlockQuery();
     wsv_query = storage->getWsvQuery();
@@ -102,7 +104,9 @@ class KVTest : public AmetsuchiTest {
       storageResult.match(
           [&](iroha::expected::Value<std::unique_ptr<MutableStorage>>
                   &_storage) { ms = std::move(_storage.value); },
-          [](iroha::expected::Error<std::string> &error) { ASSERT_TRUE(0); });
+          [](iroha::expected::Error<std::string> &error) {
+            FAIL() << "MutableStorage: " << error.error;
+          });
       ms->apply(block1, [](const auto &blk, auto &query, const auto &top_hash) {
         return true;
       });
