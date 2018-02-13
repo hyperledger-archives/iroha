@@ -23,18 +23,15 @@
 #include "datetime/time.hpp"
 
 using namespace iroha::ordering;
-using namespace iroha::protocol;
-using namespace iroha::model;
-using namespace iroha::network;
 
 void OrderingServiceTransportGrpc::subscribe(
-    std::shared_ptr<OrderingServiceNotification> subscriber) {
+    std::shared_ptr<iroha::network::OrderingServiceNotification> subscriber) {
   subscriber_ = subscriber;
 }
 
 grpc::Status OrderingServiceTransportGrpc::onTransaction(
     ::grpc::ServerContext *context,
-    const protocol::Transaction *request,
+    const iroha::protocol::Transaction *request,
     ::google::protobuf::Empty *response) {
   if (subscriber_.expired()) {
     log_->error("No subscriber");
