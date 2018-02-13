@@ -28,13 +28,14 @@
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
 #include "model/account.hpp"
-#include "model/asset.hpp"
-#include "model/peer.hpp"
-#include "model/domain.hpp"
 #include "model/account_asset.hpp"
-
+#include "model/asset.hpp"
+#include "model/domain.hpp"
+#include "model/peer.hpp"
 
 #include <boost/optional.hpp>
+
+#include "common/result.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -144,7 +145,9 @@ namespace iroha {
 
     class MockTemporaryFactory : public TemporaryFactory {
      public:
-      MOCK_METHOD0(createTemporaryWsv, std::unique_ptr<TemporaryWsv>());
+      MOCK_METHOD0(
+          createTemporaryWsv,
+          expected::Result<std::unique_ptr<TemporaryWsv>, std::string>(void));
     };
 
     class MockMutableStorage : public MutableStorage {
@@ -152,22 +155,26 @@ namespace iroha {
       MOCK_METHOD2(
           apply,
           bool(const model::Block &,
-               std::function<
-                   bool(const model::Block &, WsvQuery &, const hash256_t &)>));
+               std::function<bool(
+                   const model::Block &, WsvQuery &, const hash256_t &)>));
     };
 
     /**
      * Factory for generation mock mutable storages.
      * This method provide technique,
-     * when required to return object wrapped in unique pointer.
+     * when required to return object wrapped in Result.
      */
-    std::unique_ptr<MutableStorage> createMockMutableStorage() {
-      return std::make_unique<MockMutableStorage>();
+    expected::Result<std::unique_ptr<MutableStorage>, std::string>
+    createMockMutableStorage() {
+      return expected::makeValue<std::unique_ptr<MutableStorage>>(
+          std::move(std::make_unique<MockMutableStorage>()));
     }
 
     class MockMutableFactory : public MutableFactory {
      public:
-      MOCK_METHOD0(createMutableStorage, std::unique_ptr<MutableStorage>());
+      MOCK_METHOD0(
+          createMutableStorage,
+          expected::Result<std::unique_ptr<MutableStorage>, std::string>(void));
 
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override {
         // gmock workaround for non-copyable parameters
@@ -189,8 +196,12 @@ namespace iroha {
      public:
       MOCK_CONST_METHOD0(getWsvQuery, std::shared_ptr<WsvQuery>(void));
       MOCK_CONST_METHOD0(getBlockQuery, std::shared_ptr<BlockQuery>(void));
-      MOCK_METHOD0(createTemporaryWsv, std::unique_ptr<TemporaryWsv>(void));
-      MOCK_METHOD0(createMutableStorage, std::unique_ptr<MutableStorage>(void));
+      MOCK_METHOD0(
+          createTemporaryWsv,
+          expected::Result<std::unique_ptr<TemporaryWsv>, std::string>(void));
+      MOCK_METHOD0(
+          createMutableStorage,
+          expected::Result<std::unique_ptr<MutableStorage>, std::string>(void));
       MOCK_METHOD1(doCommit, void(MutableStorage *storage));
       MOCK_METHOD1(insertBlock, bool(model::Block block));
       MOCK_METHOD0(dropStorage, void(void));
