@@ -143,8 +143,7 @@ class TxPipelineIntegrationTestFixture
     auto pb_tx =
         iroha::model::converters::PbTransactionFactory().serialize(transaction);
 
-    google::protobuf::Empty response;
-    irohad->getCommandService()->Torii(pb_tx, response);
+    irohad->getCommandService()->Torii(pb_tx);
   }
 };
 

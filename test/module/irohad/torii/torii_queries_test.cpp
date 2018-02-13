@@ -46,6 +46,9 @@ using namespace iroha::validation;
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
 
+using namespace std::chrono_literals;
+constexpr std::chrono::milliseconds proposal_delay = 10s;
+
 // TODO: allow dynamic port binding in ServerRunner IR-741
 class ToriiQueriesTest : public testing::Test {
  public:
@@ -90,7 +93,7 @@ class ToriiQueriesTest : public testing::Test {
       //----------- Server run ----------------
       runner
           ->append(std::make_unique<torii::CommandService>(
-              pb_tx_factory, tx_processor, storageMock))
+              pb_tx_factory, tx_processor, storageMock, proposal_delay))
           .append(std::make_unique<torii::QueryService>(
               pb_query_factory, pb_query_resp_factory, qpi))
           .run();
