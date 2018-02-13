@@ -68,6 +68,8 @@ namespace iroha {
           },
           [&](expected::Error<std::string> &error) {
             log_->error(error.error);
+            // TODO: 13/02/18 Solonets - Handle the case when TemporaryWsv was
+            // failed to produced - IR-966
             throw std::runtime_error(error.error);
           });
     }
