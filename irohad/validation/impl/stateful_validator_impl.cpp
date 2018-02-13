@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+#include "validation/impl/stateful_validator_impl.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include <numeric>
 #include <set>
 

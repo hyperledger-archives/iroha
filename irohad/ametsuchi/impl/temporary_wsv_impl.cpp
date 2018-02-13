@@ -18,9 +18,10 @@
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-#include "model/execution/command_executor_factory.hpp"
-#include "model/account.hpp"
 #include "amount/amount.hpp"
+#include "backend/protobuf/from_old_model.hpp"
+#include "model/account.hpp"
+#include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -38,10 +39,12 @@ namespace iroha {
     }
 
     bool TemporaryWsvImpl::apply(
-        const model::Transaction &transaction,
+        const shared_model::interface::Transaction &tx,
         std::function<bool(const model::Transaction &, WsvQuery &)>
             apply_function) {
-      const auto &tx_creator = transaction.creator_account_id;
+      auto transaction = tx.makeOldModel();
+
+      const auto &tx_creator = transaction->creator_account_id;
       auto execute_command = [this, &tx_creator](auto command) {
         auto executor = command_executors_->getCommandExecutor(command);
         auto account = wsv_->getAccount(tx_creator).value();
@@ -59,15 +62,16 @@ namespace iroha {
       };
 
       transaction_->exec("SAVEPOINT savepoint_;");
-      auto result = apply_function(transaction, *wsv_)
-          && std::all_of(transaction.commands.begin(),
-                         transaction.commands.end(),
+      auto result = apply_function(*transaction, *wsv_)
+          && std::all_of(transaction->commands.begin(),
+                         transaction->commands.end(),
                          execute_command);
       if (result) {
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");
       } else {
         transaction_->exec("ROLLBACK TO SAVEPOINT savepoint_;");
       }
+      delete transaction;
       return result;
     }
 
