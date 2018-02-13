@@ -1,7 +1,7 @@
 import iroha
 import unittest
 import time
-
+import sys
 from google.protobuf.message import DecodeError
 import queries_pb2 as qry
 
@@ -39,8 +39,11 @@ class BuilderTest(unittest.TestCase):
 
   def check_proto_query(self, blob):
     try:
-      tmp = map(chr,blob.blob())
-      qry.Query.FromString(''.join(tmp))
+      if sys.version_info[0] == 2:
+        tmp = ''.join(map(chr, blob.blob()))
+      else:
+        tmp = bytes(blob.blob())
+        qry.Query.FromString(tmp)
     except DecodeError as e:
       print(e)
       return False
