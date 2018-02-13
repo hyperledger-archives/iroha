@@ -22,8 +22,8 @@
 #include "model/commands/transfer_asset.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
-#include "shared_model/backend/protobuf/from_old_model.hpp"
-#include "shared_model/interfaces/iroha_internal/block.hpp"
+#include "backend/protobuf/from_old_model.hpp"
+#include "interfaces/iroha_internal/block.hpp"
 
 
 using namespace framework::test_subscriber;

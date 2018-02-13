@@ -22,8 +22,8 @@
 #include "model/execution/command_executor_factory.hpp"
 
 #include "model/sha3_hash.hpp"
-#include "shared_model/backend/protobuf/from_old_model.hpp"
-#include "shared_model/interfaces/iroha_internal/block.hpp"
+#include "backend/protobuf/from_old_model.hpp"
+#include "interfaces/iroha_internal/block.hpp"
 
 namespace iroha {
   namespace ametsuchi {

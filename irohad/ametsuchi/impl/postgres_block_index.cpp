@@ -27,8 +27,8 @@
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/sha3_hash.hpp"
 
-#include "shared_model/interfaces/iroha_internal/block.hpp"
-#include "shared_model/interfaces/commands/transfer_asset.hpp"
+#include "interfaces/iroha_internal/block.hpp"
+#include "interfaces/commands/transfer_asset.hpp"
 
 namespace iroha {
   namespace ametsuchi {
