@@ -40,13 +40,15 @@ namespace iroha {
        * @param client - query emitter
        * @param query - client intent
        */
-      virtual void queryHandle(shared_model::interface::Query qry) = 0;
+      virtual void queryHandle(shared_model::detail::PolymorphicWrapper<
+                               shared_model::interface::Query> qry) = 0;
 
       /**
        * Subscribe for query responses
        * @return observable with query responses
        */
-      virtual rxcpp::observable<shared_model::interface::QueryResponse>
+      virtual rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::QueryResponse>>
       queryNotifier() = 0;
 
       virtual ~QueryProcessor(){};

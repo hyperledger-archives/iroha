@@ -23,9 +23,10 @@ using namespace torii;
 
 using namespace iroha;
 using namespace iroha::torii;
-using namespace iroha::model;
 using namespace iroha::model::converters;
 
+using namespace shared_model::detail;
+using namespace shared_model::interface;
 using ::testing::_;
 using ::testing::Return;
 
@@ -56,13 +57,14 @@ class QueryServiceTest : public ::testing::Test {
   std::shared_ptr<MockQueryProcessor> query_processor;
   std::shared_ptr<PbQueryFactory> query_factory;
   std::shared_ptr<PbQueryResponseFactory> query_response_factory;
+
 };
 
 TEST_F(QueryServiceTest, SubscribeQueryProcessorWhenInit) {
   // query service is subscribed to query processor
   EXPECT_CALL(*query_processor, queryNotifier())
       .WillOnce(Return(
-          rxcpp::observable<>::empty<std::shared_ptr<model::QueryResponse>>()));
+          rxcpp::observable<>::empty<PolymorphicWrapper<QueryResponse>>()));
 
   init();
 }
@@ -71,7 +73,7 @@ TEST_F(QueryServiceTest, ValidWhenUniqueHash) {
   // unique query => query handled by query processor
   EXPECT_CALL(*query_processor, queryNotifier())
       .WillOnce(Return(
-          rxcpp::observable<>::empty<std::shared_ptr<model::QueryResponse>>()));
+          rxcpp::observable<>::empty<PolymorphicWrapper<QueryResponse>>()));
   EXPECT_CALL(*query_processor, queryHandle(_)).WillOnce(Return());
 
   init();
@@ -83,7 +85,7 @@ TEST_F(QueryServiceTest, InvalidWhenDuplicateHash) {
   // two same queries => only first query handled by query processor
   EXPECT_CALL(*query_processor, queryNotifier())
       .WillOnce(Return(
-          rxcpp::observable<>::empty<std::shared_ptr<model::QueryResponse>>()));
+          rxcpp::observable<>::empty<PolymorphicWrapper<QueryResponse>>()));
   EXPECT_CALL(*query_processor, queryHandle(_)).WillOnce(Return());
 
   init();

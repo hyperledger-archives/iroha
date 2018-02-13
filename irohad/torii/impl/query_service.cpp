@@ -34,7 +34,7 @@ namespace torii {
     // Subscribe on result from iroha
     query_processor_->queryNotifier().subscribe([this](auto iroha_response) {
       // Find client to respond
-      auto old_reponse = iroha_response.makeOldModel();
+      auto old_reponse = iroha_response->makeOldModel();
       auto res = handler_map_.find(old_reponse->query_hash.to_string());
       // Serialize to proto an return to response
       res->second =
@@ -62,7 +62,9 @@ namespace torii {
         // Query - response relationship
         handler_map_.emplace(hash, response);
         // Send query to iroha
-        query_processor_->queryHandle(shared_model::proto::from_old(*query));
+        query_processor_->queryHandle(
+            shared_model::detail::makePolymorphic<shared_model::proto::Query>(
+                shared_model::proto::from_old(*query)));
       }
       response.set_query_hash(hash);
     };

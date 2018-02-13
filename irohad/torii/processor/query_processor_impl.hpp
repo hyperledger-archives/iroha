@@ -38,17 +38,21 @@ namespace iroha {
        * Register client query
        * @param query - client intent
        */
-      void queryHandle(shared_model::interface::Query qry) override;
+      void queryHandle(shared_model::detail::PolymorphicWrapper<
+                       shared_model::interface::Query> qry) override;
 
       /**
        * Subscribe for query responses
        * @return observable with query responses
        */
-      rxcpp::observable<shared_model::interface::QueryResponse> queryNotifier()
-          override;
+      rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::QueryResponse>>
+      queryNotifier() override;
 
      private:
-      rxcpp::subjects::subject<shared_model::interface::QueryResponse> subject_;
+      rxcpp::subjects::subject<shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::QueryResponse>>
+          subject_;
       std::unique_ptr<model::QueryProcessingFactory> qpf_;
       std::shared_ptr<validation::StatelessValidator> validator_;
     };

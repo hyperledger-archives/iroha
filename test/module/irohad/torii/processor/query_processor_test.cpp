@@ -25,6 +25,8 @@
 #include "torii/processor/query_processor_impl.hpp"
 
 #include "backend/protobuf/query_responses/proto_error_query_response.hpp"
+#include "cryptography/crypto_provider/crypto_defaults.hpp"
+#include "cryptography/keypair.hpp"
 #include "module/shared_model/builders/protobuf/test_query_builder.hpp"
 
 using namespace iroha;
@@ -37,17 +39,18 @@ using ::testing::A;
 using ::testing::Return;
 
 class QueryProcessorTest : public ::testing::Test {
- protected:
+ public:
   void SetUp() override {
     created_time = iroha::time::now();
     account_id = "account@domain";
     counter = 1048576;
   }
 
- protected:
   decltype(iroha::time::now()) created_time;
   std::string account_id;
   uint64_t counter;
+  shared_model::crypto::Keypair keypair =
+      shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair();
 };
 
 /**
@@ -67,12 +70,13 @@ TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
 
   iroha::torii::QueryProcessorImpl qpi(std::move(qpf), validation);
 
-  auto query = TestQueryBuilder()
+  auto query = TestUnsignedQueryBuilder()
                    .createdTime(created_time)
                    .creatorAccountId(account_id)
                    .getAccount(account_id)
                    .queryCounter(counter)
-                   .build();
+                   .build()
+                   .signAndAddSignature(keypair);
 
   auto wrapper = make_test_subscriber<CallExact>(
       qpi.queryNotifier().filter([](auto response) {
@@ -81,8 +85,10 @@ TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
       1);
   wrapper.subscribe([](auto response) {
     auto resp = response->get();
+    std::cout << "Reponse name is " << resp.type().name() << std::endl;
     ASSERT_EQ(resp.type().name(), "fef");
   });
   qpi.queryHandle(
-      query);
+      shared_model::detail::makePolymorphic<shared_model::proto::Query>(
+          query.getTransport()));
 }

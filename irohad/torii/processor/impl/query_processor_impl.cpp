@@ -18,7 +18,6 @@
 #include "torii/processor/query_processor_impl.hpp"
 #include <backend/protobuf/query_responses/proto_query_response.hpp>
 #include "backend/protobuf/from_old_model.hpp"
-#include "model/converters/pb_query_response_factory.hpp"
 
 namespace iroha {
   namespace torii {
@@ -28,24 +27,31 @@ namespace iroha {
         std::shared_ptr<validation::StatelessValidator> stateless_validator)
         : qpf_(std::move(qpf)), validator_(stateless_validator) {}
 
-    void QueryProcessorImpl::queryHandle(shared_model::interface::Query qry) {
-      auto query = qry.makeOldModel();
+    void QueryProcessorImpl::queryHandle(
+        shared_model::detail::PolymorphicWrapper<shared_model::interface::Query>
+            qry) {
+      auto query = qry->makeOldModel();
       // TODO: 12.02.2018 grimadas Remove when query_executor has new model, as
       // query is already stateless valid when passing to query  processor
       if (not validator_->validate(*query)) {
         auto errorResponse = std::make_shared<model::ErrorResponse>();
         errorResponse->reason = model::ErrorResponse::STATELESS_INVALID;
+        auto qry_resp = shared_model::proto::from_old(errorResponse);
         subject_.get_subscriber().on_next(
-            shared_model::proto::from_old(errorResponse));
+            shared_model::detail::makePolymorphic<
+                shared_model::proto::QueryResponse>(qry_resp.getTransport()));
       } else {
         auto qpf_response =
             qpf_->execute(std::shared_ptr<const model::Query>(query));
         // TODO: 12.02.2018 grimadas Remove when query_executor has new model
+        auto qry_resp = shared_model::proto::from_old(qpf_response);
         subject_.get_subscriber().on_next(
-            shared_model::proto::from_old(qpf_response));
+            shared_model::detail::makePolymorphic<
+                shared_model::proto::QueryResponse>(qry_resp.getTransport()));
       }
     }
-    rxcpp::observable<shared_model::interface::QueryResponse>
+    rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+        shared_model::interface::QueryResponse>>
     QueryProcessorImpl::queryNotifier() {
       return subject_.get_observable();
     }
