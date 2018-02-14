@@ -124,9 +124,8 @@ namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::sendTx(
       const shared_model::proto::Transaction &tx, Lambda validation) {
     log_->info("send transaction");
-    google::protobuf::Empty response;
     iroha_instance_->getIrohaInstance()->getCommandService()->Torii(
-        tx.getTransport(), response);
+        tx.getTransport());
     // fetch status of transaction
     shared_model::proto::TransactionResponse status = getTxStatus(tx.hash());
     // check validation function

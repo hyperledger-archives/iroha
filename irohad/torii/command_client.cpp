@@ -11,7 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <torii/command_client.hpp>
+#include <thread>
+
+#include <grpc++/grpc++.h>
+
+#include "block.pb.h"
+#include "torii/command_client.hpp"
 
 namespace torii {
 
@@ -37,7 +42,8 @@ namespace torii {
     swap(*this, rhs);
   }
 
-  CommandSyncClient& CommandSyncClient::operator=(CommandSyncClient &&rhs) noexcept  {
+  CommandSyncClient &CommandSyncClient::operator=(
+      CommandSyncClient &&rhs) noexcept {
     swap(*this, rhs);
     return *this;
   }
@@ -55,7 +61,19 @@ namespace torii {
     return stub_->Status(&context, request, &response);
   }
 
-  void  CommandSyncClient::swap(CommandSyncClient& lhs, CommandSyncClient& rhs) {
+  void CommandSyncClient::StatusStream(
+      const iroha::protocol::TxStatusRequest &tx,
+      std::vector<iroha::protocol::ToriiResponse> &response) const {
+    grpc::ClientContext context;
+    ToriiResponse resp;
+    std::unique_ptr<grpc::ClientReader<ToriiResponse> > reader(
+        stub_->StatusStream(&context, tx));
+    while (reader->Read(&resp)) {
+      response.push_back(resp);
+    }
+  }
+
+  void CommandSyncClient::swap(CommandSyncClient &lhs, CommandSyncClient &rhs) {
     using std::swap;
     swap(lhs.ip_, rhs.ip_);
     swap(lhs.port_, rhs.port_);

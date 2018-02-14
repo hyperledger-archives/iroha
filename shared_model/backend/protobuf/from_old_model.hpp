@@ -57,7 +57,7 @@ namespace shared_model {
         new (proto.add_transactions()) iroha::protocol::Transaction(
             iroha::model::converters::PbTransactionFactory().serialize(tx));
       }
-      return shared_model::proto::Proposal(proto);
+      return shared_model::proto::Proposal(std::move(proto));
     }
 
   }  // namespace proto
