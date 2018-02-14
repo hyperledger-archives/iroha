@@ -24,6 +24,11 @@
 
 namespace shared_model {
   namespace proto {
+
+    /**
+     * AmountBuilder is used to construct Amount proto objects with initialized
+     * protobuf implementation
+     */
     class AmountBuilder {
      public:
       shared_model::proto::Amount build() {

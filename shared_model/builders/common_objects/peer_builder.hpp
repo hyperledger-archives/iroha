@@ -23,6 +23,15 @@
 
 namespace shared_model {
   namespace builder {
+
+    /**
+     * PeerBuilder is a class, used for construction of Peer objects
+     * @tparam BuilderImpl is a type, which defines builder for implementation
+     * of shared_model. Since we return abstract classes, it is necessary for
+     * them to be instantiated with some concrete implementation
+     * @tparam Validator is a type, whose responsibility is
+     * to perform stateless validation on model fields
+     */
     template <typename BuilderImpl, typename Validator>
     class PeerBuilder {
      public:
