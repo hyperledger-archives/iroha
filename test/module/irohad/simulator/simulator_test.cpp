@@ -83,7 +83,7 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
       .WillOnce(Return(rxcpp::observable<>::just(block)));
 
   shared_model::detail::PolymorphicWrapper<shared_model::interface::Proposal> iprop =
-      shared_model::detail::makePolymorphic<proto::Proposal>(shared_model::proto::from_old(proposal));
+      shared_model::detail::makePolymorphic<shared_model::proto::Proposal>(shared_model::proto::from_old(proposal));
 
   EXPECT_CALL(*validator, validate(_, _)).WillOnce(Return(iprop));
 

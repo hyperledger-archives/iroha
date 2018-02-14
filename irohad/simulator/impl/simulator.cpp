@@ -65,11 +65,11 @@ namespace iroha {
       temporaryStorageResult.match(
           [&](expected::Value<std::unique_ptr<ametsuchi::TemporaryWsv>>
                   &temporaryStorage) {
+            auto shm_proposal = shared_model::detail::makePolymorphic<
+                shared_model::proto::Proposal>(
+                shared_model::proto::from_old(proposal));
             auto validated_proposal =
-                validator_->validate(shared_model::detail::makePolymorphic<
-                                         shared_model::proto::Proposal>(
-                    shared_model::proto::from_old(proposal)),
-                                     *(temporaryStorage.value));
+                validator_->validate(shm_proposal, temporaryStorage.value);
             notifier_.get_subscriber().on_next(*validated_proposal->makeOldModel());
           },
           [&](expected::Error<std::string> &error) {

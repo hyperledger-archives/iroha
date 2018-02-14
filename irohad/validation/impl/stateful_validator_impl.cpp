@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-#include "validation/impl/stateful_validator_impl.hpp"
 #include <numeric>
 #include <set>
 
-#include "datetime/time.hpp"
 #include <boost/range/adaptor/transformed.hpp>
 
 #include "backend/protobuf/from_old_model.hpp"
@@ -34,15 +32,14 @@ namespace iroha {
       log_ = logger::log("SFV");
     }
 
-    shared_model::detail::PolymorphicWrapper<interface::Proposal>
+    shared_model::detail::PolymorphicWrapper<shared_model::interface::Proposal>
     StatefulValidatorImpl::validate(
-        const shared_model::detail::PolymorphicWrapper<interface::Proposal>
-            &proposal,
-        ametsuchi::TemporaryWsv &temporaryWsv) {
+        const shared_model::detail::PolymorphicWrapper<
+            shared_model::interface::Proposal> &proposal,
+        std::unique_ptr<ametsuchi::TemporaryWsv> &temporaryWsv) {
       log_->info("transactions in proposal: {}",
                  proposal->transactions().size());
-      auto checking_transaction = [this](const model::Transaction &tx,
-                                         auto &queries) {
+      auto checking_transaction = [this](const auto &tx, auto &queries) {
         return (queries.getAccount(tx.creator_account_id) |
                 [&](const auto &account) {
                   // Check if tx creator has account and has quorum to execute
@@ -53,18 +50,19 @@ namespace iroha {
                 }
                 |
                 [&](const auto &signatories) {
-                  auto shm_signatories =
+                  auto model_signatories =
                       signatories
                       | boost::adaptors::transformed([](const auto &signatory) {
-                          return crypto::PublicKey(signatory.to_string());
+                          return shared_model::crypto::PublicKey(
+                              signatory.to_string());
                         });
                   // Check if signatures in transaction are account signatory
                   return this->signaturesSubset(
                              shared_model::proto::from_old(tx).signatures(),
-                             std::vector<crypto::PublicKey>(
-                                 shm_signatories.begin(),
-                                 shm_signatories.end()))
-                      ? nonstd::make_optional(shm_signatories)
+                             std::vector<shared_model::crypto::PublicKey>(
+                                 model_signatories.begin(),
+                                 model_signatories.end()))
+                      ? nonstd::make_optional(model_signatories)
                       : nonstd::nullopt;
                 })
             .has_value();
@@ -73,11 +71,12 @@ namespace iroha {
       // Filter only valid transactions
       auto filter = [&temporaryWsv, checking_transaction](auto &acc,
                                                           const auto &tx) {
-        auto answer =
-            temporaryWsv.apply(*tx->makeOldModel(), checking_transaction);
+        auto *old_tx = tx->makeOldModel();
+        auto answer = temporaryWsv->apply(*old_tx, checking_transaction);
         if (answer) {
           acc.push_back(tx);
         }
+        delete old_tx;
         return acc;
       };
 
@@ -93,7 +92,7 @@ namespace iroha {
               return *static_cast<const shared_model::proto::Transaction *>(
                   polymorphic_tx.operator->());
             });
-      auto validated_proposal = proto::ProposalBuilder()
+      auto validated_proposal = shared_model::proto::ProposalBuilder()
                                     .createdTime(proposal->created_time())
                                     .height(proposal->height())
                                     .transactions(valid_proto_txs)
@@ -108,7 +107,7 @@ namespace iroha {
     bool StatefulValidatorImpl::signaturesSubset(
         const shared_model::interface::Transaction::SignatureSetType
             &signatures,
-        const std::vector<crypto::PublicKey> &public_keys) {
+        const std::vector<shared_model::crypto::PublicKey> &public_keys) {
       // TODO 09/10/17 Lebedev: simplify the subset verification IR-510
       // #goodfirstissue
       std::unordered_set<std::string> txPubkeys;
