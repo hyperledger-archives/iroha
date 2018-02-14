@@ -188,6 +188,13 @@ class Irohad {
  public:
   std::shared_ptr<iroha::ametsuchi::Storage> storage;
   iroha::keypair_t keypair;
+
+ private:
+  void registerExitHandler();
+  void handler(int signal_number);
+  static void staticHandler(int signal_number);
+
+  static Irohad* instance_;
 };
 
 #endif  // IROHA_APPLICATION_HPP

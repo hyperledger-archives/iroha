@@ -16,6 +16,7 @@
  */
 
 #include "main/application.hpp"
+#include <csignal>
 
 using namespace iroha;
 using namespace iroha::ametsuchi;
@@ -29,6 +30,8 @@ using namespace iroha::model::converters;
 using namespace iroha::consensus::yac;
 
 using namespace std::chrono_literals;
+
+Irohad* Irohad::instance_;
 
 /**
  * Configuring iroha daemon
@@ -56,6 +59,7 @@ Irohad::Irohad(const std::string &block_store_dir,
   // Initializing storage at this point in order to insert genesis block before
   // initialization of iroha deamon
   initStorage();
+  instance_ = this;
 }
 
 Irohad::~Irohad() {
@@ -287,7 +291,24 @@ void Irohad::run() {
         .run();
   });
   log_->info("===> iroha initialized");
+  registerExitHandler();
+
   // Wait until servers shutdown
   torii_server->waitForServersReady();
   internal_server->Wait();
+}
+
+void Irohad::registerExitHandler() {
+  std::signal(SIGINT, Irohad::staticHandler);
+  std::signal(SIGTERM, Irohad::staticHandler);
+  std::signal(SIGQUIT, Irohad::staticHandler);
+}
+
+void Irohad::handler(int signal_number) {
+  log_->info("shutting down...");
+  std::exit(EXIT_SUCCESS);
+}
+
+void Irohad::staticHandler(int signal_number) {
+  instance_->handler(signal_number);
 }
