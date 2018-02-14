@@ -21,8 +21,8 @@ target_link_libraries(transport_builder_test
     )
 
 addtest(proto_peer_builder_test
-        common_objects/proto_peer_builder_test.cpp
-        )
+    common_objects/proto_peer_builder_test.cpp
+    )
 
 target_link_libraries(proto_peer_builder_test
         shared_model_proto_builders
@@ -49,5 +49,13 @@ addtest(proto_signature_builder_test
         )
 
 target_link_libraries(proto_signature_builder_test
+        shared_model_proto_builders
+        )
+
+addtest(proto_asset_builder_test
+        common_objects/proto_asset_builder_test.cpp
+        )
+
+target_link_libraries(proto_asset_builder_test
         shared_model_proto_builders
         )
