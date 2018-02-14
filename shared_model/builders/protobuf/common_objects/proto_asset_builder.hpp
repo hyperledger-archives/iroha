@@ -31,7 +31,7 @@ namespace shared_model {
       }
 
       AssetBuilder &assetId(
-          const interface::types::AccountIdType &asset_id) {
+          const interface::types::AssetIdType &asset_id) {
         asset_.set_asset_id(asset_id);
         return *this;
       }

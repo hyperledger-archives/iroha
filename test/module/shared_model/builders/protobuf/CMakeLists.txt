@@ -59,3 +59,11 @@ addtest(proto_asset_builder_test
 target_link_libraries(proto_asset_builder_test
         shared_model_proto_builders
         )
+
+addtest(proto_account_asset_builder_test
+        common_objects/proto_account_asset_builder_test.cpp
+        )
+
+target_link_libraries(proto_account_asset_builder_test
+        shared_model_proto_builders
+        )
