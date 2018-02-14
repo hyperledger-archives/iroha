@@ -24,8 +24,8 @@
 
 #include <boost/format.hpp>
 #include <pqxx/nontransaction>
+#include <interfaces/transaction.hpp>
 
-#include "model/transaction.hpp"  // for model::Transaction::CommandsType
 
 namespace shared_model {
   namespace interface {
@@ -38,11 +38,9 @@ namespace iroha {
       template <class T>
       using w = shared_model::detail::PolymorphicWrapper<T>;
 
-      /// Type of command
-      using CommandType = w<shared_model::interface::Command>;
 
       /// Type of ordered collection of commands
-      using CommandsType = std::vector<CommandType>;
+      using CommandsType = shared_model::interface::Transaction::CommandsType;
      public:
       explicit PostgresBlockIndex(pqxx::nontransaction &transaction);
 

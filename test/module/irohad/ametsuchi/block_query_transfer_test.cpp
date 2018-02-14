@@ -23,8 +23,6 @@
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 #include "backend/protobuf/from_old_model.hpp"
-#include "interfaces/iroha_internal/block.hpp"
-
 
 using namespace framework::test_subscriber;
 

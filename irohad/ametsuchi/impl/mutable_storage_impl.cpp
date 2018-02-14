@@ -23,7 +23,6 @@
 
 #include "model/sha3_hash.hpp"
 #include "backend/protobuf/from_old_model.hpp"
-#include "interfaces/iroha_internal/block.hpp"
 
 namespace iroha {
   namespace ametsuchi {

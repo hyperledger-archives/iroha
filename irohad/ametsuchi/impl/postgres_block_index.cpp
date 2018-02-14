@@ -25,13 +25,27 @@
 #include <unordered_set>
 
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
-#include "model/sha3_hash.hpp"
 
-#include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/commands/transfer_asset.hpp"
+#include "interfaces/iroha_internal/block.hpp"
+#include "../libs/common/types.hpp"
+
+using TA = shared_model::detail::PolymorphicWrapper<
+    shared_model::interface::TransferAsset>;
 
 namespace iroha {
   namespace ametsuchi {
+    struct TransferAssetVisitor : public boost::static_visitor<bool> {
+      template <class T>
+      bool operator()(const T &val) const {
+        return false;
+      }
+    };
+
+    template <>
+    bool TransferAssetVisitor::operator()<TA>(const TA&) const {
+      return true;
+    }
 
     PostgresBlockIndex::PostgresBlockIndex(pqxx::nontransaction &transaction)
         : transaction_(transaction),
@@ -54,7 +68,7 @@ namespace iroha {
       // flat map abstract commands to transfers
       auto transfers =
           commands | boost::adaptors::filtered([](const auto &cmd) {
-            return cmd->get().type() == typeid(w<shared_model::interface::TransferAsset>);
+            return boost::apply_visitor(TransferAssetVisitor(), cmd->get());
           });
 
       return std::accumulate(
@@ -62,12 +76,15 @@ namespace iroha {
           transfers.end(),
           true,
           [&](auto &status, const auto &cmd) {
-            auto command = boost::get<w<shared_model::interface::TransferAsset>>(cmd->get());
-            status &= this->indexAccountIdHeight(command->srcAccountId(), height) &
-                    this->indexAccountIdHeight(command->destAccountId(), height);
+            auto command =
+                boost::get<w<shared_model::interface::TransferAsset>>(
+                    cmd->get());
+            status &=
+                this->indexAccountIdHeight(command->srcAccountId(), height)
+                & this->indexAccountIdHeight(command->destAccountId(), height);
 
-
-            auto ids = {account_id, command->srcAccountId(), command->destAccountId()};
+            auto ids = {
+                account_id, command->srcAccountId(), command->destAccountId()};
             // flat map accounts to unindexed keys
             boost::for_each(ids, [&](const auto &id) {
               auto res = execute_(
@@ -94,12 +111,11 @@ namespace iroha {
             const auto &hash = tx.value()->hash();
             const auto &index = std::to_string(tx.index());
 
-            const auto& blob = hash.blob();
-            std::string tmp{blob.begin(), blob.end()};
+            const auto bytes = bytesToString(hash.blob());
             // tx hash -> block where hash is stored
             this->execute("INSERT INTO height_by_hash(hash, height) VALUES ("
                           + transaction_.quote(
-                                pqxx::binarystring(tmp.data(), hash.size()))
+                                pqxx::binarystring(bytes.data(), hash.size()))
                           + ", " + transaction_.quote(height) + ");");
 
             this->indexAccountIdHeight(creator_id, height);
