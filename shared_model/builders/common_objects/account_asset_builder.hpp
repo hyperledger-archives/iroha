@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_ACCOUNT_BUILDER_HPP
-#define IROHA_ACCOUNT_BUILDER_HPP
+#ifndef IROHA_ACCOUNT_ASSET_BUILDER_HPP
+#define IROHA_ACCOUNT_ASSET_BUILDER_HPP
 
 #include "builders/common_objects/common.hpp"
-#include "interfaces/common_objects/account.hpp"
+#include "interfaces/common_objects/account_asset.hpp"
 
 namespace shared_model {
   namespace builder {
     template <typename BuilderImpl, typename Validator>
-    class AccountBuilder {
+    class AccountAssetBuilder {
      public:
-      BuilderResult<shared_model::interface::Account> build() {
-        auto account = builder_.build();
+      BuilderResult<shared_model::interface::AccountAsset> build() {
+        auto account_asset = builder_.build();
 
         shared_model::validation::ReasonsGroupType reasons(
-            "Account Builder", shared_model::validation::GroupedReasons());
+            "Account Asset Builder", shared_model::validation::GroupedReasons());
         shared_model::validation::Answer answer;
-        validator_.validateAccountId(reasons, account.accountId());
-        validator_.validateDomainId(reasons, account.domainId());
-        validator_.validateQuorum(reasons, account.quorum());
+        validator_.validateAccountId(reasons, account_asset.accountId());
+        validator_.validateAssetId(reasons, account_asset.assetId());
+        // Do not validate balance, since its amount can be 0, which is forbidden by validation
 
         if (!reasons.second.empty()) {
           answer.addReason(std::move(reasons));
@@ -42,29 +42,28 @@ namespace shared_model {
               std::make_shared<std::string>(answer.reason()));
         }
 
-        std::shared_ptr<shared_model::interface::Account> account_ptr(account.copy());
+        std::shared_ptr<shared_model::interface::AccountAsset> account_asset_ptr(
+            account_asset.copy());
         return iroha::expected::makeValue(
             shared_model::detail::PolymorphicWrapper<
-                shared_model::interface::Account>(account_ptr));
+                shared_model::interface::AccountAsset>(account_asset_ptr));
       }
 
-      AccountBuilder &accountId(const interface::types::AccountIdType &account_id) {
+      AccountAssetBuilder &accountId(
+          const interface::types::AccountIdType &account_id) {
         builder_ = builder_.accountId(account_id);
         return *this;
       }
 
-      AccountBuilder &domainId(const interface::types::DomainIdType &domain_id) {
-        builder_ = builder_.domainId(domain_id);
+      AccountAssetBuilder &assetId(
+          const interface::types::AssetIdType &asset_id) {
+        builder_ = builder_.assetId(asset_id);
         return *this;
       }
 
-      AccountBuilder &quorum(const interface::types::QuorumType &quorum) {
-        builder_ = builder_.quorum(quorum);
-        return *this;
-      }
-
-      AccountBuilder &jsonData(const interface::types::JsonType &json_data) {
-        builder_ = builder_.jsonData(json_data);
+      AccountAssetBuilder &balance(
+          const interface::Amount &amount) {
+        builder_ = builder_.balance(amount);
         return *this;
       }
 
@@ -74,5 +73,4 @@ namespace shared_model {
     };
   }  // namespace builder
 }  // namespace shared_model
-
-#endif  // IROHA_ACCOUNT_BUILDER_HPP
+#endif  // IROHA_ACCOUNT_ASSET_BUILDER_HPP
