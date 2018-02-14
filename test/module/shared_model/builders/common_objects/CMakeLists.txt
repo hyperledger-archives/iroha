@@ -47,3 +47,12 @@ target_link_libraries(signature_builder_test
         shared_model_proto_builders
         shared_model_stateless_validation
         )
+
+addtest(asset_builder_test
+        asset_builder_test.cpp
+        )
+
+target_link_libraries(asset_builder_test
+        shared_model_proto_builders
+        shared_model_stateless_validation
+        )
