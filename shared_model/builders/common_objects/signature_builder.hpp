@@ -22,6 +22,8 @@
 #include "interfaces/common_objects/signature.hpp"
 #include "interfaces/common_objects/types.hpp"
 
+//TODO: 14.02.2018 nickaleks Add check for uninitialized fields IR-972
+
 namespace shared_model {
   namespace builder {
 

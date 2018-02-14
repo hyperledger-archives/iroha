@@ -21,6 +21,8 @@
 #include "builders/common_objects/common.hpp"
 #include "interfaces/common_objects/account_asset.hpp"
 
+//TODO: 14.02.2018 nickaleks Add check for uninitialized fields IR-972
+
 namespace shared_model {
   namespace builder {
     /**
