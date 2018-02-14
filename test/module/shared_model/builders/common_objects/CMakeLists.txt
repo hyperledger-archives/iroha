@@ -29,3 +29,12 @@ target_link_libraries(account_builder_test
         shared_model_proto_builders
         shared_model_stateless_validation
         )
+
+addtest(amount_builder_test
+        amount_builder_test.cpp
+        )
+
+target_link_libraries(amount_builder_test
+        shared_model_proto_builders
+        shared_model_stateless_validation
+        )
