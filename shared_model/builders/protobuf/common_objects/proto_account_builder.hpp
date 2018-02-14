@@ -30,13 +30,13 @@ namespace shared_model {
         return shared_model::proto::Account(account_);
       }
 
-      AccountBuilder &accountId(const interface::types::AccountIdType &accountId) {
-        account_.set_account_id(accountId);
+      AccountBuilder &accountId(const interface::types::AccountIdType &account_id) {
+        account_.set_account_id(account_id);
         return *this;
       }
 
-      AccountBuilder &domainId(const interface::types::DomainIdType &domainId) {
-        account_.set_domain_id(domainId);
+      AccountBuilder &domainId(const interface::types::DomainIdType &domain_id) {
+        account_.set_domain_id(domain_id);
         return *this;
       }
 
@@ -45,8 +45,8 @@ namespace shared_model {
         return *this;
       }
 
-      AccountBuilder &jsonData(const interface::types::JsonType &jsonData) {
-        account_.set_json_data(jsonData);
+      AccountBuilder &jsonData(const interface::types::JsonType &json_data) {
+        account_.set_json_data(json_data);
         return *this;
       }
 

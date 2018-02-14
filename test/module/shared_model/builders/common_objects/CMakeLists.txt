@@ -12,11 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-addtest(common_objects_builders_test
+addtest(peer_builder_test
         peer_builder_test.cpp
         )
 
-target_link_libraries(common_objects_builders_test
+target_link_libraries(peer_builder_test
+        shared_model_proto_builders
+        shared_model_stateless_validation
+        )
+
+addtest(account_builder_test
+        account_builder_test.cpp
+        )
+
+target_link_libraries(account_builder_test
         shared_model_proto_builders
         shared_model_stateless_validation
         )

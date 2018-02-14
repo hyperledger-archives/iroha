@@ -18,36 +18,30 @@
 #ifndef IROHA_PEER_BUILDER_HPP
 #define IROHA_PEER_BUILDER_HPP
 
+#include "builders/common_objects/common.hpp"
 #include "interfaces/common_objects/peer.hpp"
-#include "common/result.hpp"
-#include "utils/polymorphic_wrapper.hpp"
-#include "validators/answer.hpp"
 
 namespace shared_model {
   namespace builder {
-    template <typename ModelType>
-    using BuilderResult =
-        iroha::expected::PolymorphicResult<ModelType,
-                                    std::string,
-                                    shared_model::detail::PolymorphicWrapper<ModelType>,
-                                    std::shared_ptr<std::string>>;
-
     template <typename BuilderImpl, typename Validator>
     class PeerBuilder {
      public:
       BuilderResult<shared_model::interface::Peer> build() {
         auto peer = builder_.build();
-        shared_model::validation::ReasonsGroupType reasons("Peer Builder", shared_model::validation::GroupedReasons());
+        shared_model::validation::ReasonsGroupType reasons(
+            "Peer Builder", shared_model::validation::GroupedReasons());
         shared_model::validation::Answer answer;
-        validator_.validatePeerAddress(reasons, peer.address());
-        validator_.validatePubkey(reasons, peer.pubkey());
+        validator_.validatePeer(reasons, peer);
 
         if (!reasons.second.empty()) {
           answer.addReason(std::move(reasons));
-          return iroha::expected::makeError(std::make_shared<std::string>(answer.reason()));
+          return iroha::expected::makeError(
+              std::make_shared<std::string>(answer.reason()));
         }
         std::shared_ptr<shared_model::interface::Peer> peer_ptr(peer.copy());
-        return iroha::expected::makeValue(shared_model::detail::PolymorphicWrapper<shared_model::interface::Peer>(peer_ptr));
+        return iroha::expected::makeValue(
+            shared_model::detail::PolymorphicWrapper<
+                shared_model::interface::Peer>(peer_ptr));
       }
 
       PeerBuilder &address(const interface::types::AddressType &address) {
