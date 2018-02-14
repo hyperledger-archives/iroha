@@ -24,14 +24,22 @@ addtest(proto_peer_builder_test
         common_objects/proto_peer_builder_test.cpp
         )
 
-addtest(proto_account_builder_test
-        common_objects/proto_account_builder_test.cpp
-        )
-
 target_link_libraries(proto_peer_builder_test
         shared_model_proto_builders
         )
 
+addtest(proto_account_builder_test
+        common_objects/proto_account_builder_test.cpp
+        )
+
 target_link_libraries(proto_account_builder_test
+        shared_model_proto_builders
+        )
+
+addtest(proto_amount_builder_test
+        common_objects/proto_amount_builder_test.cpp
+        )
+
+target_link_libraries(proto_amount_builder_test
         shared_model_proto_builders
         )
