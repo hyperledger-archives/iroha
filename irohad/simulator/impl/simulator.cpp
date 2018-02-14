@@ -69,8 +69,9 @@ namespace iroha {
                 shared_model::proto::Proposal>(
                 shared_model::proto::from_old(proposal));
             auto validated_proposal =
-                validator_->validate(shm_proposal, temporaryStorage.value);
-            notifier_.get_subscriber().on_next(*validated_proposal->makeOldModel());
+                validator_->validate(shm_proposal, *temporaryStorage.value);
+            notifier_.get_subscriber().on_next(
+                *validated_proposal->makeOldModel());
           },
           [&](expected::Error<std::string> &error) {
             log_->error(error.error);

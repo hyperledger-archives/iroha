@@ -42,10 +42,9 @@ namespace iroha {
        */
       virtual shared_model::detail::PolymorphicWrapper<
           shared_model::interface::Proposal>
-      validate(
-          const shared_model::detail::PolymorphicWrapper<shared_model::interface::Proposal>
-              &proposal,
-          std::unique_ptr<ametsuchi::TemporaryWsv> &temporaryWsv) = 0;
+      validate(const shared_model::detail::PolymorphicWrapper<
+                   shared_model::interface::Proposal> &proposal,
+               ametsuchi::TemporaryWsv &temporaryWsv) = 0;
     };
   }  // namespace validation
 }  // namespace iroha

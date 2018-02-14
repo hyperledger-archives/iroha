@@ -47,7 +47,7 @@ namespace iroha {
           shared_model::interface::Proposal>
       validate(const shared_model::detail::PolymorphicWrapper<
                    shared_model::interface::Proposal> &proposal,
-               std::unique_ptr<ametsuchi::TemporaryWsv> &temporaryWsv) override;
+               ametsuchi::TemporaryWsv& temporaryWsv) override;
 
      private:
       /**

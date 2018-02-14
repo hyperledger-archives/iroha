@@ -40,7 +40,7 @@ namespace iroha {
                        shared_model::interface::Proposal>(
                        const shared_model::detail::PolymorphicWrapper<
                            shared_model::interface::Proposal> &,
-                       std::unique_ptr<ametsuchi::TemporaryWsv> &));
+                       ametsuchi::TemporaryWsv &));
     };
 
     class MockChainValidator : public ChainValidator {

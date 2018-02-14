@@ -36,7 +36,7 @@ namespace iroha {
     StatefulValidatorImpl::validate(
         const shared_model::detail::PolymorphicWrapper<
             shared_model::interface::Proposal> &proposal,
-        std::unique_ptr<ametsuchi::TemporaryWsv> &temporaryWsv) {
+        ametsuchi::TemporaryWsv &temporaryWsv) {
       log_->info("transactions in proposal: {}",
                  proposal->transactions().size());
       auto checking_transaction = [this](const auto &tx, auto &queries) {
@@ -72,7 +72,7 @@ namespace iroha {
       auto filter = [&temporaryWsv, checking_transaction](auto &acc,
                                                           const auto &tx) {
         auto *old_tx = tx->makeOldModel();
-        auto answer = temporaryWsv->apply(*old_tx, checking_transaction);
+        auto answer = temporaryWsv.apply(*old_tx, checking_transaction);
         if (answer) {
           acc.push_back(tx);
         }
