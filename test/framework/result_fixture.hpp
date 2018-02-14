@@ -23,7 +23,6 @@
 namespace framework {
   namespace expected {
     /**
-     * @param
      * @throws bad_get exception if result contains error
      * @return value from result
      */
@@ -33,7 +32,6 @@ namespace framework {
     }
 
     /**
-     * @param
      * @throws bad_get exception if result contains value
      * @return error from result
      */
