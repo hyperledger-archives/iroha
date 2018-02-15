@@ -40,8 +40,8 @@ namespace iroha {
 
     bool TemporaryWsvImpl::apply(
         const shared_model::interface::Transaction &tx,
-        std::function<bool(const model::Transaction &, WsvQuery &)>
-            apply_function) {
+        std::function<bool(const shared_model::interface::Transaction &,
+                           WsvQuery &)> apply_function) {
       auto transaction = tx.makeOldModel();
 
       const auto &tx_creator = transaction->creator_account_id;
@@ -62,7 +62,7 @@ namespace iroha {
       };
 
       transaction_->exec("SAVEPOINT savepoint_;");
-      auto result = apply_function(*transaction, *wsv_)
+      auto result = apply_function(tx, *wsv_)
           && std::all_of(transaction->commands.begin(),
                          transaction->commands.end(),
                          execute_command);

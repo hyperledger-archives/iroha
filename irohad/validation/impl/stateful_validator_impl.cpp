@@ -16,9 +16,9 @@
  */
 
 #include "validation/impl/stateful_validator_impl.hpp"
-#include "backend/protobuf/from_old_model.hpp"
 #include <numeric>
 #include <set>
+#include "backend/protobuf/from_old_model.hpp"
 
 #include "datetime/time.hpp"
 #include "model/account.hpp"
@@ -36,18 +36,21 @@ namespace iroha {
         ametsuchi::TemporaryWsv &temporaryWsv) {
       log_->info("transactions in proposal: {}", proposal.transactions.size());
       auto checking_transaction = [this](auto &tx, auto &queries) {
-        return (queries.getAccount(tx.creator_account_id) |
+        auto transaction =
+            std::unique_ptr<model::Transaction>(tx.makeOldModel());
+        return (queries.getAccount(transaction->creator_account_id) |
                 [&](const auto &account) {
                   // Check if tx creator has account and has quorum to execute
                   // transaction
-                  return tx.signatures.size() >= account.quorum
-                      ? queries.getSignatories(tx.creator_account_id)
+                  return transaction->signatures.size() >= account.quorum
+                      ? queries.getSignatories(transaction->creator_account_id)
                       : nonstd::nullopt;
                 }
                 |
                 [&](const auto &signatories) {
                   // Check if signatures in transaction are account signatory
-                  return this->signaturesSubset(tx.signatures, signatories)
+                  return this->signaturesSubset(transaction->signatures,
+                                                signatories)
                       ? nonstd::make_optional(signatories)
                       : nonstd::nullopt;
                 })
@@ -57,7 +60,8 @@ namespace iroha {
       // Filter only valid transactions
       auto filter = [&temporaryWsv, checking_transaction](auto &acc,
                                                           const auto &tx) {
-        auto answer = temporaryWsv.apply(tx, checking_transaction);
+        auto transaction = shared_model::proto::from_old(tx);
+        auto answer = temporaryWsv.apply(transaction, checking_transaction);
         if (answer) {
           acc.push_back(tx);
         }
