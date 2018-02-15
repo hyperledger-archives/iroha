@@ -310,6 +310,7 @@ void Irohad::shutdownHandler(int signal_number) {
   torii_server->shutdown();
   synchronizer->shutdown();
   simulator->shutdown();
+  std::this_thread::sleep_for(1s);
   storage->shutdown();
   std::exit(EXIT_SUCCESS);
 }
