@@ -17,6 +17,7 @@
 
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ametsuchi/ordering_service_persistent_state.hpp"
+#include "datetime/time.hpp"
 #include "model/peer.hpp"
 
 namespace iroha {
@@ -57,6 +58,7 @@ namespace iroha {
 
       model::Proposal proposal(txs);
       proposal.height = proposal_height++;
+      proposal.created_time = iroha::time::now();
 
       // Save proposal height in persistent storage.
       // In case of restart it reloads state.
