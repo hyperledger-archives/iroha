@@ -18,7 +18,7 @@
 #ifndef IROHA_BLOCK_INDEX_HPP
 #define IROHA_BLOCK_INDEX_HPP
 
-#include "utils/polymorphic_wrapper.hpp"
+#include <memory>
 
 namespace shared_model {
   namespace interface {
@@ -28,7 +28,6 @@ namespace shared_model {
 
 namespace iroha {
   namespace ametsuchi {
-
     /**
      * Internal interface for modifying index on blocks and transactions
      */
