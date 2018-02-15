@@ -36,9 +36,7 @@ namespace iroha {
 
     void OrderingServiceImpl::onTransaction(
         std::shared_ptr<shared_model::interface::Transaction> transaction) {
-      auto proto =
-          static_cast<shared_model::proto::Transaction *>(transaction.get());
-      queue_.push(std::make_shared<shared_model::proto::Transaction>(*proto));
+      queue_.push(transaction);
 
       if (queue_.unsafe_size() >= max_size_) {
         handle.unsubscribe();
@@ -48,9 +46,10 @@ namespace iroha {
 
     void OrderingServiceImpl::generateProposal() {
       std::vector<shared_model::proto::Transaction> fetched_txs;
-      for (std::shared_ptr<shared_model::proto::Transaction> tx;
+      for (std::shared_ptr<shared_model::interface::Transaction> tx;
            fetched_txs.size() < max_size_ and queue_.try_pop(tx);) {
-        fetched_txs.emplace_back(std::move(*tx));
+        fetched_txs.emplace_back(
+            std::move(static_cast<shared_model::proto::Transaction &>(*tx)));
       }
 
       auto proposal = std::make_unique<shared_model::proto::Proposal>(

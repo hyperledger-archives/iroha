@@ -98,7 +98,8 @@ namespace iroha {
       rxcpp::composite_subscription handle;
       std::shared_ptr<ametsuchi::PeerQuery> wsv_;
 
-      tbb::concurrent_queue<std::shared_ptr<shared_model::proto::Transaction>>
+      tbb::concurrent_queue<
+          std::shared_ptr<shared_model::interface::Transaction>>
           queue_;
 
       /**
