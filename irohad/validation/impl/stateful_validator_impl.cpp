@@ -18,8 +18,6 @@
 #include <numeric>
 #include <set>
 
-#include <boost/range/adaptor/transformed.hpp>
-
 #include "backend/protobuf/from_old_model.hpp"
 #include "builders/protobuf/proposal.hpp"
 #include "model/account.hpp"
@@ -94,7 +92,7 @@ namespace iroha {
       auto validated_proposal = shared_model::proto::ProposalBuilder()
                                     .createdTime(proposal->created_time())
                                     .height(proposal->height())
-                                    .transactions(valid_proto_txs)
+                                    .transactions(valid_proto_txs).createdTime(proposal->created_time())
                                     .build();
 
       log_->info("transactions in verified proposal: {}",
