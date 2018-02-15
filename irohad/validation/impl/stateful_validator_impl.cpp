@@ -92,7 +92,8 @@ namespace iroha {
       auto validated_proposal = shared_model::proto::ProposalBuilder()
                                     .createdTime(proposal->created_time())
                                     .height(proposal->height())
-                                    .transactions(valid_proto_txs).createdTime(proposal->created_time())
+                                    .transactions(valid_proto_txs)
+                                    .createdTime(proposal->created_time())
                                     .build();
 
       log_->info("transactions in verified proposal: {}",
