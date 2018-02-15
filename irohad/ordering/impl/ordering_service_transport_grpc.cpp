@@ -35,8 +35,8 @@ grpc::Status OrderingServiceTransportGrpc::onTransaction(
     log_->error("No subscriber");
   } else {
     subscriber_.lock()->onTransaction(
-        shared_model::detail::makePolymorphic<shared_model::proto::Transaction>(
-            *request));
+        std::make_shared<shared_model::proto::Transaction>(
+            iroha::protocol::Transaction(*request)));
   }
 
   return ::grpc::Status::OK;
@@ -57,8 +57,7 @@ void OrderingServiceTransportGrpc::publishProposal(
   for (const auto &peer : peers_map) {
     auto call = new AsyncClientCall;
 
-    auto proto =
-        static_cast<const shared_model::proto::Proposal *>(proposal.get());
+    auto proto = static_cast<shared_model::proto::Proposal *>(proposal.get());
     call->response_reader = peer.second->AsynconProposal(
         &call->context, proto->getTransport(), &cq_);
 

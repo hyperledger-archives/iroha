@@ -65,9 +65,8 @@ namespace iroha {
        * Enqueues transaction and publishes corresponding event
        * @param transaction
        */
-      void onTransaction(
-          const shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Transaction> transaction) override;
+      void onTransaction(std::shared_ptr<shared_model::interface::Transaction>
+                             transaction) override;
 
       ~OrderingServiceImpl() override;
 

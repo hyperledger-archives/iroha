@@ -83,8 +83,8 @@ class OrderingServiceTest : public ::testing::Test {
   }
 
   auto empty_tx() {
-    return shared_model::detail::makePolymorphic<
-        shared_model::proto::Transaction>(TestTransactionBuilder().build());
+    return std::make_shared<shared_model::proto::Transaction>(
+        TestTransactionBuilder().build());
   }
 
   std::shared_ptr<MockOrderingServiceTransport> fake_transport;

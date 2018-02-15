@@ -35,10 +35,9 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::onTransaction(
-        const shared_model::detail::PolymorphicWrapper<
-            shared_model::interface::Transaction> transaction) {
-      auto proto = static_cast<const shared_model::proto::Transaction *>(
-          transaction.operator->());
+        std::shared_ptr<shared_model::interface::Transaction> transaction) {
+      auto proto =
+          static_cast<shared_model::proto::Transaction *>(transaction.get());
       queue_.push(std::make_shared<shared_model::proto::Transaction>(*proto));
 
       if (queue_.unsafe_size() >= max_size_) {

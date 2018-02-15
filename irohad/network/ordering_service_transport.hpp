@@ -35,8 +35,8 @@ namespace iroha {
        * @param transaction - transaction object itself
        */
       virtual void onTransaction(
-          const shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Transaction> transaction) = 0;
+          std::shared_ptr<shared_model::interface::Transaction>
+              transaction) = 0;
 
       virtual ~OrderingServiceNotification() = default;
     };
