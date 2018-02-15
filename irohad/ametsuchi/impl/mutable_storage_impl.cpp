@@ -21,8 +21,8 @@
 
 #include "model/execution/command_executor_factory.hpp"
 
-#include "model/sha3_hash.hpp"
 #include "backend/protobuf/from_old_model.hpp"
+#include "model/sha3_hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -47,9 +47,8 @@ namespace iroha {
         const model::Block &block,
         std::function<bool(const model::Block &, WsvQuery &, const hash256_t &)>
             function) {
-      auto bl =
-          shared_model::detail::makePolymorphic<shared_model::proto::Block>(
-              shared_model::proto::from_old(block));
+      auto bl = std::make_shared<shared_model::proto::Block>(
+          shared_model::proto::from_old(block));
 
       auto execute_transaction = [this](auto &transaction) {
         auto execute_command = [this, &transaction](auto command) {

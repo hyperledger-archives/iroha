@@ -18,11 +18,11 @@
 #include <boost/optional.hpp>
 #include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_block_query.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include "framework/test_subscriber.hpp"
 #include "model/commands/transfer_asset.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
-#include "backend/protobuf/from_old_model.hpp"
 
 using namespace framework::test_subscriber;
 
@@ -56,10 +56,8 @@ namespace iroha {
         file->add(block.height,
                   iroha::stringToBytes(model::converters::jsonToString(
                       model::converters::JsonBlockFactory().serialize(block))));
-        auto bl =
-            shared_model::detail::makePolymorphic<shared_model::proto::Block>(
-                shared_model::proto::from_old(block));
-
+        auto bl = std::make_shared<shared_model::proto::Block>(
+            shared_model::proto::from_old(block));
         index->index(bl);
       }
 

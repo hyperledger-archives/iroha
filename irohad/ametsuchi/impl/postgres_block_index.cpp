@@ -26,9 +26,9 @@
 
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 
+#include "../libs/common/types.hpp"
 #include "interfaces/commands/transfer_asset.hpp"
 #include "interfaces/iroha_internal/block.hpp"
-#include "../libs/common/types.hpp"
 
 using TA = shared_model::detail::PolymorphicWrapper<
     shared_model::interface::TransferAsset>;
@@ -43,7 +43,7 @@ namespace iroha {
     };
 
     template <>
-    bool TransferAssetVisitor::operator()<TA>(const TA&) const {
+    bool TransferAssetVisitor::operator()<TA>(const TA &) const {
       return true;
     }
 
@@ -68,6 +68,7 @@ namespace iroha {
       // flat map abstract commands to transfers
       auto transfers =
           commands | boost::adaptors::filtered([](const auto &cmd) {
+            //            auto ptr = cmd->get()
             return boost::apply_visitor(TransferAssetVisitor(), cmd->get());
           });
 
@@ -76,9 +77,7 @@ namespace iroha {
           transfers.end(),
           true,
           [&](auto &status, const auto &cmd) {
-            auto command =
-                boost::get<w<shared_model::interface::TransferAsset>>(
-                    cmd->get());
+            auto command = boost::get<TA>(cmd->get());
             status &=
                 this->indexAccountIdHeight(command->srcAccountId(), height)
                 & this->indexAccountIdHeight(command->destAccountId(), height);

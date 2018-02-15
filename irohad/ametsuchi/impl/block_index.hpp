@@ -33,8 +33,9 @@ namespace iroha {
      * Internal interface for modifying index on blocks and transactions
      */
     class BlockIndex {
+     protected:
       template <class T>
-      using w = shared_model::detail::PolymorphicWrapper<T>;
+      using w = std::shared_ptr<T>;
 
      public:
       virtual ~BlockIndex() = default;

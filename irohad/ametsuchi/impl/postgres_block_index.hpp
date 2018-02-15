@@ -23,24 +23,20 @@
 #include "logger/logger.hpp"
 
 #include <boost/format.hpp>
-#include <pqxx/nontransaction>
 #include <interfaces/transaction.hpp>
-
+#include <pqxx/nontransaction>
 
 namespace shared_model {
   namespace interface {
     class Command;
   }
-}
+}  // namespace shared_model
 namespace iroha {
   namespace ametsuchi {
     class PostgresBlockIndex : public BlockIndex {
-      template <class T>
-      using w = shared_model::detail::PolymorphicWrapper<T>;
-
-
       /// Type of ordered collection of commands
       using CommandsType = shared_model::interface::Transaction::CommandsType;
+
      public:
       explicit PostgresBlockIndex(pqxx::nontransaction &transaction);
 
