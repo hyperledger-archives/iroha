@@ -27,14 +27,17 @@
 #include "ametsuchi/temporary_factory.hpp"
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
+#include "interfaces/common_objects/peer.hpp"
 #include "model/account.hpp"
-#include "model/asset.hpp"
-#include "model/peer.hpp"
-#include "model/domain.hpp"
 #include "model/account_asset.hpp"
-
+#include "model/asset.hpp"
+#include "model/domain.hpp"
+#include "model/peer.hpp"
 
 #include <boost/optional.hpp>
+
+using wPeer =
+    shared_model::detail::PolymorphicWrapper<shared_model::interface::Peer>;
 
 namespace iroha {
   namespace ametsuchi {
@@ -181,8 +184,7 @@ namespace iroha {
      public:
       MockPeerQuery() = default;
 
-      MOCK_METHOD0(getLedgerPeers,
-                   nonstd::optional<std::vector<model::Peer>>());
+      MOCK_METHOD0(getLedgerPeers, nonstd::optional<std::vector<wPeer>>());
     };
 
     class MockStorage : public Storage {

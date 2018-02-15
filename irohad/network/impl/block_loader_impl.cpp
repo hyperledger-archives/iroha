@@ -17,6 +17,7 @@
 
 #include "network/impl/block_loader_impl.hpp"
 #include <grpc++/create_channel.h>
+#include "interfaces/common_objects/peer.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
@@ -115,22 +116,26 @@ nonstd::optional<Block> BlockLoaderImpl::retrieveBlock(
 }
 
 nonstd::optional<Peer> BlockLoaderImpl::findPeer(Peer::KeyType pubkey) {
-  auto peers = peer_query_->getLedgerPeers();
-  if (not peers.has_value()) {
+  auto tmp = peer_query_->getLedgerPeers();
+  if (not tmp.has_value()) {
     log_->error(kPeerRetrieveFail);
     return nonstd::nullopt;
   }
+  std::vector<std::unique_ptr<model::Peer>> peers;
+  for (const auto &peer : *tmp) {
+    peers.push_back(std::unique_ptr<model::Peer>(peer->makeOldModel()));
+  }
 
-  auto it = std::find_if(
-      peers.value().begin(), peers.value().end(), [&pubkey](const auto &peer) {
-        return peer.pubkey == pubkey;
+  auto it =
+      std::find_if(peers.begin(), peers.end(), [&pubkey](const auto &peer) {
+        return peer->pubkey == pubkey;
       });
-  if (it == peers.value().end()) {
+  if (it == peers.end()) {
     log_->error(kPeerFindFail);
     return nonstd::nullopt;
   }
 
-  return *it;
+  return *(*it);
 }
 
 proto::Loader::Stub &BlockLoaderImpl::getPeerStub(const Peer &peer) {

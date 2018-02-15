@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <backend/protobuf/common_objects/peer.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/math/distributions/chi_squared.hpp>
 #include <boost/range/adaptors.hpp>
@@ -30,6 +31,7 @@
 #include "model/domain.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
+#include "primitive.pb.h"
 
 using namespace boost::adaptors;
 using namespace iroha::ametsuchi;
@@ -39,7 +41,6 @@ using namespace std;
 using ::testing::Return;
 
 size_t N_PEERS = 4;
-
 class YacPeerOrdererTest : public ::testing::Test {
  public:
   YacPeerOrdererTest() : orderer(make_shared<MockPeerQuery>()) {}
@@ -57,6 +58,21 @@ class YacPeerOrdererTest : public ::testing::Test {
     return result;
   }();
 
+  std::vector<wPeer> s_peers = [] {
+    std::vector<wPeer> result;
+    for (size_t i = 1; i <= N_PEERS; ++i) {
+      auto tmp = iroha::consensus::yac::mk_peer(std::to_string(i));
+      iroha::protocol::Peer peer;
+      peer.set_address(tmp.address);
+      peer.set_peer_key(tmp.pubkey.to_string());
+      auto curr =
+          shared_model::detail::makePolymorphic<shared_model::proto::Peer>(
+              shared_model::proto::Peer(std::move(peer)));
+      result.emplace_back(curr);
+    }
+    return result;
+  }();
+
   shared_ptr<MockPeerQuery> wsv;
   PeerOrdererImpl orderer;
 };
@@ -64,7 +80,7 @@ class YacPeerOrdererTest : public ::testing::Test {
 TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeNormalCase) {
   cout << "----------| InitialOrder() => valid object |----------" << endl;
 
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(peers));
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(s_peers));
   auto order = orderer.getInitialOrdering();
   ASSERT_EQ(order.value().getPeers(), peers);
 }
@@ -80,7 +96,7 @@ TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeFailCase) {
 TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeNormalCase) {
   cout << "----------| Order() => valid object |----------" << endl;
 
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(peers));
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(s_peers));
   auto order = orderer.getOrdering(YacHash());
   ASSERT_EQ(order.value().getPeers().size(), peers.size());
 }
@@ -107,7 +123,7 @@ TEST_F(YacPeerOrdererTest, FairnessTest) {
   std::unordered_map<std::string, int> histogram;
   EXPECT_CALL(*wsv, getLedgerPeers())
       .Times(times)
-      .WillRepeatedly(Return(peers));
+      .WillRepeatedly(Return(s_peers));
 
   auto peers_set =
       transform(boost::counting_range(1, times + 1), [this](const auto &i) {

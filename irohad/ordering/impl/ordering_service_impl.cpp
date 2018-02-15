@@ -16,6 +16,7 @@
  */
 
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "interfaces/common_objects/peer.hpp"
 #include "model/peer.hpp"
 
 namespace iroha {
@@ -61,7 +62,7 @@ namespace iroha {
 
       auto lst = wsv_->getLedgerPeers().value();
       for (const auto &peer : lst) {
-        peers.push_back(peer.address);
+        peers.push_back(peer->address());
       }
       transport_->publishProposal(std::move(proposal), peers);
     }

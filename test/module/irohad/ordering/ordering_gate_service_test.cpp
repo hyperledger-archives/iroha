@@ -15,13 +15,14 @@
  * limitations under the License.
  */
 
+#include "backend/protobuf/common_objects/peer.hpp"
 #include "framework/test_subscriber.hpp"
+#include "model/asset.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
-#include "model/asset.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -116,8 +117,14 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   // 8 transaction -> proposal -> 2 transaction -> proposal
 
   std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
+
+  iroha::protocol::Peer tmp;
+  tmp.set_address(peer.address);
+  wPeer w_peer =
+      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+      .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
+
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
 
@@ -158,8 +165,14 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   // 10 transaction -> proposal with 5 -> proposal with 5
 
   std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
+
+  iroha::protocol::Peer tmp;
+  tmp.set_address(peer.address);
+  wPeer w_peer =
+      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+      .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
+
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 

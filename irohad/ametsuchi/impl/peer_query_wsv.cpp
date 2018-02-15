@@ -17,10 +17,10 @@
 
 #include "ametsuchi/impl/peer_query_wsv.hpp"
 
-#include <utility>
-
 #include "ametsuchi/wsv_query.hpp"
+#include "backend/protobuf/common_objects/peer.hpp"
 #include "model/peer.hpp"
+#include "primitive.pb.h"
 
 namespace iroha {
   namespace ametsuchi {
@@ -28,8 +28,25 @@ namespace iroha {
     PeerQueryWsv::PeerQueryWsv(std::shared_ptr<WsvQuery> wsv)
         : wsv_(std::move(wsv)) {}
 
-    nonstd::optional<std::vector<model::Peer>> PeerQueryWsv::getLedgerPeers() {
-      return wsv_->getPeers();
+    nonstd::optional<std::vector<wPeer>> PeerQueryWsv::getLedgerPeers() {
+      const auto &tmp = wsv_->getPeers();
+      if (not tmp) {
+        return nonstd::nullopt;
+      }
+      std::vector<wPeer> peers = [&tmp] {
+        std::vector<wPeer> result;
+        for (const auto &item : *tmp) {
+          iroha::protocol::Peer peer;
+          peer.set_address(item.address);
+          peer.set_peer_key(item.pubkey.to_string());
+          auto curr =
+              shared_model::detail::makePolymorphic<shared_model::proto::Peer>(
+                  shared_model::proto::Peer(std::move(peer)));
+          result.emplace_back(curr);
+        }
+        return result;
+      }();
+      return peers;
     }
 
   }  // namespace ametsuchi

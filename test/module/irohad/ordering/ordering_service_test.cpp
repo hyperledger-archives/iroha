@@ -23,6 +23,7 @@
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 
+#include "backend/protobuf/common_objects/peer.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
@@ -115,8 +116,12 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
         cv.notify_one();
       }));
 
+  iroha::protocol::Peer tmp;
+  tmp.set_address(peer.address);
+  wPeer w_peer =
+      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+      .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 
   for (size_t i = 0; i < 10; ++i) {
     ordering_service->onTransaction(model::Transaction());
@@ -129,8 +134,12 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
 
+  iroha::protocol::Peer tmp;
+  tmp.set_address(peer.address);
+  wPeer w_peer =
+      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+      .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;

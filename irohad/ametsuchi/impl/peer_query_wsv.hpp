@@ -24,11 +24,10 @@
 #include <nonstd/optional.hpp>
 #include <vector>
 
-namespace iroha {
+using wPeer =
+    shared_model::detail::PolymorphicWrapper<shared_model::interface::Peer>;
 
-  namespace model {
-    struct Peer;
-  }
+namespace iroha {
 
   namespace ametsuchi {
 
@@ -45,7 +44,7 @@ namespace iroha {
        * Fetch peers stored in ledger
        * @return list of peers in insertion to ledger order
        */
-      nonstd::optional<std::vector<model::Peer>> getLedgerPeers() override;
+      nonstd::optional<std::vector<wPeer>> getLedgerPeers() override;
 
      private:
       std::shared_ptr<WsvQuery> wsv_;

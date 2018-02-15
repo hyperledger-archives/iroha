@@ -70,6 +70,7 @@ target_link_libraries(yac_network_test
 
 addtest(yac_peer_orderer_test peer_orderer_test.cpp)
 target_link_libraries(yac_peer_orderer_test
+    schema
     yac
     )
 

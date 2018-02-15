@@ -25,6 +25,7 @@
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/model/model_mocks.hpp"
 
+#include "backend/protobuf/common_objects/peer.hpp"
 #include "network/impl/block_loader_impl.hpp"
 #include "network/impl/block_loader_service.hpp"
 
@@ -75,7 +76,14 @@ TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
   Block block;
   block.height = 1;
 
-  EXPECT_CALL(*peer_query, getLedgerPeers()).WillOnce(Return(peers));
+  iroha::protocol::Peer tmp;
+  tmp.set_address(peer.address);
+  tmp.set_peer_key(peer.pubkey.to_string());
+  wPeer w_peer =
+      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+
+  EXPECT_CALL(*peer_query, getLedgerPeers())
+      .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
       .WillOnce(Return(rxcpp::observable<>::just(block)));
   EXPECT_CALL(*storage, getBlocksFrom(block.height + 1))
@@ -96,7 +104,15 @@ TEST_F(BlockLoaderTest, ValidWhenOneBlock) {
   block.height = block.height + 1;
 
   EXPECT_CALL(*provider, verify(A<const Block &>())).WillOnce(Return(true));
-  EXPECT_CALL(*peer_query, getLedgerPeers()).WillOnce(Return(peers));
+
+  iroha::protocol::Peer tmp;
+  tmp.set_address(peer.address);
+  tmp.set_peer_key(peer.pubkey.to_string());
+
+  wPeer w_peer =
+      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  EXPECT_CALL(*peer_query, getLedgerPeers())
+      .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
       .WillOnce(Return(rxcpp::observable<>::just(block)));
   EXPECT_CALL(*storage, getBlocksFrom(block.height + 1))
@@ -127,7 +143,15 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
   EXPECT_CALL(*provider, verify(A<const Block &>()))
       .Times(num_blocks)
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*peer_query, getLedgerPeers()).WillOnce(Return(peers));
+
+  iroha::protocol::Peer tmp;
+  tmp.set_address(peer.address);
+  tmp.set_peer_key(peer.pubkey.to_string());
+
+  wPeer w_peer =
+      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  EXPECT_CALL(*peer_query, getLedgerPeers())
+      .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
       .WillOnce(Return(rxcpp::observable<>::just(block)));
   EXPECT_CALL(*storage, getBlocksFrom(next_height))
@@ -147,7 +171,15 @@ TEST_F(BlockLoaderTest, ValidWhenBlockPresent) {
   requested_block.hash = iroha::hash(requested_block);
 
   EXPECT_CALL(*provider, verify(A<const Block &>())).WillOnce(Return(true));
-  EXPECT_CALL(*peer_query, getLedgerPeers()).WillOnce(Return(peers));
+
+  iroha::protocol::Peer tmp;
+  tmp.set_address(peer.address);
+  tmp.set_peer_key(peer.pubkey.to_string());
+
+  wPeer w_peer =
+      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  EXPECT_CALL(*peer_query, getLedgerPeers())
+      .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getBlocksFrom(1))
       .WillOnce(Return(rxcpp::observable<>::just(requested_block)));
   auto block = loader->retrieveBlock(peer.pubkey, requested_block.hash);
@@ -164,7 +196,14 @@ TEST_F(BlockLoaderTest, ValidWhenBlockMissing) {
   auto hash = present_block.hash;
   hash.fill(0);
 
-  EXPECT_CALL(*peer_query, getLedgerPeers()).WillOnce(Return(peers));
+  iroha::protocol::Peer tmp;
+  tmp.set_address(peer.address);
+  tmp.set_peer_key(peer.pubkey.to_string());
+
+  wPeer w_peer =
+      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  EXPECT_CALL(*peer_query, getLedgerPeers())
+      .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getBlocksFrom(1))
       .WillOnce(Return(rxcpp::observable<>::just(present_block)));
   auto block = loader->retrieveBlock(peer.pubkey, hash);

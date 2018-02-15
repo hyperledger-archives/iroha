@@ -21,25 +21,31 @@
 #include <memory>
 #include <nonstd/optional.hpp>
 #include <vector>
+#include "utils/polymorphic_wrapper.hpp"
+
+namespace shared_model {
+  namespace interface {
+    class Peer;
+  }  // namespace interface
+}  // namespace shared_model
 
 namespace iroha {
-
-  namespace model {
-    struct Peer;
-  }
-
   namespace ametsuchi {
 
     /**
      * Interface provide clean dependency for getting peers in system
      */
     class PeerQuery {
+     protected:
+      using wPeer = shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::Peer>;
+
      public:
       /**
        * Fetch peers stored in ledger
        * @return list of peers in insertion to ledger order
        */
-      virtual nonstd::optional<std::vector<model::Peer>> getLedgerPeers() = 0;
+      virtual nonstd::optional<std::vector<wPeer>> getLedgerPeers() = 0;
 
       virtual ~PeerQuery() = default;
     };
