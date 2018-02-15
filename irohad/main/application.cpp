@@ -31,7 +31,7 @@ using namespace iroha::consensus::yac;
 
 using namespace std::chrono_literals;
 
-Irohad* Irohad::instance_;
+Irohad *Irohad::instance_;
 
 /**
  * Configuring iroha daemon
@@ -242,7 +242,7 @@ void Irohad::initTransactionCommandService() {
       std::make_shared<TransactionProcessorImpl>(pcs, stateless_validator);
 
   command_service = std::make_unique<::torii::CommandService>(
-      pb_tx_factory, tx_processor, storage, proposal_delay_);
+      pb_tx_factory, tx_processor, storage->getBlockQuery(), proposal_delay_);
 
   log_->info("[Init] => command service");
 }
@@ -291,24 +291,27 @@ void Irohad::run() {
         .run();
   });
   log_->info("===> iroha initialized");
-  registerExitHandler();
+  registerShutdownHandler();
 
   // Wait until servers shutdown
   torii_server->waitForServersReady();
   internal_server->Wait();
 }
 
-void Irohad::registerExitHandler() {
-  std::signal(SIGINT, Irohad::staticHandler);
-  std::signal(SIGTERM, Irohad::staticHandler);
-  std::signal(SIGQUIT, Irohad::staticHandler);
+void Irohad::registerShutdownHandler() {
+  std::signal(SIGINT, Irohad::staticShutdownHandler);
+  std::signal(SIGTERM, Irohad::staticShutdownHandler);
+  std::signal(SIGQUIT, Irohad::staticShutdownHandler);
 }
 
-void Irohad::handler(int signal_number) {
+void Irohad::shutdownHandler(int signal_number) {
   log_->info("shutting down...");
+  internal_server->Shutdown();
+  torii_server->shutdown();
+  storage->shutdown();
   std::exit(EXIT_SUCCESS);
 }
 
-void Irohad::staticHandler(int signal_number) {
-  instance_->handler(signal_number);
+void Irohad::staticShutdownHandler(int signal_number) {
+  instance_->shutdownHandler(signal_number);
 }

@@ -84,7 +84,6 @@ class ToriiServiceTest : public testing::Test {
           prop_notifier_, commit_notifier_);
       statelessValidatorMock = std::make_shared<MockStatelessValidator>();
       wsv_query = std::make_shared<MockWsvQuery>();
-      storageMock = std::make_shared<MockStorage>();
       block_query = std::make_shared<MockBlockQuery>();
 
       auto tx_processor =
@@ -105,15 +104,13 @@ class ToriiServiceTest : public testing::Test {
       auto pb_query_resp_factory =
           std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
 
-      EXPECT_CALL(*storageMock, getBlockQuery())
-          .WillRepeatedly(Return(block_query));
       EXPECT_CALL(*block_query, getTxByHashSync(_))
           .WillRepeatedly(Return(boost::none));
 
       //----------- Server run ----------------
       runner
           ->append(std::make_unique<torii::CommandService>(
-              pb_tx_factory, tx_processor, storageMock, proposal_delay))
+              pb_tx_factory, tx_processor, block_query, proposal_delay))
           .append(std::make_unique<torii::QueryService>(
               pb_query_factory, pb_query_resp_factory, qpi))
           .run();
@@ -133,7 +130,6 @@ class ToriiServiceTest : public testing::Test {
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
-  std::shared_ptr<MockStorage> storageMock;
 
   rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier_;
   rxcpp::subjects::subject<Commit> commit_notifier_;

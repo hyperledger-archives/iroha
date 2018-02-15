@@ -190,11 +190,12 @@ class Irohad {
   iroha::keypair_t keypair;
 
  private:
-  void registerExitHandler();
-  void handler(int signal_number);
-  static void staticHandler(int signal_number);
+  // shutdown handlers
+  void registerShutdownHandler();
+  void shutdownHandler(int signal_number);
+  static void staticShutdownHandler(int signal_number);
 
-  static Irohad* instance_;
+  static Irohad *instance_;
 };
 
 #endif  // IROHA_APPLICATION_HPP

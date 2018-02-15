@@ -62,6 +62,8 @@ namespace iroha {
 
       virtual void dropStorage() override;
 
+      void shutdown() override;
+
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
 
       std::shared_ptr<WsvQuery> getWsvQuery() const override;

@@ -179,6 +179,10 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
       block_store_->dropAll();
     }
 
+    void StorageImpl::shutdown() {
+
+    }
+
     expected::Result<ConnectionContext, std::string> StorageImpl::initConnections(
         std::string block_store_dir, std::string postgres_options) {
       auto log_ = logger::log("StorageImpl:initConnection");
