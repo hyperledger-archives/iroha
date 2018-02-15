@@ -20,7 +20,6 @@
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "amount/amount.hpp"
 #include "backend/protobuf/from_old_model.hpp"
-#include "model/account.hpp"
 #include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
@@ -47,7 +46,6 @@ namespace iroha {
       const auto &tx_creator = transaction->creator_account_id;
       auto execute_command = [this, &tx_creator](auto command) {
         auto executor = command_executors_->getCommandExecutor(command);
-        auto account = wsv_->getAccount(tx_creator).value();
         if (not executor->validate(*command, *wsv_, tx_creator)) {
           return false;
         }

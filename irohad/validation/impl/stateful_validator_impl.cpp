@@ -16,13 +16,8 @@
  */
 
 #include "validation/impl/stateful_validator_impl.hpp"
-#include <numeric>
-#include <set>
 #include "backend/protobuf/from_old_model.hpp"
-
-#include "datetime/time.hpp"
 #include "model/account.hpp"
-#include "validation/impl/stateful_validator_impl.hpp"
 
 namespace iroha {
   namespace validation {
@@ -48,7 +43,7 @@ namespace iroha {
                 |
                 [&](const auto &signatories) {
                   auto transaction =
-                          std::unique_ptr<model::Transaction>(tx.makeOldModel());
+                      std::unique_ptr<model::Transaction>(tx.makeOldModel());
                   // Check if signatures in transaction are account signatory
                   return this->signaturesSubset(transaction->signatures,
                                                 signatories)
