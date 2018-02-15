@@ -19,6 +19,7 @@
 #define IROHA_ORDERINGSERVICE_H
 
 #include "network/ordering_service_transport.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 
 namespace iroha {
   namespace network {
@@ -35,7 +36,8 @@ namespace iroha {
        * @param proposal - object for propagation
        */
       virtual void publishProposal(
-          shared_model::proto::Proposal &&proposal) = 0;
+          shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Proposal> proposal) = 0;
     };
   }  // namespace network
 }  // namespace iroha

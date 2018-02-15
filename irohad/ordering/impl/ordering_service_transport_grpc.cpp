@@ -16,8 +16,6 @@
  */
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 
-#include <boost/range/adaptor/transformed.hpp>
-
 #include "backend/protobuf/from_old_model.hpp"
 #include "builders/protobuf/proposal.hpp"
 #include "datetime/time.hpp"
@@ -37,14 +35,16 @@ grpc::Status OrderingServiceTransportGrpc::onTransaction(
     log_->error("No subscriber");
   } else {
     subscriber_.lock()->onTransaction(
-        shared_model::proto::Transaction(*request));
+        shared_model::detail::makePolymorphic<shared_model::proto::Transaction>(
+            *request));
   }
 
   return ::grpc::Status::OK;
 }
 
 void OrderingServiceTransportGrpc::publishProposal(
-    shared_model::proto::Proposal &&proposal,
+    shared_model::detail::PolymorphicWrapper<shared_model::interface::Proposal>
+        proposal,
     const std::vector<std::string> &peers) {
   std::unordered_map<std::string,
                      std::unique_ptr<proto::OrderingGateTransportGrpc::Stub>>
@@ -58,8 +58,10 @@ void OrderingServiceTransportGrpc::publishProposal(
   for (const auto &peer : peers_map) {
     auto call = new AsyncClientCall;
 
+    auto proto = static_cast<const shared_model::proto::Proposal *>(
+        proposal.operator->());
     call->response_reader = peer.second->AsynconProposal(
-        &call->context, proposal.getTransport(), &cq_);
+        &call->context, proto->getTransport(), &cq_);
 
     call->response_reader->Finish(&call->reply, &call->status, call);
   }

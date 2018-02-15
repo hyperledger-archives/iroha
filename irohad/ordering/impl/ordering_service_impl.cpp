@@ -35,9 +35,11 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::onTransaction(
-        const shared_model::proto::Transaction &transaction) {
-      queue_.push(
-          std::make_shared<shared_model::proto::Transaction>(transaction));
+        const shared_model::detail::PolymorphicWrapper<
+            shared_model::interface::Transaction> transaction) {
+      auto proto = static_cast<const shared_model::proto::Transaction *>(
+          transaction.operator->());
+      queue_.push(std::make_shared<shared_model::proto::Transaction>(*proto));
 
       if (queue_.unsafe_size() >= max_size_) {
         handle.unsubscribe();
@@ -46,21 +48,25 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::generateProposal() {
-      std::vector<shared_model::proto::Transaction> poped_tx;
+      std::vector<shared_model::proto::Transaction> fetched_txs;
       for (std::shared_ptr<shared_model::proto::Transaction> tx;
-           poped_tx.size() < max_size_ and queue_.try_pop(tx);) {
-        poped_tx.push_back(std::move(*tx));
+           fetched_txs.size() < max_size_ and queue_.try_pop(tx);) {
+        fetched_txs.emplace_back(std::move(*tx));
       }
 
-      publishProposal(shared_model::proto::ProposalBuilder()
-                          .height(proposal_height++)
-                          .createdTime(iroha::time::now())
-                          .transactions(poped_tx)
-                          .build());
+      auto proposal =
+          shared_model::detail::makePolymorphic<shared_model::proto::Proposal>(
+              shared_model::proto::ProposalBuilder()
+                  .height(proposal_height++)
+                  .createdTime(iroha::time::now())
+                  .transactions(fetched_txs)
+                  .build());
+      publishProposal(std::move(proposal));
     }
 
     void OrderingServiceImpl::publishProposal(
-        shared_model::proto::Proposal &&proposal) {
+        shared_model::detail::PolymorphicWrapper<
+            shared_model::interface::Proposal> proposal) {
       std::vector<std::string> peers;
 
       auto lst = wsv_->getLedgerPeers().value();

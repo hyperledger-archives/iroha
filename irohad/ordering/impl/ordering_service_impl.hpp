@@ -35,6 +35,12 @@
 #include "network/impl/async_grpc_client.hpp"
 #include "ordering.grpc.pb.h"
 
+namespace shared_model {
+  namespace proto {
+    class Transaction;
+  }
+}  // namespace shared_model
+
 namespace iroha {
   namespace ordering {
 
@@ -60,7 +66,8 @@ namespace iroha {
        * @param transaction
        */
       void onTransaction(
-          const shared_model::proto::Transaction &transaction) override;
+          const shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Transaction> transaction) override;
 
       ~OrderingServiceImpl() override;
 
@@ -69,7 +76,9 @@ namespace iroha {
        * Transform model proposal to transport object and send to peers
        * @param proposal - object for propagation
        */
-      void publishProposal(shared_model::proto::Proposal &&proposal) override;
+      void publishProposal(
+          shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Proposal> proposal) override;
 
      private:
       /**

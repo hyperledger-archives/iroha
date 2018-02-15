@@ -17,9 +17,9 @@
 #ifndef IROHA_ORDERING_SERVICE_TRANSPORT_H
 #define IROHA_ORDERING_SERVICE_TRANSPORT_H
 
-#include "backend/protobuf/proposal.hpp"
-#include "backend/protobuf/transaction.hpp"
+#include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/transaction.hpp"
+#include "utils/polymorphic_wrapper.hpp"
 
 namespace iroha {
   namespace network {
@@ -35,7 +35,8 @@ namespace iroha {
        * @param transaction - transaction object itself
        */
       virtual void onTransaction(
-          const shared_model::proto::Transaction &transaction) = 0;
+          const shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Transaction> transaction) = 0;
 
       virtual ~OrderingServiceNotification() = default;
     };
@@ -59,8 +60,10 @@ namespace iroha {
        * Publishes proposal over network
        * @param proposal : proposal to be published
        */
-      virtual void publishProposal(shared_model::proto::Proposal &&proposal,
-                                   const std::vector<std::string> &peers) = 0;
+      virtual void publishProposal(
+          shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Proposal> proposal,
+          const std::vector<std::string> &peers) = 0;
 
       virtual ~OrderingServiceTransport() = default;
     };

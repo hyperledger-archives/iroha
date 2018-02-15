@@ -30,6 +30,8 @@
 
 #include "builders/protobuf/proposal.hpp"
 #include "builders/protobuf/transaction.hpp"
+#include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 #include "module/shared_model/validators//validators.hpp"
 #include "validators/default_validator.hpp"
 
@@ -51,18 +53,14 @@ static logger::Logger log_ = logger::testLog("OrderingService");
 
 class MockOrderingServiceTransport : public network::OrderingServiceTransport {
  public:
-  void publishProposal(shared_model::proto::Proposal &&proposal,
-                       const std::vector<std::string> &peers) override {
-    publishProposal(proposal, peers);
-  };
-
   void subscribe(std::shared_ptr<network::OrderingServiceNotification>
                      subscriber) override {
     subscriber_ = subscriber;
   }
 
   MOCK_METHOD2(publishProposal,
-               void(const shared_model::proto::Proposal &proposal,
+               void(const shared_model::detail::PolymorphicWrapper<
+                        shared_model::interface::Proposal> proposal,
                     const std::vector<std::string> &peers));
 
   std::weak_ptr<network::OrderingServiceNotification> subscriber_;
@@ -80,12 +78,8 @@ class OrderingServiceTest : public ::testing::Test {
   }
 
   auto empty_tx() {
-    constexpr auto kTotal = 15;
-    return shared_model::proto::TemplateTransactionBuilder<
-               kTotal,
-               shared_model::validation::TransactionAlwaysValidValidator,
-               shared_model::proto::Transaction>()
-        .build();
+    return shared_model::detail::makePolymorphic<
+        shared_model::proto::Transaction>(TestTransactionBuilder().build());
   }
 
   std::shared_ptr<MockOrderingServiceTransport> fake_transport;
@@ -110,7 +104,9 @@ TEST_F(OrderingServiceTest, SimpleTest) {
   EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(1);
 
   fake_transport->publishProposal(
-      shared_model::proto::TemplateProposalBuilder<7>().build(), {});
+      shared_model::detail::makePolymorphic<shared_model::proto::Proposal>(
+          TestProposalBuilder().build()),
+      {});
 }
 
 TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
@@ -131,7 +127,7 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
       }));
 
   EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+      .WillRepeatedly(Return(std::vector<model::Peer>{peer}));
 
   for (size_t i = 0; i < 10; ++i) {
     ordering_service->onTransaction(empty_tx());
@@ -145,7 +141,7 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
 
   EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+      .WillRepeatedly(Return(std::vector<model::Peer>{peer}));
 
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
