@@ -25,8 +25,8 @@
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/model/model_mocks.hpp"
 
-#include "backend/protobuf/common_objects/peer.hpp"
 #include "backend/protobuf/block.hpp"
+#include "backend/protobuf/common_objects/peer.hpp"
 #include "backend/protobuf/from_old_model.hpp"
 #include "builders/protobuf/block.hpp"
 #include "builders/protobuf/builder_templates/block_template.hpp"
@@ -105,6 +105,7 @@ TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
   std::unique_ptr<iroha::model::Block> old_block(block.makeOldModel());
 
   iroha::protocol::Peer tmp;
+  auto peer = peers.back();
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
   wPeer w_peer =
@@ -139,6 +140,7 @@ TEST_F(BlockLoaderTest, ValidWhenOneBlock) {
   EXPECT_CALL(*provider, verify(A<const Block &>())).WillOnce(Return(true));
 
   iroha::protocol::Peer tmp;
+  auto peer = peers.back();
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
 
@@ -183,6 +185,7 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
       .WillRepeatedly(Return(true));
 
   iroha::protocol::Peer tmp;
+  auto peer = peers.back();
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
 
@@ -216,6 +219,7 @@ TEST_F(BlockLoaderTest, ValidWhenBlockPresent) {
   EXPECT_CALL(*provider, verify(A<const Block &>())).WillOnce(Return(true));
 
   iroha::protocol::Peer tmp;
+  auto peer = peers.back();
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
 
@@ -242,6 +246,7 @@ TEST_F(BlockLoaderTest, ValidWhenBlockMissing) {
   std::unique_ptr<iroha::model::Block> old_present(present.makeOldModel());
 
   iroha::protocol::Peer tmp;
+  auto peer = peers.back();
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
 

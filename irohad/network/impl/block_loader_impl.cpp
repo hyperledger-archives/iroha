@@ -17,8 +17,8 @@
 
 #include "network/impl/block_loader_impl.hpp"
 
-#include <algorithm>
 #include <grpc++/create_channel.h>
+#include <algorithm>
 
 #include "interfaces/common_objects/peer.hpp"
 
@@ -126,32 +126,25 @@ nonstd::optional<Wrapper<Block>> BlockLoaderImpl::retrieveBlock(
   return nonstd::optional<Wrapper<Block>>(std::move(result));
 }
 
-nonstd::optional<Peer> BlockLoaderImpl::findPeer(Peer::KeyType pubkey) {
-  auto tmp = peer_query_->getLedgerPeers();
-  if (not tmp.has_value()) {
+nonstd::optional<iroha::model::Peer> BlockLoaderImpl::findPeer(
+    const PublicKey &pubkey) {
+  auto peers = peer_query_->getLedgerPeers();
+  if (not peers.has_value()) {
     log_->error(kPeerRetrieveFail);
     return nonstd::nullopt;
-  }
-  std::vector<std::unique_ptr<model::Peer>> peers;
-  for (const auto &peer : *tmp) {
-    peers.push_back(std::unique_ptr<model::Peer>(peer->makeOldModel()));
   }
 
   auto &blob = pubkey.blob();
   auto it = std::find_if(
-      peers.begin(), peers.end(), [&blob](const auto &peer) {
-        return peer->pubkey.size() == blob.size()
-            and std::equal(peer->pubkey.begin(),
-                           peer->pubkey.end(),
-                           blob.begin(),
-                           blob.end());
+      peers.value().begin(), peers.value().end(), [&blob](const auto &peer) {
+        return peer->pubkey().blob() == blob;
       });
-  if (it == peers.end()) {
+  if (it == peers.value().end()) {
     log_->error(kPeerFindFail);
     return nonstd::nullopt;
   }
-
-  return *(*it);
+  auto result = std::unique_ptr<iroha::model::Peer>((*it)->makeOldModel());
+  return *result;
 }
 
 proto::Loader::Stub &BlockLoaderImpl::getPeerStub(

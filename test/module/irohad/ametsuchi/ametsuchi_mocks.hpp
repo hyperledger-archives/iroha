@@ -27,13 +27,13 @@
 #include "ametsuchi/temporary_factory.hpp"
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
+#include "common/result.hpp"
 #include "interfaces/common_objects/peer.hpp"
 #include "model/account.hpp"
 #include "model/account_asset.hpp"
 #include "model/asset.hpp"
 #include "model/domain.hpp"
 #include "model/peer.hpp"
-#include "common/result.hpp"
 
 #include <boost/optional.hpp>
 
@@ -158,8 +158,8 @@ namespace iroha {
       MOCK_METHOD2(
           apply,
           bool(const model::Block &,
-               std::function<bool(
-                   const model::Block &, WsvQuery &, const hash256_t &)>));
+               std::function<
+                   bool(const model::Block &, WsvQuery &, const hash256_t &)>));
     };
 
     /**
@@ -170,7 +170,7 @@ namespace iroha {
     expected::Result<std::unique_ptr<MutableStorage>, std::string>
     createMockMutableStorage() {
       return expected::makeValue<std::unique_ptr<MutableStorage>>(
-          std::move(std::make_unique<MockMutableStorage>()));
+          std::make_unique<MockMutableStorage>());
     }
 
     class MockMutableFactory : public MutableFactory {
