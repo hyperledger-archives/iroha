@@ -69,7 +69,7 @@ namespace iroha {
       pqxx::nontransaction &transaction_;
       logger::Logger log_;
 
-      using ExecuteType = decltype(ametsuchi::makeExecute(transaction_, log_));
+      using ExecuteType = decltype(makeExecute(transaction_, log_));
       ExecuteType execute_;
 
       // TODO: refactor to return Result when it is introduced IR-775

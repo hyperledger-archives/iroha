@@ -94,6 +94,10 @@ TEST_F(OrderingServiceTest, SimpleTest) {
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 
+  EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
+      .Times(1)
+      .WillOnce(Return(boost::optional<size_t>(2)));
+
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
       wsv, max_proposal, commit_delay, fake_transport, fake_persistent_state);
   fake_transport->subscribe(ordering_service);
@@ -106,6 +110,10 @@ TEST_F(OrderingServiceTest, SimpleTest) {
 TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
+
+  EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
+      .Times(1)
+      .WillOnce(Return(boost::optional<size_t>(2)));
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
       wsv, max_proposal, commit_delay, fake_transport, fake_persistent_state);
@@ -139,6 +147,10 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
 
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
+
+  EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
+      .Times(1)
+      .WillOnce(Return(boost::optional<size_t>(2)));
 
   auto ordering_service = std::make_shared<OrderingServiceImpl>(
       wsv, max_proposal, commit_delay, fake_transport, fake_persistent_state);

@@ -17,6 +17,8 @@
 #ifndef IROHA_MOCK_ORDERING_SERVICE_PERSISTENT_STATE_HPP
 #define IROHA_MOCK_ORDERING_SERVICE_PERSISTENT_STATE_HPP
 
+#include <gmock/gmock.h>
+
 #include "ametsuchi/ordering_service_persistent_state.hpp"
 
 class MockOrderingServicePersistentState
@@ -25,23 +27,12 @@ class MockOrderingServicePersistentState
   /**
    * Save proposal height
    */
-  virtual bool saveProposalHeight(size_t height) {
-    height_ = height;
-    return true;
-  }
+  MOCK_METHOD1(saveProposalHeight, bool(size_t height));
 
   /**
    * Load proposal height
    */
-  virtual boost::optional<size_t> loadProposalHeight() const {
-    return boost::optional<size_t>(height_);
-  }
-
- private:
-  /**
-   * Initial height is 2 (1 for genesis block).
-   */
-  size_t height_ = 2;
+  MOCK_CONST_METHOD0(loadProposalHeight, boost::optional<size_t>());
 };
 
 #endif  // IROHA_MOCK_ORDERING_SERVICE_PERSISTENT_STATE_HPP

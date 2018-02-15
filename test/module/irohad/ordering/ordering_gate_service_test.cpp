@@ -42,11 +42,13 @@ class OrderingGateServiceTest : public ::testing::Test {
     gate_transport->subscribe(gate);
 
     service_transport = std::make_shared<OrderingServiceTransportGrpc>();
-    persistent_state = std::make_shared<MockOrderingServicePersistentState>();
     counter = 2;
   }
 
-  void SetUp() override {}
+  void SetUp() override {
+    fake_persistent_state =
+        std::make_shared<MockOrderingServicePersistentState>();
+  }
 
   void start() {
     std::mutex mtx;
@@ -112,7 +114,7 @@ class OrderingGateServiceTest : public ::testing::Test {
   Peer peer;
   std::shared_ptr<OrderingGateTransportGrpc> gate_transport;
   std::shared_ptr<OrderingServiceTransportGrpc> service_transport;
-  std::shared_ptr<OrderingServicePersistentState> persistent_state;
+  std::shared_ptr<MockOrderingServicePersistentState> fake_persistent_state;
 };
 
 TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
@@ -124,8 +126,19 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
 
+  EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
+      .Times(1)
+      .WillOnce(Return(boost::optional<size_t>(2)));
+
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(3))
+      .Times(1)
+      .WillOnce(Return(bool(true)));
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(4))
+      .Times(1)
+      .WillOnce(Return(bool(true)));
+
   service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport, persistent_state);
+      wsv, max_proposal, commit_delay, service_transport, fake_persistent_state);
   service_transport->subscribe(service);
 
   start();
@@ -166,8 +179,20 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 
+  EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
+      .Times(1)
+      .WillOnce(Return(boost::optional<size_t>(2)));
+
+
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(3))
+      .Times(1)
+      .WillOnce(Return(bool(true)));
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(4))
+      .Times(1)
+      .WillOnce(Return(bool(true)));
+
   service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport, persistent_state);
+      wsv, max_proposal, commit_delay, service_transport, fake_persistent_state);
   service_transport->subscribe(service);
 
   start();

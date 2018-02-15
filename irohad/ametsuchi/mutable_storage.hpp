@@ -29,6 +29,7 @@ namespace iroha {
   namespace ametsuchi {
 
     class WsvQuery;
+    class OrderingServicePersistentState;
 
     /**
      * Mutable storage is used apply blocks to the storage.
@@ -56,6 +57,9 @@ namespace iroha {
                                             const hash256_t &)> function) = 0;
 
       virtual ~MutableStorage() = default;
+
+      virtual std::shared_ptr<OrderingServicePersistentState>
+      getOrderingServicePersistentState() const = 0;
     };
 
   }  // namespace ametsuchi

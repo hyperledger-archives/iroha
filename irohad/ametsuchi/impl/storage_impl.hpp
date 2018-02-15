@@ -103,14 +103,14 @@ namespace iroha {
 
       std::shared_ptr<BlockQuery> blocks_;
 
-      std::shared_ptr<OrderingServicePersistentState> ordering_state_;
-
       model::converters::JsonBlockFactory serializer_;
 
       // Allows multiple readers and a single writer
       std::shared_timed_mutex rw_lock_;
 
       logger::Logger log_;
+
+      std::unique_ptr<MutableStorage> mutable_storage_;
 
      protected:
       const std::string init_ = R"(
@@ -197,6 +197,7 @@ CREATE TABLE IF NOT EXISTS index_by_id_height_asset (
 CREATE TABLE IF NOT EXISTS ordering_service_state (
     proposal_height bigserial
 );
+DELETE FROM ordering_service_state;
 INSERT INTO ordering_service_state
 VALUES (2); -- start height (1 for genesis)
 )";
