@@ -39,9 +39,9 @@ namespace iroha {
           std::shared_ptr<iroha::network::OrderingServiceNotification>
               subscriber) override;
 
-      void publishProposal(shared_model::detail::PolymorphicWrapper<
-                               shared_model::interface::Proposal> proposal,
-                           const std::vector<std::string> &peers) override;
+      void publishProposal(
+          std::unique_ptr<shared_model::interface::Proposal> proposal,
+          const std::vector<std::string> &peers) override;
 
       grpc::Status onTransaction(::grpc::ServerContext *context,
                                  const protocol::Transaction *request,

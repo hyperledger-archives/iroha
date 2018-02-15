@@ -43,8 +43,7 @@ grpc::Status OrderingServiceTransportGrpc::onTransaction(
 }
 
 void OrderingServiceTransportGrpc::publishProposal(
-    shared_model::detail::PolymorphicWrapper<shared_model::interface::Proposal>
-        proposal,
+    std::unique_ptr<shared_model::interface::Proposal> proposal,
     const std::vector<std::string> &peers) {
   std::unordered_map<std::string,
                      std::unique_ptr<proto::OrderingGateTransportGrpc::Stub>>
@@ -58,8 +57,8 @@ void OrderingServiceTransportGrpc::publishProposal(
   for (const auto &peer : peers_map) {
     auto call = new AsyncClientCall;
 
-    auto proto = static_cast<const shared_model::proto::Proposal *>(
-        proposal.operator->());
+    auto proto =
+        static_cast<const shared_model::proto::Proposal *>(proposal.get());
     call->response_reader = peer.second->AsynconProposal(
         &call->context, proto->getTransport(), &cq_);
 

@@ -61,8 +61,7 @@ namespace iroha {
        * @param proposal : proposal to be published
        */
       virtual void publishProposal(
-          shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Proposal> proposal,
+          std::unique_ptr<shared_model::interface::Proposal> proposal,
           const std::vector<std::string> &peers) = 0;
 
       virtual ~OrderingServiceTransport() = default;

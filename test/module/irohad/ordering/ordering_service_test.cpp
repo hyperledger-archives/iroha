@@ -58,9 +58,14 @@ class MockOrderingServiceTransport : public network::OrderingServiceTransport {
     subscriber_ = subscriber;
   }
 
-  MOCK_METHOD2(publishProposal,
-               void(const shared_model::detail::PolymorphicWrapper<
-                        shared_model::interface::Proposal> proposal,
+  void publishProposal(
+      std::unique_ptr<shared_model::interface::Proposal> proposal,
+      const std::vector<std::string> &peers) override {
+    return publishProposalProxy(proposal.get(), peers);
+  }
+
+  MOCK_METHOD2(publishProposalProxy,
+               void(shared_model::interface::Proposal *proposal,
                     const std::vector<std::string> &peers));
 
   std::weak_ptr<network::OrderingServiceNotification> subscriber_;
@@ -101,10 +106,10 @@ TEST_F(OrderingServiceTest, SimpleTest) {
       wsv, max_proposal, commit_delay, fake_transport);
   fake_transport->subscribe(ordering_service);
 
-  EXPECT_CALL(*fake_transport, publishProposal(_, _)).Times(1);
+  EXPECT_CALL(*fake_transport, publishProposalProxy(_, _)).Times(1);
 
   fake_transport->publishProposal(
-      shared_model::detail::makePolymorphic<shared_model::proto::Proposal>(
+      std::make_unique<shared_model::proto::Proposal>(
           TestProposalBuilder().build()),
       {});
 }
@@ -119,7 +124,7 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 
   // Init => proposal size 5 => 2 proposals after 10 transactions
   size_t call_count = 0;
-  EXPECT_CALL(*fake_transport, publishProposal(_, _))
+  EXPECT_CALL(*fake_transport, publishProposalProxy(_, _))
       .Times(2)
       .WillRepeatedly(InvokeWithoutArgs([&] {
         ++call_count;
@@ -150,7 +155,7 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
       wsv, max_proposal, commit_delay, fake_transport);
   fake_transport->subscribe(ordering_service);
 
-  EXPECT_CALL(*fake_transport, publishProposal(_, _))
+  EXPECT_CALL(*fake_transport, publishProposalProxy(_, _))
       .Times(2)
       .WillRepeatedly(InvokeWithoutArgs([&] {
         log_->info("Proposal send to grpc");

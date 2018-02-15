@@ -77,8 +77,7 @@ namespace iroha {
        * @param proposal - object for propagation
        */
       void publishProposal(
-          shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Proposal> proposal) override;
+          std::unique_ptr<shared_model::interface::Proposal> proposal) override;
 
      private:
       /**

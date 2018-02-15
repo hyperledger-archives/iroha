@@ -54,19 +54,17 @@ namespace iroha {
         fetched_txs.emplace_back(std::move(*tx));
       }
 
-      auto proposal =
-          shared_model::detail::makePolymorphic<shared_model::proto::Proposal>(
-              shared_model::proto::ProposalBuilder()
-                  .height(proposal_height++)
-                  .createdTime(iroha::time::now())
-                  .transactions(fetched_txs)
-                  .build());
+      auto proposal = std::make_unique<shared_model::proto::Proposal>(
+          shared_model::proto::ProposalBuilder()
+              .height(proposal_height++)
+              .createdTime(iroha::time::now())
+              .transactions(fetched_txs)
+              .build());
       publishProposal(std::move(proposal));
     }
 
     void OrderingServiceImpl::publishProposal(
-        shared_model::detail::PolymorphicWrapper<
-            shared_model::interface::Proposal> proposal) {
+        std::unique_ptr<shared_model::interface::Proposal> proposal) {
       std::vector<std::string> peers;
 
       auto lst = wsv_->getLedgerPeers().value();
