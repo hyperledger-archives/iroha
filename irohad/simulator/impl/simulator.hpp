@@ -52,10 +52,15 @@ namespace iroha {
 
       rxcpp::observable<model::Block> on_block() override;
 
+      void shutdown();
+
      private:
       // internal
       rxcpp::subjects::subject<model::Proposal> notifier_;
       rxcpp::subjects::subject<model::Block> block_notifier_;
+
+      rxcpp::composite_subscription proposal_subscription_;
+      rxcpp::composite_subscription verified_proposal_subscription_;
 
       std::shared_ptr<validation::StatefulValidator> validator_;
       std::shared_ptr<ametsuchi::TemporaryFactory> ametsuchi_factory_;

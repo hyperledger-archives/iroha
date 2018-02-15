@@ -39,6 +39,8 @@ namespace iroha {
 
       rxcpp::observable<Commit> on_commit_chain() override;
 
+      void shutdown() override;
+
      private:
       std::shared_ptr<validation::ChainValidator> validator_;
       std::shared_ptr<ametsuchi::MutableFactory> mutableFactory_;
@@ -46,6 +48,7 @@ namespace iroha {
 
       // internal
       rxcpp::subjects::subject<Commit> notifier_;
+      rxcpp::composite_subscription subscription_;
 
       logger::Logger log_;
     };

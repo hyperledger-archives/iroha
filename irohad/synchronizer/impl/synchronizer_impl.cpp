@@ -29,10 +29,12 @@ namespace iroha {
         std::shared_ptr<network::BlockLoader> blockLoader)
         : validator_(std::move(validator)),
           mutableFactory_(std::move(mutableFactory)),
-          blockLoader_(std::move(blockLoader)) {
+          blockLoader_(std::move(blockLoader)),
+          subscription_(rxcpp::composite_subscription()) {
       log_ = logger::log("synchronizer");
       consensus_gate->on_commit().subscribe(
-          [this](auto block) { this->process_commit(block); });
+          subscription_,
+          [&](model::Block block) { this->process_commit(block); });
     }
 
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
@@ -87,6 +89,10 @@ namespace iroha {
 
     rxcpp::observable<Commit> SynchronizerImpl::on_commit_chain() {
       return notifier_.get_observable();
+    }
+
+    void SynchronizerImpl::shutdown() {
+      subscription_.unsubscribe();
     }
   }  // namespace synchronizer
 }  // namespace iroha

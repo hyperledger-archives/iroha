@@ -27,17 +27,23 @@ namespace iroha {
         std::shared_ptr<ametsuchi::TemporaryFactory> factory,
         std::shared_ptr<ametsuchi::BlockQuery> blockQuery,
         std::shared_ptr<model::ModelCryptoProvider> crypto_provider)
-        : validator_(std::move(statefulValidator)),
+        : proposal_subscription_(rxcpp::composite_subscription()),
+          verified_proposal_subscription_(rxcpp::composite_subscription()),
+          validator_(std::move(statefulValidator)),
           ametsuchi_factory_(std::move(factory)),
           block_queries_(std::move(blockQuery)),
           crypto_provider_(std::move(crypto_provider)) {
       log_ = logger::log("Simulator");
-      ordering_gate->on_proposal().subscribe(
-          [this](auto proposal) { this->process_proposal(proposal); });
+      ordering_gate->on_proposal().subscribe(proposal_subscription_,
+                                             [this](model::Proposal proposal) {
+                                               this->process_proposal(proposal);
+                                             });
 
-      notifier_.get_observable().subscribe([this](auto verified_proposal) {
-        this->process_verified_proposal(verified_proposal);
-      });
+      notifier_.get_observable().subscribe(
+          verified_proposal_subscription_,
+          [this](model::Proposal verified_proposal) {
+            this->process_verified_proposal(verified_proposal);
+          });
     }
 
     rxcpp::observable<model::Proposal> Simulator::on_verified_proposal() {
@@ -91,6 +97,11 @@ namespace iroha {
 
     rxcpp::observable<model::Block> Simulator::on_block() {
       return block_notifier_.get_observable();
+    }
+
+    void Simulator::shutdown() {
+      proposal_subscription_.unsubscribe();
+      verified_proposal_subscription_.unsubscribe();
     }
 
   }  // namespace simulator
