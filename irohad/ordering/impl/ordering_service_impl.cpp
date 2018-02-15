@@ -16,8 +16,8 @@
  */
 
 #include "ordering/impl/ordering_service_impl.hpp"
+#include "backend/protobuf/transaction.hpp"
 #include "builders/protobuf/proposal.hpp"
-#include "model/peer.hpp"
 
 namespace iroha {
   namespace ordering {

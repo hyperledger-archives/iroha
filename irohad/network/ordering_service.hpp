@@ -19,7 +19,6 @@
 #define IROHA_ORDERINGSERVICE_H
 
 #include "network/ordering_service_transport.hpp"
-#include "utils/polymorphic_wrapper.hpp"
 
 namespace iroha {
   namespace network {

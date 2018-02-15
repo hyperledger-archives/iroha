@@ -20,26 +20,14 @@
 
 #include <tbb/concurrent_queue.h>
 #include <memory>
+#include <rxcpp/rx.hpp>
 #include <unordered_map>
 
+#include "ametsuchi/peer_query.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_service.hpp"
 #include "network/ordering_service_transport.hpp"
-
-#include "ametsuchi/peer_query.hpp"
 #include "ordering.grpc.pb.h"
-
-#include <rxcpp/rx.hpp>
-#include "model/converters/pb_transaction_factory.hpp"
-#include "model/proposal.hpp"
-#include "network/impl/async_grpc_client.hpp"
-#include "ordering.grpc.pb.h"
-
-namespace shared_model {
-  namespace proto {
-    class Transaction;
-  }
-}  // namespace shared_model
 
 namespace iroha {
   namespace ordering {

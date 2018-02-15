@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
-
 #include "backend/protobuf/from_old_model.hpp"
+#include "backend/protobuf/transaction.hpp"
 #include "builders/protobuf/proposal.hpp"
-#include "datetime/time.hpp"
 
 using namespace iroha::ordering;
 

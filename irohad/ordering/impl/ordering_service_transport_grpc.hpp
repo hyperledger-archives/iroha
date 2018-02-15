@@ -22,7 +22,6 @@
 #include "logger/logger.hpp"
 #include "ordering.grpc.pb.h"
 
-#include "model/converters/pb_transaction_factory.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_service_transport.hpp"
 
@@ -51,7 +50,6 @@ namespace iroha {
 
      private:
       std::weak_ptr<iroha::network::OrderingServiceNotification> subscriber_;
-      model::converters::PbTransactionFactory factory_;
       logger::Logger log_;
     };
 

@@ -17,9 +17,9 @@
 #ifndef IROHA_ORDERING_SERVICE_TRANSPORT_H
 #define IROHA_ORDERING_SERVICE_TRANSPORT_H
 
+#include <memory>
 #include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/transaction.hpp"
-#include "utils/polymorphic_wrapper.hpp"
 
 namespace iroha {
   namespace network {
