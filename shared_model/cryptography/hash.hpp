@@ -45,7 +45,9 @@ namespace shared_model {
           return seed;
         }
       };
-      using Blob::Blob;
+
+      Hash() : Blob() {}
+      explicit Hash(const std::string &hash) : Blob(hash) {}
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
