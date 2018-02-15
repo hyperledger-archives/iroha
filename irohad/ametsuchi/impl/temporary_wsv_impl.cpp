@@ -42,7 +42,7 @@ namespace iroha {
         const shared_model::interface::Transaction &tx,
         std::function<bool(const shared_model::interface::Transaction &,
                            WsvQuery &)> apply_function) {
-      auto transaction = tx.makeOldModel();
+      auto transaction = std::unique_ptr<model::Transaction>(tx.makeOldModel());
 
       const auto &tx_creator = transaction->creator_account_id;
       auto execute_command = [this, &tx_creator](auto command) {
@@ -63,7 +63,7 @@ namespace iroha {
 
       transaction_->exec("SAVEPOINT savepoint_;");
       auto result = apply_function(tx, *wsv_)
-          && std::all_of(transaction->commands.begin(),
+          and std::all_of(transaction->commands.begin(),
                          transaction->commands.end(),
                          execute_command);
       if (result) {
@@ -71,7 +71,6 @@ namespace iroha {
       } else {
         transaction_->exec("ROLLBACK TO SAVEPOINT savepoint_;");
       }
-      delete transaction;
       return result;
     }
 

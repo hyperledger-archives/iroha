@@ -36,18 +36,19 @@ namespace iroha {
         ametsuchi::TemporaryWsv &temporaryWsv) {
       log_->info("transactions in proposal: {}", proposal.transactions.size());
       auto checking_transaction = [this](auto &tx, auto &queries) {
-        auto transaction =
-            std::unique_ptr<model::Transaction>(tx.makeOldModel());
-        return (queries.getAccount(transaction->creator_account_id) |
+
+        return (queries.getAccount(tx.creatorAccountId()) |
                 [&](const auto &account) {
                   // Check if tx creator has account and has quorum to execute
                   // transaction
-                  return transaction->signatures.size() >= account.quorum
-                      ? queries.getSignatories(transaction->creator_account_id)
+                  return tx.signatures().size() >= account.quorum
+                      ? queries.getSignatories(tx.creatorAccountId())
                       : nonstd::nullopt;
                 }
                 |
                 [&](const auto &signatories) {
+                  auto transaction =
+                          std::unique_ptr<model::Transaction>(tx.makeOldModel());
                   // Check if signatures in transaction are account signatory
                   return this->signaturesSubset(transaction->signatures,
                                                 signatories)

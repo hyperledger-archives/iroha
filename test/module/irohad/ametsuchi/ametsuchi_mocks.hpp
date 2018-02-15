@@ -32,7 +32,8 @@
 #include "model/asset.hpp"
 #include "model/domain.hpp"
 #include "model/peer.hpp"
-
+#include "model/transaction.hpp"
+#include "model/block.hpp"
 #include <boost/optional.hpp>
 
 #include "common/result.hpp"

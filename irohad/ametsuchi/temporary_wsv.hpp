@@ -22,8 +22,6 @@
 
 #include "ametsuchi/wsv_command.hpp"
 #include "ametsuchi/wsv_query.hpp"
-#include "model/block.hpp"
-#include "model/transaction.hpp"
 
 namespace shared_model {
   namespace interface {
