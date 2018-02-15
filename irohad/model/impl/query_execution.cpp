@@ -295,10 +295,13 @@ iroha::model::QueryProcessingFactory::executeGetTransactions(
       query.tx_hashes.end(),
       std::back_inserter(hashes),
       [](const auto &h) { return shared_model::crypto::Hash(h.to_string()); });
-  auto txs = _blockQuery->getTransactions(hashes).map([](auto &tx) {
-    return boost::optional<model::Transaction>(
-        *std::unique_ptr<iroha::model::Transaction>((*tx)->makeOldModel()));
-  });
+  auto txs = _blockQuery->getTransactions(hashes)
+                 .filter([](auto &tx) { return tx; })
+                 .map([](auto &tx) {
+                   return boost::optional<model::Transaction>(
+                       *std::unique_ptr<iroha::model::Transaction>(
+                           (*tx)->makeOldModel()));
+                 });
   std::vector<iroha::model::Transaction> transactions;
   txs.subscribe([&transactions](auto const &tx_opt) {
     if (tx_opt) {

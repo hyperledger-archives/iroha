@@ -32,26 +32,26 @@ namespace iroha {
           log_(logger::log("PostgresBlockIndex")),
           execute_{makeExecute(transaction_, log_)} {}
 
-    rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-        ::shared_model::interface::Block>>
+    rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+        shared_model::interface::Block>>
     PostgresBlockQuery::getBlocks(uint32_t height, uint32_t count) {
       auto last_id = block_store_.last_id();
       auto to = std::min(last_id, height + count - 1);
       if (height > to or count == 0) {
         return rxcpp::observable<>::empty<
-            ::shared_model::detail::PolymorphicWrapper<
-                ::shared_model::interface::Block>>();
+            shared_model::detail::PolymorphicWrapper<
+                shared_model::interface::Block>>();
       }
       return rxcpp::observable<>::range(height, to).flat_map([this](auto i) {
         auto bytes = block_store_.get(i);
         return rxcpp::observable<>::create<
-            ::shared_model::detail::PolymorphicWrapper<
-                ::shared_model::interface::Block>>([this, bytes](auto s) {
+            shared_model::detail::PolymorphicWrapper<
+                shared_model::interface::Block>>([this, bytes](auto s) {
           if (not bytes.has_value()) {
             s.on_completed();
             return;
           }
-          // TODO victordrobny 12.02.2018 convert directly to
+          // TODO IR-975 victordrobny 12.02.2018 convert directly to
           // shared_model::proto::Block after FlatFile will be reworked to new
           // model
           auto document =
@@ -65,45 +65,46 @@ namespace iroha {
             s.on_completed();
             return;
           }
-          auto block = ::shared_model::proto::from_old(block_old.value());
-          s.on_next(::shared_model::detail::makePolymorphic<
-                    ::shared_model::proto::Block>(block.getTransport()));
+          auto block = shared_model::proto::from_old(block_old.value());
+          s.on_next(
+              shared_model::detail::makePolymorphic<shared_model::proto::Block>(
+                  block.getTransport()));
           s.on_completed();
         });
       });
     }
 
-    rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-        ::shared_model::interface::Block>>
+    rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+        shared_model::interface::Block>>
     PostgresBlockQuery::getBlocksFrom(uint32_t height) {
       return getBlocks(height, block_store_.last_id());
     }
 
-    rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-        ::shared_model::interface::Block>>
+    rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+        shared_model::interface::Block>>
     PostgresBlockQuery::getTopBlocks(uint32_t count) {
       auto last_id = block_store_.last_id();
       count = std::min(count, last_id);
       return getBlocks(last_id - count + 1, count);
     }
 
-    std::vector<::shared_model::interface::types::HeightType>
+    std::vector<shared_model::interface::types::HeightType>
     PostgresBlockQuery::getBlockIds(const std::string &account_id) {
       return execute_(
                  "SELECT DISTINCT height FROM height_by_account_set WHERE "
                  "account_id = "
                  + transaction_.quote(account_id) + ";")
                  | [&](const auto &result)
-                 -> std::vector<::shared_model::interface::types::HeightType> {
-        return transform<::shared_model::interface::types::HeightType>(
+                 -> std::vector<shared_model::interface::types::HeightType> {
+        return transform<shared_model::interface::types::HeightType>(
             result, [&](const auto &row) {
               return row.at("height")
-                  .template as<::shared_model::interface::types::HeightType>();
+                  .template as<shared_model::interface::types::HeightType>();
             });
       };
     }
 
-    boost::optional<::shared_model::interface::types::HeightType>
+    boost::optional<shared_model::interface::types::HeightType>
     PostgresBlockQuery::getBlockId(const std::string &hash) {
       boost::optional<uint64_t> blockId;
       return execute_("SELECT height FROM height_by_hash WHERE hash = "
@@ -112,13 +113,13 @@ namespace iroha {
                       + ";")
                  | [&](const auto &result)
                  -> boost::optional<
-                     ::shared_model::interface::types::HeightType> {
+                     shared_model::interface::types::HeightType> {
         if (result.size() == 0) {
           return boost::none;
         }
         return result[0]
             .at("height")
-            .template as<::shared_model::interface::types::HeightType>();
+            .template as<shared_model::interface::types::HeightType>();
       };
     }
 
@@ -128,8 +129,8 @@ namespace iroha {
         uint64_t block_id) {
       return [this, &subscriber, block_id](pqxx::result &result) {
         auto block = block_store_.get(block_id) | [this](auto bytes) {
-          return boost::optional<::shared_model::proto::Block>(
-              ::shared_model::proto::from_old(*serializer_.deserialize(
+          return boost::optional<shared_model::proto::Block>(
+              shared_model::proto::from_old(*serializer_.deserialize(
                   *model::converters::stringToJson(bytesToString(bytes)))));
         };
         boost::for_each(
@@ -137,19 +138,19 @@ namespace iroha {
               return x.at("index").template as<size_t>();
             }),
             [&](auto x) {
-              subscriber.on_next(::shared_model::detail::PolymorphicWrapper<
-                                 ::shared_model::interface::Transaction>(
+              subscriber.on_next(shared_model::detail::PolymorphicWrapper<
+                                 shared_model::interface::Transaction>(
                   block->transactions().at(x)));
             });
       };
     }
 
-    rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-        ::shared_model::interface::Transaction>>
+    rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+        shared_model::interface::Transaction>>
     PostgresBlockQuery::getAccountTransactions(const std::string &account_id) {
       return rxcpp::observable<>::create<
-          ::shared_model::detail::PolymorphicWrapper<
-              ::shared_model::interface::Transaction>>(
+          shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Transaction>>(
           [this, account_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
             if (block_ids.empty()) {
@@ -169,16 +170,16 @@ namespace iroha {
           });
     }
 
-    rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-        ::shared_model::interface::Transaction>>
+    rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+        shared_model::interface::Transaction>>
     PostgresBlockQuery::getAccountAssetTransactions(
         const std::string &account_id, const std::string &asset_id) {
       return rxcpp::observable<>::create<
-          ::shared_model::detail::PolymorphicWrapper<
-              ::shared_model::interface::Transaction>>([this,
-                                                        account_id,
-                                                        asset_id](
-                                                           auto subscriber) {
+          shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Transaction>>([this,
+                                                      account_id,
+                                                      asset_id](
+                                                         auto subscriber) {
         auto block_ids = this->getBlockIds(account_id);
         if (block_ids.empty()) {
           subscriber.on_completed();
@@ -198,14 +199,13 @@ namespace iroha {
       });
     }
 
-    rxcpp::observable<
-        boost::optional<::shared_model::detail::PolymorphicWrapper<
-            ::shared_model::interface::Transaction>>>
+    rxcpp::observable<boost::optional<shared_model::detail::PolymorphicWrapper<
+        shared_model::interface::Transaction>>>
     PostgresBlockQuery::getTransactions(
         const std::vector<shared_model::crypto::Hash> &tx_hashes) {
       return rxcpp::observable<>::create<
-          boost::optional<::shared_model::detail::PolymorphicWrapper<
-              ::shared_model::interface::Transaction>>>(
+          boost::optional<shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Transaction>>>(
           [this, tx_hashes](auto subscriber) {
             std::for_each(tx_hashes.begin(),
                           tx_hashes.end(),
@@ -218,18 +218,21 @@ namespace iroha {
           });
     }
 
-    boost::optional<::shared_model::detail::PolymorphicWrapper<
-        ::shared_model::interface::Transaction>>
+    boost::optional<shared_model::detail::PolymorphicWrapper<
+        shared_model::interface::Transaction>>
     PostgresBlockQuery::getTxByHashSync(const std::string &hash) {
       return getBlockId(hash) |
           [this](auto blockId) { return block_store_.get(blockId); } |
           [this](auto bytes) {
-            // TODO victordrobny 12.02.2018 convert directly to
+            // TODO IR-975 victordrobny 12.02.2018 convert directly to
             // shared_model::proto::Block after FlatFile will be reworked to new
             // model
+            return model::converters::stringToJson(bytesToString(bytes));
+          }
+      | [&](const auto &json) { return serializer_.deserialize(json); } |
+          [](const auto &block) {
             return boost::optional<shared_model::proto::Block>(
-                shared_model::proto::from_old(*serializer_.deserialize(
-                    *model::converters::stringToJson(bytesToString(bytes)))));
+                shared_model::proto::from_old(block));
           }
       | [&](const auto &block) {
           auto it =
@@ -241,8 +244,8 @@ namespace iroha {
                            });
           return (it == block.transactions().end())
               ? boost::none
-              : boost::optional<::shared_model::detail::PolymorphicWrapper<
-                    ::shared_model::interface::Transaction>>(*it);
+              : boost::optional<shared_model::detail::PolymorphicWrapper<
+                    shared_model::interface::Transaction>>(*it);
         };
     }
 

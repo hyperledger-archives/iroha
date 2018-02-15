@@ -158,7 +158,8 @@ void apply(S &&storage, const shared_model::interface::Block &block) {
       [](iroha::expected::Error<std::string> &error) {
         FAIL() << "MutableStorage: " << error.error;
       });
-  ms->apply(*std::unique_ptr<iroha::model::Block>(block.makeOldModel()), [](const auto &, auto &, const auto &) { return true; });
+  ms->apply(*std::unique_ptr<iroha::model::Block>(block.makeOldModel()),
+            [](const auto &, auto &, const auto &) { return true; });
   storage->commit(std::move(ms));
 }
 
@@ -203,8 +204,6 @@ TEST_F(AmetsuchiTest, SampleTest) {
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
-  TestTransactionBuilder tx_builder;
-  TestBlockBuilder block_builder;
 
   const auto domain = "ru", user1name = "user1", user2name = "user2",
              user1id = "user1@ru", user2id = "user2@ru", assetname = "RUB",
@@ -217,7 +216,8 @@ TEST_F(AmetsuchiTest, SampleTest) {
   auto block1 =
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>(
-              {tx_builder.creatorAccountId("admin1")
+              {TestTransactionBuilder()
+                   .creatorAccountId("admin1")
                    .createRole(
                        "user",
                        std::set<std::string>{
@@ -232,7 +232,6 @@ TEST_F(AmetsuchiTest, SampleTest) {
           .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
           .txNumber(1)
           .build();
-  auto block1hash = block1.hash();
 
   apply(storage, block1);
 
@@ -242,7 +241,8 @@ TEST_F(AmetsuchiTest, SampleTest) {
   auto block2 =
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>(
-              {tx_builder.creatorAccountId("admin2")
+              {TestTransactionBuilder()
+                   .creatorAccountId("admin2")
                    .createAccount(
                        user2name,
                        domain,
@@ -253,11 +253,9 @@ TEST_F(AmetsuchiTest, SampleTest) {
                        user1id, user2id, assetid, "Transfer asset", "100.0")
                    .build()}))
           .height(2)
-          .prevHash(block1hash)
+          .prevHash(block1.hash())
           .txNumber(1)
           .build();
-
-  auto block2hash = block2.hash();
 
   apply(storage, block2);
   validateAccountAsset(
@@ -266,7 +264,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
       wsv, user2id, assetid, *iroha::Amount::createFromString("100.0"));
 
   // Block store tests
-  auto hashes = {block1hash, block2hash};
+  auto hashes = {block1.hash(), block2.hash()};
   validateCalls(blocks->getBlocks(1, 2),
                 [i = 0, &hashes](auto eachBlock) mutable {
                   EXPECT_EQ(*(hashes.begin() + i), eachBlock->hash());
@@ -376,8 +374,6 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
           .txNumber(1)
           .build();
 
-  auto block1hash = block1.hash();
-
   apply(storage, block1);
 
   // Check querying accounts
@@ -401,10 +397,9 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>({txn2}))
           .height(2)
-          .prevHash(block1hash)
+          .prevHash(block1.hash())
           .txNumber(1)
           .build();
-  auto block2hash = block2.hash();
 
   apply(storage, block2);
 
@@ -428,10 +423,9 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>({txn3}))
           .height(3)
-          .prevHash(block2hash)
+          .prevHash(block2.hash())
           .txNumber(1)
           .build();
-  auto block3hash = block3.hash();
 
   apply(storage, block3);
 
@@ -443,7 +437,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
       wsv, user1id, asset2id, *iroha::Amount::createFromString("10.0"));
 
   // Block store test
-  auto hashes = {block1hash, block2hash, block3hash};
+  auto hashes = {block1.hash(), block2.hash(), block3.hash()};
   validateCalls(blocks->getBlocks(1, 3),
                 [i = 0, &hashes](auto eachBlock) mutable {
                   EXPECT_EQ(*(hashes.begin() + i), eachBlock->hash());
@@ -480,10 +474,6 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
-  //  iroha::pubkey_t pubkey1, pubkey2;
-  //  pubkey1.at(0) = 1;
-  //  pubkey2.at(0) = 2;
-
   shared_model::crypto::PublicKey pubkey1(std::string("1", 32));
   shared_model::crypto::PublicKey pubkey2(std::string("2", 32));
 
@@ -507,7 +497,6 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
           .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
           .txNumber(1)
           .build();
-  auto block1hash = block1.hash();
 
   apply(storage, block1);
 
@@ -534,10 +523,9 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>({txn2}))
           .height(2)
-          .prevHash(block1hash)
+          .prevHash(block1.hash())
           .txNumber(1)
           .build();
-  auto block2hash = block2.hash();
 
   apply(storage, block2);
 
@@ -564,10 +552,9 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>({txn3}))
           .height(3)
-          .prevHash(block2hash)
+          .prevHash(block2.hash())
           .txNumber(1)
           .build();
-  auto block3hash = block3.hash();
 
   apply(storage, block3);
 
@@ -603,10 +590,9 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>({txn4}))
           .height(4)
-          .prevHash(block3hash)
+          .prevHash(block3.hash())
           .txNumber(1)
           .build();
-  auto block4hash = block4.hash();
 
   apply(storage, block4);
 
@@ -640,10 +626,9 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>({txn5}))
           .height(5)
-          .prevHash(block4hash)
+          .prevHash(block4.hash())
           .txNumber(1)
           .build();
-  auto block5hash = block5.hash();
 
   apply(storage, block5);
 
@@ -673,10 +658,9 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>({txn6}))
           .height(6)
-          .prevHash(block5hash)
+          .prevHash(block5.hash())
           .txNumber(1)
           .build();
-  auto block6hash = block6.hash();
 
   apply(storage, block6);
 

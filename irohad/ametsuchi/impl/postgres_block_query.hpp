@@ -43,35 +43,35 @@ namespace iroha {
       PostgresBlockQuery(pqxx::nontransaction &transaction_,
                          FlatFile &file_store);
 
-      rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-          ::shared_model::interface::Transaction>>
+      rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::Transaction>>
       getAccountTransactions(const std::string &account_id) override;
 
-      rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-          ::shared_model::interface::Transaction>>
+      rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::Transaction>>
       getAccountAssetTransactions(const std::string &account_id,
                                   const std::string &asset_id) override;
 
       rxcpp::observable<
-          boost::optional<::shared_model::detail::PolymorphicWrapper<
-              ::shared_model::interface::Transaction>>>
+          boost::optional<shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Transaction>>>
       getTransactions(
           const std::vector<shared_model::crypto::Hash> &tx_hashes) override;
 
-      boost::optional<::shared_model::detail::PolymorphicWrapper<
-          ::shared_model::interface::Transaction>>
+      boost::optional<shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::Transaction>>
       getTxByHashSync(const std::string &hash) override;
 
-      rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-          ::shared_model::interface::Block>>
+      rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::Block>>
       getBlocks(uint32_t height, uint32_t count) override;
 
-      rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-          ::shared_model::interface::Block>>
+      rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::Block>>
       getBlocksFrom(uint32_t height) override;
 
-      rxcpp::observable<::shared_model::detail::PolymorphicWrapper<
-          ::shared_model::interface::Block>>
+      rxcpp::observable<shared_model::detail::PolymorphicWrapper<
+          shared_model::interface::Block>>
       getTopBlocks(uint32_t count) override;
 
      private:
@@ -80,7 +80,7 @@ namespace iroha {
        * @param account_id
        * @return vector of block ids
        */
-      std::vector<::shared_model::interface::types::HeightType> getBlockIds(
+      std::vector<shared_model::interface::types::HeightType> getBlockIds(
           const std::string &account_id);
 
       /**
@@ -88,7 +88,7 @@ namespace iroha {
        * @param hash - hash of transaction
        * @return block id or boost::none
        */
-      boost::optional<::shared_model::interface::types::HeightType> getBlockId(
+      boost::optional<shared_model::interface::types::HeightType> getBlockId(
           const std::string &hash);
 
       /**

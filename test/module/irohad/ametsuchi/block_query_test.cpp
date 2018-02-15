@@ -17,13 +17,13 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
-#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
-#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 #include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_block_query.hpp"
 #include "framework/test_subscriber.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
@@ -64,12 +64,9 @@ class BlockQueryTest : public AmetsuchiTest {
             .height(1)
             .transactions(
                 std::vector<shared_model::proto::Transaction>({txn1_1, txn1_2}))
-            .prevHash(
-                shared_model::crypto::Hash(std::string("0", 32)))
+            .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
             .txNumber(2)
-            .build()
-            .copy();
-    auto block1hash = block1->hash();
+            .build();
 
     // First tx in block 1
     auto txn2_1 = TestTransactionBuilder().creatorAccountId(creator1).build();
@@ -84,14 +81,13 @@ class BlockQueryTest : public AmetsuchiTest {
             .height(2)
             .transactions(
                 std::vector<shared_model::proto::Transaction>({txn2_1, txn2_2}))
-            .prevHash(block1hash)
+            .prevHash(block1.hash())
             .txNumber(2)
-            .build()
-            .copy();
+            .build();
 
     for (const auto &b : {block1, block2}) {
-      auto old_block = *std::unique_ptr<iroha::model::Block>(b->makeOldModel());
-      file->add(b->height(),
+      auto old_block = *std::unique_ptr<iroha::model::Block>(b.makeOldModel());
+      file->add(b.height(),
                 iroha::stringToBytes(converters::jsonToString(
                     converters::JsonBlockFactory().serialize(old_block))));
       index->index(old_block);
@@ -188,8 +184,7 @@ TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
  * @then nullopt values are retrieved
  */
 TEST_F(BlockQueryTest, GetTransactionsIncludesNonExistingTxHashes) {
-  shared_model::crypto::Hash invalid_tx_hash_1(
-          std::string("0", 32)),
+  shared_model::crypto::Hash invalid_tx_hash_1(std::string("0", 32)),
       invalid_tx_hash_2(std::string("9", 32));
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, invalid_tx_hash_2}), 2);
@@ -222,8 +217,7 @@ TEST_F(BlockQueryTest, GetTransactionsWithEmpty) {
  */
 TEST_F(BlockQueryTest, GetTransactionsWithInvalidTxAndValidTx) {
   // TODO 15/11/17 motxx - Use EqualList VerificationStrategy
-  shared_model::crypto::Hash invalid_tx_hash_1(
-          std::string("0", 32));
+  shared_model::crypto::Hash invalid_tx_hash_1(std::string("0", 32));
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, tx_hashes[0]}), 2);
   wrapper.subscribe([this](auto tx) {
