@@ -63,8 +63,7 @@ namespace shared_model {
         std::shared_ptr<shared_model::interface::AccountAsset>
             account_asset_ptr(account_asset.copy());
         return iroha::expected::makeValue(
-            shared_model::detail::PolymorphicWrapper<
-                shared_model::interface::AccountAsset>(account_asset_ptr));
+            account_asset_ptr);
       }
 
       AccountAssetBuilder &accountId(

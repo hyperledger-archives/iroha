@@ -50,9 +50,7 @@ namespace shared_model {
               std::make_shared<std::string>(answer.reason()));
         }
         std::shared_ptr<shared_model::interface::Amount> amount_ptr(amount.copy());
-        return iroha::expected::makeValue(
-            shared_model::detail::PolymorphicWrapper<
-                shared_model::interface::Amount>(amount_ptr));
+        return iroha::expected::makeValue(amount_ptr);
       }
 
       AmountBuilder &intValue(const boost::multiprecision::uint256_t &value) {

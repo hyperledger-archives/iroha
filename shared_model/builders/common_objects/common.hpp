@@ -36,9 +36,7 @@ namespace shared_model {
     template <typename ModelType>
     using BuilderResult = iroha::expected::PolymorphicResult<
         ModelType,
-        std::string,
-        shared_model::detail::PolymorphicWrapper<ModelType>,
-        std::shared_ptr<std::string>>;
+        std::string>;
   }
 }  // namespace shared_model
 #endif  // IROHA_BUILDERS_COMMON_HPP

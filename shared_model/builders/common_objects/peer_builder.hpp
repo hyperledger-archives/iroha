@@ -50,9 +50,7 @@ namespace shared_model {
               std::make_shared<std::string>(answer.reason()));
         }
         std::shared_ptr<shared_model::interface::Peer> peer_ptr(peer.copy());
-        return iroha::expected::makeValue(
-            shared_model::detail::PolymorphicWrapper<
-                shared_model::interface::Peer>(peer_ptr));
+        return iroha::expected::makeValue(peer_ptr);
       }
 
       PeerBuilder &address(const interface::types::AddressType &address) {

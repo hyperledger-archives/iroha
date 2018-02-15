@@ -53,9 +53,7 @@ namespace shared_model {
               std::make_shared<std::string>(answer.reason()));
         }
         std::shared_ptr<shared_model::interface::Asset> asset_ptr(asset.copy());
-        return iroha::expected::makeValue(
-            shared_model::detail::PolymorphicWrapper<
-                shared_model::interface::Asset>(asset_ptr));
+        return iroha::expected::makeValue(asset_ptr);
       }
 
       AssetBuilder &assetId(const interface::types::AccountIdType &asset_id) {

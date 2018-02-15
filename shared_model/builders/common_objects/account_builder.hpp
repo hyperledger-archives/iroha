@@ -54,9 +54,7 @@ namespace shared_model {
         }
 
         std::shared_ptr<shared_model::interface::Account> account_ptr(account.copy());
-        return iroha::expected::makeValue(
-            shared_model::detail::PolymorphicWrapper<
-                shared_model::interface::Account>(account_ptr));
+        return iroha::expected::makeValue(account_ptr);
       }
 
       AccountBuilder &accountId(const interface::types::AccountIdType &account_id) {

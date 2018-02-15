@@ -51,9 +51,7 @@ namespace shared_model {
               std::make_shared<std::string>(answer.reason()));
         }
         std::shared_ptr<shared_model::interface::Signature> signature_ptr(signature.copy());
-        return iroha::expected::makeValue(
-            shared_model::detail::PolymorphicWrapper<
-                shared_model::interface::Signature>(signature_ptr));
+        return iroha::expected::makeValue(signature_ptr);
       }
 
       SignatureBuilder &publicKey(const shared_model::interface::types::PubkeyType &key) {
