@@ -71,12 +71,11 @@ namespace iroha {
       // Filter only valid transactions
       auto filter = [&temporaryWsv, checking_transaction](auto &acc,
                                                           const auto &tx) {
-        auto *old_tx = tx->makeOldModel();
+        std::unique_ptr<model::Transaction> old_tx(tx->makeOldModel());
         auto answer = temporaryWsv.apply(*old_tx, checking_transaction);
         if (answer) {
           acc.push_back(tx);
         }
-        delete old_tx;
         return acc;
       };
 
