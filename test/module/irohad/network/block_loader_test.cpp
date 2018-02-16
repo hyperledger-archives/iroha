@@ -30,6 +30,7 @@
 #include "backend/protobuf/from_old_model.hpp"
 #include "builders/protobuf/block.hpp"
 #include "builders/protobuf/builder_templates/block_template.hpp"
+#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "cryptography/hash.hpp"
 #include "datetime/time.hpp"
@@ -104,11 +105,13 @@ TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
   auto block = getBaseBlockBuilder().build();
   std::unique_ptr<iroha::model::Block> old_block(block.makeOldModel());
 
-  iroha::protocol::Peer tmp;
   auto peer = peers.back();
-  tmp.set_address(peer.address);
-  tmp.set_peer_key(peer.pubkey.to_string());
-  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
+  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(
+      shared_model::proto::PeerBuilder()
+          .pubkey(key)
+          .address(peer.address)
+          .build());
 
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
@@ -138,12 +141,14 @@ TEST_F(BlockLoaderTest, ValidWhenOneBlock) {
 
   EXPECT_CALL(*provider, verify(A<const Block &>())).WillOnce(Return(true));
 
-  iroha::protocol::Peer tmp;
   auto peer = peers.back();
-  tmp.set_address(peer.address);
-  tmp.set_peer_key(peer.pubkey.to_string());
+  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(
+      shared_model::proto::PeerBuilder()
+          .pubkey(key)
+          .address(peer.address)
+          .build());
 
-  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
@@ -182,12 +187,14 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
       .Times(num_blocks)
       .WillRepeatedly(Return(true));
 
-  iroha::protocol::Peer tmp;
   auto peer = peers.back();
-  tmp.set_address(peer.address);
-  tmp.set_peer_key(peer.pubkey.to_string());
+  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(
+      shared_model::proto::PeerBuilder()
+          .pubkey(key)
+          .address(peer.address)
+          .build());
 
-  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
@@ -215,12 +222,14 @@ TEST_F(BlockLoaderTest, ValidWhenBlockPresent) {
 
   EXPECT_CALL(*provider, verify(A<const Block &>())).WillOnce(Return(true));
 
-  iroha::protocol::Peer tmp;
   auto peer = peers.back();
-  tmp.set_address(peer.address);
-  tmp.set_peer_key(peer.pubkey.to_string());
+  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(
+      shared_model::proto::PeerBuilder()
+          .pubkey(key)
+          .address(peer.address)
+          .build());
 
-  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getBlocksFrom(1))
@@ -241,12 +250,14 @@ TEST_F(BlockLoaderTest, ValidWhenBlockMissing) {
   auto present = getBaseBlockBuilder().build();
   std::unique_ptr<iroha::model::Block> old_present(present.makeOldModel());
 
-  iroha::protocol::Peer tmp;
   auto peer = peers.back();
-  tmp.set_address(peer.address);
-  tmp.set_peer_key(peer.pubkey.to_string());
+  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(
+      shared_model::proto::PeerBuilder()
+          .pubkey(key)
+          .address(peer.address)
+          .build());
 
-  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getBlocksFrom(1))
