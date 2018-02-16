@@ -118,8 +118,7 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 
   iroha::protocol::Peer tmp;
   tmp.set_address(peer.address);
-  wPeer w_peer =
-      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 
@@ -136,8 +135,7 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
 
   iroha::protocol::Peer tmp;
   tmp.set_address(peer.address);
-  wPeer w_peer =
-      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 

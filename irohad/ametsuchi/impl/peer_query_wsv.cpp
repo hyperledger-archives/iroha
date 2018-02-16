@@ -22,16 +22,18 @@
 #include "model/peer.hpp"
 #include "primitive.pb.h"
 
+using wPeer = std::shared_ptr<shared_model::interface::Peer>;
+
 namespace iroha {
   namespace ametsuchi {
 
     PeerQueryWsv::PeerQueryWsv(std::shared_ptr<WsvQuery> wsv)
         : wsv_(std::move(wsv)) {}
 
-    nonstd::optional<std::vector<wPeer>> PeerQueryWsv::getLedgerPeers() {
+    boost::optional<std::vector<wPeer>> PeerQueryWsv::getLedgerPeers() {
       const auto &tmp = wsv_->getPeers();
       if (not tmp) {
-        return nonstd::nullopt;
+        return boost::none;
       }
       std::vector<wPeer> peers = [&tmp] {
         std::vector<wPeer> result;
@@ -39,9 +41,8 @@ namespace iroha {
           iroha::protocol::Peer peer;
           peer.set_address(item.address);
           peer.set_peer_key(item.pubkey.to_string());
-          auto curr =
-              shared_model::detail::makePolymorphic<shared_model::proto::Peer>(
-                  shared_model::proto::Peer(std::move(peer)));
+          auto curr = std::make_shared<shared_model::proto::Peer>(
+              shared_model::proto::Peer(std::move(peer)));
           result.emplace_back(curr);
         }
         return result;

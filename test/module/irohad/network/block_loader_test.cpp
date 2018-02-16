@@ -108,8 +108,7 @@ TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
   auto peer = peers.back();
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
-  wPeer w_peer =
-      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
 
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
@@ -144,8 +143,7 @@ TEST_F(BlockLoaderTest, ValidWhenOneBlock) {
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
 
-  wPeer w_peer =
-      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
@@ -189,8 +187,7 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
 
-  wPeer w_peer =
-      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
@@ -223,8 +220,7 @@ TEST_F(BlockLoaderTest, ValidWhenBlockPresent) {
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
 
-  wPeer w_peer =
-      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getBlocksFrom(1))
@@ -250,8 +246,7 @@ TEST_F(BlockLoaderTest, ValidWhenBlockMissing) {
   tmp.set_address(peer.address);
   tmp.set_peer_key(peer.pubkey.to_string());
 
-  wPeer w_peer =
-      shared_model::detail::makePolymorphic<shared_model::proto::Peer>(tmp);
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getBlocksFrom(1))

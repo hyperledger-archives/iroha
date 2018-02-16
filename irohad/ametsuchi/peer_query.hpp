@@ -18,10 +18,9 @@
 #ifndef IROHA_PEER_QUERY_HPP
 #define IROHA_PEER_QUERY_HPP
 
+#include <boost/optional.hpp>
 #include <memory>
-#include <nonstd/optional.hpp>
 #include <vector>
-#include "utils/polymorphic_wrapper.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -37,15 +36,14 @@ namespace iroha {
      */
     class PeerQuery {
      protected:
-      using wPeer = shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Peer>;
+      using wPeer = std::shared_ptr<shared_model::interface::Peer>;
 
      public:
       /**
        * Fetch peers stored in ledger
        * @return list of peers in insertion to ledger order
        */
-      virtual nonstd::optional<std::vector<wPeer>> getLedgerPeers() = 0;
+      virtual boost::optional<std::vector<wPeer>> getLedgerPeers() = 0;
 
       virtual ~PeerQuery() = default;
     };

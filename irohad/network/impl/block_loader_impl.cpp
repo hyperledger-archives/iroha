@@ -129,7 +129,7 @@ nonstd::optional<Wrapper<Block>> BlockLoaderImpl::retrieveBlock(
 nonstd::optional<iroha::model::Peer> BlockLoaderImpl::findPeer(
     const PublicKey &pubkey) {
   auto peers = peer_query_->getLedgerPeers();
-  if (not peers.has_value()) {
+  if (not peers) {
     log_->error(kPeerRetrieveFail);
     return nonstd::nullopt;
   }

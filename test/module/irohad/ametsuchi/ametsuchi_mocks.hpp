@@ -37,8 +37,7 @@
 
 #include <boost/optional.hpp>
 
-using wPeer =
-    shared_model::detail::PolymorphicWrapper<shared_model::interface::Peer>;
+using wPeer = std::shared_ptr<shared_model::interface::Peer>;
 
 namespace iroha {
   namespace ametsuchi {
@@ -191,7 +190,7 @@ namespace iroha {
      public:
       MockPeerQuery() = default;
 
-      MOCK_METHOD0(getLedgerPeers, nonstd::optional<std::vector<wPeer>>());
+      MOCK_METHOD0(getLedgerPeers, boost::optional<std::vector<wPeer>>());
     };
 
     class MockStorage : public Storage {

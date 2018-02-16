@@ -21,8 +21,7 @@
 #include <boost/range/adaptors.hpp>
 #include <boost/range/counting_range.hpp>
 #include <boost/range/numeric.hpp>
-#include <iostream>
-#include <unordered_map>
+
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "model/account.hpp"
@@ -31,7 +30,6 @@
 #include "model/domain.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
-#include "primitive.pb.h"
 
 using namespace boost::adaptors;
 using namespace iroha::ametsuchi;
@@ -58,15 +56,15 @@ class YacPeerOrdererTest : public ::testing::Test {
     return result;
   }();
 
-  std::vector<wPeer> s_peers = [] {
+  std::vector<std::shared_ptr<shared_model::interface::Peer>> s_peers = [] {
     std::vector<wPeer> result;
     for (size_t i = 1; i <= N_PEERS; ++i) {
       auto tmp = iroha::consensus::yac::mk_peer(std::to_string(i));
       iroha::protocol::Peer peer;
       peer.set_address(tmp.address);
       peer.set_peer_key(tmp.pubkey.to_string());
-      auto curr =
-          shared_model::detail::makePolymorphic<shared_model::proto::Peer>(
+      std::shared_ptr<shared_model::interface::Peer> curr =
+          std::make_shared<shared_model::proto::Peer>(
               shared_model::proto::Peer(std::move(peer)));
       result.emplace_back(curr);
     }
@@ -88,7 +86,7 @@ TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeNormalCase) {
 TEST_F(YacPeerOrdererTest, PeerOrdererInitialOrderWhenInvokeFailCase) {
   cout << "----------| InitialOrder() => nullopt case |----------" << endl;
 
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(boost::none));
   auto order = orderer.getInitialOrdering();
   ASSERT_EQ(order, nonstd::nullopt);
 }
@@ -104,7 +102,7 @@ TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeNormalCase) {
 TEST_F(YacPeerOrdererTest, PeerOrdererOrderingWhenInvokeFaillCase) {
   cout << "----------| Order() => nullopt case |----------" << endl;
 
-  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv, getLedgerPeers()).WillOnce(Return(boost::none));
   auto order = orderer.getOrdering(YacHash());
   ASSERT_EQ(order, nonstd::nullopt);
 }
