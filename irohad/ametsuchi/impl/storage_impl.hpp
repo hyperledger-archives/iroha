@@ -62,13 +62,13 @@ namespace iroha {
 
       virtual void dropStorage() override;
 
-      void shutdown() override;
-
       void commit(std::unique_ptr<MutableStorage> mutableStorage) override;
 
       std::shared_ptr<WsvQuery> getWsvQuery() const override;
 
       std::shared_ptr<BlockQuery> getBlockQuery() const override;
+
+      ~StorageImpl() override;
 
      protected:
       StorageImpl(std::string block_store_dir,

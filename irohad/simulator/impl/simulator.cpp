@@ -46,6 +46,11 @@ namespace iroha {
           });
     }
 
+    Simulator::~Simulator() {
+      proposal_subscription_.unsubscribe();
+      verified_proposal_subscription_.unsubscribe();
+    }
+
     rxcpp::observable<model::Proposal> Simulator::on_verified_proposal() {
       return notifier_.get_observable();
     }
@@ -97,11 +102,6 @@ namespace iroha {
 
     rxcpp::observable<model::Block> Simulator::on_block() {
       return block_notifier_.get_observable();
-    }
-
-    void Simulator::shutdown() {
-      proposal_subscription_.unsubscribe();
-      verified_proposal_subscription_.unsubscribe();
     }
 
   }  // namespace simulator

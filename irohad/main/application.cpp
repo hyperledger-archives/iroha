@@ -308,11 +308,6 @@ void Irohad::shutdownHandler(int signal_number) {
   log_->info("shutting down...");
   internal_server->Shutdown();
   torii_server->shutdown();
-  synchronizer->shutdown();
-  simulator->shutdown();
-  std::this_thread::sleep_for(1s);
-  storage->shutdown();
-  std::exit(EXIT_SUCCESS);
 }
 
 void Irohad::staticShutdownHandler(int signal_number) {

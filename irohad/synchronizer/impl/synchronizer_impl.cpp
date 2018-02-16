@@ -37,6 +37,10 @@ namespace iroha {
           [&](model::Block block) { this->process_commit(block); });
     }
 
+    SynchronizerImpl::~SynchronizerImpl() {
+      subscription_.unsubscribe();
+    }
+
     void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
       log_->info("processing commit");
       auto storageResult = mutableFactory_->createMutableStorage();
@@ -89,10 +93,6 @@ namespace iroha {
 
     rxcpp::observable<Commit> SynchronizerImpl::on_commit_chain() {
       return notifier_.get_observable();
-    }
-
-    void SynchronizerImpl::shutdown() {
-      subscription_.unsubscribe();
     }
   }  // namespace synchronizer
 }  // namespace iroha

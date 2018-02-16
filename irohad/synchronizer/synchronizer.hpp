@@ -41,11 +41,6 @@ namespace iroha {
        */
       virtual rxcpp::observable<Commit> on_commit_chain() = 0;
 
-      /**
-       * Stops receiving and processing commits, stops emitting blocks
-       */
-      virtual void shutdown() = 0;
-
       virtual ~Synchronizer() = default;
     };
   }  // namespace synchronizer

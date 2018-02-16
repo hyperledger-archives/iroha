@@ -42,6 +42,12 @@ namespace iroha {
           pg_lazy(std::move(pg_lazy)),
           pg_nontx(std::move(pg_nontx)) {}
 
+    StorageImpl::~StorageImpl() {
+      wsv_transaction_->commit();
+      wsv_connection_->disconnect();
+      log_->info("PostgresQL connection closed");
+    }
+
     StorageImpl::StorageImpl(
         std::string block_store_dir,
         std::string postgres_options,
@@ -177,11 +183,6 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
       // erase blocks
       log_->info("drop block store");
       block_store_->dropAll();
-    }
-
-    void StorageImpl::shutdown() {
-      wsv_transaction_->commit();
-      wsv_connection_->disconnect();
     }
 
     expected::Result<ConnectionContext, std::string>

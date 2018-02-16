@@ -44,6 +44,8 @@ namespace iroha {
       Simulator(const Simulator &) = delete;
       Simulator &operator=(const Simulator &) = delete;
 
+      ~Simulator();
+
       void process_proposal(model::Proposal proposal) override;
 
       rxcpp::observable<model::Proposal> on_verified_proposal() override;
@@ -51,8 +53,6 @@ namespace iroha {
       void process_verified_proposal(model::Proposal proposal) override;
 
       rxcpp::observable<model::Block> on_block() override;
-
-      void shutdown();
 
      private:
       // internal

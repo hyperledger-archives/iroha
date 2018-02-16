@@ -55,11 +55,6 @@ namespace iroha {
        */
       virtual void dropStorage() = 0;
 
-      /**
-       * Gracefully shutdowns storage: flushes all pending buffers etc
-       */
-      virtual void shutdown() = 0;
-
       virtual ~Storage() = default;
     };
 
