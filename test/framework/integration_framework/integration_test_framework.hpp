@@ -50,6 +50,8 @@ namespace integration_framework {
     using BlockType = std::shared_ptr<iroha::model::Block>;
 
    public:
+    IntegrationTestFramework(size_t maximum_block_size = 10):
+        maximum_block_size_(maximum_block_size) {}
     IntegrationTestFramework &setInitialState(
         const shared_model::crypto::Keypair &keypair);
     IntegrationTestFramework &setInitialState(
@@ -115,6 +117,8 @@ namespace integration_framework {
 
     const std::string default_domain = "test";
     const std::string default_role = "user";
+
+    size_t maximum_block_size_;
 
    private:
     logger::Logger log_ = logger::log("IntegrationTestFramework");

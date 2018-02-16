@@ -45,6 +45,7 @@ namespace integration_framework {
                 // permssion-dependent proto building
                 std::vector<std::string>{iroha::model::can_create_domain,
                                          iroha::model::can_create_account,
+                                         iroha::model::can_add_asset_qty,
                                          iroha::model::can_add_peer,
                                          iroha::model::can_receive,
                                          iroha::model::can_transfer})
@@ -71,7 +72,7 @@ namespace integration_framework {
     log_->info("init state");
     // peer initialization
     std::shared_ptr<iroha::keypair_t> old_key(keypair.makeOldModel());
-    iroha_instance_->initPipeline(*old_key);
+    iroha_instance_->initPipeline(*old_key, maximum_block_size_);
     log_->info("created pipeline");
     // iroha_instance_->clearLedger();
     // log_->info("cleared ledger");
