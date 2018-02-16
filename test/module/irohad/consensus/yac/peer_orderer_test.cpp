@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-#include <backend/protobuf/common_objects/peer.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/math/distributions/chi_squared.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/range/counting_range.hpp>
 #include <boost/range/numeric.hpp>
 
+#include "backend/protobuf/common_objects/peer.hpp"
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "model/account.hpp"

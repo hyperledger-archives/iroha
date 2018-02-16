@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-#include "network/impl/block_loader_impl.hpp"
 
 #include <grpc++/create_channel.h>
 #include <algorithm>
 
 #include "interfaces/common_objects/peer.hpp"
-
+#include "network/impl/block_loader_impl.hpp"
 #include "backend/protobuf/block.hpp"
 #include "backend/protobuf/from_old_model.hpp"
 

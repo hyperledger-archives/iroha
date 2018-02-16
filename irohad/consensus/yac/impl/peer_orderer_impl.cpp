@@ -53,9 +53,7 @@ namespace iroha {
           std::seed_seq seed(hash.block_hash.begin(), hash.block_hash.end());
           std::default_random_engine gen(seed);
           std::shuffle(prs.begin(), prs.end(), gen);
-
           return ClusterOrdering::create(prs);
-
         };
       }
     }  // namespace yac

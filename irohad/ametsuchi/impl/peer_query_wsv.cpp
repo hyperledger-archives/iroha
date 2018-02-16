@@ -19,8 +19,6 @@
 
 #include "ametsuchi/wsv_query.hpp"
 #include "backend/protobuf/common_objects/peer.hpp"
-#include "model/peer.hpp"
-#include "primitive.pb.h"
 
 using wPeer = std::shared_ptr<shared_model::interface::Peer>;
 
