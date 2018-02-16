@@ -111,6 +111,9 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(_))
+      .Times(2);
+
   EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
       .Times(1)
       .WillOnce(Return(boost::optional<size_t>(2)));
@@ -141,6 +144,9 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 
 TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
+
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(_))
+      .Times(2);
 
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<Peer>{peer}));

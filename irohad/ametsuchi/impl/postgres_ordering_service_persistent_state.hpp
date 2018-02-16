@@ -18,10 +18,11 @@
 #ifndef IROHA_POSTGRES_ORDERING_SERVICE_PERSISTENT_STATE_HPP
 #define IROHA_POSTGRES_ORDERING_SERVICE_PERSISTENT_STATE_HPP
 
-#include <cstddef>
-
-#include "ametsuchi/impl/postgres_wsv_common.hpp"
+#include <pqxx/pqxx>
 #include "ametsuchi/ordering_service_persistent_state.hpp"
+#include "common/result.hpp"
+#include "logger/logger.hpp"
+#include "ametsuchi/impl/postgres_wsv_common.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -29,55 +30,73 @@ namespace iroha {
     class PostgresOrderingServicePersistentState
         : public OrderingServicePersistentState {
      public:
+      /**
+       * Create the instance of PostgresOrderingServicePersistentState
+       * @param postgres_options postgres connection string
+       * @return new instace of PostgresOrderingServicePersistentState
+       */
+      static expected::Result<
+          std::shared_ptr<PostgresOrderingServicePersistentState>,
+          std::string>
+      create(std::string postgres_options);
+
+      /**
+       * Constructor
+       * @param postgres_connection postgres connection object
+       * @param postgres_transaction postgres transaction object
+       */
       explicit PostgresOrderingServicePersistentState(
-          pqxx::nontransaction &transaction)
-          : transaction_(transaction),
-            log_(logger::log("PostgresOrderingServicePersistentState")),
-            execute_{ametsuchi::makeExecute(transaction_, log_)} {}
+          std::unique_ptr<pqxx::lazyconnection> postgres_connection,
+          std::unique_ptr<pqxx::nontransaction> postgres_transaction);
+
+      /**
+       * Initialize storage.
+       * Create tables and fill with initial value.
+       */
+      void initStorage();
+
+      /**
+       * Drop storage tables.
+       */
+      void dropStorgage();
 
       /**
        * Save proposal height that it can be restored
        * after launch
        */
-      virtual bool saveProposalHeight(size_t height) {
-        return execute(
-            "UPDATE ordering_service_state "
-            "SET proposal_height = "
-            + transaction_.quote(height) + ";");
-      }
+      virtual bool saveProposalHeight(size_t height);
 
       /**
        * Load proposal height
        */
-      virtual boost::optional<size_t> loadProposalHeight() const {
-        return execute_("SELECT * FROM ordering_service_state;") |
-                   [&](const auto &result) -> boost::optional<size_t> {
-          boost::optional<size_t> res;
-          if (result.empty()) {
-            log_->info("There is no proposal_height in ordering_service_state");
-          } else {
-            size_t height;
-            auto row = result.at(0);
-            row.at("proposal_height") >> height;
-            res = height;
-          }
-          return res;
-        };
-      }
+      virtual boost::optional<size_t> loadProposalHeight() const;
+
+      /**
+       * Reset storage state to default
+       */
+      virtual void reset();
 
      private:
-      pqxx::nontransaction &transaction_;
+      /**
+       * Pg connection with direct transaction management
+       */
+      std::unique_ptr<pqxx::lazyconnection> postgres_connection_;
+
+      /**
+       * Pg transaction
+       */
+      std::unique_ptr<pqxx::nontransaction> postgres_transaction_;
+
       logger::Logger log_;
 
-      using ExecuteType = decltype(makeExecute(transaction_, log_));
+      using ExecuteType = decltype(makeExecute(*postgres_transaction_, log_));
       ExecuteType execute_;
 
-      // TODO: refactor to return Result when it is introduced IR-775
       bool execute(const std::string &statement) noexcept {
         return static_cast<bool>(execute_(statement));
       }
     };
-  }  // namespace ordering
+  }  // namespace ametsuchi
 }  // namespace iroha
 
 #endif  // IROHA_POSTGRES_ORDERING_SERVICE_PERSISTENT_STATE_HPP

@@ -73,6 +73,10 @@ class TransferAssetInterDomainTest : public TxPipelineIntegrationTestFixture {
     ASSERT_TRUE(irohad->storage);
 
     irohad->storage->insertBlock(genesis_block);
+
+    // reset ordering storage state
+    irohad->resetOrderingService();
+
     irohad->init();
     irohad->run();
   }

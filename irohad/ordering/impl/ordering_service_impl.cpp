@@ -60,7 +60,7 @@ namespace iroha {
       proposal.height = proposal_height++;
       proposal.created_time = iroha::time::now();
 
-      // Save proposal height in persistent storage.
+      // Save proposal height to the persistent storage.
       // In case of restart it reloads state.
       persistent_state_->saveProposalHeight(proposal_height);
 

@@ -20,7 +20,6 @@
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "model/execution/command_executor_factory.hpp"
 #include "model/sha3_hash.hpp"
-#include "postgres_ordering_service_persistent_state.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -37,10 +36,7 @@ namespace iroha {
           block_index_(std::make_unique<PostgresBlockIndex>(*transaction_)),
           command_executors_(std::move(command_executors)),
           committed(false),
-          log_(logger::log("MutableStorage")),
-          ordering_state_(
-              std::make_shared<PostgresOrderingServicePersistentState>(
-                  *transaction_)) {
+          log_(logger::log("MutableStorage")) {
       transaction_->exec("BEGIN;");
     }
 
@@ -87,11 +83,6 @@ namespace iroha {
       if (not committed) {
         transaction_->exec("ROLLBACK;");
       }
-    }
-
-    std::shared_ptr<OrderingServicePersistentState>
-    MutableStorageImpl::getOrderingServicePersistentState() const {
-      return ordering_state_;
     }
   }  // namespace ametsuchi
 }  // namespace iroha

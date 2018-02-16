@@ -38,6 +38,11 @@ namespace iroha {
        * Load proposal height
        */
       virtual boost::optional<size_t> loadProposalHeight() const = 0;
+
+      /**
+       * Reset storage to default state
+       */
+      virtual void reset() = 0;
     };
   }  // namespace ordering
 }  // namespace iroha

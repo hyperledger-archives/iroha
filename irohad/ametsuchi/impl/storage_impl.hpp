@@ -18,23 +18,18 @@
 #ifndef IROHA_STORAGE_IMPL_HPP
 #define IROHA_STORAGE_IMPL_HPP
 
-#include "ametsuchi/storage.hpp"
-
 #include <cmath>
-#include <shared_mutex>
-
 #include <nonstd/optional.hpp>
 #include <pqxx/pqxx>
-
+#include <shared_mutex>
+#include "ametsuchi/storage.hpp"
 #include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
-
 
 namespace iroha {
   namespace ametsuchi {
 
     class FlatFile;
-    class OrderingServicePersistentState;
 
     struct ConnectionContext {
       ConnectionContext(std::unique_ptr<FlatFile> block_store,
@@ -71,9 +66,6 @@ namespace iroha {
 
       std::shared_ptr<BlockQuery> getBlockQuery() const override;
 
-      std::shared_ptr<OrderingServicePersistentState>
-      getOrderingServicePersistentState() const override;
-
      protected:
       StorageImpl(std::string block_store_dir,
                   std::string postgres_options,
@@ -109,8 +101,6 @@ namespace iroha {
       std::shared_timed_mutex rw_lock_;
 
       logger::Logger log_;
-
-      std::unique_ptr<MutableStorage> mutable_storage_;
 
      protected:
       const std::string init_ = R"(
@@ -194,12 +184,6 @@ CREATE TABLE IF NOT EXISTS index_by_id_height_asset (
     asset_id text,
     index text
 );
-CREATE TABLE IF NOT EXISTS ordering_service_state (
-    proposal_height bigserial
-);
-DELETE FROM ordering_service_state;
-INSERT INTO ordering_service_state
-VALUES (2); -- start height (1 for genesis)
 )";
     };
   }  // namespace ametsuchi

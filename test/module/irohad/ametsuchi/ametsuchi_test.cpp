@@ -35,7 +35,7 @@
 #include "model/permissions.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
-#include "ametsuchi/ordering_service_persistent_state.hpp"
+#include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
@@ -869,22 +869,23 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
 }
 
 TEST_F(AmetsuchiTest, OrderingServicePersistentStorageTest) {
-  std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        storage = _storage.value;
+  std::shared_ptr<iroha::ametsuchi::PostgresOrderingServicePersistentState> ordering_state;
+  auto orderingStorageResult = iroha::ametsuchi::PostgresOrderingServicePersistentState::create(pgopt_);
+  orderingStorageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<iroha::ametsuchi::PostgresOrderingServicePersistentState>> &_storage) {
+        ordering_state = _storage.value;
       },
       [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
+        FAIL() << "PostgresOrderingServicePersistentState: " << error.error;
       });
-  ASSERT_TRUE(storage);
+  ASSERT_TRUE(ordering_state);
 
-  auto ordering_state = storage->getOrderingServicePersistentState();
-
+  ordering_state->reset();
   ASSERT_EQ(2, ordering_state->loadProposalHeight().value());
   ASSERT_TRUE(ordering_state->saveProposalHeight(11));
   ASSERT_EQ(11, ordering_state->loadProposalHeight().value());
   ASSERT_TRUE(ordering_state->saveProposalHeight(33));
   ASSERT_EQ(33, ordering_state->loadProposalHeight().value());
+  ordering_state->reset();
+  ASSERT_EQ(2, ordering_state->loadProposalHeight().value());
 }

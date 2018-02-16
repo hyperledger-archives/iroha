@@ -62,16 +62,6 @@ namespace iroha {
       wsv_transaction_->exec(init_);
       wsv_transaction_->exec(
           "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;");
-
-      auto storageResult = createMutableStorage();
-      storageResult.match(
-          [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>>
-                  &mutable_storage) {
-            mutable_storage_ = std::move(mutable_storage.value);
-          },
-          [&](expected::Error<std::string> &error) {
-            log_->error(error.error);
-          });
     }
 
     expected::Result<std::unique_ptr<TemporaryWsv>, std::string>
@@ -262,11 +252,6 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
 
     std::shared_ptr<BlockQuery> StorageImpl::getBlockQuery() const {
       return blocks_;
-    }
-
-    std::shared_ptr<OrderingServicePersistentState>
-    StorageImpl::getOrderingServicePersistentState() const {
-      return mutable_storage_->getOrderingServicePersistentState();
     }
   }  // namespace ametsuchi
 }  // namespace iroha

@@ -35,7 +35,6 @@ namespace iroha {
 
     class BlockIndex;
     class WsvCommand;
-    class OrderingServicePersistentState;
 
     class MutableStorageImpl : public MutableStorage {
       friend class StorageImpl;
@@ -54,9 +53,6 @@ namespace iroha {
 
       ~MutableStorageImpl() override;
 
-      std::shared_ptr<OrderingServicePersistentState>
-      getOrderingServicePersistentState() const override;
-
      private:
       hash256_t top_hash_;
       // ordered collection is used to enforce block insertion order in
@@ -69,8 +65,6 @@ namespace iroha {
       std::unique_ptr<WsvCommand> executor_;
       std::unique_ptr<BlockIndex> block_index_;
       std::shared_ptr<model::CommandExecutorFactory> command_executors_;
-
-      std::shared_ptr<OrderingServicePersistentState> ordering_state_;
 
       bool committed;
 

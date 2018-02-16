@@ -157,9 +157,6 @@ namespace iroha {
           bool(const model::Block &,
                std::function<bool(
                    const model::Block &, WsvQuery &, const hash256_t &)>));
-      MOCK_CONST_METHOD0(
-          getOrderingServicePersistentState,
-          std::shared_ptr<OrderingServicePersistentState>(void));
     };
 
     /**
@@ -199,9 +196,6 @@ namespace iroha {
      public:
       MOCK_CONST_METHOD0(getWsvQuery, std::shared_ptr<WsvQuery>(void));
       MOCK_CONST_METHOD0(getBlockQuery, std::shared_ptr<BlockQuery>(void));
-      MOCK_CONST_METHOD0(
-          getOrderingServicePersistentState,
-          std::shared_ptr<OrderingServicePersistentState>(void));
       MOCK_METHOD0(
           createTemporaryWsv,
           expected::Result<std::unique_ptr<TemporaryWsv>, std::string>(void));

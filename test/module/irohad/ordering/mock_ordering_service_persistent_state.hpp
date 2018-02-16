@@ -33,6 +33,11 @@ class MockOrderingServicePersistentState
    * Load proposal height
    */
   MOCK_CONST_METHOD0(loadProposalHeight, boost::optional<size_t>());
+
+  /**
+   * Reset state
+   */
+  MOCK_METHOD0(reset, void());
 };
 
 #endif  // IROHA_MOCK_ORDERING_SERVICE_PERSISTENT_STATE_HPP

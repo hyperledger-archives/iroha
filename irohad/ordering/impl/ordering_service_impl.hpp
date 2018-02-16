@@ -18,12 +18,10 @@
 #ifndef IROHA_ORDERING_SERVICE_IMPL_HPP
 #define IROHA_ORDERING_SERVICE_IMPL_HPP
 
-#include <memory>
-#include <unordered_map>
-
 #include <tbb/concurrent_queue.h>
+#include <memory>
 #include <rxcpp/rx.hpp>
-
+#include <unordered_map>
 #include "ametsuchi/peer_query.hpp"
 #include "model/converters/pb_transaction_factory.hpp"
 #include "model/proposal.hpp"
@@ -46,7 +44,8 @@ namespace iroha {
      * Sends proposal by given timer interval and proposal size
      * @param delay_milliseconds timer delay
      * @param max_size proposal size
-     * @param persistent_state - storage for persistent state of ordering service
+     * @param persistent_state - storage for persistent state of ordering
+     * service
      */
     class OrderingServiceImpl : public network::OrderingService {
      public:
@@ -55,7 +54,8 @@ namespace iroha {
           size_t max_size,
           size_t delay_milliseconds,
           std::shared_ptr<network::OrderingServiceTransport> transport,
-          std::shared_ptr<ametsuchi::OrderingServicePersistentState> persistent_state);
+          std::shared_ptr<ametsuchi::OrderingServicePersistentState>
+              persistent_state);
 
       /**
        * Process transaction received from network
@@ -108,12 +108,15 @@ namespace iroha {
 
       /**
        * Persistense storage for proposal counter.
-       * In case of relaunch, ordering server will enumerate proposals consecutively.
+       * In case of relaunch, ordering server will enumerate proposals
+       * consecutively.
        */
-      std::shared_ptr<ametsuchi::OrderingServicePersistentState> persistent_state_;
+      std::shared_ptr<ametsuchi::OrderingServicePersistentState>
+          persistent_state_;
 
       /**
-       * Proposal counter
+       * Proposal counter of expected proposal. Should be number of blocks in
+       * the ledger + 1.
        */
       size_t proposal_height;
     };
