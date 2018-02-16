@@ -33,11 +33,15 @@ namespace iroha {
 
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getInitialOrdering() {
         return query_->getLedgerPeers() | [](const auto &peers) {
-          std::vector<model::Peer> prs;
-          for (const auto &peer : peers) {
-            std::unique_ptr<model::Peer> curr(peer->makeOldModel());
-            prs.push_back(*curr);
-          }
+          auto prs = std::accumulate(
+                  peers.begin(),
+                  peers.end(),
+                  std::vector<model::Peer>{},
+                  [](auto &vec, const auto& peer){
+                    std::unique_ptr<model::Peer> curr(peer->makeOldModel());
+                    vec.push_back(*curr);
+                    return vec;
+                  });
           return ClusterOrdering::create(prs);
         };
       }
@@ -45,11 +49,15 @@ namespace iroha {
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getOrdering(
           const YacHash &hash) {
         return query_->getLedgerPeers() | [&hash](auto peers) {
-          std::vector<model::Peer> prs;
-          for (const auto &peer : peers) {
-            std::unique_ptr<model::Peer> curr(peer->makeOldModel());
-            prs.push_back(*curr);
-          }
+          auto prs = std::accumulate(
+                  peers.begin(),
+                  peers.end(),
+                  std::vector<model::Peer>{},
+                  [](auto &vec, const auto& peer){
+                    std::unique_ptr<model::Peer> curr(peer->makeOldModel());
+                    vec.push_back(*curr);
+                    return vec;
+                  });
           std::seed_seq seed(hash.block_hash.begin(), hash.block_hash.end());
           std::default_random_engine gen(seed);
           std::shuffle(prs.begin(), prs.end(), gen);
