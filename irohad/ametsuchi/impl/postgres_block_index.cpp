@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-#include "ametsuchi/impl/postgres_block_index.hpp"
-
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/indexed.hpp>
 #include <boost/range/adaptor/transformed.hpp>
@@ -24,28 +22,18 @@
 #include <boost/range/numeric.hpp>
 #include <unordered_set>
 
+#include "ametsuchi/impl/postgres_block_index.hpp"
+#include "common/types.hpp"
+#include "common/visitor.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
-
 #include "interfaces/commands/transfer_asset.hpp"
 #include "interfaces/iroha_internal/block.hpp"
-#include "common/types.hpp"
 
 using TA = shared_model::detail::PolymorphicWrapper<
     shared_model::interface::TransferAsset>;
 
 namespace iroha {
   namespace ametsuchi {
-    struct TransferAssetVisitor : public boost::static_visitor<bool> {
-      template <class T>
-      bool operator()(const T &val) const {
-        return false;
-      }
-    };
-
-    template <>
-    bool TransferAssetVisitor::operator()<TA>(const TA &) const {
-      return true;
-    }
 
     PostgresBlockIndex::PostgresBlockIndex(pqxx::nontransaction &transaction)
         : transaction_(transaction),
@@ -61,41 +49,46 @@ namespace iroha {
           + ");");
     }
 
-    auto PostgresBlockIndex::indexAccountAssets(const std::string &account_id,
-                                                const std::string &height,
-                                                const std::string &index,
-                                                const shared_model::interface::Transaction::CommandsType &commands) {
+    auto PostgresBlockIndex::indexAccountAssets(
+        const std::string &account_id,
+        const std::string &height,
+        const std::string &index,
+        const shared_model::interface::Transaction::CommandsType &commands) {
       // flat map abstract commands to transfers
-      auto transfers =
-          commands | boost::adaptors::filtered([](const auto &cmd) {
-            return boost::apply_visitor(TransferAssetVisitor(), cmd->get());
-          });
 
       return std::accumulate(
-          transfers.begin(),
-          transfers.end(),
+          commands.begin(),
+          commands.end(),
           true,
           [&](auto &status, const auto &cmd) {
-            auto command = boost::get<TA>(cmd->get());
-            status &=
-                this->indexAccountIdHeight(command->srcAccountId(), height)
-                & this->indexAccountIdHeight(command->destAccountId(), height);
+            return iroha::visit_in_place(
+                cmd->get(),
+                [&](const TA &command) {
+                  status &= this->indexAccountIdHeight(command->srcAccountId(),
+                                                       height)
+                      & this->indexAccountIdHeight(command->destAccountId(),
+                                                   height);
 
-            auto ids = {
-                account_id, command->srcAccountId(), command->destAccountId()};
-            // flat map accounts to unindexed keys
-            boost::for_each(ids, [&](const auto &id) {
-              auto res = execute_(
-                  "INSERT INTO index_by_id_height_asset(id, "
-                  "height, asset_id, "
-                  "index) "
-                  "VALUES ("
-                  + transaction_.quote(id) + ", " + transaction_.quote(height)
-                  + ", " + transaction_.quote(command->assetId()) + ", "
-                  + transaction_.quote(index) + ");");
-              status &= res != boost::none;
-            });
-            return status;
+                  auto ids = {account_id,
+                              command->srcAccountId(),
+                              command->destAccountId()};
+                  // flat map accounts to unindexed keys
+                  boost::for_each(ids, [&](const auto &id) {
+                    auto res = execute_(
+                        "INSERT INTO index_by_id_height_asset(id, "
+                        "height, asset_id, "
+                        "index) "
+                        "VALUES ("
+                        + transaction_.quote(id) + ", "
+                        + transaction_.quote(height) + ", "
+                        + transaction_.quote(command->assetId()) + ", "
+                        + transaction_.quote(index) + ");");
+                    status &= res != boost::none;
+                  });
+                  return status;
+                },
+                [&](const auto &command) { return true; });
+
           });
     }
 
