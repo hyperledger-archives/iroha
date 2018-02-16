@@ -16,11 +16,11 @@
  */
 
 #include <backend/protobuf/transaction.hpp>
-#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/model/model_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
+#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 
 #include "framework/test_subscriber.hpp"
 #include "simulator/impl/simulator.hpp"
@@ -83,14 +83,12 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
           .height(proposal.height - 1)
           .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
           .build();
-  auto blocks_observable =
-      rxcpp::observable<>::create<::shared_model::detail::PolymorphicWrapper<
-          ::shared_model::interface::Block>>([&block](auto s) {
+  auto blocks_observable = rxcpp::observable<>::create<
+      std::shared_ptr<::shared_model::interface::Block>>([&block](auto s) {
 
-        s.on_next(::shared_model::detail::makePolymorphic<
-                  ::shared_model::proto::Block>(block.getTransport()));
-        s.on_completed();
-      });
+    s.on_next(std::shared_ptr<::shared_model::interface::Block>(block.copy()));
+    s.on_completed();
+  });
 
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(1);
 
@@ -134,9 +132,8 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(0);
 
   EXPECT_CALL(*query, getTopBlocks(1))
-      .WillOnce(Return(
-          rxcpp::observable<>::empty<shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Block>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<
+                       std::shared_ptr<shared_model::interface::Block>>()));
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
@@ -174,14 +171,12 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
           .height(proposal.height)
           .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
           .build();
-  auto blocks_observable =
-      rxcpp::observable<>::create<::shared_model::detail::PolymorphicWrapper<
-          ::shared_model::interface::Block>>([&block](auto s) {
+  auto blocks_observable = rxcpp::observable<>::create<
+      std::shared_ptr<::shared_model::interface::Block>>([&block](auto s) {
 
-        s.on_next(::shared_model::detail::makePolymorphic<
-                  ::shared_model::proto::Block>(block.getTransport()));
-        s.on_completed();
-      });
+    s.on_next(std::shared_ptr<shared_model::interface::Block>(block.copy()));
+    s.on_completed();
+  });
 
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(0);
 

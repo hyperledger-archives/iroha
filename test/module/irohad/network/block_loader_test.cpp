@@ -82,15 +82,14 @@ class BlockLoaderTest : public testing::Test {
         .createdTime(iroha::time::now());
   }
 
-    rxcpp::observable<
-                shared_model::detail::PolymorphicWrapper<shared_model::interface::Block>>
-    getBlockObservable(shared_model::proto::Block &block) {
-          return rxcpp::observable<>::create<::shared_model::detail::PolymorphicWrapper<
-                      ::shared_model::interface::Block>>([&block](auto s) {
-                s.on_next(shared_model::detail::makePolymorphic<shared_model::proto::Block>(block.getTransport()));
-                s.on_completed();
-              });
-        }
+  rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
+  getBlockObservable(shared_model::proto::Block &block) {
+    return rxcpp::observable<>::create<
+        std::shared_ptr<::shared_model::interface::Block>>([&block](auto s) {
+      s.on_next(std::shared_ptr<shared_model::interface::Block>(block.copy()));
+      s.on_completed();
+    });
+  }
 
   PublicKey peer_key =
       DefaultCryptoAlgorithmType::generateKeypair().publicKey();
@@ -116,9 +115,8 @@ TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
   EXPECT_CALL(*storage, getTopBlocks(1))
       .WillOnce(Return(getBlockObservable(block)));
   EXPECT_CALL(*storage, getBlocksFrom(block.height() + 1))
-      .WillOnce(Return(
-          rxcpp::observable<>::empty<shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Block>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<
+                       std::shared_ptr<shared_model::interface::Block>>()));
   auto wrapper =
       make_test_subscriber<CallExact>(loader->retrieveBlocks(peer_key), 0);
   wrapper.subscribe();
@@ -163,11 +161,11 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
   auto num_blocks = 2;
   auto next_height = block.height() + 1;
 
-  std::vector<shared_model::detail::PolymorphicWrapper<shared_model::interface::Block>> blocks;
+  std::vector<std::shared_ptr<shared_model::interface::Block>> blocks;
   for (auto i = next_height; i < next_height + num_blocks; ++i) {
     auto blk = getBaseBlockBuilder().height(i).build();
-    blocks.push_back(shared_model::detail::makePolymorphic<shared_model::proto::Block>(
-            blk.getTransport()));
+    blocks.push_back(
+        std::shared_ptr<shared_model::interface::Block>(blk.copy()));
   }
 
   EXPECT_CALL(*provider, verify(A<const Block &>()))

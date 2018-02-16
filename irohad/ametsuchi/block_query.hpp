@@ -25,7 +25,6 @@
 #include "common/types.hpp"
 #include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/transaction.hpp"
-#include "utils/polymorphic_wrapper.hpp"
 
 namespace iroha {
 
@@ -41,8 +40,8 @@ namespace iroha {
        * @param account_id - account_id (accountName@domainName)
        * @return observable of Model Transaction
        */
-      virtual rxcpp::observable<shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Transaction>>
+      virtual rxcpp::observable<
+          std::shared_ptr<shared_model::interface::Transaction>>
       getAccountTransactions(const std::string &account_id) = 0;
 
       /**
@@ -51,8 +50,8 @@ namespace iroha {
        * @param asset_id - asset_id (assetName#domainName)
        * @return observable of Model Transaction
        */
-      virtual rxcpp::observable<shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Transaction>>
+      virtual rxcpp::observable<
+          std::shared_ptr<shared_model::interface::Transaction>>
       getAccountAssetTransactions(const std::string &account_id,
                                   const std::string &asset_id) = 0;
 
@@ -61,9 +60,8 @@ namespace iroha {
        * @param tx_hashes - transactions' hashes to retrieve
        * @return observable of Model Transaction
        */
-      virtual rxcpp::observable<
-          boost::optional<shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Transaction>>>
+      virtual rxcpp::observable<boost::optional<
+          std::shared_ptr<shared_model::interface::Transaction>>>
       getTransactions(
           const std::vector<shared_model::crypto::Hash> &tx_hashes) = 0;
 
@@ -73,8 +71,7 @@ namespace iroha {
        * @param count - number of blocks to retrieve
        * @return observable of Model Block
        */
-      virtual rxcpp::observable<shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Block>>
+      virtual rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
       getBlocks(uint32_t height, uint32_t count) = 0;
 
       /**
@@ -82,8 +79,7 @@ namespace iroha {
        * @param from - starting height
        * @return observable of Model Block
        */
-      virtual rxcpp::observable<shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Block>>
+      virtual rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
       getBlocksFrom(uint32_t height) = 0;
 
       /**
@@ -91,8 +87,7 @@ namespace iroha {
        * @param count - number of blocks to retrieve
        * @return observable of Model Block
        */
-      virtual rxcpp::observable<shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Block>>
+      virtual rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
       getTopBlocks(uint32_t count) = 0;
 
       /**
@@ -100,8 +95,8 @@ namespace iroha {
        * @param hash - hash to search
        * @return transaction or boost::none
        */
-      virtual boost::optional<shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Transaction>>
+      virtual boost::optional<
+          std::shared_ptr<shared_model::interface::Transaction>>
       getTxByHashSync(const std::string &hash) = 0;
     };
   }  // namespace ametsuchi

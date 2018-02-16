@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include <module/shared_model/builders/protobuf/test_transaction_builder.hpp>
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 #include "framework/test_subscriber.hpp"
 #include "model/permissions.hpp"
@@ -550,27 +550,24 @@ class GetAccountTransactionsTest : public QueryValidateExecuteTest {
     txs_observable = getDefaultTransactions(account_id);
   }
 
-  rxcpp::observable<shared_model::detail::PolymorphicWrapper<
-      shared_model::interface::Transaction>>
+  rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
   getDefaultTransactions(const std::string &creator) {
     return rxcpp::observable<>::iterate([&creator, this] {
-      std::vector<shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Transaction>>
-          result;
+      std::vector<std::shared_ptr<shared_model::interface::Transaction>> result;
       for (size_t i = 0; i < N; ++i) {
-        auto current = shared_model::detail::makePolymorphic<
-            shared_model::proto::Transaction>(TestTransactionBuilder()
-                                                  .creatorAccountId(creator)
-                                                  .txCounter(i)
-                                                  .build());
+        auto current = std::shared_ptr<shared_model::interface::Transaction>(
+            TestTransactionBuilder()
+                .creatorAccountId(creator)
+                .txCounter(i)
+                .build()
+                .copy());
         result.push_back(current);
       }
       return result;
     }());
   }
 
-  rxcpp::observable<shared_model::detail::PolymorphicWrapper<
-      shared_model::interface::Transaction>>
+  rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
       txs_observable;
   std::shared_ptr<GetAccountTransactions> get_tx;
   size_t N = 3;
@@ -714,9 +711,9 @@ TEST_F(GetAccountTransactionsTest, NoAccountExist) {
       .WillOnce(Return(role_permissions));
 
   EXPECT_CALL(*block_query, getAccountTransactions(get_tx->account_id))
-      .WillOnce(Return(
-          rxcpp::observable<>::empty<shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Transaction>>()));
+      .WillOnce(
+          Return(rxcpp::observable<>::empty<
+                 std::shared_ptr<shared_model::interface::Transaction>>()));
 
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
@@ -736,28 +733,25 @@ class GetAccountAssetsTransactionsTest : public QueryValidateExecuteTest {
     txs_observable = getDefaultTransactions(account_id, asset_id);
   }
 
-  rxcpp::observable<shared_model::detail::PolymorphicWrapper<
-      shared_model::interface::Transaction>>
+  rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
   getDefaultTransactions(const std::string &creator_id,
                          const std::string &asset_id) {
     return rxcpp::observable<>::iterate([&creator_id, asset_id, this] {
-      std::vector<shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Transaction>>
-          result;
+      std::vector<std::shared_ptr<shared_model::interface::Transaction>> result;
       for (size_t i = 0; i < N; ++i) {
-        auto current = shared_model::detail::makePolymorphic<
-            shared_model::proto::Transaction>(TestTransactionBuilder()
-                                                  .creatorAccountId(creator_id)
-                                                  .txCounter(i)
-                                                  .build());
+        auto current = std::shared_ptr<shared_model::interface::Transaction>(
+            TestTransactionBuilder()
+                .creatorAccountId(creator_id)
+                .txCounter(i)
+                .build()
+                .copy());
         result.push_back(current);
       }
       return result;
     }());
   }
 
-  rxcpp::observable<shared_model::detail::PolymorphicWrapper<
-      shared_model::interface::Transaction>>
+  rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
       txs_observable;
   std::shared_ptr<GetAccountAssetTransactions> get_tx;
   size_t N = 3;
@@ -902,9 +896,9 @@ TEST_F(GetAccountAssetsTransactionsTest, NoAccountExist) {
 
   EXPECT_CALL(*block_query,
               getAccountAssetTransactions(get_tx->account_id, asset_id))
-      .WillOnce(Return(
-          rxcpp::observable<>::empty<shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Transaction>>()));
+      .WillOnce(
+          Return(rxcpp::observable<>::empty<
+                 std::shared_ptr<shared_model::interface::Transaction>>()));
 
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
@@ -927,9 +921,9 @@ TEST_F(GetAccountAssetsTransactionsTest, NoAssetExist) {
 
   EXPECT_CALL(*block_query,
               getAccountAssetTransactions(get_tx->account_id, get_tx->asset_id))
-      .WillOnce(Return(
-          rxcpp::observable<>::empty<shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Transaction>>()));
+      .WillOnce(
+          Return(rxcpp::observable<>::empty<
+                 std::shared_ptr<shared_model::interface::Transaction>>()));
 
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
