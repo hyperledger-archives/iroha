@@ -54,9 +54,9 @@ class QueryProcessorTest : public ::testing::Test {
 };
 
 /**
- * @given
- * @when
- * @then
+ * @given account, ametsuchi queries and query processing factory
+ * @when stateless validation error
+ * @then Query Processor should return ErrorQueryResponse
  */
 TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   auto wsv_queries = std::make_shared<MockWsvQuery>();
@@ -78,15 +78,11 @@ TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
                    .build()
                    .signAndAddSignature(keypair);
 
-  auto wrapper = make_test_subscriber<CallExact>(
-      qpi.queryNotifier().filter([](auto response) {
-        return instanceof <shared_model::proto::ErrorQueryResponse>(response);
-      }),
-      1);
+  auto wrapper = make_test_subscriber<CallExact>(qpi.queryNotifier(), 1);
   wrapper.subscribe([](auto response) {
     auto resp = response->get();
-    std::cout << "Reponse name is " << resp.type().name() << std::endl;
-    ASSERT_EQ(resp.type().name(), "fef");
+    // TODO: change to non static assert
+    ASSERT_EQ(resp.which(), 3);
   });
   qpi.queryHandle(
       shared_model::detail::makePolymorphic<shared_model::proto::Query>(
