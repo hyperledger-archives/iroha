@@ -64,7 +64,7 @@ namespace iroha {
     auto PostgresBlockIndex::indexAccountAssets(const std::string &account_id,
                                                 const std::string &height,
                                                 const std::string &index,
-                                                const CommandsType &commands) {
+                                                const shared_model::interface::Transaction::CommandsType &commands) {
       // flat map abstract commands to transfers
       auto transfers =
           commands | boost::adaptors::filtered([](const auto &cmd) {

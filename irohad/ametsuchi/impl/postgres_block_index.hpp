@@ -35,8 +35,6 @@ namespace iroha {
   namespace ametsuchi {
     class PostgresBlockIndex : public BlockIndex {
       /// Type of ordered collection of commands
-      using CommandsType = shared_model::interface::Transaction::CommandsType;
-
      public:
       explicit PostgresBlockIndex(pqxx::nontransaction &transaction);
 
@@ -63,7 +61,7 @@ namespace iroha {
       auto indexAccountAssets(const std::string &account_id,
                               const std::string &height,
                               const std::string &index,
-                              const CommandsType &commands);
+                              const shared_model::interface::Transaction::CommandsType &commands);
 
       pqxx::nontransaction &transaction_;
       logger::Logger log_;
