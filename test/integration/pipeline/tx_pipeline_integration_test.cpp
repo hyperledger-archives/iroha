@@ -64,7 +64,7 @@ class TxPipelineIntegrationTest : public TxPipelineIntegrationTestFixture {
     irohad->init();
 
     // start irohad
-    irohad->run();
+    irohad->run(exit_requested);
   }
 
   void TearDown() override {

@@ -16,7 +16,6 @@
  */
 
 #include "main/application.hpp"
-#include <csignal>
 
 using namespace iroha;
 using namespace iroha::ametsuchi;
@@ -30,8 +29,6 @@ using namespace iroha::model::converters;
 using namespace iroha::consensus::yac;
 
 using namespace std::chrono_literals;
-
-Irohad *Irohad::instance_;
 
 /**
  * Configuring iroha daemon
@@ -59,7 +56,6 @@ Irohad::Irohad(const std::string &block_store_dir,
   // Initializing storage at this point in order to insert genesis block before
   // initialization of iroha deamon
   initStorage();
-  instance_ = this;
 }
 
 Irohad::~Irohad() {
@@ -266,7 +262,7 @@ void Irohad::initQueryService() {
 /**
  * Run iroha daemon
  */
-void Irohad::run() {
+void Irohad::run(std::promise<void> &exit_requested) {
   // Initializing torii server
   std::string ip = "0.0.0.0";
   torii_server =
@@ -291,25 +287,10 @@ void Irohad::run() {
         .run();
   });
   log_->info("===> iroha initialized");
-  registerShutdownHandler();
 
-  // Wait until servers shutdown
   torii_server->waitForServersReady();
-  internal_server->Wait();
-}
 
-void Irohad::registerShutdownHandler() {
-  std::signal(SIGINT, Irohad::staticShutdownHandler);
-  std::signal(SIGTERM, Irohad::staticShutdownHandler);
-  std::signal(SIGQUIT, Irohad::staticShutdownHandler);
-}
-
-void Irohad::shutdownHandler(int signal_number) {
+  // Wait until exit interruption
+  exit_requested.get_future().wait();
   log_->info("shutting down...");
-  internal_server->Shutdown();
-  torii_server->shutdown();
-}
-
-void Irohad::staticShutdownHandler(int signal_number) {
-  instance_->shutdownHandler(signal_number);
 }

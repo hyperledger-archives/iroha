@@ -60,7 +60,7 @@ class TestIrohad : public Irohad {
     return crypto_verifier;
   }
 
-  void run() override {
+  void run(std::promise<void> &exit_requested) override {
     grpc::ServerBuilder builder;
     int port = 0;
     builder.AddListeningPort("0.0.0.0:" + std::to_string(internal_port_),

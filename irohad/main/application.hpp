@@ -87,7 +87,7 @@ class Irohad {
   /**
    * Run worker threads for start performing
    */
-  virtual void run();
+  virtual void run(std::promise<void> &exit_requested);
 
   virtual ~Irohad();
 
@@ -188,14 +188,6 @@ class Irohad {
  public:
   std::shared_ptr<iroha::ametsuchi::Storage> storage;
   iroha::keypair_t keypair;
-
- private:
-  // shutdown handlers
-  void registerShutdownHandler();
-  void shutdownHandler(int signal_number);
-  static void staticShutdownHandler(int signal_number);
-
-  static Irohad *instance_;
 };
 
 #endif  // IROHA_APPLICATION_HPP
