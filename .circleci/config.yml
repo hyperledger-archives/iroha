@@ -18,16 +18,16 @@ jobs:
     docker:
       - image: hyperledger/iroha-docker-develop:v1
       - image: postgres:9.5
-      - image: redis:3.2.8
     steps:
       - checkout
       - run: echo $(eval echo "$IROHA_VERSION")
       - restore_cache:
           keys:
-            - v1-build-cache-debug-{{ arch }}-{{ .Branch }}-
-            - v1-build-cache-debug-{{ arch }}-
+            - build-linux-debug-{{ arch }}-{{ .Branch }}-
+            - build-linux-debug-{{ arch }}-
+            - build-linux-debug-
           paths:
-            - .ccache
+            - ~/.ccache
 
       - run:
           name: ccache setup
@@ -35,7 +35,7 @@ jobs:
             ccache --version
             ccache --show-stats
             ccache --zero-stats
-            ccache --max-size=5G
+            ccache --max-size=2G
       - run:
           name: cmake
           command: >
@@ -51,9 +51,9 @@ jobs:
             cmake --build $IROHA_BUILD -- -j3
       - run: ccache --show-stats
       - save_cache:
-          key: v1-build-cache-debug-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          key: build-linux-debug-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
-            - .ccache
+            - ~/.ccache
       - run:
           name: unit tests, generate xunit-*.xml
           command: cmake --build $IROHA_BUILD --target test
@@ -83,17 +83,18 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-build-cache-release-{{ arch }}-{{ .Branch }}-
-            - v1-build-cache-release-{{ arch }}-
+            - build-linux-release-{{ arch }}-{{ .Branch }}-
+            - build-linux-release-{{ arch }}-
+            - build-linux-release-
           paths:
-            - .ccache
+            - ~/.ccache
       - run:
           name: ccache setup
           command: |
             ccache --version
             ccache --show-stats
             ccache --zero-stats
-            ccache --max-size=5G
+            ccache --max-size=2G
       - run:
           name: cmake
           command: >
@@ -112,9 +113,9 @@ jobs:
             cmake --build $IROHA_BUILD --target package -- -j3
       - run: ccache --show-stats
       - save_cache:
-          key: v1-build-cache-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          key: build-linux-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
-            - .ccache
+            - ~/.ccache
       - run:
           name: copy deb file
           command: |
@@ -188,7 +189,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-sonar-
+            - sonar-
       - attach_workspace:
           at: /opt/iroha/build
       - run:
@@ -210,9 +211,9 @@ jobs:
               echo "required env vars not found"
             fi
       - save_cache:
-          key: v1-sonar-{{ epoch }}
+          key: sonar-{{ epoch }}
           paths:
-            - .sonar
+            - ~/.sonar
 
 
   # executed only for develop, master and release branches
@@ -225,7 +226,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-sonar-
+            - sonar-
       - attach_workspace:
           at: /opt/iroha/build
       - run:
@@ -242,9 +243,9 @@ jobs:
               echo "required env vars not found"
             fi
       - save_cache:
-          key: v1-sonar-{{ epoch }}
+          key: sonar-{{ epoch }}
           paths:
-            - .sonar
+            - ~/.sonar
 
 
   build-macos-release:
@@ -255,25 +256,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-brew-{{ arch }}
+            - brew-
           paths:
-            - Library/Caches/Homebrew
+            - ~/Library/Caches/Homebrew
       - run:
           name: install dev dependencies
           command: brew install cmake boost postgres grpc autoconf automake libtool ccache
       - save_cache:
-          key: brew-{{ arch }}-{{ epoch }}
+          key: brew-{{ epoch }}
           paths:
-            - Library/Caches/Homebrew
+            - ~/Library/Caches/Homebrew
       - restore_cache:
           keys:
-            - v1-build-cache-{{ arch }}-{{ .Branch }}
+            - build-mac-release-{{ arch }}-{{ .Branch }}-
+            - build-mac-release-{{ arch }}-
+            - build-mac-release-
           paths:
-            - .ccache
+            - ~/.ccache
       - restore_cache:
           keys:
-            - v1-external-{{ arch }}-{{ .Branch }}
-            - v1-external-{{ arch }}
+            - mac-external-{{ arch }}-{{ .Branch }}-
+            - mac-external-{{ arch }}-
+            - mac-external-
           paths:
             - external
       - run:
@@ -298,11 +302,11 @@ jobs:
             cmake --build build --target package -- -j$(sysctl -n hw.ncpu)
       - run: ccache --show-stats
       - save_cache:
-          key: v1-build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          key: build-mac-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
-            - .ccache
+            - ~/.ccache
       - save_cache:
-          key: v1-external-{{ arch }}-{{ .Branch }}-{{ epoch }}
+          key: mac-external-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - external
       - run:
