@@ -34,7 +34,8 @@ jobs:
             ccache --version
             ccache --show-stats
             ccache --zero-stats
-            ccache --max-size=2G
+            # debug/coverage builds produce 2G cache
+            ccache --max-size=5G
       - run:
           name: cmake
           command: >
@@ -94,7 +95,8 @@ jobs:
             ccache --version
             ccache --show-stats
             ccache --zero-stats
-            ccache --max-size=2G
+            # release builds produce cache <100M
+            ccache --max-size=500M
       - run:
           name: cmake
           command: >
@@ -290,7 +292,8 @@ jobs:
             ccache --version
             ccache --show-stats
             ccache --zero-stats
-            ccache --max-size=5G
+            # release build produces <20M cache per build
+            ccache --max-size=100M
       - run:
           name: cmake
           command: >
