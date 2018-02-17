@@ -111,7 +111,7 @@ jobs:
       - run:
           name: make and package
           command: |
-            cmake --build $IROHA_BUILD --target package -- -j3
+            cmake --build $IROHA_BUILD --target package -- -j4
       - run: ccache --show-stats
       - save_cache:
           key: build-linux-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
@@ -191,7 +191,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - sonar-
+            - v1-sonar-
       - attach_workspace:
           at: /opt/iroha/build
       - run:
@@ -213,7 +213,7 @@ jobs:
               echo "required env vars not found"
             fi
       - save_cache:
-          key: sonar-{{ epoch }}
+          key: v1-sonar-{{ epoch }}
           paths:
             - ~/.sonar
           when: always
@@ -229,7 +229,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - sonar-
+            - v1-sonar-
       - attach_workspace:
           at: /opt/iroha/build
       - run:
@@ -246,7 +246,7 @@ jobs:
               echo "required env vars not found"
             fi
       - save_cache:
-          key: sonar-{{ epoch }}
+          key: v1-sonar-{{ epoch }}
           paths:
             - ~/.sonar
           when: always
