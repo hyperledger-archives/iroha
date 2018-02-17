@@ -4,7 +4,6 @@ defaults: &defaults
     IROHA_HOME: /opt/iroha
     IROHA_BUILD: /opt/iroha/build
 
-
 defaults: &version
   environment:
     IROHA_VERSION: ${CIRCLE_TAG:-0x$CIRCLE_SHA1}
@@ -191,7 +190,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-sonar-
+            - v3-sonar-
       - attach_workspace:
           at: /opt/iroha/build
       - run:
@@ -213,7 +212,7 @@ jobs:
               echo "required env vars not found"
             fi
       - save_cache:
-          key: v1-sonar-{{ epoch }}
+          key: v3-sonar-{{ epoch }}
           paths:
             - ~/.sonar
           when: always
@@ -229,7 +228,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-sonar-
+            - v3-sonar-
       - attach_workspace:
           at: /opt/iroha/build
       - run:
@@ -246,7 +245,7 @@ jobs:
               echo "required env vars not found"
             fi
       - save_cache:
-          key: v1-sonar-{{ epoch }}
+          key: v3-sonar-{{ epoch }}
           paths:
             - ~/.sonar
           when: always
