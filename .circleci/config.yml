@@ -54,6 +54,7 @@ jobs:
           key: build-linux-debug-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/.ccache
+          when: always
       - run:
           name: unit tests, generate xunit-*.xml
           command: cmake --build $IROHA_BUILD --target test
@@ -116,6 +117,7 @@ jobs:
           key: build-linux-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/.ccache
+          when: always
       - run:
           name: copy deb file
           command: |
@@ -214,6 +216,7 @@ jobs:
           key: sonar-{{ epoch }}
           paths:
             - ~/.sonar
+          when: always
 
 
   # executed only for develop, master and release branches
@@ -246,6 +249,7 @@ jobs:
           key: sonar-{{ epoch }}
           paths:
             - ~/.sonar
+          when: always
 
 
   build-macos-release:
@@ -266,6 +270,7 @@ jobs:
           key: brew-{{ epoch }}
           paths:
             - ~/Library/Caches/Homebrew
+          when: always
       - restore_cache:
           keys:
             - build-mac-release-{{ arch }}-{{ .Branch }}-
@@ -305,10 +310,12 @@ jobs:
           key: build-mac-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - ~/.ccache
+          when: always
       - save_cache:
           key: mac-external-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - external
+          when: always
       - run:
           name: rename artifacts
           command: |
