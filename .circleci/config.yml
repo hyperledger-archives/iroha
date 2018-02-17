@@ -3,7 +3,6 @@ defaults: &defaults
   environment:
     IROHA_HOME: /opt/iroha
     IROHA_BUILD: /opt/iroha/build
-    CCACHE_DIR: /opt/.ccache
     SONAR_DIR: /opt/.sonar
 
 
@@ -29,7 +28,7 @@ jobs:
             - v1-build-cache-debug-{{ arch }}-{{ .Branch }}-
             - v1-build-cache-debug-{{ arch }}-
           paths:
-            - $CCACHE_DIR
+            - .ccache
 
       - run:
           name: ccache setup
@@ -37,7 +36,7 @@ jobs:
             ccache --version
             ccache --show-stats
             ccache --zero-stats
-            ccache --max-size=1G
+            ccache --max-size=5G
       - run:
           name: cmake
           command: >
@@ -50,16 +49,12 @@ jobs:
       - run:
           name: make
           command: |
-            cmake --build $IROHA_BUILD -- -j4
-      - run:
-          name: ccache teardown
-          command: |
-            ccache --cleanup
-            ccache --show-stats
+            cmake --build $IROHA_BUILD -- -j3
+      - run: ccache --show-stats
       - save_cache:
           key: v1-build-cache-debug-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
-            - $CCACHE_DIR
+            - .ccache
       - run:
           name: unit tests, generate xunit-*.xml
           command: cmake --build $IROHA_BUILD --target test
@@ -92,14 +87,14 @@ jobs:
             - v1-build-cache-release-{{ arch }}-{{ .Branch }}-
             - v1-build-cache-release-{{ arch }}-
           paths:
-            - $CCACHE_DIR
+            - .ccache
       - run:
           name: ccache setup
           command: |
             ccache --version
             ccache --show-stats
             ccache --zero-stats
-            ccache --max-size=1G
+            ccache --max-size=5G
       - run:
           name: cmake
           command: >
@@ -115,16 +110,12 @@ jobs:
       - run:
           name: make and package
           command: |
-            cmake --build $IROHA_BUILD --target package -- -j4
-      - run:
-          name: ccache teardown
-          command: |
-            ccache --cleanup
-            ccache --show-stats
+            cmake --build $IROHA_BUILD --target package -- -j3
+      - run: ccache --show-stats
       - save_cache:
           key: v1-build-cache-release-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
-            - $CCACHE_DIR
+            - .ccache
       - run:
           name: copy deb file
           command: |
@@ -279,7 +270,7 @@ jobs:
           keys:
             - v1-build-cache-{{ arch }}-{{ .Branch }}
           paths:
-            - $CCACHE_DIR
+            - .ccache
       - restore_cache:
           keys:
             - v1-external-{{ arch }}-{{ .Branch }}
@@ -292,7 +283,7 @@ jobs:
             ccache --version
             ccache --show-stats
             ccache --zero-stats
-            ccache --max-size=1G
+            ccache --max-size=5G
       - run:
           name: cmake
           command: >
@@ -306,20 +297,15 @@ jobs:
           name: make
           command: |
             cmake --build build --target package -- -j$(sysctl -n hw.ncpu)
-      - run:
-          name: ccache teardown
-          command: |
-            ccache --cleanup
-            ccache --show-stats
+      - run: ccache --show-stats
       - save_cache:
           key: v1-build-cache-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
-            - $CCACHE_DIR
+            - .ccache
       - save_cache:
           key: v1-external-{{ arch }}-{{ .Branch }}-{{ epoch }}
           paths:
             - external
-      - run: ccache --show-stats
       - run:
           name: rename artifacts
           command: |
