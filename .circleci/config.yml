@@ -3,7 +3,6 @@ defaults: &defaults
   environment:
     IROHA_HOME: /opt/iroha
     IROHA_BUILD: /opt/iroha/build
-    SONAR_DIR: /opt/.sonar
 
 
 defaults: &version
@@ -213,7 +212,7 @@ jobs:
       - save_cache:
           key: v1-sonar-{{ epoch }}
           paths:
-            - $SONAR_DIR
+            - .sonar
 
 
   # executed only for develop, master and release branches
@@ -245,7 +244,7 @@ jobs:
       - save_cache:
           key: v1-sonar-{{ epoch }}
           paths:
-            - $SONAR_DIR
+            - .sonar
 
 
   build-macos-release:
