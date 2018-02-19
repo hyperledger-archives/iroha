@@ -40,11 +40,10 @@ namespace iroha {
        * all changes after removing wsv will be ignored
        * @return proposal with valid transactions
        */
-      virtual shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::Proposal>
-      validate(const shared_model::detail::PolymorphicWrapper<
-                   shared_model::interface::Proposal> &proposal,
-               ametsuchi::TemporaryWsv &temporaryWsv) = 0;
+      virtual std::shared_ptr<shared_model::interface::Proposal> validate(
+          const shared_model::detail::PolymorphicWrapper<
+              shared_model::interface::Proposal> &proposal,
+          ametsuchi::TemporaryWsv &temporaryWsv) = 0;
     };
   }  // namespace validation
 }  // namespace iroha

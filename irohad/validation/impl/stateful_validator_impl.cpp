@@ -30,10 +30,9 @@ namespace iroha {
       log_ = logger::log("SFV");
     }
 
-    shared_model::detail::PolymorphicWrapper<shared_model::interface::Proposal>
+    std::shared_ptr<shared_model::interface::Proposal>
     StatefulValidatorImpl::validate(
-        const shared_model::detail::PolymorphicWrapper<
-            shared_model::interface::Proposal> &proposal,
+        const shared_model::detail::PolymorphicWrapper<shared_model::interface::Proposal> &proposal,
         ametsuchi::TemporaryWsv &temporaryWsv) {
       log_->info("transactions in proposal: {}",
                  proposal->transactions().size());
@@ -86,8 +85,8 @@ namespace iroha {
       auto valid_proto_txs =
           valid_txs
           | boost::adaptors::transformed([](const auto &polymorphic_tx) {
-              return *static_cast<const shared_model::proto::Transaction *>(
-                  polymorphic_tx.operator->());
+              return static_cast<const shared_model::proto::Transaction&>(
+                  *polymorphic_tx.operator->());
             });
       auto validated_proposal = shared_model::proto::ProposalBuilder()
                                     .createdTime(proposal->created_time())
@@ -98,8 +97,8 @@ namespace iroha {
 
       log_->info("transactions in verified proposal: {}",
                  validated_proposal.transactions().size());
-      return shared_model::detail::makePolymorphic<decltype(
-          validated_proposal)>(validated_proposal.getTransport());
+      return std::make_shared<decltype(validated_proposal)>(
+          validated_proposal.getTransport());
     }
 
     bool StatefulValidatorImpl::signaturesSubset(

@@ -82,8 +82,9 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   EXPECT_CALL(*query, getTopBlocks(1))
       .WillOnce(Return(rxcpp::observable<>::just(block)));
 
-  shared_model::detail::PolymorphicWrapper<shared_model::interface::Proposal> iprop =
-      shared_model::detail::makePolymorphic<shared_model::proto::Proposal>(shared_model::proto::from_old(proposal));
+  std::shared_ptr<shared_model::interface::Proposal> iprop =
+      std::make_shared<shared_model::proto::Proposal>(
+          shared_model::proto::from_old(proposal));
 
   EXPECT_CALL(*validator, validate(_, _)).WillOnce(Return(iprop));
 
