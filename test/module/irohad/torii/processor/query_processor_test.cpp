@@ -65,11 +65,7 @@ TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   auto qpf = std::make_unique<model::QueryProcessingFactory>(wsv_queries,
                                                              block_queries);
 
-  auto validation = std::make_shared<MockStatelessValidator>();
-  EXPECT_CALL(*validation, validate(A<const model::Query &>()))
-      .WillOnce(Return(true));
-
-  iroha::torii::QueryProcessorImpl qpi(std::move(qpf), validation);
+  iroha::torii::QueryProcessorImpl qpi(std::move(qpf));
 
   auto query = TestUnsignedQueryBuilder()
                    .createdTime(created_time)

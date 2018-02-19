@@ -23,31 +23,21 @@ namespace iroha {
   namespace torii {
 
     QueryProcessorImpl::QueryProcessorImpl(
-        std::unique_ptr<model::QueryProcessingFactory> qpf,
-        std::shared_ptr<validation::StatelessValidator> stateless_validator)
-        : qpf_(std::move(qpf)), validator_(stateless_validator) {}
+        std::unique_ptr<model::QueryProcessingFactory> qpf)
+        : qpf_(std::move(qpf)) {}
 
     void QueryProcessorImpl::queryHandle(
         std::shared_ptr<shared_model::interface::Query> qry) {
       auto query = qry->makeOldModel();
       // TODO: 12.02.2018 grimadas Remove when query_executor has new model, as
       // query is already stateless valid when passing to query  processor
-      if (not validator_->validate(*query)) {
-        auto errorResponse = std::make_shared<model::ErrorResponse>();
-        errorResponse->reason = model::ErrorResponse::STATELESS_INVALID;
-        auto qry_resp = shared_model::proto::from_old(errorResponse);
-        subject_.get_subscriber().on_next(
-            std::make_shared<shared_model::proto::QueryResponse>(
-                qry_resp.getTransport()));
-      } else {
-        auto qpf_response =
-            qpf_->execute(std::shared_ptr<const model::Query>(query));
-        // TODO: 12.02.2018 grimadas Remove when query_executor has new model
-        auto qry_resp = shared_model::proto::from_old(qpf_response);
-        subject_.get_subscriber().on_next(
-            std::make_shared<shared_model::proto::QueryResponse>(
-                qry_resp.getTransport()));
-      }
+
+      auto qpf_response =
+          qpf_->execute(std::shared_ptr<const model::Query>(query));
+      auto qry_resp = shared_model::proto::from_old(qpf_response);
+      subject_.get_subscriber().on_next(
+          std::make_shared<shared_model::proto::QueryResponse>(
+              qry_resp.getTransport()));
     }
     rxcpp::observable<std::shared_ptr<shared_model::interface::QueryResponse>>
     QueryProcessorImpl::queryNotifier() {

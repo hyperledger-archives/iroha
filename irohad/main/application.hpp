@@ -96,8 +96,6 @@ class Irohad {
 
   virtual void initStorage();
 
-  virtual void initProtoFactories();
-
   virtual void initPeerQuery();
 
   virtual void initCryptoProvider();
@@ -134,9 +132,6 @@ class Irohad {
 
   // converter factories
   std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_tx_factory;
-  std::shared_ptr<iroha::model::converters::PbQueryFactory> pb_query_factory;
-  std::shared_ptr<iroha::model::converters::PbQueryResponseFactory>
-      pb_query_response_factory;
 
   // crypto provider
   std::shared_ptr<iroha::model::ModelCryptoProvider> crypto_verifier;

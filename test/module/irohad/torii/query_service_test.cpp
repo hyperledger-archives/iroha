@@ -16,6 +16,7 @@
  */
 
 #include "torii/query_service.hpp"
+#include "builders/protobuf/queries.hpp"
 #include "generator/generator.hpp"
 #include "module/irohad/torii/torii_mocks.hpp"
 
@@ -23,7 +24,6 @@ using namespace torii;
 
 using namespace iroha;
 using namespace iroha::torii;
-using namespace iroha::model::converters;
 
 using namespace shared_model::detail;
 using namespace shared_model::interface;
@@ -34,37 +34,34 @@ class QueryServiceTest : public ::testing::Test {
  public:
   void SetUp() override {
     query_processor = std::make_shared<MockQueryProcessor>();
-    query_factory = std::make_shared<PbQueryFactory>();
-    query_response_factory = std::make_shared<PbQueryResponseFactory>();
     // any query
-    auto val = query.mutable_payload()->mutable_get_account();
-
-    // just random hex strings (same seed every time is ok here)
-    query.mutable_signature()->set_pubkey(
-        generator::random_blob<16>(0).to_hexstring());
-    query.mutable_signature()->set_signature(
-        generator::random_blob<32>(0).to_hexstring());
+    query = shared_model::proto::QueryBuilder()
+                .creatorAccountId("user@domain")
+                .createdTime(iroha::time::now())
+                .queryCounter(1)
+                .getAccountTransactions("user@domain")
+                .build()
+                .signAndAddSignature(
+                    shared_model::crypto::DefaultCryptoAlgorithmType::
+                        generateKeypair())
+                .getTransport();
   }
 
   void init() {
-    query_service = std::make_shared<QueryService>(
-        query_factory, query_response_factory, query_processor);
+    query_service = std::make_shared<QueryService>(query_processor);
   }
 
   protocol::Query query;
   protocol::QueryResponse response;
   std::shared_ptr<QueryService> query_service;
   std::shared_ptr<MockQueryProcessor> query_processor;
-  std::shared_ptr<PbQueryFactory> query_factory;
-  std::shared_ptr<PbQueryResponseFactory> query_response_factory;
-
 };
 
 TEST_F(QueryServiceTest, SubscribeQueryProcessorWhenInit) {
   // query service is subscribed to query processor
   EXPECT_CALL(*query_processor, queryNotifier())
-      .WillOnce(Return(
-          rxcpp::observable<>::empty<std::shared_ptr<QueryResponse>>()));
+      .WillOnce(
+          Return(rxcpp::observable<>::empty<std::shared_ptr<QueryResponse>>()));
 
   init();
 }
@@ -72,8 +69,8 @@ TEST_F(QueryServiceTest, SubscribeQueryProcessorWhenInit) {
 TEST_F(QueryServiceTest, ValidWhenUniqueHash) {
   // unique query => query handled by query processor
   EXPECT_CALL(*query_processor, queryNotifier())
-      .WillOnce(Return(
-          rxcpp::observable<>::empty<std::shared_ptr<QueryResponse>>()));
+      .WillOnce(
+          Return(rxcpp::observable<>::empty<std::shared_ptr<QueryResponse>>()));
   EXPECT_CALL(*query_processor, queryHandle(_)).WillOnce(Return());
   init();
 
@@ -83,8 +80,8 @@ TEST_F(QueryServiceTest, ValidWhenUniqueHash) {
 TEST_F(QueryServiceTest, InvalidWhenDuplicateHash) {
   // two same queries => only first query handled by query processor
   EXPECT_CALL(*query_processor, queryNotifier())
-      .WillOnce(Return(
-          rxcpp::observable<>::empty<std::shared_ptr<QueryResponse>>()));
+      .WillOnce(
+          Return(rxcpp::observable<>::empty<std::shared_ptr<QueryResponse>>()));
   EXPECT_CALL(*query_processor, queryHandle(_)).WillOnce(Return());
 
   init();

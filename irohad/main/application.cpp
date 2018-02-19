@@ -81,7 +81,6 @@ Irohad::~Irohad() {
  * Initializing iroha daemon
  */
 void Irohad::init() {
-  initProtoFactories();
   initPeerQuery();
   initCryptoProvider();
   initValidators();
@@ -118,17 +117,6 @@ void Irohad::initStorage() {
       });
 
   log_->info("[Init] => storage", logger::logBool(storage));
-}
-
-/**
- * Creating transaction, query and query response factories
- */
-void Irohad::initProtoFactories() {
-  pb_tx_factory = std::make_shared<PbTransactionFactory>();
-  pb_query_factory = std::make_shared<PbQueryFactory>();
-  pb_query_response_factory = std::make_shared<PbQueryResponseFactory>();
-
-  log_->info("[Init] => converters");
 }
 
 /**
@@ -235,7 +223,7 @@ void Irohad::initPeerCommunicationService() {
  */
 void Irohad::initTransactionCommandService() {
   auto tx_processor =
-      std::make_shared<TransactionProcessorImpl>(pcs, stateless_validator);
+      std::make_shared<TransactionProcessorImpl>(pcs);
 
   command_service = std::make_unique<::torii::CommandService>(
       pb_tx_factory, tx_processor, storage, proposal_delay_);
@@ -251,10 +239,9 @@ void Irohad::initQueryService() {
       storage->getWsvQuery(), storage->getBlockQuery());
 
   auto query_processor = std::make_shared<QueryProcessorImpl>(
-      std::move(query_processing_factory), stateless_validator);
+      std::move(query_processing_factory));
 
-  query_service = std::make_unique<::torii::QueryService>(
-      pb_query_factory, pb_query_response_factory, query_processor);
+  query_service = std::make_unique<::torii::QueryService>(query_processor);
 
   log_->info("[Init] => query service");
 }

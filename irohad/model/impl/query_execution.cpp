@@ -225,6 +225,7 @@ std::shared_ptr<QueryResponse> QueryProcessingFactory::executeGetAccount(
   response.account = acc.value();
   response.roles = roles.value();
   response.query_hash = iroha::hash(query);
+  auto ss = iroha::hash(query).to_hexstring();
   return std::make_shared<AccountResponse>(response);
 }
 
