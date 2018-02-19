@@ -18,11 +18,12 @@
 #ifndef IROHA_STORAGE_IMPL_HPP
 #define IROHA_STORAGE_IMPL_HPP
 
+#include "ametsuchi/storage.hpp"
+
 #include <cmath>
 #include <nonstd/optional.hpp>
 #include <pqxx/pqxx>
 #include <shared_mutex>
-#include "ametsuchi/storage.hpp"
 #include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
 
