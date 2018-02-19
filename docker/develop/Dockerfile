@@ -90,9 +90,9 @@ RUN git clone https://github.com/google/googletest /tmp/googletest; \
     cmake --build /tmp/googletest/build --target install -- -j${PARALLELISM}; \
     rm -rf /tmp/googletest
 
-# install spdlog
+# install spdlog v0.16.3
 RUN git clone https://github.com/gabime/spdlog /tmp/spdlog; \
-    (cd /tmp/spdlog ; git checkout f85a08622e20b74bff34381cafcb8ef8167b29d0); \
+    (cd /tmp/spdlog ; git checkout ccd675a286f457068ee8c823f8207f13c2325b26); \
     cmake -DSPDLOG_BUILD_TESTING=OFF -H/tmp/spdlog -B/tmp/spdlog/build; \
     cmake --build /tmp/spdlog/build --target install; \
     rm -rf /tmp/spdlog
@@ -187,8 +187,8 @@ RUN git clone git://sourceware.org/git/valgrind.git /tmp/valgrind; \
     rm -rf /tmp/valgrind
 
 # install ed25519
-RUN git clone git://github.com/warchant/ed25519.git /tmp/ed25519; \
-    (cd /tmp/ed25519 ; git checkout 56d926c4489aa7b2bb664a48294c5ee2d6e1c283); \
+RUN git clone git://github.com/hyperledger/iroha-ed25519.git /tmp/ed25519; \
+    (cd /tmp/ed25519 ; git checkout e7188b8393dbe5ac54378610d53630bd4a180038); \
     cmake -DCMAKE_BUILD_TYPE=Debug -DTESTING=OFF -H/tmp/ed25519 -B/tmp/ed25519/build; \
     cmake --build /tmp/ed25519/build --target install -- -j${PARALLELISM}; \
     ldconfig; \

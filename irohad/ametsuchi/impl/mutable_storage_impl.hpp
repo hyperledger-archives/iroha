@@ -18,25 +18,30 @@
 #ifndef IROHA_MUTABLE_STORAGE_IMPL_HPP
 #define IROHA_MUTABLE_STORAGE_IMPL_HPP
 
-#include <cpp_redis/cpp_redis>
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
 #include <unordered_map>
 
-#include "ametsuchi/impl/block_index.hpp"
 #include "ametsuchi/mutable_storage.hpp"
 #include "logger/logger.hpp"
-#include "model/execution/command_executor_factory.hpp"
 
 namespace iroha {
+
+  namespace model {
+    class CommandExecutorFactory;
+  }
+
   namespace ametsuchi {
+
+    class BlockIndex;
+    class WsvCommand;
+
     class MutableStorageImpl : public MutableStorage {
       friend class StorageImpl;
 
      public:
       MutableStorageImpl(
           hash256_t top_hash,
-          std::unique_ptr<cpp_redis::client> index,
           std::unique_ptr<pqxx::lazyconnection> connection,
           std::unique_ptr<pqxx::nontransaction> transaction,
           std::shared_ptr<model::CommandExecutorFactory> command_executors);
@@ -53,7 +58,6 @@ namespace iroha {
       // ordered collection is used to enforce block insertion order in
       // StorageImpl::commit
       std::map<uint32_t, model::Block> block_store_;
-      std::unique_ptr<cpp_redis::client> index_;
 
       std::unique_ptr<pqxx::lazyconnection> connection_;
       std::unique_ptr<pqxx::nontransaction> transaction_;

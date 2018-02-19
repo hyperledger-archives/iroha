@@ -16,7 +16,11 @@
  */
 
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
+#include <algorithm>
 #include <random>
+#include "ametsuchi/peer_query.hpp"
+#include "consensus/yac/cluster_order.hpp"
+#include "consensus/yac/yac_hash_provider.hpp"
 
 namespace iroha {
   namespace consensus {

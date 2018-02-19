@@ -40,6 +40,7 @@ namespace shared_model {
      public:
       using Bytes = std::vector<uint8_t>;
 
+      Blob() : blob_() {}
       /**
        * Create blob from a string
        * @param blob - string to create blob from
@@ -106,6 +107,7 @@ namespace shared_model {
         return new Blob(blob());
       };
 
+#ifndef DISABLE_BACKWARD
       /**
        * Method perform transforming object to old-fashion blob_t format
        * @tparam BlobType - type of blob
@@ -118,6 +120,7 @@ namespace shared_model {
       DEPRECATED BlobType makeOldModel() const {
         return BlobType::from_string(toBinaryString(*this));
       }
+#endif
 
      private:
       // TODO: 17/11/2017 luckychess use improved Lazy with references support

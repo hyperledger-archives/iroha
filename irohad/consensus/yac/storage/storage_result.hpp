@@ -19,13 +19,13 @@
 #define IROHA_STORAGE_RESULT_HPP
 
 #include <boost/variant.hpp>
-#include <utility>
-
-#include "consensus/yac/messages.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
+
+      struct CommitMessage;
+      struct RejectMessage;
 
       /**
        * Contains proof of supermajority for all purposes;

@@ -20,6 +20,7 @@
 #include <string>
 #include <utility>
 
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 

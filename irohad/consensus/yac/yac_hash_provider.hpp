@@ -18,12 +18,9 @@
 #ifndef IROHA_YAC_HASH_PROVIDER_HPP
 #define IROHA_YAC_HASH_PROVIDER_HPP
 
-#include <functional>
 #include <string>
-#include <vector>
-#include "consensus/yac/cluster_order.hpp"
-#include "model/block.hpp"
-#include "model/peer.hpp"
+#include "model/block.hpp"      // for Block::HashType
+#include "model/signature.hpp"  // for model::Signature
 
 namespace iroha {
   namespace consensus {

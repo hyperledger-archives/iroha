@@ -21,13 +21,12 @@
 #include <array>
 #include <cstdio>
 #include <iomanip>
+#include <nonstd/optional.hpp>
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
 #include <vector>
-
-#include <nonstd/optional.hpp>
 
 /**
  * This file defines common types used in iroha.
@@ -184,8 +183,8 @@ namespace iroha {
    * @return monadic value, which can be of another type
    */
   template <typename T, typename Transform>
-  auto operator|(T t, Transform f) -> typename std::enable_if<
-      std::is_same<decltype(f(*t)), void>::value>::type {
+  auto operator|(T t, Transform f) -> typename std::
+      enable_if<std::is_same<decltype(f(*t)), void>::value>::type {
     if (t) {
       f(*t);
     }

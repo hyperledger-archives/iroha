@@ -16,8 +16,13 @@
  */
 
 #include "consensus/yac/impl/yac_gate_impl.hpp"
-
+#include "consensus/yac/cluster_order.hpp"
+#include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/yac_common.hpp"
+#include "consensus/yac/yac_hash_provider.hpp"
+#include "consensus/yac/yac_peer_orderer.hpp"
+#include "network/block_loader.hpp"
+#include "simulator/block_creator.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -88,10 +93,16 @@ namespace iroha {
                       return rxcpp::observable<>::create<model::Block>(
                           [this, model_hash, vote](auto subscriber) {
                             auto block = block_loader_->retrieveBlock(
-                                vote.signature.pubkey, model_hash);
+                                shared_model::crypto::PublicKey(
+                                    {vote.signature.pubkey.begin(),
+                                     vote.signature.pubkey.end()}),
+                                shared_model::crypto::Hash(
+                                    {model_hash.begin(), model_hash.end()}));
                             // if load is successful
                             if (block.has_value()) {
-                              subscriber.on_next(block.value());
+                              std::unique_ptr<iroha::model::Block> old_block(
+                                  block.value()->makeOldModel());
+                              subscriber.on_next(*old_block);
                             }
                             subscriber.on_completed();
                           });

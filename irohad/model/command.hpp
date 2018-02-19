@@ -18,10 +18,6 @@
 #ifndef IROHA_COMMAND_HPP
 #define IROHA_COMMAND_HPP
 
-#include <ametsuchi/wsv_command.hpp>
-#include <ametsuchi/wsv_query.hpp>
-#include <model/account.hpp>
-
 namespace iroha {
   namespace model {
     /**

@@ -18,14 +18,18 @@
 #include <utility>
 
 #include "common/visitor.hpp"
+#include "consensus/yac/cluster_order.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
+#include "consensus/yac/timer.hpp"
 #include "consensus/yac/yac.hpp"
+#include "consensus/yac/yac_crypto_provider.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
       template <typename T>
-      std::string cryptoError(const T &votes) {
+      static std::string cryptoError(const T &votes) {
         std::string result =
             "Crypto verification failed for message.\n Votes: ";
         result += logger::to_string(votes, [](const auto &vote) {
@@ -40,7 +44,7 @@ namespace iroha {
       }
 
       template <typename T>
-      std::string cryptoError(const std::initializer_list<T> &votes) {
+      static std::string cryptoError(const std::initializer_list<T> &votes) {
         return cryptoError<std::initializer_list<T>>(votes);
       }
 

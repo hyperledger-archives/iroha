@@ -19,6 +19,7 @@
 #define IROHA_GENERATOR_HPP
 
 #include <algorithm>
+
 #include "common/types.hpp"
 
 namespace generator {

@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-#include "module/irohad/consensus/yac/yac_mocks.hpp"
-
 #include <grpc++/grpc++.h>
 #include "consensus/yac/impl/timer_impl.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
 #include "framework/test_subscriber.hpp"
+#include "module/irohad/consensus/yac/yac_mocks.hpp"
 
 using ::testing::An;
 using ::testing::Return;

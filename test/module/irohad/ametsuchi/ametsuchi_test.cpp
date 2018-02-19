@@ -19,20 +19,19 @@
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/combine.hpp>
 
-#include <model/commands/create_role.hpp>
+#include "ametsuchi/impl/postgres_block_query.hpp"
+#include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
+#include "ametsuchi/mutable_storage.hpp"
 #include "common/byteutils.hpp"
 #include "framework/test_subscriber.hpp"
-#include "model/commands/add_asset_quantity.hpp"
-#include "model/commands/add_peer.hpp"
-#include "model/commands/add_signatory.hpp"
-#include "model/commands/create_account.hpp"
-#include "model/commands/create_asset.hpp"
-#include "model/commands/create_domain.hpp"
-#include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_quorum.hpp"
-#include "model/commands/transfer_asset.hpp"
+#include "model/account.hpp"
+#include "model/account_asset.hpp"
+#include "model/asset.hpp"
+#include "model/commands/all.hpp"
 #include "model/converters/pb_block_factory.hpp"
+#include "model/domain.hpp"
+#include "model/peer.hpp"
 #include "model/permissions.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
@@ -148,15 +147,30 @@ void validateAccount(W &&wsv,
  */
 template <typename S>
 void apply(S &&storage, const Block &block) {
-  auto ms = storage->createMutableStorage();
+  std::unique_ptr<MutableStorage> ms;
+  auto storageResult = storage->createMutableStorage();
+  storageResult.match(
+      [&](iroha::expected::Value<std::unique_ptr<MutableStorage>> &_storage) {
+        ms = std::move(_storage.value);
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "MutableStorage: " << error.error;
+      });
   ms->apply(block, [](const auto &, auto &, const auto &) { return true; });
   storage->commit(std::move(ms));
 }
 
 TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   // Commit block => get block => observable completed
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  std::shared_ptr<StorageImpl> storage;
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
+  storageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+        storage = _storage.value;
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
@@ -172,8 +186,15 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
 }
 
 TEST_F(AmetsuchiTest, SampleTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  std::shared_ptr<StorageImpl> storage;
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
+  storageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+        storage = _storage.value;
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -245,13 +266,13 @@ TEST_F(AmetsuchiTest, SampleTest) {
   validateAccountAsset(wsv, user2id, assetid, iroha::Amount(100, 2));
 
   // Block store tests
-  validateCalls(
-      blocks->getBlocks(1, 2),
-      [i = 0, hashes = {block1hash, block2hash}](auto eachBlock) mutable {
-        EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
-        ++i;
-      },
-      2);
+  auto hashes = {block1hash, block2hash};
+  validateCalls(blocks->getBlocks(1, 2),
+                [ i = 0, &hashes ](auto eachBlock) mutable {
+                  EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
+                  ++i;
+                },
+                2);
 
   validateAccountTransactions(blocks, "admin1", 1, 3);
   validateAccountTransactions(blocks, "admin2", 1, 4);
@@ -264,8 +285,15 @@ TEST_F(AmetsuchiTest, SampleTest) {
 }
 
 TEST_F(AmetsuchiTest, PeerTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  std::shared_ptr<StorageImpl> storage;
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
+  storageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+        storage = _storage.value;
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -287,8 +315,15 @@ TEST_F(AmetsuchiTest, PeerTest) {
 }
 
 TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  std::shared_ptr<StorageImpl> storage;
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
+  storageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+        storage = _storage.value;
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -395,10 +430,10 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   validateAccountAsset(wsv, user3id, asset2id, iroha::Amount(150, 2));
   validateAccountAsset(wsv, user1id, asset2id, iroha::Amount(10, 2));
 
-  // Block store tests
+  // Block store test
+  auto hashes = {block1hash, block2hash, block3hash};
   validateCalls(blocks->getBlocks(1, 3),
-                [i = 0, hashes = {block1hash, block2hash, block3hash}](
-                    auto eachBlock) mutable {
+                [ i = 0, &hashes ](auto eachBlock) mutable {
                   EXPECT_EQ(*(hashes.begin() + i), eachBlock.hash);
                   ++i;
                 },
@@ -421,8 +456,15 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
 }
 
 TEST_F(AmetsuchiTest, AddSignatoryTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  std::shared_ptr<StorageImpl> storage;
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
+  storageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+        storage = _storage.value;
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -667,8 +709,15 @@ TEST_F(AmetsuchiTest, TestingStorageWhenInsertBlock) {
       "Test case: create storage "
       "=> insert block "
       "=> assert that inserted");
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  std::shared_ptr<StorageImpl> storage;
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
+  storageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+        storage = _storage.value;
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   ASSERT_EQ(0, wsv->getPeers().value().size());
@@ -701,8 +750,15 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
       "Test case: create storage "
       "=> insert block "
       "=> assert that inserted");
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  std::shared_ptr<StorageImpl> storage;
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
+  storageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+        storage = _storage.value;
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   ASSERT_EQ(0, wsv->getPeers().value().size());
@@ -721,8 +777,15 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
   storage->dropStorage();
 
   ASSERT_EQ(0, wsv->getPeers().value().size());
-  auto new_storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  std::shared_ptr<StorageImpl> new_storage;
+  auto new_storageResult = StorageImpl::create(block_store_path, pgopt_);
+  storageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+        new_storage = _storage.value;
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_EQ(0, wsv->getPeers().value().size());
   new_storage->dropStorage();
 }
@@ -734,8 +797,15 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
  * with some other hash is not found.
  */
 TEST_F(AmetsuchiTest, FindTxByHashTest) {
-  auto storage =
-      StorageImpl::create(block_store_path, redishost_, redisport_, pgopt_);
+  std::shared_ptr<StorageImpl> storage;
+  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
+  storageResult.match(
+      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
+        storage = _storage.value;
+      },
+      [](iroha::expected::Error<std::string> &error) {
+        FAIL() << "StorageImpl: " << error.error;
+      });
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
@@ -789,6 +859,8 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   auto tx1hash = iroha::hash(tx1).to_string();
   auto tx2hash = iroha::hash(tx2).to_string();
   auto tx3hash = "some garbage";
+
+  auto tx1check = *blocks->getTxByHashSync(tx1hash);
 
   ASSERT_EQ(*blocks->getTxByHashSync(tx1hash), tx1);
   ASSERT_EQ(*blocks->getTxByHashSync(tx2hash), tx2);

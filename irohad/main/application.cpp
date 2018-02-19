@@ -28,12 +28,12 @@ using namespace iroha::torii;
 using namespace iroha::model::converters;
 using namespace iroha::consensus::yac;
 
+using namespace std::chrono_literals;
+
 /**
  * Configuring iroha daemon
  */
 Irohad::Irohad(const std::string &block_store_dir,
-               const std::string &redis_host,
-               size_t redis_port,
                const std::string &pg_conn,
                size_t torii_port,
                size_t internal_port,
@@ -43,8 +43,6 @@ Irohad::Irohad(const std::string &block_store_dir,
                std::chrono::milliseconds load_delay,
                const keypair_t &keypair)
     : block_store_dir_(block_store_dir),
-      redis_host_(redis_host),
-      redis_port_(redis_port),
       pg_conn_(pg_conn),
       torii_port_(torii_port),
       internal_port_(internal_port),
@@ -110,8 +108,14 @@ void Irohad::dropStorage() {
  * Initializing iroha daemon storage
  */
 void Irohad::initStorage() {
-  storage =
-      StorageImpl::create(block_store_dir_, redis_host_, redis_port_, pg_conn_);
+  auto storageResult = StorageImpl::create(block_store_dir_, pg_conn_);
+  storageResult.match(
+      [&](expected::Value<std::shared_ptr<ametsuchi::StorageImpl>> &_storage) {
+        storage = _storage.value;
+      },
+      [](expected::Error<std::string> &error) {
+        throw std::runtime_error(error.error);
+      });
 
   log_->info("[Init] => storage", logger::logBool(storage));
 }
@@ -234,7 +238,7 @@ void Irohad::initTransactionCommandService() {
       std::make_shared<TransactionProcessorImpl>(pcs, stateless_validator);
 
   command_service = std::make_unique<::torii::CommandService>(
-      pb_tx_factory, tx_processor, storage);
+      pb_tx_factory, tx_processor, storage, proposal_delay_);
 
   log_->info("[Init] => command service");
 }
@@ -256,7 +260,7 @@ void Irohad::initQueryService() {
 }
 
 /**
- * Run iroha deamon
+ * Run iroha daemon
  */
 void Irohad::run() {
   // Initializing torii server
@@ -278,7 +282,9 @@ void Irohad::run() {
   internal_server = builder.BuildAndStart();
   // Run torii server
   server_thread = std::thread([this] {
-    torii_server->run(std::move(command_service), std::move(query_service));
+    torii_server->append(std::move(command_service))
+        .append(std::move(query_service))
+        .run();
   });
   log_->info("===> iroha initialized");
   // Wait until servers shutdown

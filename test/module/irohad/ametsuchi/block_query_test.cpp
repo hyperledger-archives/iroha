@@ -17,8 +17,8 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
-#include "ametsuchi/impl/redis_block_index.hpp"
-#include "ametsuchi/impl/redis_block_query.hpp"
+#include "ametsuchi/impl/postgres_block_index.hpp"
+#include "ametsuchi/impl/postgres_block_query.hpp"
 #include "framework/test_subscriber.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
@@ -35,9 +35,19 @@ class BlockQueryTest : public AmetsuchiTest {
     auto tmp = FlatFile::create(block_store_path);
     ASSERT_TRUE(tmp);
     file = std::move(*tmp);
+    postgres_connection = std::make_unique<pqxx::lazyconnection>(pgopt_);
+    try {
+      postgres_connection->activate();
+    } catch (const pqxx::broken_connection &e) {
+      FAIL() << "Connection to PostgreSQL broken: " << e.what();
+    }
+    transaction = std::make_unique<pqxx::nontransaction>(
+        *postgres_connection, "Postgres block indexes");
 
-    index = std::make_shared<RedisBlockIndex>(client);
-    blocks = std::make_shared<RedisBlockQuery>(client, *file);
+    index = std::make_shared<PostgresBlockIndex>(*transaction);
+    blocks = std::make_shared<PostgresBlockQuery>(*transaction, *file);
+
+    transaction->exec(init_);
 
     // First transaction in block1
     Transaction txn1_1;
@@ -81,6 +91,8 @@ class BlockQueryTest : public AmetsuchiTest {
     }
   }
 
+  std::unique_ptr<pqxx::nontransaction> transaction;
+  std::unique_ptr<pqxx::lazyconnection> postgres_connection;
   std::vector<iroha::hash256_t> tx_hashes;
   std::shared_ptr<BlockQuery> blocks;
   std::shared_ptr<BlockIndex> index;
@@ -279,8 +291,8 @@ TEST_F(BlockQueryTest, GetBlocksFrom1) {
   size_t counter = 1;
   wrapper.subscribe([&counter](Block b) {
     // wrapper returns blocks 1 and 2
-    ASSERT_EQ(b.height, counter++) << "block height: " << b.height
-                                   << "counter: " << counter;
+    ASSERT_EQ(b.height, counter++)
+        << "block height: " << b.height << "counter: " << counter;
   });
   ASSERT_TRUE(wrapper.validate());
 }

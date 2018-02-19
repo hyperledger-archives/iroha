@@ -18,11 +18,12 @@
 #ifndef IROHA_TEMPORARYWSV_HPP
 #define IROHA_TEMPORARYWSV_HPP
 
-#include <ametsuchi/wsv_command.hpp>
-#include <ametsuchi/wsv_query.hpp>
 #include <functional>
-#include <model/block.hpp>
-#include <model/transaction.hpp>
+
+#include "ametsuchi/wsv_command.hpp"
+#include "ametsuchi/wsv_query.hpp"
+#include "model/block.hpp"
+#include "model/transaction.hpp"
 
 namespace iroha {
   namespace ametsuchi {

@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +15,23 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_REDIS_BLOCK_INDEX_HPP
-#define IROHA_REDIS_BLOCK_INDEX_HPP
+#ifndef IROHA_POSTGRES_BLOCK_INDEX_HPP
+#define IROHA_POSTGRES_BLOCK_INDEX_HPP
 
 #include "ametsuchi/impl/block_index.hpp"
+#include "ametsuchi/impl/postgres_wsv_common.hpp"
+#include "logger/logger.hpp"
 
 #include <boost/format.hpp>
-#include <cpp_redis/cpp_redis>
+#include <pqxx/nontransaction>
+
+#include "model/transaction.hpp"  // for model::Transaction::CommandsType
 
 namespace iroha {
   namespace ametsuchi {
-    class RedisBlockIndex : public BlockIndex {
+    class PostgresBlockIndex : public BlockIndex {
      public:
-      explicit RedisBlockIndex(cpp_redis::client &client);
+      explicit PostgresBlockIndex(pqxx::nontransaction &transaction);
 
       void index(const model::Block &block) override;
 
@@ -37,7 +41,7 @@ namespace iroha {
        * @param account_id of transaction creator
        * @param height of block
        */
-      void indexAccountIdHeight(const std::string &account_id,
+      auto indexAccountIdHeight(const std::string &account_id,
                                 const std::string &height);
 
       /**
@@ -49,16 +53,22 @@ namespace iroha {
        * @param index of transaction in the block
        * @param commands in the transaction
        */
-      void indexAccountAssets(const std::string &account_id,
+      auto indexAccountAssets(const std::string &account_id,
                               const std::string &height,
                               const std::string &index,
                               const model::Transaction::CommandsType &commands);
 
-      cpp_redis::client &client_;
-      /// format strings for index keys
-      boost::format account_id_height_, account_id_height_asset_id_;
+      pqxx::nontransaction &transaction_;
+      logger::Logger log_;
+      using ExecuteType = decltype(makeExecuteOptional(transaction_, log_));
+      ExecuteType execute_;
+
+      // TODO: refactor to return Result when it is introduced IR-775
+      bool execute(const std::string &statement) noexcept {
+        return static_cast<bool>(execute_(statement));
+      }
     };
   }  // namespace ametsuchi
 }  // namespace iroha
 
-#endif  // IROHA_REDIS_BLOCK_INDEX_HPP
+#endif  // IROHA_POSTGRES_BLOCK_INDEX_HPP

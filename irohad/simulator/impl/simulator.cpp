@@ -59,9 +59,19 @@ namespace iroha {
                    proposal.height);
         return;
       }
-      auto temporaryStorage = ametsuchi_factory_->createTemporaryWsv();
-      notifier_.get_subscriber().on_next(
-          validator_->validate(proposal, *temporaryStorage));
+      auto temporaryStorageResult = ametsuchi_factory_->createTemporaryWsv();
+      temporaryStorageResult.match(
+          [&](expected::Value<std::unique_ptr<ametsuchi::TemporaryWsv>>
+                  &temporaryStorage) {
+            notifier_.get_subscriber().on_next(
+                validator_->validate(proposal, *(temporaryStorage.value)));
+          },
+          [&](expected::Error<std::string> &error) {
+            log_->error(error.error);
+            // TODO: 13/02/18 Solonets - Handle the case when TemporaryWsv was
+            // failed to produced - IR-966
+            throw std::runtime_error(error.error);
+          });
     }
 
     void Simulator::process_verified_proposal(model::Proposal proposal) {
@@ -71,8 +81,7 @@ namespace iroha {
       new_block.prev_hash = last_block.value().hash;
       new_block.transactions = proposal.transactions;
       new_block.txs_number = proposal.transactions.size();
-      new_block.created_ts = 0;  // TODO 14/08/17 Muratov set timestamp from
-                                 // proposal & for new model IR-501
+      new_block.created_ts = proposal.created_time;
       new_block.hash = hash(new_block);
       crypto_provider_->sign(new_block);
 

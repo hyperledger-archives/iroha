@@ -507,16 +507,17 @@ TEST_F(FieldValidatorTest, CommandFieldsValidation) {
  * meaningful message
  */
 TEST_F(FieldValidatorTest, TransactionFieldsValidation) {
+  iroha::protocol::Transaction proto_tx;
+  proto_tx.add_signature();  // at least one signature in message
+
   // iterate over all fields in transaction
   iterateContainer(
       [] { return iroha::protocol::Transaction::descriptor(); },
       [&](auto field) {
-        // generate message from field of transaction
-        google::protobuf::DynamicMessageFactory message_factory;
-        auto field_desc = field->message_type();
-        // will be null if field is not of message type
-        EXPECT_NE(nullptr, field_desc);
-        return message_factory.GetPrototype(field_desc)->New();
+        return field->is_repeated()
+            ? proto_tx.GetReflection()->MutableRepeatedMessage(
+                  &proto_tx, field, 0)
+            : proto_tx.GetReflection()->MutableMessage(&proto_tx, field);
       },
       [this](auto field, auto transaction_field) { this->runTestCases(field); },
       [] {});
@@ -542,7 +543,7 @@ TEST_F(FieldValidatorTest, QueryFieldsValidation) {
         return payload->GetReflection()->MutableMessage(payload, field);
       },
       [this](auto field, auto query) { this->runTestCases(field); },
-      [&] {});
+      [] {});
 }
 
 /**
@@ -552,16 +553,13 @@ TEST_F(FieldValidatorTest, QueryFieldsValidation) {
  * meaningful message
  */
 TEST_F(FieldValidatorTest, QueryContainerFieldsValidation) {
+  iroha::protocol::Query query_tx;
+
   // iterate over all fields in transaction
   iterateContainer(
       [] { return iroha::protocol::Query::descriptor(); },
       [&](auto field) {
-        // generate message from field of transaction
-        google::protobuf::DynamicMessageFactory message_factory;
-        auto field_desc = field->message_type();
-        // will be null if field is not of message type
-        EXPECT_NE(nullptr, field_desc);
-        return message_factory.GetPrototype(field_desc)->New();
+        return query_tx.GetReflection()->MutableMessage(&query_tx, field);
       },
       [this](auto field, auto) {
         // Skip oneof types

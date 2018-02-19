@@ -15,32 +15,31 @@
  * limitations under the License.
  */
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
+#include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-#include "ametsuchi/impl/redis_block_index.hpp"
-#include "model/commands/transfer_asset.hpp"
 
+#include "model/execution/command_executor_factory.hpp"
+
+#include "ametsuchi/wsv_command.hpp"
 #include "model/sha3_hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {
     MutableStorageImpl::MutableStorageImpl(
         hash256_t top_hash,
-        std::unique_ptr<cpp_redis::client> index,
         std::unique_ptr<pqxx::lazyconnection> connection,
         std::unique_ptr<pqxx::nontransaction> transaction,
         std::shared_ptr<model::CommandExecutorFactory> command_executors)
         : top_hash_(top_hash),
-          index_(std::move(index)),
           connection_(std::move(connection)),
           transaction_(std::move(transaction)),
           wsv_(std::make_unique<PostgresWsvQuery>(*transaction_)),
           executor_(std::make_unique<PostgresWsvCommand>(*transaction_)),
-          block_index_(std::make_unique<RedisBlockIndex>(*index_)),
+          block_index_(std::make_unique<PostgresBlockIndex>(*transaction_)),
           command_executors_(std::move(command_executors)),
           committed(false),
           log_(logger::log("MutableStorage")) {
-      index_->multi();
       transaction_->exec("BEGIN;");
     }
 
@@ -85,7 +84,6 @@ namespace iroha {
 
     MutableStorageImpl::~MutableStorageImpl() {
       if (not committed) {
-        index_->discard();
         transaction_->exec("ROLLBACK;");
       }
     }

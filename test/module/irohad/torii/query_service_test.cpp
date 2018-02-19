@@ -16,7 +16,7 @@
  */
 
 #include "torii/query_service.hpp"
-#include <generator/generator.hpp>
+#include "generator/generator.hpp"
 #include "module/irohad/torii/torii_mocks.hpp"
 
 using namespace torii;
@@ -76,7 +76,7 @@ TEST_F(QueryServiceTest, ValidWhenUniqueHash) {
 
   init();
 
-  query_service->FindAsync(query, response);
+  query_service->Find(query, response);
 }
 
 TEST_F(QueryServiceTest, InvalidWhenDuplicateHash) {
@@ -87,7 +87,6 @@ TEST_F(QueryServiceTest, InvalidWhenDuplicateHash) {
   EXPECT_CALL(*query_processor, queryHandle(_)).WillOnce(Return());
 
   init();
-
-  query_service->FindAsync(query, response);
-  query_service->FindAsync(query, response);
+  query_service->Find(query, response);
+  query_service->Find(query, response);
 }

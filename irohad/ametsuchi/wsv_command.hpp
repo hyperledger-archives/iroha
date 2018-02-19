@@ -22,13 +22,19 @@
 #include <string>
 #include "common/result.hpp"
 #include "common/types.hpp"
-#include "model/account.hpp"
-#include "model/account_asset.hpp"
-#include "model/asset.hpp"
-#include "model/domain.hpp"
-#include "model/peer.hpp"
+
+#include "common/types.hpp"  // for pubkey_t
 
 namespace iroha {
+
+  namespace model {
+    struct Asset;
+    struct Account;
+    struct Domain;
+    struct Peer;
+    struct AccountAsset;
+  }
+
   namespace ametsuchi {
 
     /**
@@ -114,7 +120,7 @@ namespace iroha {
           const std::string &permission_id) = 0;
 
       /**
-       *
+       *git
        * @param account
        * @return WsvCommandResult, which will contain error in case of failure
        */

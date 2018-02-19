@@ -18,15 +18,22 @@
 #ifndef IROHA_CACHE_HPP
 #define IROHA_CACHE_HPP
 
-#include <unordered_map>
-
 #include "cache/abstract_cache.hpp"
+
+#include <unordered_map>
 
 namespace iroha {
   namespace cache {
-    template <typename KeyType, typename ValueType>
+
+  /**
+   * Cache for arbitrary types
+   * @tparam KeyType type of key objects
+   * @tparam ValueType type of value objects
+   * @tparam KeyHash hasher for keys
+   */
+    template <typename KeyType, typename ValueType, typename KeyHash = std::hash<KeyType>>
     class Cache
-        : public AbstractCache<KeyType, ValueType, Cache<KeyType, ValueType>> {
+        : public AbstractCache<KeyType, ValueType, Cache<KeyType, ValueType, KeyHash>> {
      public:
       uint32_t getIndexSizeHighImpl() const {
         return MAX_HANDLER_MAP_SIZE_HIGH;
@@ -62,7 +69,7 @@ namespace iroha {
       }
 
      private:
-      std::unordered_map<KeyType, ValueType> handler_map_;
+      std::unordered_map<KeyType, ValueType, KeyHash> handler_map_;
       std::list<KeyType> handler_map_index_;
 
       /**

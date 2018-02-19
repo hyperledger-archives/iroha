@@ -18,6 +18,7 @@
 #ifndef IROHA_POSTGRES_WSV_COMMON_HPP
 #define IROHA_POSTGRES_WSV_COMMON_HPP
 
+#include <boost/optional.hpp>
 #include <pqxx/nontransaction>
 #include "common/result.hpp"
 #include "logger/logger.hpp"
@@ -55,12 +56,12 @@ namespace iroha {
     inline auto makeExecuteOptional(pqxx::nontransaction &transaction,
                                     logger::Logger &logger) noexcept {
       return [&](const std::string &statement) noexcept
-          ->nonstd::optional<pqxx::result> {
+          ->boost::optional<pqxx::result> {
         try {
           return transaction.exec(statement);
         } catch (const std::exception &e) {
           logger->error(e.what());
-          return nonstd::nullopt;
+          return boost::none;
         }
       };
     }

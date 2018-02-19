@@ -15,13 +15,18 @@
  * limitations under the License.
  */
 
-#include "keys_manager_impl.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "crypto/keys_manager_impl.hpp"
 
+#include <spdlog/spdlog.h>
 #include <algorithm>
 #include <fstream>
 #include <random>
 #include <utility>
+
+#include "common/byteutils.hpp"
+#include "common/types.hpp"  // for keypair_t, pubkey_t, privkey_t
+#include "cryptography/ed25519_sha3_impl/internal/ed25519_impl.hpp"
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 
 using iroha::operator|;
 
@@ -36,7 +41,7 @@ namespace iroha {
    * @return function that will return keypair on success, otherwise nullopt
    */
   template <typename T, typename V>
-  auto deserializeKeypairField(T keypair_t::*field, const V &value) {
+  static auto deserializeKeypairField(T keypair_t::*field, const V &value) {
     return [=](auto keypair) mutable {
       return hexstringToArray<T::size()>(value)
           | assignObjectField(keypair, field);
@@ -51,7 +56,7 @@ namespace iroha {
    * @return encrypted string
    */
   template <typename T>
-  std::string encrypt(const T &key, const std::string &pass_phrase) {
+  static std::string encrypt(const T &key, const std::string &pass_phrase) {
     std::string ciphertext(key.size(), '\0');
     const auto pass_size = std::max(1ul, pass_phrase.size());
 
@@ -64,7 +69,7 @@ namespace iroha {
   /**
    * Function for XOR decryption
    */
-  auto decrypt = encrypt<std::string>;
+  static constexpr auto decrypt = encrypt<std::string>;
 
   /**
    * Return a function which will try to deserialize and then decrypt private
@@ -74,8 +79,8 @@ namespace iroha {
    * @return function that will set keypair::privkey on successful
    *         deserialization and decryption
    */
-  auto deserializedEncrypted(const std::string &s,
-                             const std::string &pass_phrase) {
+  static auto deserializedEncrypted(const std::string &s,
+                                    const std::string &pass_phrase) {
     constexpr auto size = privkey_t::size();
 
     return [=](auto keypair) mutable {
