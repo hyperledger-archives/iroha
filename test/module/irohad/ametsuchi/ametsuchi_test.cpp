@@ -868,6 +868,11 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
   ASSERT_EQ(blocks->getTxByHashSync(tx3hash), boost::none);
 }
 
+/**
+ * @given initialized storage for ordering service
+ * @when save proposal height
+ * @then load proposal height and ensure it is correct
+ */
 TEST_F(AmetsuchiTest, OrderingServicePersistentStorageTest) {
   std::shared_ptr<iroha::ametsuchi::PostgresOrderingServicePersistentState> ordering_state;
   auto orderingStorageResult = iroha::ametsuchi::PostgresOrderingServicePersistentState::create(pgopt_);

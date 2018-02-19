@@ -27,6 +27,10 @@
 namespace iroha {
   namespace ametsuchi {
 
+    /**
+     * Class implements OrderingServicePersistentState for persistent storage of
+     * Ordering Service with PostgreSQL.
+     */
     class PostgresOrderingServicePersistentState
         : public OrderingServicePersistentState {
      public:

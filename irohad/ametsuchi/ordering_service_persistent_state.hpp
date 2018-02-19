@@ -24,7 +24,7 @@ namespace iroha {
   namespace ametsuchi {
 
     /**
-     * Interface for Ordering Service persistence
+     * Interface for Ordering Service persistence to store proposal's height in a persistent way
      */
     class OrderingServicePersistentState {
      public:
