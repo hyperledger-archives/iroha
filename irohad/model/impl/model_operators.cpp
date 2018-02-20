@@ -118,7 +118,7 @@ namespace iroha {
       if (! instanceof <AddPeer>(command))
         return false;
       auto add_peer = static_cast<const AddPeer &>(command);
-      return add_peer.peer_key == peer_key && add_peer.address == address;
+      return add_peer.peer == peer;
     }
 
     /* AddSignatory */
@@ -218,7 +218,8 @@ namespace iroha {
 
     /* Proposal */
     bool Proposal::operator==(const Proposal &rhs) const {
-      return rhs.height == height and rhs.transactions == transactions;
+      return rhs.height == height and rhs.created_time == created_time
+          and rhs.transactions == transactions;
     }
 
     /* Block */

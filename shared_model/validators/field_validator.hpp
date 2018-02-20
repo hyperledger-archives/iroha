@@ -21,7 +21,11 @@
 #include <regex>
 
 #include "datetime/time.hpp"
+#include "interfaces/base/signable.hpp"
 #include "interfaces/commands/command.hpp"
+#include "interfaces/common_objects/signable_hash.hpp"
+#include "interfaces/transaction.hpp"
+#include "validator/address_validator.hpp"
 #include "validators/answer.hpp"
 
 namespace shared_model {
@@ -42,6 +46,9 @@ namespace shared_model {
       void validateAssetId(ReasonsGroupType &reason,
                            const interface::types::AssetIdType &asset_id) const;
 
+      void validatePeer(ReasonsGroupType &reason,
+                        const interface::Peer &peer) const;
+
       void validateAmount(ReasonsGroupType &reason,
                           const interface::Amount &amount) const;
 
@@ -50,7 +57,7 @@ namespace shared_model {
 
       void validatePeerAddress(
           ReasonsGroupType &reason,
-          const interface::AddPeer::AddressType &address) const;
+          const interface::types::AddressType &address) const;
 
       void validateRoleId(ReasonsGroupType &reason,
                           const interface::types::RoleIdType &role_id) const;
@@ -95,6 +102,10 @@ namespace shared_model {
 
       void validateCounter(ReasonsGroupType &reason,
                            const interface::types::CounterType &counter) const;
+
+      void validateSignatures(ReasonsGroupType &reason,
+                              const interface::SignatureSetType &signatures,
+                              const crypto::Blob &source) const;
 
      private:
       std::regex account_id_pattern_;

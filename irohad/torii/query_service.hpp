@@ -33,7 +33,7 @@ namespace torii {
    * ToriiServiceHandler::(SomeMethod)Handler calls a corresponding method in
    * this class.
    */
-  class QueryService {
+  class QueryService : public iroha::protocol::QueryService::Service {
    public:
     QueryService(
         std::shared_ptr<iroha::model::converters::PbQueryFactory>
@@ -50,8 +50,12 @@ namespace torii {
      * @param request - Query
      * @param response - QueryResponse
      */
-    void FindAsync(iroha::protocol::Query const &request,
-                   iroha::protocol::QueryResponse &response);
+    void Find(iroha::protocol::Query const &request,
+              iroha::protocol::QueryResponse &response);
+
+    grpc::Status Find(grpc::ServerContext *context,
+                      const iroha::protocol::Query *request,
+                      iroha::protocol::QueryResponse *response) override;
 
    private:
     std::shared_ptr<iroha::model::converters::PbQueryFactory> pb_query_factory_;

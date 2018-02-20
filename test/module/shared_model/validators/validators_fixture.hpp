@@ -47,14 +47,13 @@ class ValidatorsTest : public ::testing::Test {
     for (const auto &id : {"account_id", "src_account_id", "dest_account_id"}) {
       field_setters[id] = setString(account_id);
     }
-    for (const auto &id : {"peer_key", "public_key", "main_pubkey"}) {
+    for (const auto &id : {"public_key", "main_pubkey"}) {
       field_setters[id] = setString(public_key);
     }
     for (const auto &id : {"role_name", "default_role", "role_id"}) {
       field_setters[id] = setString(role_name);
     }
     field_setters["asset_id"] = setString(asset_id);
-    field_setters["address"] = setString(address_localhost);
     field_setters["account_name"] = setString(account_name);
     field_setters["domain_id"] = setString(domain_id);
     field_setters["asset_name"] = setString(asset_name);
@@ -69,6 +68,9 @@ class ValidatorsTest : public ::testing::Test {
     field_setters["description"] = setString("");
     field_setters["amount"] = [&](auto refl, auto msg, auto field) {
       refl->MutableMessage(msg, field)->CopyFrom(amount);
+    };
+    field_setters["peer"] = [&](auto refl, auto msg, auto field) {
+      refl->MutableMessage(msg, field)->CopyFrom(peer);
     };
   }
 
@@ -138,6 +140,8 @@ class ValidatorsTest : public ::testing::Test {
     grantable_permission =
         iroha::protocol::GrantablePermission::can_add_my_signatory;
     quorum = 2;
+    peer.set_address(address_localhost);
+    peer.set_peer_key(public_key);
   }
 
   size_t public_key_size{0};
@@ -160,6 +164,7 @@ class ValidatorsTest : public ::testing::Test {
   uint8_t quorum;
   uint8_t precision;
   iroha::protocol::Amount amount;
+  iroha::protocol::Peer peer;
   decltype(iroha::time::now()) created_time;
 
   // List all used fields in commands

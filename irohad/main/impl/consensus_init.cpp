@@ -16,12 +16,12 @@
  */
 
 #include "main/impl/consensus_init.hpp"
-
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include "consensus/yac/impl/timer_impl.hpp"
 #include "consensus/yac/impl/yac_crypto_provider_impl.hpp"
 #include "consensus/yac/impl/yac_gate_impl.hpp"
 #include "consensus/yac/impl/yac_hash_provider_impl.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
 
 namespace iroha {

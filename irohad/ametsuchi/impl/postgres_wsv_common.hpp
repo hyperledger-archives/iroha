@@ -18,7 +18,9 @@
 #ifndef IROHA_POSTGRES_WSV_COMMON_HPP
 #define IROHA_POSTGRES_WSV_COMMON_HPP
 
+#include <boost/optional.hpp>
 #include <pqxx/nontransaction>
+#include "common/result.hpp"
 #include "logger/logger.hpp"
 
 namespace iroha {
@@ -28,18 +30,38 @@ namespace iroha {
      * Return function which can execute SQL statements on provided transaction
      * @param transaction on which to apply statement.
      * @param logger is used to report an error.
+     * @return Result with pqxx::result in value case, or exception message
+     * if exception was caught
+     */
+    inline auto makeExecuteResult(pqxx::nontransaction &transaction) noexcept {
+      return [&](const std::string &statement) noexcept
+          ->expected::Result<pqxx::result, std::string> {
+        try {
+          return expected::makeValue(transaction.exec(statement));
+        } catch (const std::exception &e) {
+          return expected::makeError(e.what());
+        }
+      };
+    }
+
+    /**
+     * Return function which can execute SQL statements on provided transaction
+     * This function is deprecated, and will be removed as soon as wsv_query
+     * will be refactored to return result
+     * @param transaction on which to apply statement.
+     * @param logger is used to report an error.
      * @return nonstd::optional with pqxx::result in successful case, or nullopt
      * if exception was caught
      */
-    inline auto makeExecute(pqxx::nontransaction &transaction,
-                            logger::Logger &logger) noexcept {
+    inline auto makeExecuteOptional(pqxx::nontransaction &transaction,
+                                    logger::Logger &logger) noexcept {
       return [&](const std::string &statement) noexcept
-          ->nonstd::optional<pqxx::result> {
+          ->boost::optional<pqxx::result> {
         try {
           return transaction.exec(statement);
         } catch (const std::exception &e) {
           logger->error(e.what());
-          return nonstd::nullopt;
+          return boost::none;
         }
       };
     }

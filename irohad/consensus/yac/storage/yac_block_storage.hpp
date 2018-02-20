@@ -20,8 +20,10 @@
 
 #include <nonstd/optional.hpp>
 #include <vector>
+
+#include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/storage_result.hpp"
-#include "consensus/yac/storage/yac_common.hpp"
+#include "consensus/yac/yac_hash_provider.hpp"
 #include "logger/logger.hpp"
 
 namespace iroha {
@@ -62,12 +64,12 @@ namespace iroha {
         /**
          * @return votes attached to storage
          */
-        auto getVotes() -> decltype(votes_);
+        std::vector<VoteMessage> getVotes() const;
 
         /**
          * @return number of votes attached to storage
          */
-        auto getNumberOfVotes() -> decltype(votes_)::size_type;
+        size_t getNumberOfVotes() const;
 
         /**
          * @return current block store state

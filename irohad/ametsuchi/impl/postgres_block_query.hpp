@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,25 +15,34 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
-#define IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
+#ifndef IROHA_POSTGRES_FLAT_BLOCK_QUERY_HPP
+#define IROHA_POSTGRES_FLAT_BLOCK_QUERY_HPP
 
-#include <cpp_redis/cpp_redis>
+#include <pqxx/nontransaction>
 #include "ametsuchi/block_query.hpp"
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
+#include "logger/logger.hpp"
+#include "postgres_wsv_common.hpp"
 
 #include "model/converters/json_block_factory.hpp"
 
 #include <boost/optional.hpp>
 
+#include "model/converters/json_block_factory.hpp"
+
+
 namespace iroha {
   namespace ametsuchi {
+
+    class FlatFile;
+
     /**
      * Class which implements BlockQuery with a Redis backend.
      */
-    class RedisBlockQuery : public BlockQuery {
+    class PostgresBlockQuery : public BlockQuery {
      public:
-      RedisBlockQuery(cpp_redis::client &client, FlatFile &file_store);
+      PostgresBlockQuery(pqxx::nontransaction &transaction_,
+                         FlatFile &file_store);
 
       rxcpp::observable<model::Transaction> getAccountTransactions(
           const std::string &account_id) override;
@@ -78,14 +87,17 @@ namespace iroha {
        * @param block_id
        * @return
        */
-      std::function<void(cpp_redis::reply &)> callbackToLrange(
+      std::function<void(pqxx::result &result)> callback(
           const rxcpp::subscriber<model::Transaction> &s, uint64_t block_id);
 
       FlatFile &block_store_;
-      cpp_redis::client &client_;
+      pqxx::nontransaction &transaction_;
+      logger::Logger log_;
+      using ExecuteType = decltype(makeExecuteOptional(transaction_, log_));
+      ExecuteType execute_;
       model::converters::JsonBlockFactory serializer_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha
 
-#endif  // IROHA_REDIS_FLAT_BLOCK_QUERY_HPP
+#endif  // IROHA_POSTGRES_FLAT_BLOCK_QUERY_HPP

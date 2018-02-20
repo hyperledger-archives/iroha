@@ -25,12 +25,14 @@
 #include "interfaces/transaction.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 
+#ifndef DISABLE_BACKWARD
 #include "model/proposal.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
 
-    class Proposal : public Hashable<Proposal, iroha::model::Proposal> {
+    class Proposal : public HASHABLE(Proposal) {
      public:
       template <class T>
       using w = detail::PolymorphicWrapper<T>;
@@ -51,6 +53,7 @@ namespace shared_model {
        */
       virtual types::TimestampType created_time() const = 0;
 
+#ifndef DISABLE_BACKWARD
       iroha::model::Proposal *makeOldModel() const override {
         auto txs =
             boost::accumulate(transactions(),
@@ -66,6 +69,7 @@ namespace shared_model {
         oldModel->height = height();
         return oldModel;
       }
+#endif
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

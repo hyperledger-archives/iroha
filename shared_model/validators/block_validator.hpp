@@ -18,13 +18,11 @@
 #ifndef IROHA_BLOCK_VALIDATOR_HPP
 #define IROHA_BLOCK_VALIDATOR_HPP
 
-#include <boost/format.hpp>
-#include <boost/variant/static_visitor.hpp>
-#include <regex>
 #include "datetime/time.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "validators/answer.hpp"
+#include "interfaces/iroha_internal/block.hpp"
 
 // TODO 22/01/2018 x3medima17: write stateless validator IR-837
 
@@ -35,23 +33,6 @@ namespace shared_model {
      * Class that validates block
      */
     class BlockValidator {
-     private:
-      /**
-       * Visitor used by commands validator to validate fields from block
-       */
-      class BlockValidatorVisitor
-          : public boost::static_visitor<ReasonsGroupType> {
-       public:
-        ReasonsGroupType operator()(
-            const detail::PolymorphicWrapper<interface::Block> &block) const {
-          ReasonsGroupType reason;
-
-          return reason;
-        }
-
-       private:
-      };
-
      public:
       /**
        * Applies validation on block
@@ -60,9 +41,7 @@ namespace shared_model {
        */
       Answer validate(
           detail::PolymorphicWrapper<interface::Block> block) const {
-        Answer answer;
-
-        return answer;
+        return Answer();
       }
 
       Answer answer_;

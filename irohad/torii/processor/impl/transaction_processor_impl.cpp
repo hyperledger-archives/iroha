@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-#include "torii/processor/transaction_processor_impl.hpp"
 
 #include <iostream>
 #include <utility>
-
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "endpoint.pb.h"
+#include "model/sha3_hash.hpp"
 #include "model/transaction_response.hpp"
+#include "torii/processor/transaction_processor_impl.hpp"
 
 namespace iroha {
   namespace torii {

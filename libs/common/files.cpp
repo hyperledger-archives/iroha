@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <boost/filesystem.hpp>
 
 #include "common/files.hpp"
+
+#include <boost/filesystem.hpp>
+
 #include "logger/logger.hpp"
 
 void iroha::remove_all(const std::string &dump_dir) {

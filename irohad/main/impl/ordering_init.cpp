@@ -16,6 +16,7 @@
  */
 
 #include "main/impl/ordering_init.hpp"
+#include "model/peer.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 
 namespace iroha {
@@ -40,7 +41,12 @@ namespace iroha {
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
         size_t max_size,
         std::chrono::milliseconds delay_milliseconds) {
-      auto network_address = wsv->getLedgerPeers().value().front().address;
+      auto ledger_peers = wsv->getLedgerPeers();
+      if (not ledger_peers or ledger_peers.value().empty()) {
+        log_->error(
+            "Ledger don't have peers. Do you set correct genesis block?");
+      }
+      auto network_address = ledger_peers.value().front().address;
       ordering_gate_transport =
           std::make_shared<iroha::ordering::OrderingGateTransportGrpc>(
               network_address);

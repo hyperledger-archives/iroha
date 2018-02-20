@@ -18,6 +18,7 @@
 #include "consensus/yac/storage/yac_common.hpp"
 #include <gtest/gtest.h>
 #include "consensus/consensus_common.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "logger/logger.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 

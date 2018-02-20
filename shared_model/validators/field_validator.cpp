@@ -17,8 +17,7 @@
 
 #include "validators/field_validator.hpp"
 #include <boost/format.hpp>
-
-#include "validator/address_validator.hpp"
+#include "cryptography/crypto_provider/crypto_verifier.hpp"
 
 namespace shared_model {
   namespace validation {
@@ -54,6 +53,12 @@ namespace shared_model {
       }
     }
 
+    void FieldValidator::validatePeer(ReasonsGroupType &reason,
+                                      const interface::Peer &peer) const {
+      validatePeerAddress(reason, peer.address());
+      validatePubkey(reason, peer.pubkey());
+    }
+
     void FieldValidator::validateAmount(ReasonsGroupType &reason,
                                         const interface::Amount &amount) const {
       if (amount.intValue() <= 0) {
@@ -79,7 +84,7 @@ namespace shared_model {
 
     void FieldValidator::validatePeerAddress(
         ReasonsGroupType &reason,
-        const interface::AddPeer::AddressType &address) const {
+        const interface::types::AddressType &address) const {
       if (not(iroha::validator::isValidIpV4(address)
               or iroha::validator::isValidHostname(address))) {
         auto message =
@@ -197,7 +202,8 @@ namespace shared_model {
       if (now + future_gap_ < timestamp) {
         auto message = (boost::format("bad timestamp: sent from future, "
                                       "timestamp: %llu, now: %llu")
-                        % timestamp % now)
+                        % timestamp
+                        % now)
                            .str();
         reason.second.push_back(std::move(message));
       }
@@ -205,7 +211,8 @@ namespace shared_model {
       if (now > max_delay + timestamp) {
         auto message =
             (boost::format("bad timestamp: too old, timestamp: %llu, now: %llu")
-             % timestamp % now)
+             % timestamp
+             % now)
                 .str();
         reason.second.push_back(std::move(message));
       }
@@ -219,6 +226,21 @@ namespace shared_model {
             (boost::format("Counter should be > 0, passed value: %d") % counter)
                 .str();
         reason.second.push_back(message);
+      }
+    }
+
+    void FieldValidator::validateSignatures(
+        ReasonsGroupType &reason,
+        const interface::SignatureSetType &signatures,
+        const crypto::Blob &source) const {
+      for (const auto &signature : signatures) {
+        if (not shared_model::crypto::CryptoVerifier<>::verify(
+                signature->signedData(), source, signature->publicKey())) {
+          auto message = (boost::format("Wrong signature with %s")
+                          % signature->publicKey().toString())
+                             .str();
+          reason.second.push_back(message);
+        }
       }
     }
 

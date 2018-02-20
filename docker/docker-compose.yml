@@ -16,7 +16,7 @@ services:
       - CCACHE_DIR=/tmp/ccache
     # export G_ID=$(id -g $(whoami))
     # export U_ID=$(id -g $(whoami))
-    user: ${U_ID?define U_ID with user id}:${G_ID?define G_ID with user group id}
+    user: ${U_ID:-0}:${G_ID:-0}
     depends_on:
       - redis
       - postgres

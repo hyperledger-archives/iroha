@@ -34,9 +34,12 @@ namespace shared_model {
         return "NoRolesErrorResponse";
       }
 
+#ifndef DISABLE_BACKWARD
       iroha::model::ErrorResponse::Reason oldModelReason() const override {
         return iroha::model::ErrorResponse::Reason::NO_ROLES;
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

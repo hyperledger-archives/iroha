@@ -18,9 +18,14 @@
 #ifndef IROHA_CLI_TRANSACTION_RESPONSE_HANDLER_HPP
 #define IROHA_CLI_TRANSACTION_RESPONSE_HANDLER_HPP
 
-#include "client.hpp"
-#include "logger/logger.hpp"
+#include "client.hpp"  // for CliClient::TxStatus (yuck!)
+
+namespace spdlog {
+  class logger;
+}
+
 namespace iroha_cli {
+
   class TransactionResponseHandler {
    public:
     TransactionResponseHandler();

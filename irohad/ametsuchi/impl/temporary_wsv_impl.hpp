@@ -22,10 +22,16 @@
 #include <pqxx/nontransaction>
 
 #include "ametsuchi/temporary_wsv.hpp"
-#include "model/execution/command_executor_factory.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
+
+  namespace model {
+    class CommandExecutorFactory;
+  }
+
   namespace ametsuchi {
+
     class TemporaryWsvImpl : public TemporaryWsv {
      public:
       TemporaryWsvImpl(
@@ -45,6 +51,8 @@ namespace iroha {
       std::unique_ptr<WsvQuery> wsv_;
       std::unique_ptr<WsvCommand> executor_;
       std::shared_ptr<model::CommandExecutorFactory> command_executors_;
+
+      logger::Logger log_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha
