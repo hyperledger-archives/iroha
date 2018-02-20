@@ -58,7 +58,7 @@ namespace iroha {
                       model::converters::JsonBlockFactory().serialize(block))));
         auto bl = std::make_shared<shared_model::proto::Block>(
             shared_model::proto::from_old(block));
-        index->index(bl);
+        index->index(*bl);
       }
 
       std::unique_ptr<pqxx::nontransaction> transaction;

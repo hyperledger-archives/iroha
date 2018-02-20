@@ -61,7 +61,7 @@ namespace iroha {
           commands.end(),
           true,
           [&](auto &status, const auto &cmd) {
-            return iroha::visit_in_place(
+            return visit_in_place(
                 cmd->get(),
                 [&](const TA &command) {
                   status &= this->indexAccountIdHeight(command->srcAccountId(),
@@ -93,20 +93,19 @@ namespace iroha {
     }
 
     void PostgresBlockIndex::index(
-        const w<shared_model::interface::Block> block) {
-      const auto &height = std::to_string(block->height());
+        const shared_model::interface::Block &block) {
+      const auto &height = std::to_string(block.height());
       boost::for_each(
-          block->transactions() | boost::adaptors::indexed(0),
+          block.transactions() | boost::adaptors::indexed(0),
           [&](const auto &tx) {
             const auto &creator_id = tx.value()->creatorAccountId();
             const auto &hash = tx.value()->hash();
             const auto &index = std::to_string(tx.index());
 
-            const auto bytes = bytesToString(hash.blob());
             // tx hash -> block where hash is stored
             this->execute("INSERT INTO height_by_hash(hash, height) VALUES ("
-                          + transaction_.quote(
-                                pqxx::binarystring(bytes.data(), hash.size()))
+                          + transaction_.quote(pqxx::binarystring(
+                                hash.blob().data(), hash.size()))
                           + ", " + transaction_.quote(height) + ");");
 
             this->indexAccountIdHeight(creator_id, height);

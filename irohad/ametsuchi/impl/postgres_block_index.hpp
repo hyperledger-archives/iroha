@@ -18,27 +18,21 @@
 #ifndef IROHA_POSTGRES_BLOCK_INDEX_HPP
 #define IROHA_POSTGRES_BLOCK_INDEX_HPP
 
+#include <boost/format.hpp>
+#include <pqxx/nontransaction>
+
 #include "ametsuchi/impl/block_index.hpp"
 #include "ametsuchi/impl/postgres_wsv_common.hpp"
 #include "logger/logger.hpp"
+#include "interfaces/transaction.hpp"
 
-#include <boost/format.hpp>
-#include <interfaces/transaction.hpp>
-#include <pqxx/nontransaction>
-
-namespace shared_model {
-  namespace interface {
-    class Command;
-  }
-}  // namespace shared_model
 namespace iroha {
   namespace ametsuchi {
     class PostgresBlockIndex : public BlockIndex {
-      /// Type of ordered collection of commands
      public:
       explicit PostgresBlockIndex(pqxx::nontransaction &transaction);
 
-      void index(const w<shared_model::interface::Block> block) override;
+      void index(const shared_model::interface::Block &block) override;
 
      private:
       /**
@@ -58,10 +52,11 @@ namespace iroha {
        * @param index of transaction in the block
        * @param commands in the transaction
        */
-      auto indexAccountAssets(const std::string &account_id,
-                              const std::string &height,
-                              const std::string &index,
-                              const shared_model::interface::Transaction::CommandsType &commands);
+      auto indexAccountAssets(
+          const std::string &account_id,
+          const std::string &height,
+          const std::string &index,
+          const shared_model::interface::Transaction::CommandsType &commands);
 
       pqxx::nontransaction &transaction_;
       logger::Logger log_;

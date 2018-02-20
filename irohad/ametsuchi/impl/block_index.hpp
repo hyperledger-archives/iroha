@@ -32,10 +32,6 @@ namespace iroha {
      * Internal interface for modifying index on blocks and transactions
      */
     class BlockIndex {
-     protected:
-      template <class T>
-      using w = std::shared_ptr<T>;
-
      public:
       virtual ~BlockIndex() = default;
 
@@ -43,7 +39,7 @@ namespace iroha {
        * Add block to index
        * @param block to be indexed
        */
-      virtual void index(const w<shared_model::interface::Block>) = 0;
+      virtual void index(const shared_model::interface::Block &) = 0;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

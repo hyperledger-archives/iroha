@@ -89,7 +89,7 @@ class BlockQueryTest : public AmetsuchiTest {
                     converters::JsonBlockFactory().serialize(b))));
       auto bl = std::make_shared<shared_model::proto::Block>(
           shared_model::proto::from_old(b));
-      index->index(bl);
+      index->index(*bl);
       blocks_total++;
     }
   }

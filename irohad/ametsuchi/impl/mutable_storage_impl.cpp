@@ -75,7 +75,7 @@ namespace iroha {
 
       if (result) {
         block_store_.insert(std::make_pair(block.height, block));
-        block_index_->index(bl);
+        block_index_->index(*bl);
 
         top_hash_ = block.hash;
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");
