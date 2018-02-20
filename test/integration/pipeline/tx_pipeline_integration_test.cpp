@@ -187,7 +187,7 @@ TEST(PipelineIntegrationTest, SendQuery) {
  * @given some user
  * @when sending sample AddAssetQuantity transaction to the ledger
  * @then receive STATELESS_VALIDATION_SUCCESS status on that tx
- * @then wait for proposal and block
+ * @and wait for proposal and block
  */
 TEST(PipelineIntegrationTest, SendTx) {
   auto tx = shared_model::proto::TransactionBuilder()
