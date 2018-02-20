@@ -35,8 +35,9 @@ namespace shared_model {
      * to perform stateless validation on model fields
      */
     template <typename BuilderImpl, typename Validator>
-    class AmountBuilder
-        : public CommonObjectBuilder<interface::Amount, BuilderImpl, Validator> {
+    class AmountBuilder : public CommonObjectBuilder<interface::Amount,
+                                                     BuilderImpl,
+                                                     Validator> {
      public:
       AmountBuilder &intValue(const boost::multiprecision::uint256_t &value) {
         this->builder_ = this->builder_.intValue(value);
@@ -54,9 +55,12 @@ namespace shared_model {
         return "Amount Builder";
       }
 
-      virtual void validate(validation::ReasonsGroupType &reasons,
-                            const interface::Amount &object) override {
+      virtual validation::ReasonsGroupType validate(
+          const interface::Amount &object) override {
+        validation::ReasonsGroupType reasons;
         this->validator_.validateAmount(reasons, object);
+
+        return reasons;
       }
     };
   }  // namespace builder

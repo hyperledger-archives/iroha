@@ -24,6 +24,11 @@
 // TODO: 14.02.2018 nickaleks mock builder implementation IR-970
 // TODO: 14.02.2018 nickaleks mock field validator IR-971
 
+/**
+ * @given vield values which pass stateless validation
+ * @when PeerBuilder is invoked
+ * @then Peer object is successfully constructed and has valid fields
+ */
 TEST(PeerBuilderTest, StatelessValidAddressCreation) {
 
   shared_model::builder::SignatureBuilder<shared_model::proto::SignatureBuilder,

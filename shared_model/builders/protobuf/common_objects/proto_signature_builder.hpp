@@ -20,7 +20,6 @@
 
 #include "backend/protobuf/common_objects/signature.hpp"
 #include "primitive.pb.h"
-#include "utils/polymorphic_wrapper.hpp"
 #include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {

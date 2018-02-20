@@ -21,6 +21,12 @@
 
 #include "builders/protobuf/common_objects/proto_amount_builder.hpp"
 
+/**
+ * @given fields for Amount object
+ * @when AmountBuilder is invoked
+ * @then Amount object is successfully constructed and has the same fields as
+ * provided
+ */
 TEST(ProtoAmountBuilderTest, AllFieldsBuild) {
   shared_model::proto::AmountBuilder builder;
 

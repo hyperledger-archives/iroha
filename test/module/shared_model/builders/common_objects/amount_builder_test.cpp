@@ -24,7 +24,12 @@
 // TODO: 14.02.2018 nickaleks mock builder implementation IR-970
 // TODO: 14.02.2018 nickaleks mock field validator IR-971
 
-TEST(AccountBuilderTest, StatelessValidAllFields) {
+/**
+ * @given vield values which pass stateless validation
+ * @when  AmountBuilder is invoked
+ * @then Amount object is successfully constructed and has valid fields
+ */
+TEST(AmountBuilderTest, StatelessValidAllFields) {
 
   shared_model::builder::AmountBuilder<shared_model::proto::AmountBuilder,
                                         shared_model::validation::FieldValidator>

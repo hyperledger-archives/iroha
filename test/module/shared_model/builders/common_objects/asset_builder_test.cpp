@@ -24,6 +24,11 @@
 // TODO: 14.02.2018 nickaleks mock builder implementation IR-970
 // TODO: 14.02.2018 nickaleks mock field validator IR-971
 
+/**
+ * @given vield values which pass stateless validation
+ * @when AssetBuilderTest is invoked
+ * @then Asset object is successfully constructed and has valid fields
+ */
 TEST(AssetBuilderTest, StatelessValidAllFields) {
 
   shared_model::builder::AssetBuilder<shared_model::proto::AssetBuilder,

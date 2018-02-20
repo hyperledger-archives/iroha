@@ -38,7 +38,6 @@ namespace shared_model {
     template <typename BuilderImpl, typename Validator>
     class AssetBuilder
         : public CommonObjectBuilder<interface::Asset, BuilderImpl, Validator> {
-
      public:
       AssetBuilder &assetId(const interface::types::AccountIdType &asset_id) {
         this->builder_ = this->builder_.assetId(asset_id);
@@ -61,11 +60,13 @@ namespace shared_model {
         return "Asset Builder";
       }
 
-      virtual void validate(validation::ReasonsGroupType &reasons,
-                            const interface::Asset &object) override {
+      virtual validation::ReasonsGroupType validate(const interface::Asset &object) override {
+        validation::ReasonsGroupType reasons;
         this->validator_.validateAssetId(reasons, object.assetId());
         this->validator_.validateDomainId(reasons, object.domainId());
         this->validator_.validatePrecision(reasons, object.precision());
+
+        return reasons;
       }
     };
   }  // namespace builder

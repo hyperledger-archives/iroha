@@ -19,6 +19,12 @@
 
 #include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 
+/**
+ * @given fields for Peer object
+ * @when PeerBuilder is invoked
+ * @then Peer object is successfully constructed and has the same fields as
+ * provided
+ */
 TEST(ProtoPeerBuilderTest, AddressFieldBuild) {
   shared_model::proto::PeerBuilder builder;
 

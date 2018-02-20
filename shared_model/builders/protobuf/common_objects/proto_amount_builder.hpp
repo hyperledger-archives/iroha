@@ -20,7 +20,6 @@
 
 #include "backend/protobuf/common_objects/amount.hpp"
 #include "primitive.pb.h"
-#include "utils/polymorphic_wrapper.hpp"
 
 namespace shared_model {
   namespace proto {

@@ -20,7 +20,6 @@
 
 #include "backend/protobuf/common_objects/account.hpp"
 #include "responses.pb.h"
-#include "utils/polymorphic_wrapper.hpp"
 
 namespace shared_model {
   namespace proto {

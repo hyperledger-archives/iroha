@@ -19,6 +19,12 @@
 
 #include "builders/protobuf/common_objects/proto_signature_builder.hpp"
 
+/**
+ * @given fields for Signature object
+ * @when SignatureBuilder is invoked
+ * @then Signature object is successfully constructed and has the same fields as
+ * provided
+ */
 TEST(ProtoSignatureBuilderTest, AllFieldsBuild) {
   shared_model::proto::SignatureBuilder builder;
 

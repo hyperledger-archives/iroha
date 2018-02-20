@@ -57,9 +57,12 @@ namespace shared_model {
         return "Signature Builder";
       }
 
-      virtual void validate(validation::ReasonsGroupType &reasons,
-                            const interface::Signature &object) override {
+      virtual validation::ReasonsGroupType validate(
+          const interface::Signature &object) override {
+        validation::ReasonsGroupType reasons;
         this->validator_.validatePubkey(reasons, object.publicKey());
+
+        return reasons;
       }
     };
   }  // namespace builder

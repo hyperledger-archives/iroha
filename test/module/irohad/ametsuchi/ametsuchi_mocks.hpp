@@ -155,8 +155,8 @@ namespace iroha {
       MOCK_METHOD2(
           apply,
           bool(const model::Block &,
-               std::function<bool(
-                   const model::Block &, WsvQuery &, const hash256_t &)>));
+               std::function<
+                   bool(const model::Block &, WsvQuery &, const hash256_t &)>));
     };
 
     /**
@@ -166,7 +166,8 @@ namespace iroha {
      */
     expected::Result<std::unique_ptr<MutableStorage>, std::string>
     createMockMutableStorage() {
-      return expected::makeValue<std::unique_ptr<MutableStorage>>(std::make_unique<MockMutableStorage>());
+      return expected::makeValue<std::unique_ptr<MutableStorage>>(
+          std::make_unique<MockMutableStorage>());
     }
 
     class MockMutableFactory : public MutableFactory {

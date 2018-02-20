@@ -62,12 +62,15 @@ namespace shared_model {
         return "Account Asset Builder";
       }
 
-      virtual void validate(validation::ReasonsGroupType &reasons,
-                            const interface::AccountAsset &object) override {
+      virtual validation::ReasonsGroupType validate(
+          const interface::AccountAsset &object) override {
+        validation::ReasonsGroupType reasons;
         this->validator_.validateAccountId(reasons, object.accountId());
         this->validator_.validateAssetId(reasons, object.assetId());
         // Do not validate balance, since its amount can be 0, which is
         // forbidden by validation
+
+        return reasons;
       }
     };
   }  // namespace builder

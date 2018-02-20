@@ -17,17 +17,27 @@
 
 #include <gtest/gtest.h>
 
-#include "builders/protobuf/common_objects/proto_amount_builder.hpp"
 #include "builders/protobuf/common_objects/proto_account_asset_builder.hpp"
+#include "builders/protobuf/common_objects/proto_amount_builder.hpp"
 
+/**
+ * @given fields for AccountAsset object
+ * @when AccountAssetBuilder is invoked
+ * @then AccountAsset object is successfully constructed and has the same fields as
+ * provided
+ */
 TEST(ProtoAccountAssetBuilder, AllFieldsBuild) {
   shared_model::proto::AccountAssetBuilder builder;
 
   auto expected_account_id = "account@name";
   auto expected_asset_id = "asset#coin";
-  auto expected_balance = shared_model::proto::AmountBuilder().intValue(100).precision(2).build();
+  auto expected_balance =
+      shared_model::proto::AmountBuilder().intValue(100).precision(2).build();
 
-  auto account_asset = builder.accountId(expected_account_id).assetId(expected_asset_id).balance(expected_balance).build();
+  auto account_asset = builder.accountId(expected_account_id)
+                           .assetId(expected_asset_id)
+                           .balance(expected_balance)
+                           .build();
 
   EXPECT_EQ(account_asset.accountId(), expected_account_id);
   EXPECT_EQ(account_asset.assetId(), expected_asset_id);

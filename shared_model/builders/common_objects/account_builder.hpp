@@ -66,11 +66,14 @@ namespace shared_model {
         return "Account Builder";
       }
 
-      virtual void validate(validation::ReasonsGroupType &reasons,
-                            const interface::Account &object) override {
+      virtual validation::ReasonsGroupType validate(
+          const interface::Account &object) override {
+        validation::ReasonsGroupType reasons;
         this->validator_.validateAccountId(reasons, object.accountId());
         this->validator_.validateDomainId(reasons, object.domainId());
         this->validator_.validateQuorum(reasons, object.quorum());
+
+        return reasons;
       }
     };
   }  // namespace builder

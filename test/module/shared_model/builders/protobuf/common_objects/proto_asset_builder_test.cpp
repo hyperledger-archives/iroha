@@ -19,6 +19,12 @@
 
 #include "builders/protobuf/common_objects/proto_asset_builder.hpp"
 
+/**
+ * @given fields for Asset object
+ * @when AssetBuilder is invoked
+ * @then Asset object is successfully constructed and has the same fields as
+ * provided
+ */
 TEST(ProtoAssetBuilderTest, AllFieldsBuild) {
   shared_model::proto::AssetBuilder builder;
 

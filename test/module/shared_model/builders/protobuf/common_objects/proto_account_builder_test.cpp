@@ -19,6 +19,12 @@
 
 #include "builders/protobuf/common_objects/proto_account_builder.hpp"
 
+/**
+ * @given fields for Account object
+ * @when AccountBuilder is invoked
+ * @then Account object is successfully constructed and has the same fields as
+ * provided
+ */
 TEST(ProtoAccountBuilderTest, AllFieldsBuild) {
   shared_model::proto::AccountBuilder builder;
 
