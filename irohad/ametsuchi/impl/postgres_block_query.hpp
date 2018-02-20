@@ -41,29 +41,24 @@ namespace iroha {
       PostgresBlockQuery(pqxx::nontransaction &transaction_,
                          FlatFile &file_store);
 
-      rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
-      getAccountTransactions(const std::string &account_id) override;
+      rxcpp::observable<wTransaction> getAccountTransactions(
+          const std::string &account_id) override;
 
-      rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
-      getAccountAssetTransactions(const std::string &account_id,
-                                  const std::string &asset_id) override;
+      rxcpp::observable<wTransaction> getAccountAssetTransactions(
+          const std::string &account_id, const std::string &asset_id) override;
 
-      rxcpp::observable<boost::optional<
-          std::shared_ptr<shared_model::interface::Transaction>>>
-      getTransactions(
+      rxcpp::observable<boost::optional<wTransaction>> getTransactions(
           const std::vector<shared_model::crypto::Hash> &tx_hashes) override;
 
-      boost::optional<std::shared_ptr<shared_model::interface::Transaction>>
-      getTxByHashSync(const std::string &hash) override;
+      boost::optional<wTransaction> getTxByHashSync(
+          const std::string &hash) override;
 
-      rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-      getBlocks(uint32_t height, uint32_t count) override;
+      rxcpp::observable<wBlock> getBlocks(uint32_t height,
+                                          uint32_t count) override;
 
-      rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-      getBlocksFrom(uint32_t height) override;
+      rxcpp::observable<wBlock> getBlocksFrom(uint32_t height) override;
 
-      rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-      getTopBlocks(uint32_t count) override;
+      rxcpp::observable<wBlock> getTopBlocks(uint32_t count) override;
 
      private:
       /**
@@ -90,9 +85,7 @@ namespace iroha {
        * @return
        */
       std::function<void(pqxx::result &result)> callback(
-          const rxcpp::subscriber<
-              std::shared_ptr<shared_model::interface::Transaction>> &s,
-          uint64_t block_id);
+          const rxcpp::subscriber<wTransaction> &s, uint64_t block_id);
 
       FlatFile &block_store_;
       pqxx::nontransaction &transaction_;

@@ -29,19 +29,16 @@ namespace iroha {
           log_(logger::log("PostgresBlockIndex")),
           execute_{makeExecute(transaction_, log_)} {}
 
-    rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-    PostgresBlockQuery::getBlocks(uint32_t height, uint32_t count) {
+    rxcpp::observable<BlockQuery::wBlock> PostgresBlockQuery::getBlocks(
+        uint32_t height, uint32_t count) {
       auto last_id = block_store_.last_id();
       auto to = std::min(last_id, height + count - 1);
       if (height > to or count == 0) {
-        return rxcpp::observable<>::empty<
-            std::shared_ptr<shared_model::interface::Block>>();
+        return rxcpp::observable<>::empty<wBlock>();
       }
       return rxcpp::observable<>::range(height, to).flat_map([this](auto i) {
         auto bytes = block_store_.get(i);
-        return rxcpp::observable<>::create<
-            std::shared_ptr<shared_model::interface::Block>>([this,
-                                                              bytes](auto s) {
+        return rxcpp::observable<>::create<wBlock>([this, bytes](auto s) {
           if (not bytes.has_value()) {
             s.on_completed();
             return;
@@ -61,20 +58,19 @@ namespace iroha {
             return;
           }
           auto block = shared_model::proto::from_old(block_old.value());
-          s.on_next(
-              std::shared_ptr<shared_model::interface::Block>(block.copy()));
+          s.on_next(wBlock(block.copy()));
           s.on_completed();
         });
       });
     }
 
-    rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-    PostgresBlockQuery::getBlocksFrom(uint32_t height) {
+    rxcpp::observable<BlockQuery::wBlock> PostgresBlockQuery::getBlocksFrom(
+        uint32_t height) {
       return getBlocks(height, block_store_.last_id());
     }
 
-    rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-    PostgresBlockQuery::getTopBlocks(uint32_t count) {
+    rxcpp::observable<BlockQuery::wBlock> PostgresBlockQuery::getTopBlocks(
+        uint32_t count) {
       auto last_id = block_store_.last_id();
       count = std::min(count, last_id);
       return getBlocks(last_id - count + 1, count);
@@ -116,9 +112,7 @@ namespace iroha {
     }
 
     std::function<void(pqxx::result &result)> PostgresBlockQuery::callback(
-        const rxcpp::subscriber<
-            std::shared_ptr<shared_model::interface::Transaction>> &subscriber,
-        uint64_t block_id) {
+        const rxcpp::subscriber<wTransaction> &subscriber, uint64_t block_id) {
       return [this, &subscriber, block_id](pqxx::result &result) {
         auto block = block_store_.get(block_id) | [this](auto bytes) {
           return boost::optional<shared_model::proto::Block>(
@@ -132,16 +126,14 @@ namespace iroha {
             [&](auto x) {
               shared_model::interface::Transaction *tx =
                   block->transactions().at(x)->copy();
-              subscriber.on_next(
-                  std::shared_ptr<shared_model::interface::Transaction>(tx));
+              subscriber.on_next(wTransaction(tx));
             });
       };
     }
 
-    rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
+    rxcpp::observable<BlockQuery::wTransaction>
     PostgresBlockQuery::getAccountTransactions(const std::string &account_id) {
-      return rxcpp::observable<>::create<
-          std::shared_ptr<shared_model::interface::Transaction>>(
+      return rxcpp::observable<>::create<wTransaction>(
           [this, account_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
             if (block_ids.empty()) {
@@ -161,7 +153,7 @@ namespace iroha {
           });
     }
 
-    rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
+    rxcpp::observable<BlockQuery::wTransaction>
     PostgresBlockQuery::getAccountAssetTransactions(
         const std::string &account_id, const std::string &asset_id) {
       return rxcpp::observable<>::create<std::shared_ptr<
@@ -186,12 +178,11 @@ namespace iroha {
       });
     }
 
-    rxcpp::observable<
-        boost::optional<std::shared_ptr<shared_model::interface::Transaction>>>
+    rxcpp::observable<boost::optional<BlockQuery::wTransaction>>
     PostgresBlockQuery::getTransactions(
         const std::vector<shared_model::crypto::Hash> &tx_hashes) {
-      return rxcpp::observable<>::create<boost::optional<
-          std::shared_ptr<shared_model::interface::Transaction>>>(
+      return rxcpp::observable<>::create<
+          boost::optional<BlockQuery::wTransaction>>(
           [this, tx_hashes](auto subscriber) {
             std::for_each(tx_hashes.begin(),
                           tx_hashes.end(),
@@ -204,7 +195,7 @@ namespace iroha {
           });
     }
 
-    boost::optional<std::shared_ptr<shared_model::interface::Transaction>>
+    boost::optional<BlockQuery::wTransaction>
     PostgresBlockQuery::getTxByHashSync(const std::string &hash) {
       return getBlockId(hash) |
           [this](auto blockId) { return block_store_.get(blockId); } |
@@ -228,14 +219,9 @@ namespace iroha {
                              return std::string{b.begin(), b.end()} == hash;
                            });
           if (it == block.transactions().end()) {
-            return boost::optional<
-                std::shared_ptr<shared_model::interface::Transaction>>(
-                boost::none);
+            return boost::optional<wTransaction>(boost::none);
           }
-          return boost::optional<
-              std::shared_ptr<shared_model::interface::Transaction>>(
-              std::shared_ptr<shared_model::interface::Transaction>(
-                  (*it)->copy()));
+          return boost::optional<wTransaction>(wTransaction((*it)->copy()));
         };
     }
 

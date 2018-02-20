@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include <backend/protobuf/transaction.hpp>
+#include "backend/protobuf/transaction.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/model/model_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
