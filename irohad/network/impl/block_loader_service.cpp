@@ -59,7 +59,8 @@ grpc::Status BlockLoaderService::retrieveBlock(
   nonstd::optional<protocol::Block> result;
   storage_->getBlocksFrom(1)
       .filter([hash](auto block) {
-        return block->hash().hex() == hash->to_hexstring();
+        return shared_model::crypto::toBinaryString(block->hash())
+            == hash->to_string();
       })
       .map([this](auto block) {
         return factory_.serialize(

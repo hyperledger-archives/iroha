@@ -46,19 +46,14 @@ namespace iroha {
           // TODO IR-975 victordrobny 12.02.2018 convert directly to
           // shared_model::proto::Block after FlatFile will be reworked to new
           // model
-          auto document =
-              model::converters::stringToJson(bytesToString(bytes.value()));
-          if (not document.has_value()) {
-            s.on_completed();
-            return;
-          }
-          auto block_old = serializer_.deserialize(document.value());
-          if (not block_old.has_value()) {
-            s.on_completed();
-            return;
-          }
-          auto block = shared_model::proto::from_old(block_old.value());
-          s.on_next(wBlock(block.copy()));
+
+          model::converters::stringToJson(bytesToString(bytes.value())) |
+              [this](const auto &d) { return serializer_.deserialize(d); } |
+              [&s](const auto &block_old) {
+                s.on_next(
+                    wBlock(shared_model::proto::from_old(block_old).copy()));
+                return true;
+              };
           s.on_completed();
         });
       });
@@ -187,9 +182,8 @@ namespace iroha {
             std::for_each(tx_hashes.begin(),
                           tx_hashes.end(),
                           [that = this, &subscriber](auto tx_hash) {
-                            auto b = tx_hash.blob();
                             subscriber.on_next(that->getTxByHashSync(
-                                std::string{b.begin(), b.end()}));
+                                shared_model::crypto::toBinaryString(tx_hash)));
                           });
             subscriber.on_completed();
           });
@@ -211,13 +205,12 @@ namespace iroha {
                 shared_model::proto::from_old(block));
           }
       | [&](const auto &block) {
-          auto it =
-              std::find_if(block.transactions().begin(),
-                           block.transactions().end(),
-                           [&hash](auto tx) {
-                             auto b = tx->hash().blob();
-                             return std::string{b.begin(), b.end()} == hash;
-                           });
+          auto it = std::find_if(
+              block.transactions().begin(),
+              block.transactions().end(),
+              [&hash](auto tx) {
+                return shared_model::crypto::toBinaryString(tx->hash()) == hash;
+              });
           if (it == block.transactions().end()) {
             return boost::optional<wTransaction>(boost::none);
           }
