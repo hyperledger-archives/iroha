@@ -81,8 +81,19 @@ TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   auto wrapper = make_test_subscriber<CallExact>(qpi.queryNotifier(), 1);
   wrapper.subscribe([](auto response) {
     auto resp = response->get();
-    // TODO: change to non static assert
-    ASSERT_EQ(resp.which(), 3);
+    /// check if obtained response is error response
+    boost::apply_visitor(
+        [](auto val) {
+          if (std::is_same<
+                  decltype(val),
+                  shared_model::detail::PolymorphicWrapper<
+                      shared_model::interface::ErrorQueryResponse>>::value) {
+            SUCCEED();
+          } else {
+            FAIL();
+          }
+        },
+        resp);
   });
   qpi.queryHandle(
       shared_model::detail::makePolymorphic<shared_model::proto::Query>(
