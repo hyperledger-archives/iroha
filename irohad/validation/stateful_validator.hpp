@@ -41,7 +41,7 @@ namespace iroha {
        * @return proposal with valid transactions
        */
       virtual std::shared_ptr<shared_model::interface::Proposal> validate(
-          const shared_model::detail::PolymorphicWrapper<
+          const std::shared_ptr<
               shared_model::interface::Proposal> &proposal,
           ametsuchi::TemporaryWsv &temporaryWsv) = 0;
     };

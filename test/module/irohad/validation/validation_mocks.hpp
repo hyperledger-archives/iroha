@@ -35,11 +35,11 @@ namespace iroha {
 
     class MockStatefulValidator : public validation::StatefulValidator {
      public:
-      MOCK_METHOD2(validate,
-                   std::shared_ptr<shared_model::interface::Proposal>(
-                       const shared_model::detail::PolymorphicWrapper<
-                           shared_model::interface::Proposal> &,
-                       ametsuchi::TemporaryWsv &));
+      MOCK_METHOD2(
+          validate,
+          std::shared_ptr<shared_model::interface::Proposal>(
+              const std::shared_ptr<shared_model::interface::Proposal> &,
+              ametsuchi::TemporaryWsv &));
     };
 
     class MockChainValidator : public ChainValidator {

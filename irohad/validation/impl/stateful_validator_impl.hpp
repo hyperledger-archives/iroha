@@ -17,8 +17,6 @@
 #ifndef IROHA_STATEFUL_VALIDATIOR_IMPL_HPP
 #define IROHA_STATEFUL_VALIDATIOR_IMPL_HPP
 
-#include "backend/protobuf/transaction.hpp"
-#include "model/converters/pb_transaction_factory.hpp"
 #include "validation/stateful_validator.hpp"
 #include "validators/default_validator.hpp"
 
@@ -36,7 +34,7 @@ namespace iroha {
 
       /**
        * Function perform stateful validation on proposal
-       * and return proposal with valid transactions
+       * and return proposal with valid
        * @param proposal - proposal for validation
        * @param wsv  - temporary wsv for validation,
        * this wsv not affected on ledger,
@@ -44,8 +42,7 @@ namespace iroha {
        * @return proposal with valid transactions
        */
       std::shared_ptr<shared_model::interface::Proposal> validate(
-          const shared_model::detail::PolymorphicWrapper<
-              shared_model::interface::Proposal> &proposal,
+          const std::shared_ptr<shared_model::interface::Proposal> &proposal,
           ametsuchi::TemporaryWsv &temporaryWsv) override;
 
      private:

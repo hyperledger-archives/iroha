@@ -32,7 +32,7 @@ namespace iroha {
 
     std::shared_ptr<shared_model::interface::Proposal>
     StatefulValidatorImpl::validate(
-        const shared_model::detail::PolymorphicWrapper<shared_model::interface::Proposal> &proposal,
+        const std::shared_ptr<shared_model::interface::Proposal> &proposal,
         ametsuchi::TemporaryWsv &temporaryWsv) {
       log_->info("transactions in proposal: {}",
                  proposal->transactions().size());
