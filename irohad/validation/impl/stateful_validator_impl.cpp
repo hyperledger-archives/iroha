@@ -81,11 +81,12 @@ namespace iroha {
 
       auto valid_txs = std::accumulate(txs.begin(), txs.end(), valid, filter);
 
-      // rework validation logic, so that this conversion is not needed
+      // TODO: kamilsa IR-1010 20.02.2018 rework validation logic, so that this cast is
+      // not needed and stateful validator does not know about the transport
       auto valid_proto_txs =
           valid_txs
           | boost::adaptors::transformed([](const auto &polymorphic_tx) {
-              return static_cast<const shared_model::proto::Transaction&>(
+              return static_cast<const shared_model::proto::Transaction &>(
                   *polymorphic_tx.operator->());
             });
       auto validated_proposal = shared_model::proto::ProposalBuilder()
