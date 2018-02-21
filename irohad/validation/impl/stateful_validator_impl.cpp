@@ -32,10 +32,10 @@ namespace iroha {
 
     std::shared_ptr<shared_model::interface::Proposal>
     StatefulValidatorImpl::validate(
-        const std::shared_ptr<shared_model::interface::Proposal> &proposal,
+        const shared_model::interface::Proposal &proposal,
         ametsuchi::TemporaryWsv &temporaryWsv) {
       log_->info("transactions in proposal: {}",
-                 proposal->transactions().size());
+                 proposal.transactions().size());
       auto checking_transaction = [this](const auto &tx, auto &queries) {
         return (queries.getAccount(tx.creator_account_id) |
                 [&](const auto &account) {
@@ -76,13 +76,14 @@ namespace iroha {
         return acc;
       };
 
-      auto &txs = proposal->transactions();
+      auto &txs = proposal.transactions();
       decltype(txs) valid = {};
 
       auto valid_txs = std::accumulate(txs.begin(), txs.end(), valid, filter);
 
-      // TODO: kamilsa IR-1010 20.02.2018 rework validation logic, so that this cast is
-      // not needed and stateful validator does not know about the transport
+      // TODO: kamilsa IR-1010 20.02.2018 rework validation logic, so that this
+      // cast is not needed and stateful validator does not know about the
+      // transport
       auto valid_proto_txs =
           valid_txs
           | boost::adaptors::transformed([](const auto &polymorphic_tx) {
@@ -90,10 +91,10 @@ namespace iroha {
                   *polymorphic_tx.operator->());
             });
       auto validated_proposal = shared_model::proto::ProposalBuilder()
-                                    .createdTime(proposal->created_time())
-                                    .height(proposal->height())
+                                    .createdTime(proposal.created_time())
+                                    .height(proposal.height())
                                     .transactions(valid_proto_txs)
-                                    .createdTime(proposal->created_time())
+                                    .createdTime(proposal.created_time())
                                     .build();
 
       log_->info("transactions in verified proposal: {}",

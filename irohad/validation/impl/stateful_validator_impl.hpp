@@ -42,7 +42,7 @@ namespace iroha {
        * @return proposal with valid transactions
        */
       std::shared_ptr<shared_model::interface::Proposal> validate(
-          const std::shared_ptr<shared_model::interface::Proposal> &proposal,
+          const shared_model::interface::Proposal &proposal,
           ametsuchi::TemporaryWsv &temporaryWsv) override;
 
      private:

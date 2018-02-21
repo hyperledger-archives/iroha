@@ -64,7 +64,7 @@ namespace iroha {
       temporaryStorageResult.match(
           [&](expected::Value<std::unique_ptr<ametsuchi::TemporaryWsv>>
                   &temporaryStorage) {
-            auto shm_proposal = std::make_shared<shared_model::proto::Proposal>(
+            auto shm_proposal = shared_model::proto::Proposal(
                 shared_model::proto::from_old(proposal));
             auto validated_proposal =
                 validator_->validate(shm_proposal, *temporaryStorage.value);
