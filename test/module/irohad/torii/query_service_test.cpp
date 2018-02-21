@@ -37,7 +37,7 @@ class QueryServiceTest : public ::testing::Test {
     query_factory = std::make_shared<PbQueryFactory>();
     query_response_factory = std::make_shared<PbQueryResponseFactory>();
     // any query
-    query.mutable_payload()->mutable_get_account();
+    auto val = query.mutable_payload()->mutable_get_account();
 
     // just random hex strings (same seed every time is ok here)
     query.mutable_signature()->set_pubkey(
@@ -73,9 +73,8 @@ TEST_F(QueryServiceTest, ValidWhenUniqueHash) {
   // unique query => query handled by query processor
   EXPECT_CALL(*query_processor, queryNotifier())
       .WillOnce(Return(
-          rxcpp::observable<>::empty<PolymorphicWrapper<QueryResponse>>()));
+          rxcpp::observable<>::empty<std::shared_ptr<QueryResponse>>()));
   EXPECT_CALL(*query_processor, queryHandle(_)).WillOnce(Return());
-
   init();
 
   query_service->Find(query, response);
@@ -85,7 +84,7 @@ TEST_F(QueryServiceTest, InvalidWhenDuplicateHash) {
   // two same queries => only first query handled by query processor
   EXPECT_CALL(*query_processor, queryNotifier())
       .WillOnce(Return(
-          rxcpp::observable<>::empty<PolymorphicWrapper<QueryResponse>>()));
+          rxcpp::observable<>::empty<std::shared_ptr<QueryResponse>>()));
   EXPECT_CALL(*query_processor, queryHandle(_)).WillOnce(Return());
 
   init();
