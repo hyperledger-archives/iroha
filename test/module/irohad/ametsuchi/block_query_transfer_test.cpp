@@ -58,8 +58,8 @@ namespace iroha {
         index->index(block);
       }
 
-      std::unique_ptr<pqxx::nontransaction> transaction;
       std::unique_ptr<pqxx::lazyconnection> postgres_connection;
+      std::unique_ptr<pqxx::nontransaction> transaction;
       std::vector<iroha::hash256_t> tx_hashes;
       std::shared_ptr<BlockQuery> blocks;
       std::shared_ptr<BlockIndex> index;
