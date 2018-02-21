@@ -94,6 +94,15 @@ class GetAccountTest : public QueryValidateExecuteTest {
   }
   std::shared_ptr<GetAccount> get_account;
 };
+std::shared_ptr<shared_model::interface::Transaction> makeTransaction(
+    int counter, std::string creator) {
+  return std::shared_ptr<shared_model::interface::Transaction>(
+      TestTransactionBuilder()
+          .creatorAccountId(creator)
+          .txCounter(counter)
+          .build()
+          .copy());
+}
 
 /**
  * @given initialized storage, permission to his/her account
@@ -555,12 +564,7 @@ class GetAccountTransactionsTest : public QueryValidateExecuteTest {
     return rxcpp::observable<>::iterate([&creator, this] {
       std::vector<std::shared_ptr<shared_model::interface::Transaction>> result;
       for (size_t i = 0; i < N; ++i) {
-        auto current = std::shared_ptr<shared_model::interface::Transaction>(
-            TestTransactionBuilder()
-                .creatorAccountId(creator)
-                .txCounter(i)
-                .build()
-                .copy());
+        auto current = makeTransaction(i, creator);
         result.push_back(current);
       }
       return result;
@@ -739,12 +743,7 @@ class GetAccountAssetsTransactionsTest : public QueryValidateExecuteTest {
     return rxcpp::observable<>::iterate([&creator_id, asset_id, this] {
       std::vector<std::shared_ptr<shared_model::interface::Transaction>> result;
       for (size_t i = 0; i < N; ++i) {
-        auto current = std::shared_ptr<shared_model::interface::Transaction>(
-            TestTransactionBuilder()
-                .creatorAccountId(creator_id)
-                .txCounter(i)
-                .build()
-                .copy());
+        auto current = makeTransaction(i, creator_id);
         result.push_back(current);
       }
       return result;

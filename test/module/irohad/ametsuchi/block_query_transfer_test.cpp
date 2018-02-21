@@ -75,6 +75,42 @@ namespace iroha {
       std::string asset = "coin#test";
     };
 
+    shared_model::proto::Block makeBlockWithCreator(std::string creator1,
+                                                    std::string creator2,
+                                                    std::string asset,
+                                                    std::string tx_creator) {
+      return TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>(
+              {TestTransactionBuilder()
+                   .creatorAccountId(tx_creator)
+                   .transferAsset(
+                       creator1, creator2, asset, "Transfer asset", "0.0")
+                   .build()}))
+          .height(1)
+          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .txNumber(1)
+          .build();
+    }
+
+    shared_model::proto::Block makeBlock(
+        std::string creator1,
+        std::string creator2,
+        std::string asset,
+        int height = 1,
+        shared_model::crypto::Hash hash =
+            shared_model::crypto::Hash(std::string("0", 32))) {
+      return TestBlockBuilder()
+          .transactions(std::vector<shared_model::proto::Transaction>(
+              {TestTransactionBuilder()
+                   .transferAsset(
+                       creator1, creator2, asset, "Transfer asset", "0.0")
+                   .build()}))
+          .height(height)
+          .prevHash(hash)
+          .txNumber(1)
+          .build();
+    }
+
     /**
      * @given block store and index with block containing 1 transaction
      * with transfer from creator 1 to creator 2 sending asset
@@ -82,18 +118,7 @@ namespace iroha {
      * @then query returns the transaction
      */
     TEST_F(BlockQueryTransferTest, SenderAssetName) {
-      auto block =
-          TestBlockBuilder()
-              .transactions(std::vector<shared_model::proto::Transaction>(
-                  {TestTransactionBuilder()
-                       .transferAsset(
-                           creator1, creator2, asset, "Transfer asset", "0.0")
-                       .build()}))
-              .height(1)
-              .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
-              .txNumber(1)
-              .build();
-
+      auto block = makeBlockWithCreator(creator1, creator2, asset, creator1);
       tx_hashes.push_back(block.transactions().back()->hash());
       insert(block);
 
@@ -111,18 +136,7 @@ namespace iroha {
      * @then query returns the transaction
      */
     TEST_F(BlockQueryTransferTest, ReceiverAssetName) {
-      auto block =
-          TestBlockBuilder()
-              .transactions(std::vector<shared_model::proto::Transaction>(
-                  {TestTransactionBuilder()
-                       .transferAsset(
-                           creator1, creator2, asset, "Transfer asset", "0.0")
-                       .build()}))
-              .height(1)
-              .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
-              .txNumber(1)
-              .build();
-
+      auto block = makeBlockWithCreator(creator1, creator2, asset, creator1);
       tx_hashes.push_back(block.transactions().back()->hash());
       insert(block);
 
@@ -140,19 +154,7 @@ namespace iroha {
      * @then query returns the transaction
      */
     TEST_F(BlockQueryTransferTest, GrantedTransfer) {
-      auto block =
-          TestBlockBuilder()
-              .transactions(std::vector<shared_model::proto::Transaction>(
-                  {TestTransactionBuilder()
-                       .creatorAccountId(creator3)
-                       .transferAsset(
-                           creator1, creator2, asset, "Transfer asset", "0.0")
-                       .build()}))
-              .height(1)
-              .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
-              .txNumber(1)
-              .build();
-
+      auto block = makeBlockWithCreator(creator1, creator2, asset, creator3);
       tx_hashes.push_back(block.transactions().back()->hash());
       insert(block);
 
@@ -170,32 +172,12 @@ namespace iroha {
      * @then query returns the transactions
      */
     TEST_F(BlockQueryTransferTest, TwoBlocks) {
-      auto block =
-          TestBlockBuilder()
-              .transactions(std::vector<shared_model::proto::Transaction>(
-                  {TestTransactionBuilder()
-                       .transferAsset(
-                           creator1, creator2, asset, "Transfer asset", "0.0")
-                       .build()}))
-              .height(1)
-              .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
-              .txNumber(1)
-              .build();
+      auto block = makeBlock(creator1, creator2, asset);
 
       tx_hashes.push_back(block.transactions().back()->hash());
       insert(block);
 
-      auto block2 =
-          TestBlockBuilder()
-              .transactions(std::vector<shared_model::proto::Transaction>(
-                  {TestTransactionBuilder()
-                       .transferAsset(
-                           creator1, creator2, asset, "Transfer asset", "0.0")
-                       .build()}))
-              .height(2)
-              .prevHash(block.hash())
-              .txNumber(1)
-              .build();
+      auto block2 = makeBlock(creator1, creator2, asset, 2, block.hash());
 
       tx_hashes.push_back(block.transactions().back()->hash());
       insert(block2);

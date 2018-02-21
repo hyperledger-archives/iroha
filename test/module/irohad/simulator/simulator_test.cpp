@@ -62,6 +62,15 @@ class SimulatorTest : public ::testing::Test {
   std::shared_ptr<Simulator> simulator;
 };
 
+shared_model::proto::Block makeBlock(int height) {
+  return TestBlockBuilder()
+      .txNumber(0)
+      .transactions(std::vector<shared_model::proto::Transaction>())
+      .height(height)
+      .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+      .build();
+}
+
 TEST_F(SimulatorTest, ValidWhenInitialized) {
   // simulator constructor => on_proposal subscription called
   EXPECT_CALL(*ordering_gate, on_proposal())
@@ -76,13 +85,7 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   auto proposal = model::Proposal(txs);
   proposal.height = 2;
 
-  shared_model::proto::Block block =
-      TestBlockBuilder()
-          .txNumber(0)
-          .transactions(std::vector<shared_model::proto::Transaction>())
-          .height(proposal.height - 1)
-          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
-          .build();
+  shared_model::proto::Block block = makeBlock(proposal.height - 1);
   auto blocks_observable = rxcpp::observable<>::create<
       std::shared_ptr<::shared_model::interface::Block>>([&block](auto s) {
 
@@ -164,13 +167,7 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
   auto proposal = model::Proposal(txs);
   proposal.height = 2;
 
-  auto block =
-      TestBlockBuilder()
-          .txNumber(0)
-          .transactions(std::vector<shared_model::proto::Transaction>())
-          .height(proposal.height)
-          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
-          .build();
+  auto block = makeBlock(proposal.height);
   auto blocks_observable = rxcpp::observable<>::create<
       std::shared_ptr<::shared_model::interface::Block>>([&block](auto s) {
 
