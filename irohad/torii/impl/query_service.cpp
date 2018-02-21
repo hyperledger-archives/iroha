@@ -55,7 +55,7 @@ namespace torii {
             [this, &hash, &response](
                 const iroha::expected::Value<shared_model::proto::Query>
                     &query) {
-              auto hash = query.value.hash();
+              hash = query.value.hash();
               if (cache_.findItem(hash)) {
                 // Query was already processed
 
@@ -69,8 +69,7 @@ namespace torii {
                         response));
                 // Send query to iroha
                 query_processor_->queryHandle(
-                    shared_model::detail::makePolymorphic<
-                        shared_model::proto::Query>(query.value));
+                    std::make_shared<shared_model::proto::Query>(query.value));
               }
 
               auto result_response = cache_.findItem(hash).value();
