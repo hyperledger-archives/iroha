@@ -63,7 +63,7 @@ namespace torii {
         handler_map_.emplace(hash, response);
         // Send query to iroha
         query_processor_->queryHandle(
-            shared_model::detail::makePolymorphic<shared_model::proto::Query>(
+            std::make_shared<shared_model::proto::Query>(
                 shared_model::proto::from_old(*query)));
       }
       response.set_query_hash(hash);

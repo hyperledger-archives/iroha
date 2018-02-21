@@ -64,7 +64,7 @@ TEST_F(QueryServiceTest, SubscribeQueryProcessorWhenInit) {
   // query service is subscribed to query processor
   EXPECT_CALL(*query_processor, queryNotifier())
       .WillOnce(Return(
-          rxcpp::observable<>::empty<PolymorphicWrapper<QueryResponse>>()));
+          rxcpp::observable<>::empty<std::shared_ptr<QueryResponse>>()));
 
   init();
 }
