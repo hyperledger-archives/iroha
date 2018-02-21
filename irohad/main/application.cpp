@@ -141,8 +141,6 @@ void Irohad::initCryptoProvider() {
  * Initializing validators
  */
 void Irohad::initValidators() {
-  stateless_validator =
-      std::make_shared<StatelessValidatorImpl>(crypto_verifier);
   stateful_validator = std::make_shared<StatefulValidatorImpl>();
   chain_validator = std::make_shared<ChainValidatorImpl>();
 
@@ -222,11 +220,10 @@ void Irohad::initPeerCommunicationService() {
  * Initializing transaction command service
  */
 void Irohad::initTransactionCommandService() {
-  auto tx_processor =
-      std::make_shared<TransactionProcessorImpl>(pcs);
+  auto tx_processor = std::make_shared<TransactionProcessorImpl>(pcs);
 
   command_service = std::make_unique<::torii::CommandService>(
-      pb_tx_factory, tx_processor, storage, proposal_delay_);
+      tx_processor, storage, proposal_delay_);
 
   log_->info("[Init] => command service");
 }
@@ -238,8 +235,8 @@ void Irohad::initQueryService() {
   auto query_processing_factory = std::make_unique<QueryProcessingFactory>(
       storage->getWsvQuery(), storage->getBlockQuery());
 
-  auto query_processor = std::make_shared<QueryProcessorImpl>(
-      std::move(query_processing_factory));
+  auto query_processor =
+      std::make_shared<QueryProcessorImpl>(std::move(query_processing_factory));
 
   query_service = std::make_unique<::torii::QueryService>(query_processor);
 

@@ -20,9 +20,6 @@ limitations under the License.
 #include "module/irohad/validation/validation_mocks.hpp"
 // to compare pb amount and iroha amount
 #include "model/converters/pb_common.hpp"
-#include "model/converters/pb_query_factory.hpp"
-#include "model/converters/pb_query_response_factory.hpp"
-#include "model/converters/pb_transaction_factory.hpp"
 
 #include "main/server_runner.hpp"
 #include "model/permissions.hpp"
@@ -76,8 +73,6 @@ class ToriiQueriesTest : public testing::Test {
 
       auto tx_processor =
           std::make_shared<iroha::torii::TransactionProcessorImpl>(pcsMock);
-      auto pb_tx_factory =
-          std::make_shared<iroha::model::converters::PbTransactionFactory>();
 
       //----------- Query Service ----------
 
@@ -90,7 +85,7 @@ class ToriiQueriesTest : public testing::Test {
       //----------- Server run ----------------
       runner
           ->append(std::make_unique<torii::CommandService>(
-              pb_tx_factory, tx_processor, storageMock, proposal_delay))
+              tx_processor, storageMock, proposal_delay))
           .append(std::make_unique<torii::QueryService>(qpi))
           .run();
     });

@@ -105,8 +105,7 @@ class ToriiServiceTest : public testing::Test {
 
       //----------- Server run ----------------
       runner
-          ->append(std::make_unique<torii::CommandService>(
-              pb_tx_factory, tx_processor, storageMock, proposal_delay))
+          ->append(std::make_unique<torii::CommandService>(tx_processor, storageMock, proposal_delay))
           .append(std::make_unique<torii::QueryService>(qpi))
           .run();
     });
