@@ -29,7 +29,7 @@ namespace iroha {
 
     void QueryProcessorImpl::queryHandle(
         std::shared_ptr<shared_model::interface::Query> qry) {
-      auto query = qry->makeOldModel();
+      std::shared_ptr<iroha::model::Query> query(qry->makeOldModel());
       // TODO: 12.02.2018 grimadas Remove when query_executor has new model, as
       // query is already stateless valid when passing to query  processor
       if (not validator_->validate(*query)) {

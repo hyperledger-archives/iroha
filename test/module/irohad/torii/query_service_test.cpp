@@ -36,8 +36,6 @@ class QueryServiceTest : public ::testing::Test {
     query_processor = std::make_shared<MockQueryProcessor>();
     query_factory = std::make_shared<PbQueryFactory>();
     query_response_factory = std::make_shared<PbQueryResponseFactory>();
-    // any query
-    auto val = query.mutable_payload()->mutable_get_account();
 
     // just random hex strings (same seed every time is ok here)
     query.mutable_signature()->set_pubkey(
@@ -57,7 +55,6 @@ class QueryServiceTest : public ::testing::Test {
   std::shared_ptr<MockQueryProcessor> query_processor;
   std::shared_ptr<PbQueryFactory> query_factory;
   std::shared_ptr<PbQueryResponseFactory> query_response_factory;
-
 };
 
 TEST_F(QueryServiceTest, SubscribeQueryProcessorWhenInit) {

@@ -34,14 +34,11 @@ namespace torii {
     // Subscribe on result from iroha
     query_processor_->queryNotifier().subscribe([this](auto iroha_response) {
       // Find client to respond
-      auto old_reponse = iroha_response->makeOldModel();
+      std::shared_ptr<iroha::model::QueryResponse> old_reponse(
+          iroha_response->makeOldModel());
       auto res = handler_map_.find(old_reponse->query_hash.to_string());
       // Serialize to proto an return to response
-      res->second =
-          pb_query_response_factory_
-              ->serialize(
-                  std::shared_ptr<iroha::model::QueryResponse>(old_reponse))
-              .value();
+      res->second = pb_query_response_factory_->serialize(old_reponse).value();
 
     });
   }
