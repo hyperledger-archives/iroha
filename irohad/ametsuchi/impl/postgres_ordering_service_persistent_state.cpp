@@ -67,7 +67,7 @@ namespace iroha {
         : postgres_connection_(std::move(postgres_connection)),
           postgres_transaction_(std::move(postgres_transaction)),
           log_(logger::log("PostgresOrderingServicePersistentState")),
-          execute_{ametsuchi::makeExecute(*postgres_transaction_, log_)} {}
+          execute_{ametsuchi::makeExecuteResult(*postgres_transaction_)} {}
 
     void PostgresOrderingServicePersistentState::initStorage() {
       log_->info("Init storage");
@@ -89,34 +89,38 @@ namespace iroha {
         size_t height) {
       log_->info("Save proposal_height in ordering_service_state "
                  + std::to_string(height));
-      auto res = execute(
-          "DELETE FROM ordering_service_state;\n"
-          "INSERT INTO ordering_service_state "
-          "VALUES ("
-          + postgres_transaction_->quote(height) + ");");
-      return res;
+      return execute_(
+                 "DELETE FROM ordering_service_state;\n"
+                 "INSERT INTO ordering_service_state "
+                 "VALUES ("
+                 + postgres_transaction_->quote(height) + ");")
+          .match([](expected::Value<pqxx::result> v) -> bool { return true; },
+                 [&](expected::Error<std::string> e) -> bool {
+                   log_->error(e.error);
+                   return false;
+                 });
     }
 
     boost::optional<size_t>
     PostgresOrderingServicePersistentState::loadProposalHeight() const {
-      return execute_("SELECT * FROM ordering_service_state;") |
-                 [&](const auto &result) -> boost::optional<size_t> {
-        boost::optional<size_t> res;
-        if (result.empty()) {
-          log_->error(
-              "There is no proposal_height in ordering_service_state. Use "
-              "default value 2.");
-          res = 2;
-        } else {
-          size_t height;
-          auto row = result.at(0);
-          row.at("proposal_height") >> height;
-          res = height;
-          log_->info("Load proposal_height in ordering_service_state "
-                     + std::to_string(height));
-        }
-        return res;
-      };
+      boost::optional<size_t> height;
+      execute_("SELECT * FROM ordering_service_state;")
+          .match(
+              [&](expected::Value<pqxx::result> result) {
+                if (result.value.empty()) {
+                  log_->error(
+                      "There is no proposal_height in ordering_service_state. "
+                      "Use default value 2.");
+                  height = 2;
+                } else {
+                  auto row = result.value.at(0);
+                  height = row.at("proposal_height").as<size_t>();
+                  log_->info("Load proposal_height in ordering_service_state "
+                             + std::to_string(height.value()));
+                }
+              },
+              [&](expected::Error<std::string> e) { log_->error(e.error); });
+      return height;
     }
 
     void PostgresOrderingServicePersistentState::reset() {

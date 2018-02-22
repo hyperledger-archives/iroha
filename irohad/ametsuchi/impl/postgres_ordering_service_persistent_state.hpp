@@ -93,12 +93,8 @@ namespace iroha {
 
       logger::Logger log_;
 
-      using ExecuteType = decltype(makeExecute(*postgres_transaction_, log_));
+      using ExecuteType = decltype(makeExecuteResult(*postgres_transaction_));
       ExecuteType execute_;
-
-      bool execute(const std::string &statement) noexcept {
-        return static_cast<bool>(execute_(statement));
-      }
     };
   }  // namespace ametsuchi
 }  // namespace iroha
