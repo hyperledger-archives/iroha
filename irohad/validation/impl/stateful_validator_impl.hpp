@@ -53,7 +53,7 @@ namespace iroha {
        * pubkeys
        */
       bool signaturesSubset(
-          const shared_model::interface::Transaction::SignatureSetType
+          const shared_model::interface::SignatureSetType
               &signatures,
           const std::vector<shared_model::crypto::PublicKey> &public_keys);
 
