@@ -70,12 +70,13 @@ TEST(SignatureBuilderTest, SeveralObjectsFromOneBuilder) {
   shared_model::interface::Signature::SignedType expected_signed(
       "signed object");
 
-  auto signature =
-      builder.publicKey(expected_key).signedData(expected_signed).build();
-  auto signature2 = builder.build();
+  auto state = builder.publicKey(expected_key)
+                   .signedData(expected_signed);
+  auto signature = state.build();
+  auto signature2 = state.build();
 
   testResultObjects(signature, signature2, [](auto &a, auto &b) {
-    // not the same object
+    // pointer points to different objects
     ASSERT_TRUE(a != b);
 
     EXPECT_EQ(a->publicKey(), b->publicKey());

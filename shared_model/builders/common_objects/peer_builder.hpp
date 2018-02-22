@@ -38,14 +38,16 @@ namespace shared_model {
     class PeerBuilder
         : public CommonObjectBuilder<interface::Peer, BuilderImpl, Validator> {
      public:
-      PeerBuilder &address(const interface::types::AddressType &address) {
-        this->builder_ = this->builder_.address(address);
-        return *this;
+      PeerBuilder address(const interface::types::AddressType &address) {
+        PeerBuilder copy(*this);
+        copy.builder_ = this->builder_.address(address);
+        return copy;
       }
 
-      PeerBuilder &pubkey(const interface::types::PubkeyType &key) {
-        this->builder_ = this->builder_.pubkey(key);
-        return *this;
+      PeerBuilder pubkey(const interface::types::PubkeyType &key) {
+        PeerBuilder copy(*this);
+        copy.builder_ = this->builder_.pubkey(key);
+        return copy;
       }
 
      protected:

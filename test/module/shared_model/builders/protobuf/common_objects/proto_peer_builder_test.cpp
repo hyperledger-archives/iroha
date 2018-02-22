@@ -57,7 +57,7 @@ TEST(ProtoPeerBuilderTest, AllFieldsBuild) {
 
   auto expected_address = "127.0.0.1";
   auto expected_key = shared_model::crypto::PublicKey("very_secure_key");
-  auto peer = builder.address(expected_address).pubkey(expected_key).build();
+  auto peer = builder.pubkey(expected_key).address(expected_address).build();
 
   EXPECT_EQ(peer.address(), expected_address);
   EXPECT_EQ(peer.pubkey(), expected_key);
@@ -70,11 +70,11 @@ TEST(ProtoPeerBuilderTest, AllFieldsBuild) {
  */
 TEST(ProtoPeerBuilderTest, SeveralObjectsFromOneBuilder) {
   shared_model::proto::PeerBuilder builder;
-
   auto expected_address = "127.0.0.1";
   auto expected_key = shared_model::crypto::PublicKey("very_secure_key");
-  auto peer = builder.address(expected_address).pubkey(expected_key).build();
-  auto peer2 = builder.build();
+  auto state = builder.address(expected_address).pubkey(expected_key);
+  auto peer = state.build();
+  auto peer2 = state.build();
 
   EXPECT_EQ(peer.address(), peer2.address());
   EXPECT_EQ(peer.pubkey(), peer2.pubkey());

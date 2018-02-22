@@ -57,11 +57,12 @@ TEST(ProtoAccountAssetBuilderTest, SeveralObjectsFromOneBuilder) {
   auto expected_balance =
       shared_model::proto::AmountBuilder().intValue(100).precision(2).build();
 
-  auto account_asset = builder.accountId(expected_account_id)
-                           .assetId(expected_asset_id)
-                           .balance(expected_balance)
-                           .build();
-  auto account_asset2 = builder.build();
+  auto state = builder.accountId(expected_account_id)
+                   .assetId(expected_asset_id)
+                   .balance(expected_balance);
+
+  auto account_asset = state.build();
+  auto account_asset2 = state.build();
 
   EXPECT_EQ(account_asset.accountId(), account_asset2.accountId());
   EXPECT_EQ(account_asset.assetId(), account_asset2.assetId());

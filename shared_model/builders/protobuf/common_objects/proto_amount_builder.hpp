@@ -34,15 +34,17 @@ namespace shared_model {
         return shared_model::proto::Amount(iroha::protocol::Amount(amount_));
       }
 
-      AmountBuilder &intValue(const boost::multiprecision::uint256_t &value) {
+      AmountBuilder intValue(const boost::multiprecision::uint256_t &value) {
         // TODO: 14.02.2018 nickaleks add proper amount initialization IR-972
-        amount_.mutable_value()->set_fourth(value.template convert_to<uint64_t>());
-        return *this;
+        AmountBuilder copy(*this);
+        copy.amount_.mutable_value()->set_fourth(value.template convert_to<uint64_t>());
+        return copy;
       }
 
-      AmountBuilder &precision(const interface::types::PrecisionType &precision) {
-        amount_.set_precision(precision);
-        return *this;
+      AmountBuilder precision(const interface::types::PrecisionType &precision) {
+        AmountBuilder copy(*this);
+        copy.amount_.set_precision(precision);
+        return copy;
       }
 
      private:

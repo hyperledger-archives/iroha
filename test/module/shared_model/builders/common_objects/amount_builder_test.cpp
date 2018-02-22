@@ -66,12 +66,13 @@ TEST(AmountBuilderTest, SeveralObjectsFromOneBuilder) {
   boost::multiprecision::uint256_t valid_value = 100;
   auto valid_precision = 2;
 
-  auto amount =
-      builder.intValue(valid_value).precision(valid_precision).build();
-  auto amount2 = builder.build();
+  auto state = builder.intValue(valid_value).precision(valid_precision);
+
+  auto amount = state.build();
+  auto amount2 = state.build();
 
   testResultObjects(amount, amount2, [](auto &a, auto &b) {
-    // not the same object
+    // pointer points to different objects
     ASSERT_TRUE(a != b);
 
     EXPECT_EQ(a->intValue(), b->intValue());

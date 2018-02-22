@@ -40,16 +40,18 @@ namespace shared_model {
                                                         BuilderImpl,
                                                         Validator> {
      public:
-      SignatureBuilder &publicKey(
+      SignatureBuilder publicKey(
           const shared_model::interface::types::PubkeyType &key) {
-        this->builder_ = this->builder_.publicKey(key);
-        return *this;
+        SignatureBuilder copy(*this);
+        copy.builder_ = this->builder_.publicKey(key);
+        return copy;
       }
 
-      SignatureBuilder &signedData(
+      SignatureBuilder signedData(
           const interface::Signature::SignedType &signed_data) {
-        this->builder_ = this->builder_.signedData(signed_data);
-        return *this;
+        SignatureBuilder copy(*this);
+        copy.builder_ = this->builder_.signedData(signed_data);
+        return copy;
       }
 
      protected:

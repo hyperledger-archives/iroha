@@ -61,10 +61,12 @@ TEST(PeerBuilderTest, SeveralObjectsFromOneBuilder) {
 
   auto valid_address = "127.0.0.1:1337";
   shared_model::interface::types::PubkeyType key(std::string(32, '0'));
-  auto peer1 = builder.address(valid_address).pubkey(key).build();
-  auto peer2 = builder.build();
+
+  auto state = builder.address(valid_address).pubkey(key);
+  auto peer1 = state.build();
+  auto peer2 = state.build();
   testResultObjects(peer1, peer2, [](auto &a, auto &b) {
-    // not the same object
+    // pointer points to different objects
     ASSERT_TRUE(a != b);
 
     EXPECT_EQ(a->address(), b->address());

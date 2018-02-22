@@ -40,21 +40,24 @@ namespace shared_model {
                                      BuilderImpl,
                                      Validator> {
      public:
-      AccountAssetBuilder &accountId(
+      AccountAssetBuilder accountId(
           const interface::types::AccountIdType &account_id) {
-        this->builder_ = this->builder_.accountId(account_id);
-        return *this;
+        AccountAssetBuilder copy(*this);
+        copy.builder_ = this->builder_.accountId(account_id);
+        return copy;
       }
 
-      AccountAssetBuilder &assetId(
+      AccountAssetBuilder assetId(
           const interface::types::AssetIdType &asset_id) {
-        this->builder_ = this->builder_.assetId(asset_id);
-        return *this;
+        AccountAssetBuilder copy(*this);
+        copy.builder_ = this->builder_.assetId(asset_id);
+        return copy;
       }
 
-      AccountAssetBuilder &balance(const interface::Amount &amount) {
-        this->builder_ = this->builder_.balance(amount);
-        return *this;
+      AccountAssetBuilder balance(const interface::Amount &amount) {
+        AccountAssetBuilder copy(*this);
+        copy.builder_ = this->builder_.balance(amount);
+        return copy;
       }
 
      protected:

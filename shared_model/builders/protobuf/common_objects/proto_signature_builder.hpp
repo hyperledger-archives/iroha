@@ -35,15 +35,17 @@ namespace shared_model {
         return shared_model::proto::Signature(iroha::protocol::Signature(signature_));
       }
 
-      SignatureBuilder &publicKey(const shared_model::interface::types::PubkeyType &key) {
-        signature_.set_pubkey(shared_model::crypto::toBinaryString(key));
-        return *this;
+      SignatureBuilder publicKey(const shared_model::interface::types::PubkeyType &key) {
+        SignatureBuilder copy(*this);
+        copy.signature_.set_pubkey(shared_model::crypto::toBinaryString(key));
+        return copy;
       }
 
-      SignatureBuilder &signedData(
+      SignatureBuilder signedData(
           const interface::Signature::SignedType &signed_data) {
-        signature_.set_signature(shared_model::crypto::toBinaryString(signed_data));
-        return *this;
+        SignatureBuilder copy(*this);
+        copy.signature_.set_signature(shared_model::crypto::toBinaryString(signed_data));
+        return copy;
       }
 
      private:

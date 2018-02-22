@@ -71,14 +71,14 @@ TEST(AssetBuilderTest, SeveralObjectsFromOneBuilder) {
   auto valid_domain_id = "domain";
   auto valid_precision = 2;
 
-  auto asset = builder.assetId(valid_asset_id)
+  auto state = builder.assetId(valid_asset_id)
                    .domainId(valid_domain_id)
-                   .precision(valid_precision)
-                   .build();
-  auto asset2 = builder.build();
+                   .precision(valid_precision);
+  auto asset = state.build();
+  auto asset2 = state.build();
 
   testResultObjects(asset, asset2, [](auto &a, auto &b) {
-    // not the same object
+    // pointer points to different objects
     ASSERT_TRUE(a != b);
 
     EXPECT_EQ(a->assetId(), b->assetId());

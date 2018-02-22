@@ -77,15 +77,18 @@ TEST(AccountBuilderTest, SeveralObjectsFromOneBuilder) {
   auto valid_quorum = 3;
   auto valid_json_data = "{}";
 
-  auto account = builder.accountId(valid_account_id)
-                     .domainId(valid_domain_id)
-                     .quorum(valid_quorum)
-                     .jsonData(valid_json_data)
-                     .build();
-  auto account2 = builder.build();
+  auto state = builder.accountId(valid_account_id)
+      .domainId(valid_domain_id)
+      .quorum(valid_quorum)
+      .jsonData(valid_json_data);
+
+  auto account = state.build();
+  auto account2 = state.build();
 
   testResultObjects(account, account2, [](auto &a, auto &b) {
-    // not the same object
+    // pointer points to different objects
+    ASSERT_TRUE(a != b);
+
     EXPECT_EQ(a->accountId(), b->accountId());
     EXPECT_EQ(a->domainId(), b->domainId());
     EXPECT_EQ(a->quorum(), b->quorum());

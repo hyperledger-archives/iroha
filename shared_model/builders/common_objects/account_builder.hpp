@@ -39,26 +39,30 @@ namespace shared_model {
                                                       BuilderImpl,
                                                       Validator> {
      public:
-      AccountBuilder &accountId(
+      AccountBuilder accountId(
           const interface::types::AccountIdType &account_id) {
-        this->builder_ = this->builder_.accountId(account_id);
-        return *this;
+        AccountBuilder copy(*this);
+        copy.builder_ = this->builder_.accountId(account_id);
+        return copy;
       }
 
-      AccountBuilder &domainId(
+      AccountBuilder domainId(
           const interface::types::DomainIdType &domain_id) {
-        this->builder_ = this->builder_.domainId(domain_id);
-        return *this;
+        AccountBuilder copy(*this);
+        copy.builder_ = this->builder_.domainId(domain_id);
+        return copy;
       }
 
-      AccountBuilder &quorum(const interface::types::QuorumType &quorum) {
-        this->builder_ = this->builder_.quorum(quorum);
-        return *this;
+      AccountBuilder quorum(const interface::types::QuorumType &quorum) {
+        AccountBuilder copy(*this);
+        copy.builder_ = this->builder_.quorum(quorum);
+        return copy;
       }
 
-      AccountBuilder &jsonData(const interface::types::JsonType &json_data) {
-        this->builder_ = this->builder_.jsonData(json_data);
-        return *this;
+      AccountBuilder jsonData(const interface::types::JsonType &json_data) {
+        AccountBuilder copy(*this);
+        copy.builder_ = this->builder_.jsonData(json_data);
+        return copy;
       }
 
      protected:

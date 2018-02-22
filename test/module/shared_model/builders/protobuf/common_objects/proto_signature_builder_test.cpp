@@ -51,9 +51,10 @@ TEST(ProtoSignatureBuilderTest, SeveralObjectsFromOneBuilder) {
   shared_model::interface::Signature::SignedType expected_signed(
       "signed object");
 
-  auto signature =
-      builder.publicKey(expected_key).signedData(expected_signed).build();
-  auto signature2 = builder.build();
+  auto state = builder.publicKey(expected_key).signedData(expected_signed);
+
+  auto signature = state.build();
+  auto signature2 = state.build();
 
   EXPECT_EQ(signature.publicKey(), signature2.publicKey());
   EXPECT_EQ(signature.signedData(), signature2.signedData());

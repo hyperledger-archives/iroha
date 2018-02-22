@@ -39,20 +39,23 @@ namespace shared_model {
     class AssetBuilder
         : public CommonObjectBuilder<interface::Asset, BuilderImpl, Validator> {
      public:
-      AssetBuilder &assetId(const interface::types::AccountIdType &asset_id) {
-        this->builder_ = this->builder_.assetId(asset_id);
-        return *this;
+      AssetBuilder assetId(const interface::types::AccountIdType &asset_id) {
+        AssetBuilder copy(*this);
+        copy.builder_ = this->builder_.assetId(asset_id);
+        return copy;
       }
 
-      AssetBuilder &domainId(const interface::types::DomainIdType &domain_id) {
-        this->builder_ = this->builder_.domainId(domain_id);
-        return *this;
+      AssetBuilder domainId(const interface::types::DomainIdType &domain_id) {
+        AssetBuilder copy(*this);
+        copy.builder_ = this->builder_.domainId(domain_id);
+        return copy;
       }
 
-      AssetBuilder &precision(
+      AssetBuilder precision(
           const interface::types::PrecisionType &precision) {
-        this->builder_ = this->builder_.precision(precision);
-        return *this;
+        AssetBuilder copy(*this);
+        copy.builder_ = this->builder_.precision(precision);
+        return copy;
       }
 
      protected:

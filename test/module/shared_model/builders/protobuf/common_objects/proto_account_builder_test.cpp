@@ -58,13 +58,14 @@ TEST(ProtoAccountBuilderTest, SeveralObjectsFromOneBuilder) {
   auto expected_quorum = 3;
   auto expected_json_data = "{}";
 
-  auto account = builder.accountId(expected_account_id)
-                     .domainId(expected_domain_id)
-                     .quorum(expected_quorum)
-                     .jsonData(expected_json_data)
-                     .build();
+  auto state = builder.accountId(expected_account_id)
+                   .domainId(expected_domain_id)
+                   .quorum(expected_quorum)
+                   .jsonData(expected_json_data);
 
-  auto account2 = builder.build();
+  auto account = state.build();
+
+  auto account2 = state.build();
 
   EXPECT_EQ(account.accountId(), account2.accountId());
   EXPECT_EQ(account.domainId(), account2.domainId());

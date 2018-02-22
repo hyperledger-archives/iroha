@@ -54,11 +54,11 @@ TEST(ProtoAssetBuilderTest, SeveralObjectsFromOneBuilder) {
   auto expected_domain_id = "domain";
   auto expected_precision = 2;
 
-  auto asset = builder.assetId(expected_asset_id)
+  auto state = builder.assetId(expected_asset_id)
                    .domainId(expected_domain_id)
-                   .precision(expected_precision)
-                   .build();
-  auto asset2 = builder.build();
+                   .precision(expected_precision);
+  auto asset = state.build();
+  auto asset2 = state.build();
 
   EXPECT_EQ(asset.assetId(), asset2.assetId());
   EXPECT_EQ(asset.domainId(), asset2.domainId());

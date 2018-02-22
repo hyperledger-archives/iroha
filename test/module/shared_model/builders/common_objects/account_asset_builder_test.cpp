@@ -76,14 +76,17 @@ TEST(AccountAssetBuilderTest, SeveralObjectsFromOneBuilder) {
   auto valid_balance =
       shared_model::proto::AmountBuilder().intValue(100).precision(2).build();
 
-  auto account_asset = builder.accountId(valid_account_id)
-                           .assetId(valid_asset_id)
-                           .balance(valid_balance)
-                           .build();
-  auto account_asset2 = builder.build();
+  auto state = builder.accountId(valid_account_id)
+      .assetId(valid_asset_id)
+      .balance(valid_balance);
+
+  auto account_asset = state.build();
+  auto account_asset2 = state.build();
 
   testResultObjects(account_asset, account_asset2, [](auto &a, auto &b) {
-    // not the same object
+    // pointer points to different objects
+    ASSERT_TRUE(a != b);
+
     EXPECT_EQ(a->accountId(), b->accountId());
     EXPECT_EQ(a->assetId(), b->assetId());
     EXPECT_EQ(a->balance(), b->balance());

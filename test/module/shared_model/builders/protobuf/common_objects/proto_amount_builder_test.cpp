@@ -52,10 +52,10 @@ TEST(ProtoAmountBuilderTest, SeveralObjectsFromOneBuilder) {
   boost::multiprecision::uint256_t expected_int_value = 100;
   auto expected_precision = 2;
 
-  auto amount = builder.intValue(expected_int_value)
-                    .precision(expected_precision)
-                    .build();
-  auto amount2 = builder.build();
+  auto state =
+      builder.intValue(expected_int_value).precision(expected_precision);
+  auto amount = state.build();
+  auto amount2 = state.build();
 
   EXPECT_EQ(amount.intValue(), amount2.intValue());
   EXPECT_EQ(amount.precision(), amount2.precision());

@@ -39,15 +39,17 @@ namespace shared_model {
                                                      BuilderImpl,
                                                      Validator> {
      public:
-      AmountBuilder &intValue(const boost::multiprecision::uint256_t &value) {
-        this->builder_ = this->builder_.intValue(value);
-        return *this;
+      AmountBuilder intValue(const boost::multiprecision::uint256_t &value) {
+        AmountBuilder copy(*this);
+        copy.builder_ = this->builder_.intValue(value);
+        return copy;
       }
 
-      AmountBuilder &precision(
+      AmountBuilder precision(
           const interface::types::PrecisionType &precision) {
-        this->builder_ = this->builder_.precision(precision);
-        return *this;
+        AmountBuilder copy(*this);
+        copy.builder_ = this->builder_.precision(precision);
+        return copy;
       }
 
      protected:
