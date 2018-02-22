@@ -118,8 +118,7 @@ void Irohad::initStorage() {
         throw std::runtime_error(error.error);
       });
 
-  auto orderingStorageResult = PostgresOrderingServicePersistentState::create(pg_conn_);
-  orderingStorageResult.match(
+  PostgresOrderingServicePersistentState::create(pg_conn_).match(
       [&](expected::Value<std::shared_ptr<ametsuchi::PostgresOrderingServicePersistentState>> &_storage) {
         ordering_service_storage_ = _storage.value;
       },
