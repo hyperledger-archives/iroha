@@ -18,8 +18,6 @@ limitations under the License.
 
 #include "ametsuchi/temporary_wsv.hpp"
 #include "interfaces/iroha_internal/proposal.hpp"
-#include "model/proposal.hpp"
-#include "utils/polymorphic_wrapper.hpp"
 
 namespace iroha {
   namespace validation {

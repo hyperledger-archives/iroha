@@ -18,7 +18,6 @@
 #define IROHA_STATEFUL_VALIDATIOR_IMPL_HPP
 
 #include "validation/stateful_validator.hpp"
-#include "validators/default_validator.hpp"
 
 #include "logger/logger.hpp"
 
@@ -34,7 +33,7 @@ namespace iroha {
 
       /**
        * Function perform stateful validation on proposal
-       * and return proposal with valid
+       * and return proposal with valid transactions
        * @param proposal - proposal for validation
        * @param wsv  - temporary wsv for validation,
        * this wsv not affected on ledger,
