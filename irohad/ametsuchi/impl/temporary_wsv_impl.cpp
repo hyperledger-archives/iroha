@@ -41,9 +41,7 @@ namespace iroha {
         const shared_model::interface::Transaction &tx,
         std::function<bool(const shared_model::interface::Transaction &,
                            WsvQuery &)> apply_function) {
-      auto transaction = std::unique_ptr<model::Transaction>(tx.makeOldModel());
-
-      const auto &tx_creator = transaction->creator_account_id;
+      const auto &tx_creator = tx.creatorAccountId();
       auto execute_command = [this, &tx_creator](auto command) {
         auto executor = command_executors_->getCommandExecutor(command);
         if (not executor->validate(*command, *wsv_, tx_creator)) {
@@ -60,10 +58,20 @@ namespace iroha {
       };
 
       transaction_->exec("SAVEPOINT savepoint_;");
+      auto commands =
+          std::accumulate(tx.commands().begin(),
+                          tx.commands().end(),
+                          std::vector<std::shared_ptr<model::Command>>{},
+                          [](auto &vec, const auto &cmd) {
+                            auto curr = std::shared_ptr<model::Command>(cmd->makeOldModel());
+                            vec.push_back(curr);
+                            return vec;
+                          });
+
       auto result = apply_function(tx, *wsv_)
-          and std::all_of(transaction->commands.begin(),
-                         transaction->commands.end(),
-                         execute_command);
+          and std::all_of(commands.begin(),
+                          commands.end(),
+                          execute_command);
       if (result) {
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");
       } else {
