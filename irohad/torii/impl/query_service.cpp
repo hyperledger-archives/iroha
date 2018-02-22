@@ -43,8 +43,6 @@ namespace torii {
 
   void QueryService::Find(iroha::protocol::Query const &request,
                           iroha::protocol::QueryResponse &response) {
-    using iroha::operator|;
-
     //    shared_model::proto::QueryResponse model_response(response);
     shared_model::crypto::Hash hash;
     shared_model::proto::TransportBuilder<
