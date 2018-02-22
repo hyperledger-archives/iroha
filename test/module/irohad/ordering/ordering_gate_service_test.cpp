@@ -117,6 +117,11 @@ class OrderingGateServiceTest : public ::testing::Test {
   std::shared_ptr<MockOrderingServicePersistentState> fake_persistent_state;
 };
 
+/**
+ * @given ordering service
+ * @when a bunch of transaction has arrived
+ * @then proposal is sent
+ */
 TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   // 8 transaction -> proposal -> 2 transaction -> proposal
 
@@ -172,6 +177,12 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   }
 }
 
+/**
+ * @given ordering service
+ * @when a bunch of transaction has arrived
+ * @then split transactions on to two proposal
+ *
+ */
 TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   // commits on the fulfilling proposal queue
   // 10 transaction -> proposal with 5 -> proposal with 5

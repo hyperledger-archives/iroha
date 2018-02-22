@@ -37,7 +37,7 @@ class MockOrderingServicePersistentState
   /**
    * Reset state
    */
-  MOCK_METHOD0(reset, void());
+  MOCK_METHOD0(reset, bool());
 };
 
 #endif  // IROHA_MOCK_ORDERING_SERVICE_PERSISTENT_STATE_HPP

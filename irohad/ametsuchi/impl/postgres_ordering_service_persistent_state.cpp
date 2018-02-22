@@ -27,11 +27,7 @@ namespace iroha {
     expected::Result<std::shared_ptr<PostgresOrderingServicePersistentState>,
                      std::string>
     PostgresOrderingServicePersistentState::create(
-        std::string postgres_options) {
-      auto log_ =
-          logger::log("PostgresOrderingServicePersistentState:initConnection");
-      log_->info("Start storage creation");
-
+        const std::string &postgres_options) {
       // create connection
       auto postgres_connection =
           std::make_unique<pqxx::lazyconnection>(postgres_options);
@@ -42,21 +38,16 @@ namespace iroha {
             (boost::format("Connection to PostgreSQL broken: {}") % e.what())
                 .str());
       }
-      log_->info("connection to PostgreSQL completed");
 
       // create transaction
       auto postgres_transaction = std::make_unique<pqxx::nontransaction>(
           *postgres_connection, "Storage");
-      log_->info("transaction to PostgreSQL initialized");
-
       expected::Result<std::shared_ptr<PostgresOrderingServicePersistentState>,
                        std::string>
           storage;
-      storage = expected::makeValue(
-          std::shared_ptr<PostgresOrderingServicePersistentState>(
-              new PostgresOrderingServicePersistentState(
+      storage = expected::makeValue(std::make_shared<PostgresOrderingServicePersistentState>(
                   std::move(postgres_connection),
-                  std::move(postgres_transaction))));
+                  std::move(postgres_transaction)));
       return storage;
     }
 
@@ -69,20 +60,34 @@ namespace iroha {
           log_(logger::log("PostgresOrderingServicePersistentState")),
           execute_{ametsuchi::makeExecuteResult(*postgres_transaction_)} {}
 
-    void PostgresOrderingServicePersistentState::initStorage() {
+    bool PostgresOrderingServicePersistentState::initStorage() {
+      bool result = true;
       log_->info("Init storage");
-      postgres_transaction_->exec(
-          "CREATE TABLE IF NOT EXISTS ordering_service_state (\n"
-          "    proposal_height bigserial\n"
-          ");"
-          "INSERT INTO ordering_service_state\n"
-          "VALUES (2); -- expected height (1 is genesis)");
+      try {
+        postgres_transaction_->exec(
+            "CREATE TABLE IF NOT EXISTS ordering_service_state (\n"
+                "    proposal_height bigserial\n"
+                ");"
+                "INSERT INTO ordering_service_state\n"
+                "VALUES (2); -- expected height (1 is genesis)");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        result = false;
+      }
+      return result;
     }
 
-    void PostgresOrderingServicePersistentState::dropStorgage() {
+    bool PostgresOrderingServicePersistentState::dropStorgage() {
+      bool result = true;
       log_->info("Drop storage");
-      postgres_transaction_->exec(
-          "DROP TABLE IF EXISTS ordering_service_state;");
+      try {
+        postgres_transaction_->exec(
+            "DROP TABLE IF EXISTS ordering_service_state;");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        result = false;
+      }
+      return result;
     }
 
     bool PostgresOrderingServicePersistentState::saveProposalHeight(
@@ -123,9 +128,11 @@ namespace iroha {
       return height;
     }
 
-    void PostgresOrderingServicePersistentState::reset() {
-      dropStorgage();
-      initStorage();
+    bool PostgresOrderingServicePersistentState::reset() {
+      bool result = true;
+      result &= dropStorgage();
+      result &= initStorage();
+      return result;
     }
 
   }  // namespace ametsuchi

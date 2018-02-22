@@ -113,23 +113,24 @@ void Irohad::initStorage() {
       [&](expected::Value<std::shared_ptr<ametsuchi::StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](expected::Error<std::string> &error) {
-        throw std::runtime_error(error.error);
+      [&](expected::Error<std::string> &error) {
+        log_->error(error.error);
       });
 
   PostgresOrderingServicePersistentState::create(pg_conn_).match(
       [&](expected::Value<
           std::shared_ptr<ametsuchi::PostgresOrderingServicePersistentState>>
               &_storage) { ordering_service_storage_ = _storage.value; },
-      [](expected::Error<std::string> &error) {
-        throw std::runtime_error(error.error);
+      [&](expected::Error<std::string> &error) {
+        log_->error(error.error);
       });
 
   log_->info("[Init] => storage", logger::logBool(storage));
 }
 
 void Irohad::resetOrderingService() {
-  ordering_service_storage_->reset();
+  if (not ordering_service_storage_->reset())
+    log_->error("cannot reset ordering service storage");
 }
 
 /**

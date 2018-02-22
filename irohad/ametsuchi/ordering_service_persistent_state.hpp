@@ -42,7 +42,7 @@ namespace iroha {
       /**
        * Reset storage to default state
        */
-      virtual void reset() = 0;
+      virtual bool reset() = 0;
     };
   }  // namespace ordering
 }  // namespace iroha

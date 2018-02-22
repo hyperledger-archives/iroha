@@ -42,7 +42,7 @@ namespace iroha {
       static expected::Result<
           std::shared_ptr<PostgresOrderingServicePersistentState>,
           std::string>
-      create(std::string postgres_options);
+      create(const std::string &postgres_options);
 
       /**
        * Constructor
@@ -57,12 +57,12 @@ namespace iroha {
        * Initialize storage.
        * Create tables and fill with initial value.
        */
-      void initStorage();
+      bool initStorage();
 
       /**
        * Drop storage tables.
        */
-      void dropStorgage();
+      bool dropStorgage();
 
       /**
        * Save proposal height that it can be restored
@@ -78,7 +78,7 @@ namespace iroha {
       /**
        * Reset storage state to default
        */
-      virtual void reset();
+      virtual bool reset();
 
      private:
       /**
