@@ -37,23 +37,20 @@ namespace iroha {
         return rxcpp::observable<>::empty<wBlock>();
       }
       return rxcpp::observable<>::range(height, to).flat_map([this](auto i) {
-        auto bytes = block_store_.get(i);
-        return rxcpp::observable<>::create<wBlock>([this, bytes](auto s) {
-          if (not bytes.has_value()) {
-            s.on_completed();
-            return;
+        // TODO IR-975 victordrobny 12.02.2018 convert directly to
+        // shared_model::proto::Block after FlatFile will be reworked to new
+        // model
+        auto block = block_store_.get(i) | [](const auto &bytes) {
+          return model::converters::stringToJson(bytesToString(bytes));
+        } | [this](const auto &d) {
+          return serializer_.deserialize(d);
+        } | [](const auto &block_old) {
+          return wBlock(shared_model::proto::from_old(block_old).copy());
+        };
+        return rxcpp::observable<>::create<wBlock>([this, block](auto s) {
+          if (block) {
+            s.on_next(block);
           }
-          // TODO IR-975 victordrobny 12.02.2018 convert directly to
-          // shared_model::proto::Block after FlatFile will be reworked to new
-          // model
-
-          model::converters::stringToJson(bytesToString(bytes.value())) |
-              [this](const auto &d) { return serializer_.deserialize(d); } |
-              [&s](const auto &block_old) {
-                s.on_next(
-                    wBlock(shared_model::proto::from_old(block_old).copy()));
-                return true;
-              };
           s.on_completed();
         });
       });
