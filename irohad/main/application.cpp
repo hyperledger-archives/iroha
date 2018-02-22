@@ -118,9 +118,9 @@ void Irohad::initStorage() {
       });
 
   PostgresOrderingServicePersistentState::create(pg_conn_).match(
-      [&](expected::Value<std::shared_ptr<ametsuchi::PostgresOrderingServicePersistentState>> &_storage) {
-        ordering_service_storage_ = _storage.value;
-      },
+      [&](expected::Value<
+          std::shared_ptr<ametsuchi::PostgresOrderingServicePersistentState>>
+              &_storage) { ordering_service_storage_ = _storage.value; },
       [](expected::Error<std::string> &error) {
         throw std::runtime_error(error.error);
       });
@@ -165,10 +165,7 @@ void Irohad::initValidators() {
  */
 void Irohad::initOrderingGate() {
   ordering_gate = ordering_init.initOrderingGate(
-      wsv,
-      max_proposal_size_,
-      proposal_delay_,
-      ordering_service_storage_);
+      wsv, max_proposal_size_, proposal_delay_, ordering_service_storage_);
   log_->info("[Init] => init ordering gate - [{}]",
              logger::logBool(ordering_gate));
 }

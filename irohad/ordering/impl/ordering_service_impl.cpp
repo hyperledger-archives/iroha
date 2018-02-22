@@ -27,7 +27,8 @@ namespace iroha {
         size_t max_size,
         size_t delay_milliseconds,
         std::shared_ptr<network::OrderingServiceTransport> transport,
-        std::shared_ptr<ametsuchi::OrderingServicePersistentState> persistent_state)
+        std::shared_ptr<ametsuchi::OrderingServicePersistentState>
+            persistent_state)
         : wsv_(wsv),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),

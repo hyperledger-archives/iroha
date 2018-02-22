@@ -137,8 +137,11 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
       .Times(1)
       .WillOnce(Return(true));
 
-  service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport, fake_persistent_state);
+  service = std::make_shared<OrderingServiceImpl>(wsv,
+                                                  max_proposal,
+                                                  commit_delay,
+                                                  service_transport,
+                                                  fake_persistent_state);
   service_transport->subscribe(service);
 
   start();
@@ -183,7 +186,6 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
       .Times(1)
       .WillOnce(Return(boost::optional<size_t>(2)));
 
-
   EXPECT_CALL(*fake_persistent_state, saveProposalHeight(3))
       .Times(1)
       .WillOnce(Return(true));
@@ -191,8 +193,11 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
       .Times(1)
       .WillOnce(Return(true));
 
-  service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport, fake_persistent_state);
+  service = std::make_shared<OrderingServiceImpl>(wsv,
+                                                  max_proposal,
+                                                  commit_delay,
+                                                  service_transport,
+                                                  fake_persistent_state);
   service_transport->subscribe(service);
 
   start();

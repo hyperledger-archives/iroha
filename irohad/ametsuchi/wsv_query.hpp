@@ -31,7 +31,7 @@ namespace iroha {
     struct AccountAsset;
     struct Peer;
     struct Asset;
-  }
+  }  // namespace model
 
   namespace ametsuchi {
 

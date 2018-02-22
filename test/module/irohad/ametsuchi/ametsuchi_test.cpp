@@ -20,6 +20,7 @@
 #include <boost/range/combine.hpp>
 
 #include "ametsuchi/impl/postgres_block_query.hpp"
+#include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/mutable_storage.hpp"
@@ -35,7 +36,6 @@
 #include "model/permissions.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
-#include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
@@ -874,12 +874,14 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
  * @then load proposal height and ensure it is correct
  */
 TEST_F(AmetsuchiTest, OrderingServicePersistentStorageTest) {
-  std::shared_ptr<iroha::ametsuchi::PostgresOrderingServicePersistentState> ordering_state;
-  auto orderingStorageResult = iroha::ametsuchi::PostgresOrderingServicePersistentState::create(pgopt_);
+  std::shared_ptr<iroha::ametsuchi::PostgresOrderingServicePersistentState>
+      ordering_state;
+  auto orderingStorageResult =
+      iroha::ametsuchi::PostgresOrderingServicePersistentState::create(pgopt_);
   orderingStorageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<iroha::ametsuchi::PostgresOrderingServicePersistentState>> &_storage) {
-        ordering_state = _storage.value;
-      },
+      [&](iroha::expected::Value<std::shared_ptr<
+              iroha::ametsuchi::PostgresOrderingServicePersistentState>>
+              &_storage) { ordering_state = _storage.value; },
       [](iroha::expected::Error<std::string> &error) {
         FAIL() << "PostgresOrderingServicePersistentState: " << error.error;
       });
