@@ -81,7 +81,7 @@ namespace torii {
                 const iroha::expected::Value<shared_model::proto::Transaction>
                     &iroha_tx) {
               tx_hash = iroha_tx.value.hash();
-              if (cache_->findItem(tx_hash) and iroha_tx->quorum < 2) {
+              if (cache_->findItem(tx_hash) and iroha_tx.value.quorum() < 2) {
                 return;
               }
 

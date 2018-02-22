@@ -44,8 +44,6 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
     auto keypair = manager->loadKeys().value();
 
     irohad = std::make_shared<TestIrohad>(block_store_path,
-                                          redishost_,
-                                          redisport_,
                                           pgopt_,
                                           0,
                                           10001,
@@ -133,7 +131,7 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
     auto pb_tx = iroha::model::converters::PbTransactionFactory().serialize(tx);
 
     google::protobuf::Empty response;
-    irohad->getCommandService()->ToriiAsync(pb_tx, response);
+    irohad->getCommandService()->Torii(pb_tx);
   }
 };
 

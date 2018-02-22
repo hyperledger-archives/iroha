@@ -41,10 +41,6 @@ namespace iroha {
 
       using KeyType = decltype(pubkey);
 
-      Peer() {}
-      Peer(const std::string &address, pubkey_t pubkey)
-          : address(address), pubkey(pubkey) {}
-
       bool operator==(const Peer &obj) const {
         if (address == obj.address && pubkey == obj.pubkey) {
           return true;

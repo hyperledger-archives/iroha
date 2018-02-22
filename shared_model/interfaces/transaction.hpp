@@ -49,6 +49,14 @@ namespace shared_model {
        */
       virtual types::CounterType transactionCounter() const = 0;
 
+      /// Type of quorum
+      using QuorumType = uint8_t;
+
+      /**
+       * @return quorum of transaction
+       */
+      virtual QuorumType quorum() const = 0;
+
       /// Type of command
       using CommandType = detail::PolymorphicWrapper<Command>;
 
@@ -67,6 +75,7 @@ namespace shared_model {
         oldStyleTransaction->created_ts = createdTime();
         oldStyleTransaction->creator_account_id = creatorAccountId();
         oldStyleTransaction->tx_counter = transactionCounter();
+        oldStyleTransaction->quorum = quorum();
 
         std::for_each(commands().begin(),
                       commands().end(),
@@ -94,6 +103,7 @@ namespace shared_model {
             .append("txCounter", std::to_string(transactionCounter()))
             .append("creatorAccountId", creatorAccountId())
             .append("createdTime", std::to_string(createdTime()))
+            .append("quorum", std::to_string(quorum()))
             .append("commands")
             .appendAll(commands(),
                        [](auto &command) { return command->toString(); })

@@ -21,6 +21,7 @@
 #include <string>
 #include "common/types.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 #include "model/transaction.hpp"
 #include "multi_sig_transactions/mst_types.hpp"
 
@@ -52,7 +53,10 @@ inline auto makeTxWithCorrectHash(const string &signature_value,
                                   uint8_t quorum = 3,
                                   iroha::TimeType created_time = 1) {
   auto tx = makeTx("0", signature_value, quorum, created_time);
-  tx->tx_hash = iroha::hash(*tx);
+  tx->tx_hash = iroha::sha3_256(iroha::model::converters::PbTransactionFactory()
+                                    .serialize(*tx)
+                                    .payload()
+                                    .SerializeAsString());
   return tx;
 }
 

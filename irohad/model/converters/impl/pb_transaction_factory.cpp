@@ -16,7 +16,7 @@
  */
 
 #include "model/converters/pb_transaction_factory.hpp"
-#include <cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp>
+#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/converters/pb_command_factory.hpp"
 
@@ -58,7 +58,7 @@ namespace iroha {
         tx.tx_counter = pl.tx_counter();
         tx.creator_account_id = pl.creator_account_id();
         tx.created_ts = pl.created_time();
-        tx.quorum = static_cast<uint8_t >(pl.quorum());
+        tx.quorum = static_cast<uint8_t>(pl.quorum());
 
         for (const auto &pb_sig : pb_tx.signature()) {
           model::Signature sig{};
@@ -71,7 +71,7 @@ namespace iroha {
           tx.commands.push_back(
               commandFactory.deserializeAbstractCommand(pb_command));
         }
-        tx.tx_hash = iroha::hash(tx);
+        tx.tx_hash = iroha::sha3_256(pb_tx.payload().SerializeAsString());
         return std::make_shared<model::Transaction>(tx);
       }
 
