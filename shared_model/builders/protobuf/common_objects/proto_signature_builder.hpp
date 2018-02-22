@@ -32,7 +32,7 @@ namespace shared_model {
     class SignatureBuilder {
      public:
       shared_model::proto::Signature build() {
-        return shared_model::proto::Signature(std::move(signature_));
+        return shared_model::proto::Signature(iroha::protocol::Signature(signature_));
       }
 
       SignatureBuilder &publicKey(const shared_model::interface::types::PubkeyType &key) {
