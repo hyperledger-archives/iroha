@@ -31,8 +31,7 @@ namespace iroha {
     class QueryProcessorImpl : public QueryProcessor {
      public:
       explicit QueryProcessorImpl(
-          std::unique_ptr<model::QueryProcessingFactory> qpf,
-          std::shared_ptr<validation::StatelessValidator> stateless_validator);
+          std::unique_ptr<model::QueryProcessingFactory> qpf);
 
       /**
        * Register client query
@@ -50,11 +49,10 @@ namespace iroha {
       queryNotifier() override;
 
      private:
-      rxcpp::subjects::subject<std::shared_ptr<
-          shared_model::interface::QueryResponse>>
+      rxcpp::subjects::subject<
+          std::shared_ptr<shared_model::interface::QueryResponse>>
           subject_;
       std::unique_ptr<model::QueryProcessingFactory> qpf_;
-      std::shared_ptr<validation::StatelessValidator> validator_;
     };
   }  // namespace torii
 }  // namespace iroha

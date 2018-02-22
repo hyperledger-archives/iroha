@@ -47,8 +47,8 @@ namespace iroha {
        * Subscribe for query responses
        * @return observable with query responses
        */
-      virtual rxcpp::observable<std::shared_ptr<
-          shared_model::interface::QueryResponse>>
+      virtual rxcpp::observable<
+          std::shared_ptr<shared_model::interface::QueryResponse>>
       queryNotifier() = 0;
 
       virtual ~QueryProcessor(){};
