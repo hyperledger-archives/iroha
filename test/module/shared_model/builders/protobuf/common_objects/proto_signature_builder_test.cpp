@@ -29,12 +29,32 @@ TEST(ProtoSignatureBuilderTest, AllFieldsBuild) {
   shared_model::proto::SignatureBuilder builder;
 
   shared_model::interface::types::PubkeyType expected_key(std::string(32, '1'));
-  shared_model::interface::Signature::SignedType expected_signed("signed object");
+  shared_model::interface::Signature::SignedType expected_signed(
+      "signed object");
 
-  auto signature = builder.publicKey(expected_key).signedData(expected_signed)
-      .build();
+  auto signature =
+      builder.publicKey(expected_key).signedData(expected_signed).build();
 
   EXPECT_EQ(signature.publicKey(), expected_key);
   EXPECT_EQ(signature.signedData(), expected_signed);
 }
 
+/**
+ * @given fields for Signature object
+ * @when SignatureBuilder is invoked twice with the same configuration
+ * @then Two constructed Signature objects are identical
+ */
+TEST(ProtoSignatureBuilderTest, SeveralObjectsFromOneBuilder) {
+  shared_model::proto::SignatureBuilder builder;
+
+  shared_model::interface::types::PubkeyType expected_key(std::string(32, '1'));
+  shared_model::interface::Signature::SignedType expected_signed(
+      "signed object");
+
+  auto signature =
+      builder.publicKey(expected_key).signedData(expected_signed).build();
+  auto signature2 = builder.build();
+
+  EXPECT_EQ(signature.publicKey(), signature2.publicKey());
+  EXPECT_EQ(signature.signedData(), signature2.signedData());
+}

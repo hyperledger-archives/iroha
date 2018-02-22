@@ -22,8 +22,7 @@
 /**
  * @given fields for Peer object
  * @when PeerBuilder is invoked
- * @then Peer object is successfully constructed and has the same fields as
- * provided
+ * @then Peer object is successfully constructed and has the same address
  */
 TEST(ProtoPeerBuilderTest, AddressFieldBuild) {
   shared_model::proto::PeerBuilder builder;
@@ -34,6 +33,11 @@ TEST(ProtoPeerBuilderTest, AddressFieldBuild) {
   EXPECT_EQ(peer.address(), expected_address);
 }
 
+/**
+ * @given fields for Peer object
+ * @when PeerBuilder is invoked
+ * @then Peer object is successfully constructed and has the same key
+ */
 TEST(ProtoPeerBuilderTest, KeyFieldBuild) {
   shared_model::proto::PeerBuilder builder;
 
@@ -43,6 +47,11 @@ TEST(ProtoPeerBuilderTest, KeyFieldBuild) {
   EXPECT_EQ(peer.pubkey(), expected_key);
 }
 
+/**
+ * @given fields for Peer object
+ * @when PeerBuilder is invoked
+ * @then Peer object is successfully constructed and has the same fields
+ */
 TEST(ProtoPeerBuilderTest, AllFieldsBuild) {
   shared_model::proto::PeerBuilder builder;
 
@@ -52,4 +61,21 @@ TEST(ProtoPeerBuilderTest, AllFieldsBuild) {
 
   EXPECT_EQ(peer.address(), expected_address);
   EXPECT_EQ(peer.pubkey(), expected_key);
+}
+
+/**
+ * @given fields for Peer object
+ * @when PeerBuilder is invoked twice with the same configuration
+ * @then Two constructed Peer objects are identical
+ */
+TEST(ProtoPeerBuilderTest, SeveralObjectsFromOneBuilder) {
+  shared_model::proto::PeerBuilder builder;
+
+  auto expected_address = "127.0.0.1";
+  auto expected_key = shared_model::crypto::PublicKey("very_secure_key");
+  auto peer = builder.address(expected_address).pubkey(expected_key).build();
+  auto peer2 = builder.build();
+
+  EXPECT_EQ(peer.address(), peer2.address());
+  EXPECT_EQ(peer.pubkey(), peer2.pubkey());
 }

@@ -44,3 +44,30 @@ TEST(ProtoAccountBuilderTest, AllFieldsBuild) {
   EXPECT_EQ(account.quorum(), expected_quorum);
   EXPECT_EQ(account.jsonData(), expected_json_data);
 }
+
+/**
+ * @given fields for Account object
+ * @when AccountBuilder is invoked twice with the same configuration
+ * @then Two constructed Account objects are identical
+ */
+TEST(ProtoAccountBuilderTest, SeveralObjectsFromOneBuilder) {
+  shared_model::proto::AccountBuilder builder;
+
+  auto expected_account_id = "Steve Irwin";
+  auto expected_domain_id = "australia.com";
+  auto expected_quorum = 3;
+  auto expected_json_data = "{}";
+
+  auto account = builder.accountId(expected_account_id)
+                     .domainId(expected_domain_id)
+                     .quorum(expected_quorum)
+                     .jsonData(expected_json_data)
+                     .build();
+
+  auto account2 = builder.build();
+
+  EXPECT_EQ(account.accountId(), account2.accountId());
+  EXPECT_EQ(account.domainId(), account2.domainId());
+  EXPECT_EQ(account.quorum(), account2.quorum());
+  EXPECT_EQ(account.jsonData(), account2.jsonData());
+}
