@@ -29,9 +29,6 @@
 #include "interfaces/commands/transfer_asset.hpp"
 #include "interfaces/iroha_internal/block.hpp"
 
-using TA = shared_model::detail::PolymorphicWrapper<
-    shared_model::interface::TransferAsset>;
-
 namespace iroha {
   namespace ametsuchi {
 
@@ -63,7 +60,8 @@ namespace iroha {
           [&](auto &status, const auto &cmd) {
             return visit_in_place(
                 cmd->get(),
-                [&](const TA &command) {
+                [&](const shared_model::detail::PolymorphicWrapper<
+                    shared_model::interface::TransferAsset> &command) {
                   status &= this->indexAccountIdHeight(command->srcAccountId(),
                                                        height)
                       & this->indexAccountIdHeight(command->destAccountId(),
@@ -99,13 +97,13 @@ namespace iroha {
           block.transactions() | boost::adaptors::indexed(0),
           [&](const auto &tx) {
             const auto &creator_id = tx.value()->creatorAccountId();
-            const auto &hash = tx.value()->hash();
+            const auto &hash = tx.value()->hash().blob();
             const auto &index = std::to_string(tx.index());
 
             // tx hash -> block where hash is stored
             this->execute("INSERT INTO height_by_hash(hash, height) VALUES ("
-                          + transaction_.quote(pqxx::binarystring(
-                                hash.blob().data(), hash.size()))
+                          + transaction_.quote(
+                                pqxx::binarystring(hash.data(), hash.size()))
                           + ", " + transaction_.quote(height) + ");");
 
             this->indexAccountIdHeight(creator_id, height);

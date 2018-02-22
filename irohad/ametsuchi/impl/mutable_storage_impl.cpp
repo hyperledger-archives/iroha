@@ -47,9 +47,6 @@ namespace iroha {
         const model::Block &block,
         std::function<bool(const model::Block &, WsvQuery &, const hash256_t &)>
             function) {
-      auto bl = std::make_shared<shared_model::proto::Block>(
-          shared_model::proto::from_old(block));
-
       auto execute_transaction = [this](auto &transaction) {
         auto execute_command = [this, &transaction](auto command) {
           auto result =
@@ -75,7 +72,7 @@ namespace iroha {
 
       if (result) {
         block_store_.insert(std::make_pair(block.height, block));
-        block_index_->index(*bl);
+        block_index_->index(shared_model::proto::from_old(block));
 
         top_hash_ = block.hash;
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");
