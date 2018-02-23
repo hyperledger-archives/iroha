@@ -78,7 +78,7 @@ namespace iroha {
       /**
        * Reset storage state to default
        */
-      virtual bool reset();
+      virtual bool resetState();
 
      private:
       /**

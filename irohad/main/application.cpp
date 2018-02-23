@@ -129,7 +129,7 @@ void Irohad::initStorage() {
 }
 
 void Irohad::resetOrderingService() {
-  if (not ordering_service_storage_->reset())
+  if (not ordering_service_storage_->resetState())
     log_->error("cannot reset ordering service storage");
 }
 

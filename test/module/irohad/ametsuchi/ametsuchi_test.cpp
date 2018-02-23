@@ -886,13 +886,13 @@ TEST_F(AmetsuchiTest, OrderingServicePersistentStorageTest) {
              });
   ASSERT_TRUE(ordering_state);
 
-  ordering_state->reset();
+  ordering_state->resetState();
   ASSERT_EQ(2, ordering_state->loadProposalHeight().value());
   ASSERT_TRUE(ordering_state->saveProposalHeight(11));
   ASSERT_EQ(11, ordering_state->loadProposalHeight().value());
   ASSERT_TRUE(ordering_state->saveProposalHeight(33));
   ASSERT_EQ(33, ordering_state->loadProposalHeight().value());
-  ordering_state->reset();
+  ordering_state->resetState();
   ASSERT_EQ(2, ordering_state->loadProposalHeight().value());
 }
 
@@ -914,7 +914,7 @@ TEST_F(AmetsuchiTest, OrderingServicePersistentStorageRestartTest) {
              });
   ASSERT_TRUE(ordering_state);
 
-  ordering_state->reset();
+  ordering_state->resetState();
   ASSERT_EQ(2, ordering_state->loadProposalHeight().value());
   ASSERT_TRUE(ordering_state->saveProposalHeight(11));
   ASSERT_EQ(11, ordering_state->loadProposalHeight().value());
@@ -964,14 +964,14 @@ TEST_F(AmetsuchiTest,
              });
   ASSERT_TRUE(ordering_state_2);
 
-  ordering_state_2->reset();
+  ordering_state_2->resetState();
   ASSERT_EQ(2, ordering_state_1->loadProposalHeight().value());
   ASSERT_EQ(2, ordering_state_2->loadProposalHeight().value());
   ASSERT_TRUE(ordering_state_1->saveProposalHeight(11));
   ASSERT_EQ(11, ordering_state_1->loadProposalHeight().value());
   ASSERT_EQ(11, ordering_state_2->loadProposalHeight().value());
 
-  ordering_state_2->reset();
+  ordering_state_2->resetState();
   ASSERT_EQ(2, ordering_state_1->loadProposalHeight().value());
   ASSERT_EQ(2, ordering_state_2->loadProposalHeight().value());
   ASSERT_TRUE(ordering_state_2->saveProposalHeight(42));

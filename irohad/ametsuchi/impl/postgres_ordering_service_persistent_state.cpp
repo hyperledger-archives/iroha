@@ -121,7 +121,7 @@ namespace iroha {
       return height;
     }
 
-    bool PostgresOrderingServicePersistentState::reset() {
+    bool PostgresOrderingServicePersistentState::resetState() {
       return dropStorgage() & initStorage();
     }
 
