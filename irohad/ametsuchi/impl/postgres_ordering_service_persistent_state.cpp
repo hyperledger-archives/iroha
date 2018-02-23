@@ -18,7 +18,6 @@
 #include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
-#include <cstddef>
 #include "common/types.hpp"
 
 namespace iroha {
@@ -45,9 +44,9 @@ namespace iroha {
       expected::Result<std::shared_ptr<PostgresOrderingServicePersistentState>,
                        std::string>
           storage;
-      storage = expected::makeValue(std::make_shared<PostgresOrderingServicePersistentState>(
-                  std::move(postgres_connection),
-                  std::move(postgres_transaction)));
+      storage = expected::makeValue(
+          std::make_shared<PostgresOrderingServicePersistentState>(
+              std::move(postgres_connection), std::move(postgres_transaction)));
       return storage;
     }
 
@@ -61,33 +60,27 @@ namespace iroha {
           execute_{ametsuchi::makeExecuteResult(*postgres_transaction_)} {}
 
     bool PostgresOrderingServicePersistentState::initStorage() {
-      bool result = true;
-      log_->info("Init storage");
-      try {
-        postgres_transaction_->exec(
-            "CREATE TABLE IF NOT EXISTS ordering_service_state (\n"
-                "    proposal_height bigserial\n"
-                ");"
-                "INSERT INTO ordering_service_state\n"
-                "VALUES (2); -- expected height (1 is genesis)");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        result = false;
-      }
-      return result;
+      return execute_(
+                 "CREATE TABLE IF NOT EXISTS ordering_service_state (\n"
+                 "    proposal_height bigserial\n"
+                 ");\n"
+                 "INSERT INTO ordering_service_state\n"
+                 "VALUES (2); -- expected height (1 is genesis)")
+          .match([](expected::Value<pqxx::result> v) -> bool { return true; },
+                 [&](expected::Error<std::string> e) -> bool {
+                   log_->error(e.error);
+                   return false;
+                 });
     }
 
     bool PostgresOrderingServicePersistentState::dropStorgage() {
-      bool result = true;
       log_->info("Drop storage");
-      try {
-        postgres_transaction_->exec(
-            "DROP TABLE IF EXISTS ordering_service_state;");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        result = false;
-      }
-      return result;
+      return execute_("DROP TABLE IF EXISTS ordering_service_state;")
+          .match([](expected::Value<pqxx::result> v) -> bool { return true; },
+                 [&](expected::Error<std::string> e) -> bool {
+                   log_->error(e.error);
+                   return false;
+                 });
     }
 
     bool PostgresOrderingServicePersistentState::saveProposalHeight(
@@ -129,10 +122,7 @@ namespace iroha {
     }
 
     bool PostgresOrderingServicePersistentState::reset() {
-      bool result = true;
-      result &= dropStorgage();
-      result &= initStorage();
-      return result;
+      return dropStorgage() & initStorage();
     }
 
   }  // namespace ametsuchi

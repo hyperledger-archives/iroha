@@ -69,6 +69,7 @@ namespace iroha {
        */
       virtual nonstd::optional<std::vector<std::string>> getAccountRoles(
           const std::string &account_id) = 0;
+
       /**
        * Get all permissions of a role
        * @param role_name

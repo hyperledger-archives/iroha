@@ -181,7 +181,6 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
  * @given ordering service
  * @when a bunch of transaction has arrived
  * @then split transactions on to two proposal
- *
  */
 TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   // commits on the fulfilling proposal queue
