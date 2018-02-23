@@ -20,7 +20,6 @@
 
 #include "backend/protobuf/common_objects/signature.hpp"
 #include "primitive.pb.h"
-#include "utils/polymorphic_wrapper.hpp"
 #include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {
@@ -33,18 +32,20 @@ namespace shared_model {
     class SignatureBuilder {
      public:
       shared_model::proto::Signature build() {
-        return shared_model::proto::Signature(signature_);
+        return shared_model::proto::Signature(iroha::protocol::Signature(signature_));
       }
 
-      SignatureBuilder &publicKey(const shared_model::interface::types::PubkeyType &key) {
-        signature_.set_pubkey(shared_model::crypto::toBinaryString(key));
-        return *this;
+      SignatureBuilder publicKey(const shared_model::interface::types::PubkeyType &key) {
+        SignatureBuilder copy(*this);
+        copy.signature_.set_pubkey(shared_model::crypto::toBinaryString(key));
+        return copy;
       }
 
-      SignatureBuilder &signedData(
+      SignatureBuilder signedData(
           const interface::Signature::SignedType &signed_data) {
-        signature_.set_signature(shared_model::crypto::toBinaryString(signed_data));
-        return *this;
+        SignatureBuilder copy(*this);
+        copy.signature_.set_signature(shared_model::crypto::toBinaryString(signed_data));
+        return copy;
       }
 
      private:

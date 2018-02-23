@@ -21,7 +21,7 @@
 #include "builders/common_objects/common.hpp"
 #include "interfaces/common_objects/amount.hpp"
 
-//TODO: 14.02.2018 nickaleks Add check for uninitialized fields IR-972
+// TODO: 14.02.2018 nickaleks Add check for uninitialized fields IR-972
 
 namespace shared_model {
   namespace builder {
@@ -35,37 +35,35 @@ namespace shared_model {
      * to perform stateless validation on model fields
      */
     template <typename BuilderImpl, typename Validator>
-    class AmountBuilder {
+    class AmountBuilder : public CommonObjectBuilder<interface::Amount,
+                                                     BuilderImpl,
+                                                     Validator> {
      public:
-      BuilderResult<shared_model::interface::Amount> build() {
-        auto amount = builder_.build();
-        shared_model::validation::ReasonsGroupType reasons(
-            "Amount Builder", shared_model::validation::GroupedReasons());
-        shared_model::validation::Answer answer;
-        validator_.validateAmount(reasons, amount);
-
-        if (!reasons.second.empty()) {
-          answer.addReason(std::move(reasons));
-          return iroha::expected::makeError(
-              std::make_shared<std::string>(answer.reason()));
-        }
-        std::shared_ptr<shared_model::interface::Amount> amount_ptr(amount.copy());
-        return iroha::expected::makeValue(amount_ptr);
+      AmountBuilder intValue(const boost::multiprecision::uint256_t &value) {
+        AmountBuilder copy(*this);
+        copy.builder_ = this->builder_.intValue(value);
+        return copy;
       }
 
-      AmountBuilder &intValue(const boost::multiprecision::uint256_t &value) {
-        builder_ = builder_.intValue(value);
-        return *this;
+      AmountBuilder precision(
+          const interface::types::PrecisionType &precision) {
+        AmountBuilder copy(*this);
+        copy.builder_ = this->builder_.precision(precision);
+        return copy;
       }
 
-      AmountBuilder &precision(const interface::types::PrecisionType &precision) {
-        builder_ = builder_.precision(precision);
-        return *this;
+     protected:
+      virtual std::string builderName() const override {
+        return "Amount Builder";
       }
 
-     private:
-      Validator validator_;
-      BuilderImpl builder_;
+      virtual validation::ReasonsGroupType validate(
+          const interface::Amount &object) override {
+        validation::ReasonsGroupType reasons;
+        this->validator_.validateAmount(reasons, object);
+
+        return reasons;
+      }
     };
   }  // namespace builder
 }  // namespace shared_model
