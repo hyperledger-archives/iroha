@@ -18,6 +18,7 @@
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "builders/protobuf/proposal.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
   namespace ordering {
@@ -32,11 +33,13 @@ namespace iroha {
           transport_(transport),
           proposal_height(2) {
       updateTimer();
+      log_ = logger::log("OrderingServiceImpl");
     }
 
     void OrderingServiceImpl::onTransaction(
         std::shared_ptr<shared_model::interface::Transaction> transaction) {
       queue_.push(transaction);
+      log_->info("Queue size is {}", queue_.unsafe_size());
 
       if (queue_.unsafe_size() >= max_size_) {
         handle.unsubscribe();
@@ -46,6 +49,7 @@ namespace iroha {
 
     void OrderingServiceImpl::generateProposal() {
       std::vector<shared_model::proto::Transaction> fetched_txs;
+        log_->info("Start proposal generation");
       for (std::shared_ptr<shared_model::interface::Transaction> tx;
            fetched_txs.size() < max_size_ and queue_.try_pop(tx);) {
         fetched_txs.emplace_back(

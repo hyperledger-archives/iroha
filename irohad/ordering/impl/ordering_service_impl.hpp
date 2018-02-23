@@ -22,6 +22,7 @@
 #include <memory>
 #include <rxcpp/rx.hpp>
 #include <unordered_map>
+#include <logger/logger.hpp>
 
 #include "ametsuchi/peer_query.hpp"
 #include "network/impl/async_grpc_client.hpp"
@@ -101,6 +102,8 @@ namespace iroha {
       const size_t delay_milliseconds_;
       std::shared_ptr<network::OrderingServiceTransport> transport_;
       size_t proposal_height;
+
+      logger::Logger log_;
     };
   }  // namespace ordering
 }  // namespace iroha
