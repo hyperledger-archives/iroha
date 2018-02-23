@@ -21,6 +21,8 @@
 #include "model/execution/command_executor_factory.hpp"
 #include "model/sha3_hash.hpp"
 
+#include "backend/protobuf/from_old_model.hpp"
+
 namespace iroha {
   namespace ametsuchi {
     MutableStorageImpl::MutableStorageImpl(
@@ -69,7 +71,7 @@ namespace iroha {
 
       if (result) {
         block_store_.insert(std::make_pair(block.height, block));
-        block_index_->index(block);
+        block_index_->index(shared_model::proto::from_old(block));
 
         top_hash_ = block.hash;
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");
