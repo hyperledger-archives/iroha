@@ -45,7 +45,7 @@ namespace iroha {
         } | [this](const auto &d) {
           return serializer_.deserialize(d);
         } | [](const auto &block_old) {
-          return wBlock(shared_model::proto::from_old(block_old).copy());
+          return std::make_shared<shared_model::proto::Block>(shared_model::proto::from_old(block_old));
         };
         return rxcpp::observable<>::create<wBlock>([this, block](auto s) {
           if (block) {
@@ -107,6 +107,9 @@ namespace iroha {
         const rxcpp::subscriber<wTransaction> &subscriber, uint64_t block_id) {
       return [this, &subscriber, block_id](pqxx::result &result) {
         auto block = block_store_.get(block_id) | [this](auto bytes) {
+          // TODO IR-975 victordrobny 12.02.2018 convert directly to
+          // shared_model::proto::Block after FlatFile will be reworked to new
+          // model
           return boost::optional<shared_model::proto::Block>(
               shared_model::proto::from_old(*serializer_.deserialize(
                   *model::converters::stringToJson(bytesToString(bytes)))));
@@ -116,9 +119,7 @@ namespace iroha {
               return x.at("index").template as<size_t>();
             }),
             [&](auto x) {
-              shared_model::interface::Transaction *tx =
-                  block->transactions().at(x)->copy();
-              subscriber.on_next(wTransaction(tx));
+              subscriber.on_next(wTransaction(block->transactions().at(x)->copy()));
             });
       };
     }

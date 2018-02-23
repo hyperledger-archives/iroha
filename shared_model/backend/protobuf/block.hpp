@@ -117,7 +117,7 @@ namespace shared_model {
         return *payload_blob_;
       }
 
-      virtual const HashType &hash() const override {
+      const HashType &hash() const override {
         if (hash_ == boost::none) {
           hash_.emplace(HashProviderType::makeHash(payload()));
         }
