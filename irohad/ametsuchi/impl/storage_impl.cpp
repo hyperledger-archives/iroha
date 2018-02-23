@@ -31,7 +31,7 @@ namespace iroha {
   namespace ametsuchi {
 
     const char *kCommandExecutorError = "Cannot create CommandExecutorFactory";
-    const char *kPsqlBroken = "Connection to PostgreSQL broken: {}";
+    const char *kPsqlBroken = "Connection to PostgreSQL broken: %";
     const char *kTmpWsv = "TemporaryWsv";
 
     ConnectionContext::ConnectionContext(
