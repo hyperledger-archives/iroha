@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
+#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 #include "ametsuchi/impl/peer_query_wsv.hpp"
 
 #include "ametsuchi/wsv_query.hpp"
-#include "backend/protobuf/common_objects/peer.hpp"
 
 using wPeer = std::shared_ptr<shared_model::interface::Peer>;
 
@@ -36,11 +36,12 @@ namespace iroha {
       std::vector<wPeer> peers = [&tmp] {
         std::vector<wPeer> result;
         for (const auto &item : *tmp) {
-          iroha::protocol::Peer peer;
-          peer.set_address(item.address);
-          peer.set_peer_key(item.pubkey.to_string());
-          auto curr = std::make_shared<shared_model::proto::Peer>(
-              shared_model::proto::Peer(std::move(peer)));
+          shared_model::proto::PeerBuilder builder;
+
+          auto key = shared_model::crypto::PublicKey(item.pubkey.to_string());
+          auto peer = builder.address(item.address).pubkey(key).build();
+
+          auto curr = std::make_shared<shared_model::proto::Peer>(peer.getTransport());
           result.emplace_back(curr);
         }
         return result;

@@ -21,7 +21,6 @@
 #include "ametsuchi/peer_query.hpp"
 
 #include <memory>
-#include <nonstd/optional.hpp>
 #include <vector>
 
 namespace iroha {

@@ -30,6 +30,7 @@
 #include "model/domain.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
+#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 
 using namespace boost::adaptors;
 using namespace iroha::ametsuchi;
@@ -60,12 +61,13 @@ class YacPeerOrdererTest : public ::testing::Test {
     std::vector<wPeer> result;
     for (size_t i = 1; i <= N_PEERS; ++i) {
       auto tmp = iroha::consensus::yac::mk_peer(std::to_string(i));
-      iroha::protocol::Peer peer;
-      peer.set_address(tmp.address);
-      peer.set_peer_key(tmp.pubkey.to_string());
-      std::shared_ptr<shared_model::interface::Peer> curr =
-          std::make_shared<shared_model::proto::Peer>(
-              shared_model::proto::Peer(std::move(peer)));
+
+      shared_model::proto::PeerBuilder builder;
+
+      auto key = shared_model::crypto::PublicKey(tmp.pubkey.to_string());
+      auto peer = builder.address(tmp.address).pubkey(key).build();
+
+      auto curr = std::make_shared<shared_model::proto::Peer>(peer.getTransport());
       result.emplace_back(curr);
     }
     return result;

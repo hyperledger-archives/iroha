@@ -18,6 +18,7 @@
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include <algorithm>
 #include <random>
+#include <utility>
 #include "ametsuchi/peer_query.hpp"
 #include "consensus/yac/cluster_order.hpp"
 #include "consensus/yac/yac_hash_provider.hpp"
@@ -27,21 +28,30 @@ namespace iroha {
   namespace consensus {
     namespace yac {
 
+      template <class NewModel,
+                class OldModel = std::remove_pointer<
+                    decltype(std::declval<NewModel>().makeOldModel())>>
+
+      std::vector<OldModel> to_old_vector(
+          const std::vector<std::shared_ptr<NewModel>> &vec) {
+        return std::accumulate(vec.begin(),
+                               vec.end(),
+                               std::vector<OldModel>{},
+                               [](auto &out, const auto &item) {
+                                 out.emplace_back(*std::unique_ptr<OldModel>(
+                                     item->makeOldModel()));
+                                 return out;
+                               });
+      };
+
       PeerOrdererImpl::PeerOrdererImpl(
           std::shared_ptr<ametsuchi::PeerQuery> peer_query)
           : query_(std::move(peer_query)) {}
 
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getInitialOrdering() {
         return query_->getLedgerPeers() | [](const auto &peers) {
-          auto prs = std::accumulate(
-                  peers.begin(),
-                  peers.end(),
-                  std::vector<model::Peer>{},
-                  [](auto &vec, const auto& peer){
-                    std::unique_ptr<model::Peer> curr(peer->makeOldModel());
-                    vec.push_back(*curr);
-                    return vec;
-                  });
+          auto prs =
+              to_old_vector<shared_model::interface::Peer, model::Peer>(peers);
           return ClusterOrdering::create(prs);
         };
       }
@@ -49,15 +59,8 @@ namespace iroha {
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getOrdering(
           const YacHash &hash) {
         return query_->getLedgerPeers() | [&hash](auto peers) {
-          auto prs = std::accumulate(
-                  peers.begin(),
-                  peers.end(),
-                  std::vector<model::Peer>{},
-                  [](auto &vec, const auto& peer){
-                    std::unique_ptr<model::Peer> curr(peer->makeOldModel());
-                    vec.push_back(*curr);
-                    return vec;
-                  });
+          auto prs =
+              to_old_vector<shared_model::interface::Peer, model::Peer>(peers);
           std::seed_seq seed(hash.block_hash.begin(), hash.block_hash.end());
           std::default_random_engine gen(seed);
           std::shuffle(prs.begin(), prs.end(), gen);
