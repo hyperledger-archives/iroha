@@ -1,6 +1,5 @@
 add_library(grpc UNKNOWN IMPORTED)
 add_library(grpc++ UNKNOWN IMPORTED)
-add_library(grpc++_reflection UNKNOWN IMPORTED)
 add_library(gpr UNKNOWN IMPORTED)
 add_executable(grpc_cpp_plugin IMPORTED)
 
@@ -13,9 +12,6 @@ mark_as_advanced(grpc_LIBRARY)
 find_library(grpc_grpc++_LIBRARY grpc++)
 mark_as_advanced(grpc_grpc++_LIBRARY)
 
-find_library(grpc_grpc++_reflection_LIBRARY grpc++_reflection)
-mark_as_advanced(grpc_grpc++_reflection_LIBRARY)
-
 find_library(gpr_LIBRARY gpr)
 mark_as_advanced(gpr_LIBRARY)
 
@@ -26,7 +22,6 @@ find_package_handle_standard_args(grpc DEFAULT_MSG
     grpc_LIBRARY
     grpc_INCLUDE_DIR
     gpr_LIBRARY
-    grpc_grpc++_reflection_LIBRARY
     grpc_CPP_PLUGIN
     )
 
@@ -37,7 +32,6 @@ set_target_description(grpc "Remote Procedure Call library" ${URL} ${VERSION})
 iroha_get_lib_name(GPRLIB       gpr               SHARED)
 iroha_get_lib_name(GRPCLIB      grpc              SHARED)
 iroha_get_lib_name(GRPCPPLIB    grpc++            SHARED)
-iroha_get_lib_name(GRPCPPREFLIB grpc++_reflection SHARED)
 
 if (NOT grpc_FOUND)
   find_package(Git REQUIRED)
@@ -65,7 +59,6 @@ if (NOT grpc_FOUND)
           ${CMAKE_BINARY_DIR}${XCODE_EXT}/${GPRLIB}
           ${CMAKE_BINARY_DIR}${XCODE_EXT}/${GRPCLIB}
           ${CMAKE_BINARY_DIR}${XCODE_EXT}/${GRPCPPLIB}
-#          ${CMAKE_BINARY_DIR}${XCODE_EXT}/${GRPCPPREFLIB}
       INSTALL_COMMAND "" # remove install step
       TEST_COMMAND    "" # remove test step
       UPDATE_COMMAND  "" # remove update step
@@ -75,7 +68,6 @@ if (NOT grpc_FOUND)
   set(gpr_LIBRARY                    ${CMAKE_BINARY_DIR}${XCODE_EXT}/${GPRLIB})
   set(grpc_LIBRARY                   ${CMAKE_BINARY_DIR}${XCODE_EXT}/${GRPCLIB})
   set(grpc_grpc++_LIBRARY            ${CMAKE_BINARY_DIR}${XCODE_EXT}/${GRPCPPLIB})
-#  set(grpc_grpc++_reflection_LIBRARY ${CMAKE_BINARY_DIR}${XCODE_EXT}/${GRPCPPREFLIB})
   set(grpc_CPP_PLUGIN                ${CMAKE_BINARY_DIR}${XCODE_EXT}/grpc_cpp_plugin)
 
   file(MAKE_DIRECTORY ${grpc_INCLUDE_DIR})
@@ -83,7 +75,6 @@ if (NOT grpc_FOUND)
   add_dependencies(grpc_grpc protobuf)
   add_dependencies(grpc grpc_grpc)
   add_dependencies(grpc++ grpc_grpc)
-#  add_dependencies(grpc++_reflection grpc_grpc)
   add_dependencies(grpc_cpp_plugin grpc_grpc protoc)
 endif ()
 
@@ -99,12 +90,6 @@ set_target_properties(grpc++ PROPERTIES
     IMPORTED_LOCATION ${grpc_grpc++_LIBRARY}
     )
 
-#set_target_properties(grpc++_reflection PROPERTIES
-#    INTERFACE_INCLUDE_DIRECTORIES ${grpc_INCLUDE_DIR}
-#    INTERFACE_LINK_LIBRARIES grpc++
-#    IMPORTED_LOCATION ${grpc_grpc++_reflection_LIBRARY}
-#    )
-
 set_target_properties(grpc_cpp_plugin PROPERTIES
     IMPORTED_LOCATION ${grpc_CPP_PLUGIN}
     )
@@ -117,5 +102,4 @@ if(ENABLE_LIBS_PACKAGING)
   add_install_step_for_lib(${gpr_LIBRARY})
   add_install_step_for_lib(${grpc_LIBRARY})
   add_install_step_for_lib(${grpc_grpc++_LIBRARY})
-#  add_install_step_for_lib(${grpc_grpc++_reflection_LIBRARY})
 endif()
