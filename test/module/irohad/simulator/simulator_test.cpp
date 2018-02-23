@@ -16,6 +16,7 @@
  */
 
 #include "backend/protobuf/transaction.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/model/model_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
@@ -74,7 +75,7 @@ shared_model::proto::Block makeBlock(int height) {
 TEST_F(SimulatorTest, ValidWhenInitialized) {
   // simulator constructor => on_proposal subscription called
   EXPECT_CALL(*ordering_gate, on_proposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<iroha::model::Proposal>()));
 
   init();
 }
@@ -94,13 +95,16 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   });
 
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(1);
-
   EXPECT_CALL(*query, getTopBlocks(1)).WillOnce(Return(blocks_observable));
 
-  EXPECT_CALL(*validator, validate(_, _)).WillOnce(Return(proposal));
+  std::shared_ptr<shared_model::interface::Proposal> iprop =
+      std::make_shared<shared_model::proto::Proposal>(
+          shared_model::proto::from_old(proposal));
+
+  EXPECT_CALL(*validator, validate(_, _)).WillOnce(Return(iprop));
 
   EXPECT_CALL(*ordering_gate, on_proposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<iroha::model::Proposal>()));
 
   EXPECT_CALL(*crypto_provider, sign(A<model::Block &>())).Times(1);
 
@@ -141,7 +145,7 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
   EXPECT_CALL(*ordering_gate, on_proposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<iroha::model::Proposal>()));
 
   EXPECT_CALL(*crypto_provider, sign(A<model::Block &>())).Times(0);
 
@@ -182,7 +186,7 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
   EXPECT_CALL(*ordering_gate, on_proposal())
-      .WillOnce(Return(rxcpp::observable<>::empty<Proposal>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<iroha::model::Proposal>()));
 
   EXPECT_CALL(*crypto_provider, sign(A<model::Block &>())).Times(0);
 
