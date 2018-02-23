@@ -45,7 +45,8 @@ namespace iroha {
         } | [this](const auto &d) {
           return serializer_.deserialize(d);
         } | [](const auto &block_old) {
-          return std::make_shared<shared_model::proto::Block>(shared_model::proto::from_old(block_old));
+          return std::make_shared<shared_model::proto::Block>(
+              shared_model::proto::from_old(block_old));
         };
         return rxcpp::observable<>::create<wBlock>([this, block](auto s) {
           if (block) {
@@ -119,7 +120,8 @@ namespace iroha {
               return x.at("index").template as<size_t>();
             }),
             [&](auto x) {
-              subscriber.on_next(wTransaction(block->transactions().at(x)->copy()));
+              subscriber.on_next(
+                  wTransaction(block->transactions().at(x)->copy()));
             });
       };
     }
@@ -203,16 +205,17 @@ namespace iroha {
                 shared_model::proto::from_old(block));
           }
       | [&](const auto &block) {
+          boost::optional<wTransaction> result;
           auto it = std::find_if(
               block.transactions().begin(),
               block.transactions().end(),
               [&hash](auto tx) {
                 return shared_model::crypto::toBinaryString(tx->hash()) == hash;
               });
-          if (it == block.transactions().end()) {
-            return boost::optional<wTransaction>(boost::none);
+          if (it != block.transactions().end()) {
+            result = boost::optional<wTransaction>(wTransaction((*it)->copy()));
           }
-          return boost::optional<wTransaction>(wTransaction((*it)->copy()));
+          ai return result;
         };
     }
 
