@@ -215,7 +215,7 @@ namespace iroha {
           if (it != block.transactions().end()) {
             result = boost::optional<wTransaction>(wTransaction((*it)->copy()));
           }
-          ai return result;
+          return result;
         };
     }
 
