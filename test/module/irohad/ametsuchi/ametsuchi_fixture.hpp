@@ -97,7 +97,7 @@ namespace iroha {
       std::string block_store_path = "/tmp/block_store";
 
       // TODO(warchant): IR-1019 hide SQLs under some interface
-      const auto drop_ = R"(
+      const std::string drop_ = R"(
 DROP TABLE IF EXISTS account_has_signatory;
 DROP TABLE IF EXISTS account_has_asset;
 DROP TABLE IF EXISTS role_has_permissions;
