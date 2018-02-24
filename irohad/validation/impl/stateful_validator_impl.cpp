@@ -22,8 +22,6 @@
 #include "builders/protobuf/proposal.hpp"
 #include "model/account.hpp"
 #include "validation/impl/stateful_validator_impl.hpp"
-#include "backend/protobuf/from_old_model.hpp"
-#include "model/account.hpp"
 
 namespace iroha {
   namespace validation {
@@ -39,7 +37,7 @@ namespace iroha {
       log_->info("transactions in proposal: {}",
                  proposal.transactions().size());
       auto checking_transaction = [this](const auto &tx, auto &queries) {
-        return (queries.getAccount(tx.creator_account_id) |
+        return (queries.getAccount(tx.creatorAccountId()) |
                 [&](const auto &account) {
                   // Check if tx creator has account and has quorum to execute
                   // transaction
@@ -57,7 +55,7 @@ namespace iroha {
                         });
                   // Check if signatures in transaction are account signatory
                   return this->signaturesSubset(
-                             shared_model::proto::from_old(tx).signatures(),
+                             tx.signatures(),
                              std::vector<shared_model::crypto::PublicKey>(
                                  model_signatories.begin(),
                                  model_signatories.end()))
@@ -71,7 +69,8 @@ namespace iroha {
       auto filter = [&temporaryWsv, checking_transaction](auto &acc,
                                                           const auto &tx) {
         std::unique_ptr<model::Transaction> old_tx(tx->makeOldModel());
-        auto answer = temporaryWsv.apply(*old_tx, checking_transaction);
+        auto answer =
+            temporaryWsv.apply(*(tx.operator->()), checking_transaction);
         if (answer) {
           acc.push_back(tx);
         }
@@ -106,8 +105,7 @@ namespace iroha {
     }
 
     bool StatefulValidatorImpl::signaturesSubset(
-        const shared_model::interface::SignatureSetType
-            &signatures,
+        const shared_model::interface::SignatureSetType &signatures,
         const std::vector<shared_model::crypto::PublicKey> &public_keys) {
       // TODO 09/10/17 Lebedev: simplify the subset verification IR-510
       // #goodfirstissue
