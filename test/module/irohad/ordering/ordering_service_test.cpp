@@ -33,6 +33,7 @@
 
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
+#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 
 using namespace iroha;
 using namespace iroha::ordering;
@@ -143,9 +144,12 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
         cv.notify_one();
       }));
 
-  iroha::protocol::Peer tmp;
-  tmp.set_address(peer.address);
-  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
+  shared_model::proto::PeerBuilder builder;
+
+  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
+  auto tmp = builder.address(peer.address).pubkey(key).build();
+
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp.getTransport());
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 
@@ -162,9 +166,12 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
 
   EXPECT_CALL(*fake_persistent_state, saveProposalHeight(_)).Times(2);
 
-  iroha::protocol::Peer tmp;
-  tmp.set_address(peer.address);
-  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp);
+  shared_model::proto::PeerBuilder builder;
+
+  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
+  auto tmp = builder.address(peer.address).pubkey(key).build();
+
+  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp.getTransport());
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 
