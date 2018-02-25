@@ -48,7 +48,7 @@ namespace iroha {
           return std::make_shared<shared_model::proto::Block>(
               shared_model::proto::from_old(block_old));
         };
-        return rxcpp::observable<>::create<wBlock>([this, block](auto s) {
+        return rxcpp::observable<>::create<wBlock>([this, block{std::move(block)}](auto s) {
           if (block) {
             s.on_next(block);
           }
