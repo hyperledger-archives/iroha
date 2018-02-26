@@ -34,6 +34,8 @@ using namespace iroha::ametsuchi;
 using namespace std::chrono_literals;
 using ::testing::Return;
 
+using wPeer = std::shared_ptr<shared_model::interface::Peer>;
+
 // TODO: refactor services to allow dynamic port binding IR-741
 class OrderingGateServiceTest : public ::testing::Test {
  public:
@@ -134,8 +136,7 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
   auto tmp = builder.address(peer.address).pubkey(key).build();
 
-  wPeer w_peer =
-      std::make_shared<shared_model::proto::Peer>(tmp.getTransport());
+  wPeer w_peer = std::shared_ptr<shared_model::interface::Peer>(tmp.copy());
 
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
@@ -205,8 +206,7 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
   auto tmp = builder.address(peer.address).pubkey(key).build();
 
-  wPeer w_peer =
-      std::make_shared<shared_model::proto::Peer>(tmp.getTransport());
+  wPeer w_peer = std::shared_ptr<shared_model::interface::Peer>(tmp.copy());
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 

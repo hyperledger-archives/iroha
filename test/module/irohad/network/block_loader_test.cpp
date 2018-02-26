@@ -46,6 +46,8 @@ using namespace shared_model::crypto;
 using testing::A;
 using testing::Return;
 
+using wPeer = std::shared_ptr<shared_model::interface::Peer>;
+
 class BlockLoaderTest : public testing::Test {
  public:
   void SetUp() override {

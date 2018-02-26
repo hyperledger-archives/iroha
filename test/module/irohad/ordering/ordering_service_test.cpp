@@ -24,16 +24,16 @@
 #include "module/irohad/network/network_mocks.hpp"
 
 #include "ametsuchi/ordering_service_persistent_state.hpp"
-#include "mock_ordering_service_persistent_state.hpp"
 #include "backend/protobuf/common_objects/peer.hpp"
+#include "mock_ordering_service_persistent_state.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 
+#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
-#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 
 using namespace iroha;
 using namespace iroha::ordering;
@@ -48,6 +48,8 @@ using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::_;
+
+using wPeer = std::shared_ptr<shared_model::interface::Peer>;
 
 static logger::Logger log_ = logger::testLog("OrderingService");
 
@@ -149,7 +151,7 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
   auto tmp = builder.address(peer.address).pubkey(key).build();
 
-  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp.getTransport());
+  wPeer w_peer = std::shared_ptr<shared_model::interface::Peer>(tmp.copy());
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 
@@ -171,7 +173,7 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
   auto tmp = builder.address(peer.address).pubkey(key).build();
 
-  wPeer w_peer = std::make_shared<shared_model::proto::Peer>(tmp.getTransport());
+  wPeer w_peer = std::shared_ptr<shared_model::interface::Peer>(tmp.copy());
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 

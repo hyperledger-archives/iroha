@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-#include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include <algorithm>
 #include <random>
+
 #include "ametsuchi/peer_query.hpp"
 #include "consensus/yac/cluster_order.hpp"
+#include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include "consensus/yac/yac_hash_provider.hpp"
 #include "interfaces/common_objects/peer.hpp"
 
@@ -28,10 +29,8 @@ namespace iroha {
     namespace yac {
 
       template <class NewModel,
-                class OldModel = typename std::remove_pointer<
-                    decltype(std::declval<NewModel>().makeOldModel())>::type>
-
-      std::vector<OldModel> to_old_vector(
+                class OldModel = typename NewModel::OldModelType>
+      std::vector<OldModel> toOldVector(
           const std::vector<std::shared_ptr<NewModel>> &vec) {
         return std::accumulate(
             vec.begin(),
@@ -50,7 +49,7 @@ namespace iroha {
 
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getInitialOrdering() {
         return query_->getLedgerPeers() | [](const auto &peers) {
-          auto prs = to_old_vector(peers);
+          auto prs = toOldVector(peers);
           return ClusterOrdering::create(prs);
         };
       }
@@ -58,7 +57,7 @@ namespace iroha {
       nonstd::optional<ClusterOrdering> PeerOrdererImpl::getOrdering(
           const YacHash &hash) {
         return query_->getLedgerPeers() | [&hash](auto peers) {
-          auto prs = to_old_vector(peers);
+          auto prs = toOldVector(peers);
           std::seed_seq seed(hash.block_hash.begin(), hash.block_hash.end());
           std::default_random_engine gen(seed);
           std::shuffle(prs.begin(), prs.end(), gen);

@@ -15,12 +15,11 @@
  * limitations under the License.
  */
 
-#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
+#include <numeric>
+
 #include "ametsuchi/impl/peer_query_wsv.hpp"
-
 #include "ametsuchi/wsv_query.hpp"
-
-using wPeer = std::shared_ptr<shared_model::interface::Peer>;
+#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -28,25 +27,26 @@ namespace iroha {
     PeerQueryWsv::PeerQueryWsv(std::shared_ptr<WsvQuery> wsv)
         : wsv_(std::move(wsv)) {}
 
-    boost::optional<std::vector<wPeer>> PeerQueryWsv::getLedgerPeers() {
-      const auto &tmp = wsv_->getPeers();
-      if (not tmp) {
-        return boost::none;
-      }
-      std::vector<wPeer> peers = [&tmp] {
-        std::vector<wPeer> result;
-        for (const auto &item : *tmp) {
-          shared_model::proto::PeerBuilder builder;
+    boost::optional<std::vector<PeerQuery::wPeer>>
+    PeerQueryWsv::getLedgerPeers() {
+      return wsv_->getPeers() | [](const auto &peers) {
+        return std::accumulate(
+            peers.begin(),
+            peers.end(),
+            std::vector<wPeer>{},
+            [](auto &vec, const auto &peer) {
+              shared_model::proto::PeerBuilder builder;
 
-          auto key = shared_model::crypto::PublicKey(item.pubkey.to_string());
-          auto peer = builder.address(item.address).pubkey(key).build();
+              auto key =
+                  shared_model::crypto::PublicKey(peer.pubkey.to_string());
+              auto tmp = builder.address(peer.address).pubkey(key).build();
 
-          auto curr = std::make_shared<shared_model::proto::Peer>(peer.getTransport());
-          result.emplace_back(curr);
-        }
-        return result;
-      }();
-      return peers;
+              auto curr =
+                  std::shared_ptr<shared_model::interface::Peer>(tmp.copy());
+              vec.emplace_back(curr);
+              return vec;
+            });
+      };
     }
 
   }  // namespace ametsuchi

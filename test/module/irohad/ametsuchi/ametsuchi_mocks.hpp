@@ -38,8 +38,6 @@
 #include "model/peer.hpp"
 #include "model/transaction.hpp"
 
-using wPeer = std::shared_ptr<shared_model::interface::Peer>;
-
 namespace iroha {
   namespace ametsuchi {
     class MockWsvQuery : public WsvQuery {
@@ -83,27 +81,28 @@ namespace iroha {
       MOCK_METHOD1(insertRole, WsvCommandResult(const std::string &role_name));
       MOCK_METHOD2(insertAccountRole,
                    WsvCommandResult(const std::string &account_id,
-                        const std::string &role_name));
+                                    const std::string &role_name));
       MOCK_METHOD2(deleteAccountRole,
                    WsvCommandResult(const std::string &account_id,
-                        const std::string &role_name));
+                                    const std::string &role_name));
       MOCK_METHOD2(insertRolePermissions,
                    WsvCommandResult(const std::string &role_id,
-                        const std::set<std::string> &permissions));
+                                    const std::set<std::string> &permissions));
 
       MOCK_METHOD3(insertAccountGrantablePermission,
                    WsvCommandResult(const std::string &permittee_account_id,
-                        const std::string &account_id,
-                        const std::string &permission_id));
+                                    const std::string &account_id,
+                                    const std::string &permission_id));
 
       MOCK_METHOD3(deleteAccountGrantablePermission,
                    WsvCommandResult(const std::string &permittee_account_id,
-                        const std::string &account_id,
-                        const std::string &permission_id));
+                                    const std::string &account_id,
+                                    const std::string &permission_id));
       MOCK_METHOD1(insertAccount, WsvCommandResult(const model::Account &));
       MOCK_METHOD1(updateAccount, WsvCommandResult(const model::Account &));
       MOCK_METHOD1(insertAsset, WsvCommandResult(const model::Asset &));
-      MOCK_METHOD1(upsertAccountAsset, WsvCommandResult(const model::AccountAsset &));
+      MOCK_METHOD1(upsertAccountAsset,
+                   WsvCommandResult(const model::AccountAsset &));
       MOCK_METHOD1(insertSignatory, WsvCommandResult(const pubkey_t &));
       MOCK_METHOD1(deleteSignatory, WsvCommandResult(const pubkey_t &));
 
@@ -120,9 +119,9 @@ namespace iroha {
       MOCK_METHOD1(insertDomain, WsvCommandResult(const model::Domain &));
       MOCK_METHOD4(setAccountKV,
                    WsvCommandResult(const std::string &,
-                        const std::string &,
-                        const std::string &,
-                        const std::string &));
+                                    const std::string &,
+                                    const std::string &,
+                                    const std::string &));
     };
 
     class MockBlockQuery : public BlockQuery {
@@ -191,7 +190,8 @@ namespace iroha {
      public:
       MockPeerQuery() = default;
 
-      MOCK_METHOD0(getLedgerPeers, boost::optional<std::vector<wPeer>>());
+      MOCK_METHOD0(getLedgerPeers,
+                   boost::optional<std::vector<PeerQuery::wPeer>>());
     };
 
     class MockStorage : public Storage {
