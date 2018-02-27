@@ -41,9 +41,7 @@ namespace iroha {
                   shared_model::crypto::PublicKey(peer.pubkey.to_string());
               auto tmp = builder.address(peer.address).pubkey(key).build();
 
-              auto curr =
-                  std::shared_ptr<shared_model::interface::Peer>(tmp.copy());
-              vec.push_back(std::move(curr));
+              vec.emplace_back(tmp.copy());
               return vec;
             });
       };

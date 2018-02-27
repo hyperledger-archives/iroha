@@ -60,7 +60,7 @@ class YacPeerOrdererTest : public ::testing::Test {
     return result;
   }();
 
-  std::vector<std::shared_ptr<shared_model::interface::Peer>> s_peers = [] {
+  std::vector<wPeer> s_peers = [] {
     std::vector<wPeer> result;
     for (size_t i = 1; i <= N_PEERS; ++i) {
       auto tmp = iroha::consensus::yac::mk_peer(std::to_string(i));
@@ -70,8 +70,7 @@ class YacPeerOrdererTest : public ::testing::Test {
       auto key = shared_model::crypto::PublicKey(tmp.pubkey.to_string());
       auto peer = builder.address(tmp.address).pubkey(key).build();
 
-      auto curr = std::shared_ptr<shared_model::interface::Peer>(peer.copy());
-      result.emplace_back(curr);
+      result.emplace_back(peer.copy());
     }
     return result;
   }();

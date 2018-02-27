@@ -136,7 +136,7 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
   auto tmp = builder.address(peer.address).pubkey(key).build();
 
-  wPeer w_peer = std::shared_ptr<shared_model::interface::Peer>(tmp.copy());
+  wPeer w_peer(tmp.copy());
 
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
@@ -206,7 +206,7 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
   auto tmp = builder.address(peer.address).pubkey(key).build();
 
-  wPeer w_peer = std::shared_ptr<shared_model::interface::Peer>(tmp.copy());
+  wPeer w_peer(tmp.copy());
   EXPECT_CALL(*wsv, getLedgerPeers())
       .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
 

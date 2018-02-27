@@ -191,7 +191,7 @@ namespace iroha {
       MockPeerQuery() = default;
 
       MOCK_METHOD0(getLedgerPeers,
-                   boost::optional<std::vector<PeerQuery::wPeer>>());
+                   boost::optional<std::vector<wPeer>>());
     };
 
     class MockStorage : public Storage {
