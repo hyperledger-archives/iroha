@@ -27,13 +27,13 @@ namespace iroha {
     PeerQueryWsv::PeerQueryWsv(std::shared_ptr<WsvQuery> wsv)
         : wsv_(std::move(wsv)) {}
 
-    boost::optional<std::vector<PeerQuery::wPeer>>
+    boost::optional<std::vector<PeerQueryWsv::wPeer>>
     PeerQueryWsv::getLedgerPeers() {
       return wsv_->getPeers() | [](const auto &peers) {
         return std::accumulate(
             peers.begin(),
             peers.end(),
-            std::vector<wPeer>{},
+            std::vector<PeerQueryWsv::wPeer>{},
             [](auto &vec, const auto &peer) {
               shared_model::proto::PeerBuilder builder;
 
@@ -43,7 +43,7 @@ namespace iroha {
 
               auto curr =
                   std::shared_ptr<shared_model::interface::Peer>(tmp.copy());
-              vec.emplace_back(curr);
+              vec.push_back(std::move(curr));
               return vec;
             });
       };
