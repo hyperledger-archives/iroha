@@ -20,9 +20,9 @@
 
 #include <boost/optional.hpp>
 
-#include "interfaces/common_objects/types.hpp"
 #include "cryptography/hash_providers/sha3_256.hpp"
 #include "interfaces/base/primitive.hpp"
+#include "interfaces/common_objects/types.hpp"
 #include "utils/lazy_initializer.hpp"
 
 #ifdef DISABLE_BACKWARD
