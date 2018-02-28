@@ -53,7 +53,7 @@ namespace shared_model {
             }),
             blob_([this] { return makeBlob(*proto_); }),
             prev_hash_([this] {
-              return HashType(proto_->payload().prev_block_hash());
+              return interface::types::HashType(proto_->payload().prev_block_hash());
             }),
             signatures_([this] {
               interface::SignatureSetType sigs;
@@ -79,11 +79,11 @@ namespace shared_model {
         return payload_.height();
       }
 
-      const HashType &prevHash() const override {
+      const interface::types::HashType &prevHash() const override {
         return *prev_hash_;
       }
 
-      const BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
@@ -112,8 +112,7 @@ namespace shared_model {
         return payload_.tx_number();
       }
 
-      const typename Hashable<Block, iroha::model::Block>::BlobType &payload()
-          const override {
+      const interface::types::BlobType &payload() const override {
         return *payload_blob_;
       }
 
@@ -123,10 +122,10 @@ namespace shared_model {
       using Lazy = detail::LazyInitializer<T>;
       const iroha::protocol::Block::Payload &payload_;
       const Lazy<std::vector<w<interface::Transaction>>> transactions_;
-      const Lazy<BlobType> blob_;
-      const Lazy<HashType> prev_hash_;
+      const Lazy<interface::types::BlobType> blob_;
+      const Lazy<interface::types::HashType> prev_hash_;
       const Lazy<interface::SignatureSetType> signatures_;
-      const Lazy<BlobType> payload_blob_;
+      const Lazy<interface::types::BlobType> payload_blob_;
     };
   }  // namespace proto
 }  // namespace shared_model

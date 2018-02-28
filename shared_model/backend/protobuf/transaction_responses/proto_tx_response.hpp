@@ -80,9 +80,9 @@ namespace shared_model {
       /**
        * @return hash of corresponding transaction
        */
-      const interface::Transaction::HashType &transactionHash() const override {
+      const interface::types::HashType &transactionHash() const override {
         return *hash_;
-      };
+      }
 
       /**
        * @return attached concrete tx response

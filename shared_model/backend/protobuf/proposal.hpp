@@ -73,7 +73,7 @@ namespace shared_model {
         return proto_->height();
       }
 
-      const BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
@@ -83,7 +83,7 @@ namespace shared_model {
       using Lazy = detail::LazyInitializer<T>;
 
       const Lazy<TransactionContainer> transactions_;
-      const Lazy<BlobType> blob_;
+      const Lazy<interface::types::BlobType> blob_;
     };
   }  // namespace proto
 }  // namespace shared_model

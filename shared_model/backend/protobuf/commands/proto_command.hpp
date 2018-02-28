@@ -39,19 +39,21 @@
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "backend/protobuf/util.hpp"
 #include "commands.pb.h"
+#include "interfaces/common_objects/types.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "utils/variant_deserializer.hpp"
 
 template <typename... T, typename Archive>
 auto loadCommand(Archive &&ar) {
   int which = ar.GetDescriptor()->FindFieldByNumber(ar.command_case())->index();
-  return shared_model::detail::variant_impl<T...>::template load<
-      shared_model::interface::Command::CommandVariantType>(
-      std::forward<Archive>(ar), which);
+  return shared_model::detail::variant_impl<T...>::
+      template load<shared_model::interface::Command::CommandVariantType>(
+          std::forward<Archive>(ar), which);
 }
 
 namespace shared_model {
   namespace proto {
+
     class Command final : public CopyableProto<interface::Command,
                                                iroha::protocol::Command,
                                                Command> {
@@ -103,7 +105,7 @@ namespace shared_model {
         return *variant_;
       }
 
-      const BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
@@ -111,7 +113,7 @@ namespace shared_model {
       // lazy
       const LazyVariantType variant_;
 
-      const Lazy<BlobType> blob_;
+      const Lazy<interface::types::BlobType> blob_;
     };
   }  // namespace proto
 }  // namespace shared_model

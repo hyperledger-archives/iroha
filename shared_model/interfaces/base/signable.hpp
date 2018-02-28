@@ -20,11 +20,11 @@
 
 #include <boost/functional/hash.hpp>
 #include "interfaces/base/hashable.hpp"
+#include "interfaces/common_objects/signable_hash.hpp"
 #include "interfaces/common_objects/signature.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
-#include "interfaces/common_objects/signable_hash.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -50,7 +50,6 @@ namespace shared_model {
     class Signable : public Hashable<Model> {
 #endif
      public:
-
       /**
        * @return attached signatures
        */
@@ -68,15 +67,10 @@ namespace shared_model {
        */
       virtual types::TimestampType createdTime() const = 0;
 
-/**
- * @return object payload (everything except signatures)
- */
-#ifndef DISABLE_BACKWARD
-      virtual const typename Hashable<Model, OldModel>::BlobType &payload()
-#else
-      virtual const typename Hashable<Model>::BlobType &payload()
-#endif
-          const = 0;
+      /**
+       * @return object payload (everything except signatures)
+       */
+      virtual const types::BlobType &payload() const = 0;
 
       /**
        * Provides comparison based on equality of objects and signatures.

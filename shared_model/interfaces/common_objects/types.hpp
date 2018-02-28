@@ -22,14 +22,20 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+
 #include "cryptography/public_key.hpp"
 #include "interfaces/common_objects/signature.hpp"
 #include "utils/polymorphic_wrapper.hpp"
+#include "cryptography/hash.hpp"
 
 namespace shared_model {
 
   namespace interface {
     namespace types {
+      /// Type of hash
+      using HashType = crypto::Hash;
+      /// Blob type
+      using BlobType = crypto::Blob;
       /// Type of account id
       using AccountIdType = std::string;
       /// Type of precision

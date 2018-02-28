@@ -44,7 +44,7 @@ namespace iroha {
       MOCK_METHOD2(retrieveBlock,
                    nonstd::optional<Wrapper<shared_model::interface::Block>>(
                        const shared_model::crypto::PublicKey &,
-                       const shared_model::interface::Block::HashType &));
+                       const shared_model::interface::types::HashType &));
     };
 
     class MockOrderingGate : public OrderingGate {
