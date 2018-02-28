@@ -47,6 +47,7 @@ using testing::A;
 using testing::Return;
 
 using wPeer = std::shared_ptr<shared_model::interface::Peer>;
+using wBlock = std::shared_ptr<shared_model::interface::Block>;
 
 class BlockLoaderTest : public testing::Test {
  public:
@@ -86,15 +87,6 @@ class BlockLoaderTest : public testing::Test {
         .createdTime(iroha::time::now());
   }
 
-  rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-  getBlockObservable(shared_model::proto::Block &block) {
-    return rxcpp::observable<>::create<
-        std::shared_ptr<::shared_model::interface::Block>>([&block](auto s) {
-      s.on_next(std::shared_ptr<shared_model::interface::Block>(block.copy()));
-      s.on_completed();
-    });
-  }
-
   PublicKey peer_key =
       DefaultCryptoAlgorithmType::generateKeypair().publicKey();
   std::vector<Peer> peers;
@@ -126,10 +118,10 @@ TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
-      .WillOnce(Return(getBlockObservable(block)));
+      .WillOnce(Return(rxcpp::observable<>::just(block).map(
+          [](auto &&x) { return wBlock(x.copy()); })));
   EXPECT_CALL(*storage, getBlocksFrom(block.height() + 1))
-      .WillOnce(Return(rxcpp::observable<>::empty<
-                       std::shared_ptr<shared_model::interface::Block>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<wBlock>()));
   auto wrapper =
       make_test_subscriber<CallExact>(loader->retrieveBlocks(peer_key), 0);
   wrapper.subscribe();
@@ -161,9 +153,11 @@ TEST_F(BlockLoaderTest, ValidWhenOneBlock) {
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
-      .WillOnce(Return(getBlockObservable(block)));
+      .WillOnce(Return(rxcpp::observable<>::just(block).map(
+          [](auto &&x) { return wBlock(x.copy()); })));
   EXPECT_CALL(*storage, getBlocksFrom(block.height() + 1))
-      .WillOnce(Return(getBlockObservable(top_block)));
+      .WillOnce(Return(rxcpp::observable<>::just(top_block).map(
+          [](auto &&x) { return wBlock(x.copy()); })));
   auto wrapper =
       make_test_subscriber<CallExact>(loader->retrieveBlocks(peer_key), 1);
   wrapper.subscribe(
@@ -184,11 +178,10 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
   auto num_blocks = 2;
   auto next_height = block.height() + 1;
 
-  std::vector<std::shared_ptr<shared_model::interface::Block>> blocks;
+  std::vector<wBlock> blocks;
   for (auto i = next_height; i < next_height + num_blocks; ++i) {
     auto blk = getBaseBlockBuilder().height(i).build();
-    blocks.push_back(
-        std::shared_ptr<shared_model::interface::Block>(blk.copy()));
+    blocks.emplace_back(blk.copy());
   }
 
   EXPECT_CALL(*provider, verify(A<const Block &>()))
@@ -206,7 +199,8 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getTopBlocks(1))
-      .WillOnce(Return(getBlockObservable(block)));
+      .WillOnce(Return(rxcpp::observable<>::just(block).map(
+          [](auto &&x) { return wBlock(x.copy()); })));
   EXPECT_CALL(*storage, getBlocksFrom(next_height))
       .WillOnce(Return(rxcpp::observable<>::iterate(blocks)));
   auto wrapper = make_test_subscriber<CallExact>(
@@ -240,7 +234,8 @@ TEST_F(BlockLoaderTest, ValidWhenBlockPresent) {
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getBlocksFrom(1))
-      .WillOnce(Return(getBlockObservable(requested)));
+      .WillOnce(Return(rxcpp::observable<>::just(requested).map(
+          [](auto &&x) { return wBlock(x.copy()); })));
   auto block = loader->retrieveBlock(peer_key, requested.hash());
 
   ASSERT_TRUE(block.has_value());
@@ -267,7 +262,8 @@ TEST_F(BlockLoaderTest, ValidWhenBlockMissing) {
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
   EXPECT_CALL(*storage, getBlocksFrom(1))
-      .WillOnce(Return(getBlockObservable(present)));
+      .WillOnce(Return(rxcpp::observable<>::just(present).map(
+          [](auto &&x) { return wBlock(x.copy()); })));
   auto block = loader->retrieveBlock(peer_key, Hash(std::string(32, '0')));
 
   ASSERT_FALSE(block.has_value());

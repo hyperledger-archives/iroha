@@ -87,6 +87,9 @@ class BlockQueryTest : public AmetsuchiTest {
             .build();
 
     for (const auto &b : {block1, block2}) {
+      // TODO IR-975 victordrobny 12.02.2018 convert from
+      // shared_model::proto::Block after FlatFile will be reworked to new
+      // model
       auto old_block = *std::unique_ptr<iroha::model::Block>(b.makeOldModel());
       file->add(b.height(),
                 iroha::stringToBytes(converters::jsonToString(

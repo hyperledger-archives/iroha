@@ -42,16 +42,18 @@ namespace iroha {
                          FlatFile &file_store);
 
       rxcpp::observable<wTransaction> getAccountTransactions(
-          const std::string &account_id) override;
+          const shared_model::interface::types::AccountIdType &account_id)
+          override;
 
       rxcpp::observable<wTransaction> getAccountAssetTransactions(
-          const std::string &account_id, const std::string &asset_id) override;
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::AssetIdType &asset_id) override;
 
       rxcpp::observable<boost::optional<wTransaction>> getTransactions(
           const std::vector<shared_model::crypto::Hash> &tx_hashes) override;
 
       boost::optional<wTransaction> getTxByHashSync(
-          const std::string &hash) override;
+          const shared_model::crypto::Hash &hash) override;
 
       rxcpp::observable<wBlock> getBlocks(uint32_t height,
                                           uint32_t count) override;
@@ -67,7 +69,7 @@ namespace iroha {
        * @return vector of block ids
        */
       std::vector<shared_model::interface::types::HeightType> getBlockIds(
-          const std::string &account_id);
+          const shared_model::interface::types::AccountIdType &account_id);
 
       /**
        * Returns block id which contains transaction with a given hash
@@ -75,7 +77,7 @@ namespace iroha {
        * @return block id or boost::none
        */
       boost::optional<shared_model::interface::types::HeightType> getBlockId(
-          const std::string &hash);
+          const shared_model::crypto::Hash &hash);
 
       /**
        * creates callback to lrange query to redis to supply result to

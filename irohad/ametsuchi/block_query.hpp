@@ -33,11 +33,12 @@ namespace iroha {
      * Public interface for queries on blocks and transactions
      */
     class BlockQuery {
-     public:
+     protected:
       using wTransaction =
           std::shared_ptr<shared_model::interface::Transaction>;
       using wBlock = std::shared_ptr<shared_model::interface::Block>;
 
+     public:
       virtual ~BlockQuery() = default;
       /**
        * Get all transactions of an account.
@@ -45,7 +46,7 @@ namespace iroha {
        * @return observable of Model Transaction
        */
       virtual rxcpp::observable<wTransaction> getAccountTransactions(
-          const std::string &account_id) = 0;
+          const shared_model::interface::types::AccountIdType &account_id) = 0;
 
       /**
        * Get asset transactions of an account.
@@ -54,7 +55,8 @@ namespace iroha {
        * @return observable of Model Transaction
        */
       virtual rxcpp::observable<wTransaction> getAccountAssetTransactions(
-          const std::string &account_id, const std::string &asset_id) = 0;
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::AssetIdType &asset_id) = 0;
 
       /**
        * Get transactions from transactions' hashes
@@ -93,7 +95,7 @@ namespace iroha {
        * @return transaction or boost::none
        */
       virtual boost::optional<wTransaction> getTxByHashSync(
-          const std::string &hash) = 0;
+          const shared_model::crypto::Hash &hash) = 0;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

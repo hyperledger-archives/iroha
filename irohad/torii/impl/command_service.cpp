@@ -127,7 +127,8 @@ namespace torii {
       response.CopyFrom(*resp);
     } else {
       response.set_tx_hash(request.tx_hash());
-      if (storage_->getBlockQuery()->getTxByHashSync(request.tx_hash())) {
+      if (storage_->getBlockQuery()->getTxByHashSync(
+              shared_model::crypto::Hash(request.tx_hash()))) {
         response.set_tx_status(iroha::protocol::TxStatus::COMMITTED);
       } else {
         response.set_tx_status(iroha::protocol::TxStatus::NOT_RECEIVED);

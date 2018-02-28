@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#include "backend/protobuf/transaction.hpp"
 #include "backend/protobuf/from_old_model.hpp"
+#include "backend/protobuf/transaction.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/model/model_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
@@ -38,6 +38,8 @@ using ::testing::_;
 using ::testing::A;
 using ::testing::Return;
 using ::testing::ReturnArg;
+
+using wBlock = std::shared_ptr<shared_model::interface::Block>;
 
 class SimulatorTest : public ::testing::Test {
  public:
@@ -87,15 +89,11 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   proposal.height = 2;
 
   shared_model::proto::Block block = makeBlock(proposal.height - 1);
-  auto blocks_observable = rxcpp::observable<>::create<
-      std::shared_ptr<::shared_model::interface::Block>>([&block](auto s) {
-
-    s.on_next(std::shared_ptr<::shared_model::interface::Block>(block.copy()));
-    s.on_completed();
-  });
 
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(1);
-  EXPECT_CALL(*query, getTopBlocks(1)).WillOnce(Return(blocks_observable));
+  EXPECT_CALL(*query, getTopBlocks(1))
+      .WillOnce(Return(rxcpp::observable<>::just(block).map(
+          [](auto &&x) { return wBlock(x.copy()); })));
 
   std::shared_ptr<shared_model::interface::Proposal> iprop =
       std::make_shared<shared_model::proto::Proposal>(
@@ -139,8 +137,7 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(0);
 
   EXPECT_CALL(*query, getTopBlocks(1))
-      .WillOnce(Return(rxcpp::observable<>::empty<
-                       std::shared_ptr<shared_model::interface::Block>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<wBlock>()));
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 
@@ -172,16 +169,12 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
   proposal.height = 2;
 
   auto block = makeBlock(proposal.height);
-  auto blocks_observable = rxcpp::observable<>::create<
-      std::shared_ptr<::shared_model::interface::Block>>([&block](auto s) {
-
-    s.on_next(std::shared_ptr<shared_model::interface::Block>(block.copy()));
-    s.on_completed();
-  });
 
   EXPECT_CALL(*factory, createTemporaryWsv()).Times(0);
 
-  EXPECT_CALL(*query, getTopBlocks(1)).WillOnce(Return(blocks_observable));
+  EXPECT_CALL(*query, getTopBlocks(1))
+      .WillOnce(Return(rxcpp::observable<>::just(block).map(
+          [](auto &&x) { return wBlock(x.copy()); })));
 
   EXPECT_CALL(*validator, validate(_, _)).Times(0);
 

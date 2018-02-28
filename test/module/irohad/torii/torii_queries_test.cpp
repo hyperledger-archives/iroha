@@ -51,6 +51,8 @@ using namespace iroha::model;
 using namespace std::chrono_literals;
 constexpr std::chrono::milliseconds proposal_delay = 10s;
 
+using wTransaction = std::shared_ptr<shared_model::interface::Transaction>;
+
 // TODO: allow dynamic port binding in ServerRunner IR-741
 class ToriiQueriesTest : public testing::Test {
  public:
@@ -478,14 +480,13 @@ TEST_F(ToriiQueriesTest, FindTransactionsWhenValid) {
   account.account_id = "accountA";
 
   auto txs_observable = rxcpp::observable<>::iterate([account] {
-    std::vector<std::shared_ptr<shared_model::interface::Transaction>> result;
+    std::vector<wTransaction> result;
     for (size_t i = 0; i < 3; ++i) {
-      auto current = std::shared_ptr<shared_model::interface::Transaction>(
-          TestTransactionBuilder()
-              .creatorAccountId(account.account_id)
-              .txCounter(i)
-              .build()
-              .copy());
+      auto current = wTransaction(TestTransactionBuilder()
+                                      .creatorAccountId(account.account_id)
+                                      .txCounter(i)
+                                      .build()
+                                      .copy());
       result.push_back(current);
     }
     return result;

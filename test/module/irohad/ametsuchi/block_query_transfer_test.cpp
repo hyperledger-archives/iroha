@@ -20,8 +20,6 @@
 #include "ametsuchi/impl/postgres_block_query.hpp"
 #include "backend/protobuf/from_old_model.hpp"
 #include "framework/test_subscriber.hpp"
-#include "model/commands/transfer_asset.hpp"
-#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
@@ -55,6 +53,9 @@ namespace iroha {
       }
 
       void insert(const shared_model::interface::Block &block) {
+        // TODO IR-975 victordrobny 12.02.2018 convert from
+        // shared_model::proto::Block after FlatFile will be reworked to new
+        // model
         auto old_block =
             *std::unique_ptr<iroha::model::Block>(block.makeOldModel());
         file->add(
@@ -76,6 +77,13 @@ namespace iroha {
       std::string asset = "coin#test";
     };
 
+    auto zero_string = std::string("0", 32);
+    auto fake_hash = shared_model::crypto::Hash(zero_string);
+
+    /*
+     * Make block with one transaction(transfer 0 asset) with specified sender,
+     * receiver, asset and creator of transaction
+     */
     shared_model::proto::Block makeBlockWithCreator(std::string creator1,
                                                     std::string creator2,
                                                     std::string asset,
@@ -88,18 +96,21 @@ namespace iroha {
                        creator1, creator2, asset, "Transfer asset", "0.0")
                    .build()}))
           .height(1)
-          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .prevHash(fake_hash)
           .txNumber(1)
           .build();
     }
 
+    /*
+     * Make block with one transaction(transfer 0 asset) with specified sender,
+     * receiver and asset
+     */
     shared_model::proto::Block makeBlock(
         std::string creator1,
         std::string creator2,
         std::string asset,
         int height = 1,
-        shared_model::crypto::Hash hash =
-            shared_model::crypto::Hash(std::string("0", 32))) {
+        shared_model::crypto::Hash hash = fake_hash) {
       return TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>(
               {TestTransactionBuilder()
@@ -185,7 +196,7 @@ namespace iroha {
 
       auto wrapper = make_test_subscriber<CallExact>(
           blocks->getAccountAssetTransactions(creator1, asset), 2);
-      wrapper.subscribe([ i = 0, this ](auto val) mutable {
+      wrapper.subscribe([i = 0, this](auto val) mutable {
         ASSERT_EQ(tx_hashes.at(i), val->hash());
         ++i;
       });

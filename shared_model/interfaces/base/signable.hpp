@@ -20,11 +20,11 @@
 
 #include <boost/functional/hash.hpp>
 #include "interfaces/base/hashable.hpp"
+#include "interfaces/common_objects/signable_hash.hpp"
 #include "interfaces/common_objects/signature.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
-#include "interfaces/common_objects/signable_hash.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -35,12 +35,12 @@ namespace shared_model {
 #define SIGNABLE(Model) Signable<Model, iroha::model::Model>
 #endif
 
-/**
- * Interface provides signatures and adding them to model object
- * @tparam Model - your new style model
- * Architecture note: we inherit Signable from Hashable with following
- * assumption - all Signable objects are signed by hash value.
- */
+    /**
+     * Interface provides signatures and adding them to model object
+     * @tparam Model - your new style model
+     * Architecture note: we inherit Signable from Hashable with following
+     * assumption - all Signable objects are signed by hash value.
+     */
 
 #ifndef DISABLE_BACKWARD
     template <typename Model, typename OldModel>
@@ -50,7 +50,6 @@ namespace shared_model {
     class Signable : public Hashable<Model> {
 #endif
      public:
-
       /**
        * @return attached signatures
        */
@@ -87,6 +86,25 @@ namespace shared_model {
         return *this == rhs and this->signatures() == rhs.signatures()
             and this->createdTime() == rhs.createdTime();
       }
+
+#ifndef DISABLE_BACKWARD
+      const typename Hashable<Model, OldModel>::HashType &hash()
+          const override {
+        if (Hashable<Model, OldModel>::hash_ == boost::none) {
+          Hashable<Model, OldModel>::hash_.emplace(
+              Hashable<Model, OldModel>::HashProviderType::makeHash(payload()));
+        }
+        return *Hashable<Model, OldModel>::hash_;
+      }
+#else
+      const typename Hashable<Model>::HashType &hash() const override {
+        if (Hashable<Model>::hash_ == boost::none) {
+          Hashable<Model>::hash_.emplace(
+              Hashable<Model>::HashProviderType::makeHash(payload()));
+        }
+        return *Hashable<Model>::hash_;
+      }
+#endif
 
       // ------------------------| Primitive override |-------------------------
 

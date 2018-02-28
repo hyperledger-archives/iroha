@@ -48,12 +48,13 @@ namespace iroha {
           return std::make_shared<shared_model::proto::Block>(
               shared_model::proto::from_old(block_old));
         };
-        return rxcpp::observable<>::create<wBlock>([this, block{std::move(block)}](auto s) {
-          if (block) {
-            s.on_next(block);
-          }
-          s.on_completed();
-        });
+        return rxcpp::observable<>::create<wBlock>(
+            [this, block{std::move(block)}](auto s) {
+              if (block) {
+                s.on_next(block);
+              }
+              s.on_completed();
+            });
       });
     }
 
@@ -70,7 +71,8 @@ namespace iroha {
     }
 
     std::vector<shared_model::interface::types::HeightType>
-    PostgresBlockQuery::getBlockIds(const std::string &account_id) {
+    PostgresBlockQuery::getBlockIds(
+        const shared_model::interface::types::AccountIdType &account_id) {
       return execute_(
                  "SELECT DISTINCT height FROM height_by_account_set WHERE "
                  "account_id = "
@@ -86,11 +88,11 @@ namespace iroha {
     }
 
     boost::optional<shared_model::interface::types::HeightType>
-    PostgresBlockQuery::getBlockId(const std::string &hash) {
+    PostgresBlockQuery::getBlockId(const shared_model::crypto::Hash &hash) {
       boost::optional<uint64_t> blockId;
       return execute_("SELECT height FROM height_by_hash WHERE hash = "
-                      + transaction_.quote(
-                            pqxx::binarystring(hash.data(), hash.size()))
+                      + transaction_.quote(pqxx::binarystring(
+                            hash.blob().data(), hash.blob().size()))
                       + ";")
                  | [&](const auto &result)
                  -> boost::optional<
@@ -127,7 +129,8 @@ namespace iroha {
     }
 
     rxcpp::observable<BlockQuery::wTransaction>
-    PostgresBlockQuery::getAccountTransactions(const std::string &account_id) {
+    PostgresBlockQuery::getAccountTransactions(
+        const shared_model::interface::types::AccountIdType &account_id) {
       return rxcpp::observable<>::create<wTransaction>(
           [this, account_id](auto subscriber) {
             auto block_ids = this->getBlockIds(account_id);
@@ -150,10 +153,12 @@ namespace iroha {
 
     rxcpp::observable<BlockQuery::wTransaction>
     PostgresBlockQuery::getAccountAssetTransactions(
-        const std::string &account_id, const std::string &asset_id) {
-      return rxcpp::observable<>::create<std::shared_ptr<
-          shared_model::interface::Transaction>>([this, account_id, asset_id](
-                                                     auto subscriber) {
+        const shared_model::interface::types::AccountIdType &account_id,
+        const shared_model::interface::types::AssetIdType &asset_id) {
+      return rxcpp::observable<>::create<wTransaction>([this,
+                                                        account_id,
+                                                        asset_id](
+                                                           auto subscriber) {
         auto block_ids = this->getBlockIds(account_id);
         if (block_ids.empty()) {
           subscriber.on_completed();
@@ -176,21 +181,20 @@ namespace iroha {
     rxcpp::observable<boost::optional<BlockQuery::wTransaction>>
     PostgresBlockQuery::getTransactions(
         const std::vector<shared_model::crypto::Hash> &tx_hashes) {
-      return rxcpp::observable<>::create<
-          boost::optional<BlockQuery::wTransaction>>(
+      return rxcpp::observable<>::create<boost::optional<wTransaction>>(
           [this, tx_hashes](auto subscriber) {
             std::for_each(tx_hashes.begin(),
                           tx_hashes.end(),
                           [that = this, &subscriber](auto tx_hash) {
-                            subscriber.on_next(that->getTxByHashSync(
-                                shared_model::crypto::toBinaryString(tx_hash)));
+                            subscriber.on_next(that->getTxByHashSync(tx_hash));
                           });
             subscriber.on_completed();
           });
     }
 
     boost::optional<BlockQuery::wTransaction>
-    PostgresBlockQuery::getTxByHashSync(const std::string &hash) {
+    PostgresBlockQuery::getTxByHashSync(
+        const shared_model::crypto::Hash &hash) {
       return getBlockId(hash) |
           [this](auto blockId) { return block_store_.get(blockId); } |
           [this](auto bytes) {
@@ -206,12 +210,10 @@ namespace iroha {
           }
       | [&](const auto &block) {
           boost::optional<wTransaction> result;
-          auto it = std::find_if(
-              block.transactions().begin(),
-              block.transactions().end(),
-              [&hash](auto tx) {
-                return shared_model::crypto::toBinaryString(tx->hash()) == hash;
-              });
+          auto it =
+              std::find_if(block.transactions().begin(),
+                           block.transactions().end(),
+                           [&hash](auto tx) { return tx->hash() == hash; });
           if (it != block.transactions().end()) {
             result = boost::optional<wTransaction>(wTransaction((*it)->copy()));
           }

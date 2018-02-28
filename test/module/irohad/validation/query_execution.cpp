@@ -39,6 +39,8 @@ using namespace iroha::ametsuchi;
 using namespace iroha::model;
 using namespace framework::test_subscriber;
 
+using wTransaction = std::shared_ptr<shared_model::interface::Transaction>;
+
 class QueryValidateExecuteTest : public ::testing::Test {
  public:
   QueryValidateExecuteTest() = default;
@@ -64,6 +66,26 @@ class QueryValidateExecuteTest : public ::testing::Test {
 
   std::shared_ptr<QueryResponse> validateAndExecute() {
     return factory->execute(query);
+  }
+
+  wTransaction makeTransaction(int counter, std::string creator) {
+    return wTransaction(TestTransactionBuilder()
+                            .creatorAccountId(creator)
+                            .txCounter(counter)
+                            .build()
+                            .copy());
+  }
+
+  rxcpp::observable<wTransaction> getDefaultTransactions(
+      const std::string &creator, size_t N) {
+    return rxcpp::observable<>::iterate([&creator, &N, this] {
+      std::vector<wTransaction> result;
+      for (size_t i = 0; i < N; ++i) {
+        auto current = makeTransaction(i, creator);
+        result.push_back(current);
+      }
+      return result;
+    }());
   }
 
   std::string admin_id = "admin@test", account_id = "test@test",
@@ -94,15 +116,6 @@ class GetAccountTest : public QueryValidateExecuteTest {
   }
   std::shared_ptr<GetAccount> get_account;
 };
-std::shared_ptr<shared_model::interface::Transaction> makeTransaction(
-    int counter, std::string creator) {
-  return std::shared_ptr<shared_model::interface::Transaction>(
-      TestTransactionBuilder()
-          .creatorAccountId(creator)
-          .txCounter(counter)
-          .build()
-          .copy());
-}
 
 /**
  * @given initialized storage, permission to his/her account
@@ -556,23 +569,10 @@ class GetAccountTransactionsTest : public QueryValidateExecuteTest {
     get_tx->creator_account_id = admin_id;
     query = get_tx;
     role_permissions = {can_get_my_acc_txs};
-    txs_observable = getDefaultTransactions(account_id);
+    txs_observable = getDefaultTransactions(account_id, N);
   }
 
-  rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
-  getDefaultTransactions(const std::string &creator) {
-    return rxcpp::observable<>::iterate([&creator, this] {
-      std::vector<std::shared_ptr<shared_model::interface::Transaction>> result;
-      for (size_t i = 0; i < N; ++i) {
-        auto current = makeTransaction(i, creator);
-        result.push_back(current);
-      }
-      return result;
-    }());
-  }
-
-  rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
-      txs_observable;
+  rxcpp::observable<wTransaction> txs_observable;
   std::shared_ptr<GetAccountTransactions> get_tx;
   size_t N = 3;
 };
@@ -588,7 +588,7 @@ TEST_F(GetAccountTransactionsTest, MyAccountValidCase) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
 
-  txs_observable = getDefaultTransactions(admin_id);
+  txs_observable = getDefaultTransactions(admin_id, N);
 
   EXPECT_CALL(*block_query, getAccountTransactions(admin_id))
       .WillOnce(Return(txs_observable));
@@ -715,9 +715,7 @@ TEST_F(GetAccountTransactionsTest, NoAccountExist) {
       .WillOnce(Return(role_permissions));
 
   EXPECT_CALL(*block_query, getAccountTransactions(get_tx->account_id))
-      .WillOnce(
-          Return(rxcpp::observable<>::empty<
-                 std::shared_ptr<shared_model::interface::Transaction>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<wTransaction>()));
 
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
@@ -734,24 +732,10 @@ class GetAccountAssetsTransactionsTest : public QueryValidateExecuteTest {
     get_tx->creator_account_id = admin_id;
     query = get_tx;
     role_permissions = {can_get_my_acc_ast_txs};
-    txs_observable = getDefaultTransactions(account_id, asset_id);
+    txs_observable = getDefaultTransactions(account_id, N);
   }
 
-  rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
-  getDefaultTransactions(const std::string &creator_id,
-                         const std::string &asset_id) {
-    return rxcpp::observable<>::iterate([&creator_id, asset_id, this] {
-      std::vector<std::shared_ptr<shared_model::interface::Transaction>> result;
-      for (size_t i = 0; i < N; ++i) {
-        auto current = makeTransaction(i, creator_id);
-        result.push_back(current);
-      }
-      return result;
-    }());
-  }
-
-  rxcpp::observable<std::shared_ptr<shared_model::interface::Transaction>>
-      txs_observable;
+  rxcpp::observable<wTransaction> txs_observable;
   std::shared_ptr<GetAccountAssetTransactions> get_tx;
   size_t N = 3;
 };
@@ -767,7 +751,7 @@ TEST_F(GetAccountAssetsTransactionsTest, MyAccountValidCase) {
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
   get_tx->account_id = admin_id;
-  txs_observable = getDefaultTransactions(admin_id, asset_id);
+  txs_observable = getDefaultTransactions(admin_id, N);
 
   EXPECT_CALL(*block_query, getAccountAssetTransactions(admin_id, asset_id))
       .WillOnce(Return(txs_observable));
@@ -895,9 +879,7 @@ TEST_F(GetAccountAssetsTransactionsTest, NoAccountExist) {
 
   EXPECT_CALL(*block_query,
               getAccountAssetTransactions(get_tx->account_id, asset_id))
-      .WillOnce(
-          Return(rxcpp::observable<>::empty<
-                 std::shared_ptr<shared_model::interface::Transaction>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<wTransaction>()));
 
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);
@@ -920,9 +902,7 @@ TEST_F(GetAccountAssetsTransactionsTest, NoAssetExist) {
 
   EXPECT_CALL(*block_query,
               getAccountAssetTransactions(get_tx->account_id, get_tx->asset_id))
-      .WillOnce(
-          Return(rxcpp::observable<>::empty<
-                 std::shared_ptr<shared_model::interface::Transaction>>()));
+      .WillOnce(Return(rxcpp::observable<>::empty<wTransaction>()));
 
   auto response = validateAndExecute();
   auto cast_resp = std::static_pointer_cast<TransactionsResponse>(response);

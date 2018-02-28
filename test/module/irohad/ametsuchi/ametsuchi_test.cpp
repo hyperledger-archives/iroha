@@ -43,6 +43,10 @@ using namespace iroha::ametsuchi;
 using namespace iroha::model;
 using namespace framework::test_subscriber;
 
+auto zero_string = std::string("0", 32);
+auto fake_hash = shared_model::crypto::Hash(zero_string);
+auto fake_pubkey = shared_model::crypto::PublicKey(zero_string);
+
 /**
  * Shortcut to create CallExact observable wrapper, subscribe with given lambda,
  * and validate the number of calls with optional custom output
@@ -178,11 +182,7 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
-  auto block = TestBlockBuilder()
-                   .height(1)
-                   .txNumber(0)
-                   .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
-                   .build();
+  auto block = TestBlockBuilder().height(1).prevHash(fake_hash).build();
 
   apply(storage, block);
 
@@ -224,13 +224,10 @@ TEST_F(AmetsuchiTest, SampleTest) {
                        std::set<std::string>{
                            can_add_peer, can_create_asset, can_get_my_account})
                    .createDomain(domain, "user")
-                   .createAccount(
-                       user1name,
-                       domain,
-                       shared_model::crypto::PublicKey(std::string("0", 32)))
+                   .createAccount(user1name, domain, fake_pubkey)
                    .build()}))
           .height(1)
-          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .prevHash(fake_hash)
           .txNumber(1)
           .build();
 
@@ -244,10 +241,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
           .transactions(std::vector<shared_model::proto::Transaction>(
               {TestTransactionBuilder()
                    .creatorAccountId("admin2")
-                   .createAccount(
-                       user2name,
-                       domain,
-                       shared_model::crypto::PublicKey(std::string("0", 32)))
+                   .createAccount(user2name, domain, fake_pubkey)
                    .createAsset(assetname, domain, 1)
                    .addAssetQuantity(user1id, assetid, "150.0")
                    .transferAsset(
@@ -297,15 +291,14 @@ TEST_F(AmetsuchiTest, PeerTest) {
   auto wsv = storage->getWsvQuery();
 
   auto txn = TestTransactionBuilder()
-                 .addPeer("192.168.9.1:50051",
-                          shared_model::crypto::PublicKey(std::string("0", 32)))
+                 .addPeer("192.168.9.1:50051", fake_pubkey)
                  .build();
 
   auto block =
       TestBlockBuilder()
           .txNumber(1)
           .transactions(std::vector<shared_model::proto::Transaction>{txn})
-          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .prevHash(fake_hash)
           .build();
 
   apply(storage, block);
@@ -315,9 +308,7 @@ TEST_F(AmetsuchiTest, PeerTest) {
   ASSERT_EQ(peers->size(), 1);
   ASSERT_EQ(peers->at(0).address, "192.168.9.1:50051");
 
-  iroha::blob_t<32> pubkey;
-  std::string key = std::string("0", 32);
-  std::copy(key.begin(), key.end(), pubkey.begin());
+  auto pubkey = iroha::blob_t<32>::from_string(zero_string);
   ASSERT_EQ(peers->at(0).pubkey, pubkey);
 }
 
@@ -352,15 +343,9 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
                       std::set<std::string>{
                           can_add_peer, can_create_asset, can_get_my_account})
           .createDomain(domain, "user")
-          .createAccount(user1name,
-                         domain,
-                         shared_model::crypto::PublicKey(std::string("0", 32)))
-          .createAccount(user2name,
-                         domain,
-                         shared_model::crypto::PublicKey(std::string("0", 32)))
-          .createAccount(user3name,
-                         domain,
-                         shared_model::crypto::PublicKey(std::string("0", 32)))
+          .createAccount(user1name, domain, fake_pubkey)
+          .createAccount(user2name, domain, fake_pubkey)
+          .createAccount(user3name, domain, fake_pubkey)
           .createAsset(asset1name, domain, 1)
           .createAsset(asset2name, domain, 1)
           .addAssetQuantity(user1id, asset1id, "300.0")
@@ -371,7 +356,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
       TestBlockBuilder()
           .height(1)
           .transactions(std::vector<shared_model::proto::Transaction>({txn1}))
-          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .prevHash(fake_hash)
           .txNumber(1)
           .build();
 
@@ -495,7 +480,7 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>({txn1}))
           .height(1)
-          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .prevHash(fake_hash)
           .txNumber(1)
           .build();
 
@@ -678,15 +663,14 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
 shared_model::proto::Block getBlock() {
   auto txn = TestTransactionBuilder()
                  .creatorAccountId("admin1")
-                 .addPeer("192.168.0.0",
-                          shared_model::crypto::PublicKey(std::string("0", 32)))
+                 .addPeer("192.168.0.0", fake_pubkey)
                  .build();
 
   auto block =
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>({txn}))
           .height(1)
-          .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+          .prevHash(fake_hash)
           .txNumber(1)
           .build();
   return block;
@@ -826,7 +810,7 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
                    .transactions(std::vector<shared_model::proto::Transaction>(
                        {txn1, txn2}))
                    .height(1)
-                   .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+                   .prevHash(fake_hash)
                    .txNumber(2)
                    .build();
 
@@ -834,11 +818,9 @@ TEST_F(AmetsuchiTest, FindTxByHashTest) {
 
   // TODO: 31.10.2017 luckychess move tx3hash case into a separate test after
   // ametsuchi_test redesign
-  auto tx1hash =
-      std::string{txn1.hash().blob().begin(), txn1.hash().blob().end()};
-  auto tx2hash =
-      std::string{txn2.hash().blob().begin(), txn2.hash().blob().end()};
-  auto tx3hash = "some garbage";
+  auto tx1hash = txn1.hash();
+  auto tx2hash = txn2.hash();
+  auto tx3hash = shared_model::crypto::Hash("some garbage");
 
   auto tx1check = *blocks->getTxByHashSync(tx1hash);
 
