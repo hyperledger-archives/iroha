@@ -52,7 +52,7 @@ namespace integration_framework {
     }
 
     void run() {
-      instance_->run(exit_requested_);
+      instance_->run();
     }
 
     auto &getIrohaInstance() {
@@ -89,7 +89,6 @@ namespace integration_framework {
     const std::chrono::milliseconds vote_delay_ = 5000ms;
     const std::chrono::milliseconds load_delay_ = 5000ms;
     iroha::keypair_t keypair_;
-    std::promise<void> exit_requested_;
   };
 }  // namespace integration_framework
 #endif  // IROHA_IROHA_INSTANCE_HPP

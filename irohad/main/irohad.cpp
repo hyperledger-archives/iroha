@@ -160,7 +160,12 @@ int main(int argc, char *argv[]) {
 
   // runs iroha
   log->info("Running iroha");
-  irohad.run(exit_requested);
+  irohad.run();
+  exit_requested.get_future().wait();
+
+  // We do not care about shutting down grpc servers
+  // They do all necessary work in their destructors
+  log->info("shutting down...");
 
   return 0;
 }

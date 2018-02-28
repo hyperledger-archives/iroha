@@ -41,10 +41,6 @@ void ServerRunner::run() {
   serverInstanceCV_.notify_one();
 }
 
-void ServerRunner::shutdown() {
-  serverInstance_->Shutdown();
-}
-
 void ServerRunner::waitForServersReady() {
   std::unique_lock<std::mutex> lock(waitForServer_);
   while (not serverInstance_) {

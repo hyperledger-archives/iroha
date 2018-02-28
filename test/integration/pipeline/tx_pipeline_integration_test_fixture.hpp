@@ -99,8 +99,6 @@ class TxPipelineIntegrationTestFixture
   std::atomic_bool duplicate_sent{false};
   size_t next_height_count = 2;
 
-  std::promise<void> exit_requested;
-
  private:
   void setTestSubscribers(size_t num_blocks) {
     // verify proposal

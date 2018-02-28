@@ -74,7 +74,7 @@ class TransferAssetInterDomainTest : public TxPipelineIntegrationTestFixture {
 
     irohad->storage->insertBlock(genesis_block);
     irohad->init();
-    irohad->run(exit_requested);
+    irohad->run();
   }
 
   void TearDown() override {
@@ -118,8 +118,6 @@ class TransferAssetInterDomainTest : public TxPipelineIntegrationTestFixture {
   iroha::keypair_t nbaKeypair_;
   iroha::keypair_t ivanKeypair_;
   iroha::keypair_t teaKeypair_;
-
-  std::promise<void> exit_requested;
 };
 
 /**

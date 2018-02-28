@@ -60,7 +60,7 @@ class TestIrohad : public Irohad {
     return crypto_verifier;
   }
 
-  void run(std::promise<void> &exit_requested) override {
+  void run() override {
     grpc::ServerBuilder builder;
     int port = 0;
     builder.AddListeningPort("0.0.0.0:" + std::to_string(internal_port_),
@@ -72,7 +72,6 @@ class TestIrohad : public Irohad {
     builder.RegisterService(loader_init.service.get());
     internal_server = builder.BuildAndStart();
     BOOST_ASSERT_MSG(port != 0, "grpc port is 0");
-    internal_thread = std::thread([this] { internal_server->Wait(); });
     log_->info("===> iroha initialized");
   }
 };
