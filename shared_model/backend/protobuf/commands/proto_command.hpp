@@ -92,10 +92,7 @@ namespace shared_model {
 
       template <typename CommandType>
       explicit Command(CommandType &&command)
-          : CopyableProto(std::forward<CommandType>(command)),
-            variant_(
-                [this] { return loadCommand<ProtoCommandListType>(*proto_); }),
-            blob_([this] { return makeBlob(*proto_); }) {}
+          : CopyableProto(std::forward<CommandType>(command)) {}
 
       Command(const Command &o) : Command(o.proto_) {}
 
@@ -111,9 +108,11 @@ namespace shared_model {
 
      private:
       // lazy
-      const LazyVariantType variant_;
+      const LazyVariantType variant_{
+          [this] { return loadCommand<ProtoCommandListType>(*proto_); }};
 
-      const Lazy<interface::types::BlobType> blob_;
+      const Lazy<interface::types::BlobType> blob_{
+          [this] { return makeBlob(*proto_); }};
     };
   }  // namespace proto
 }  // namespace shared_model
