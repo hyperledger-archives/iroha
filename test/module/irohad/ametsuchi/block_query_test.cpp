@@ -65,7 +65,7 @@ class BlockQueryTest : public AmetsuchiTest {
             .height(1)
             .transactions(
                 std::vector<shared_model::proto::Transaction>({txn1_1, txn1_2}))
-            .prevHash(shared_model::crypto::Hash(std::string("0", 32)))
+            .prevHash(shared_model::crypto::Hash(zero_string))
             .txNumber(2)
             .build();
 
@@ -108,6 +108,7 @@ class BlockQueryTest : public AmetsuchiTest {
   std::string creator1 = "user1@test";
   std::string creator2 = "user2@test";
   std::size_t blocks_total{0};
+  std::string zero_string = std::string("0", 32);
 };
 
 /**
@@ -188,7 +189,7 @@ TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
  * @then nullopt values are retrieved
  */
 TEST_F(BlockQueryTest, GetTransactionsIncludesNonExistingTxHashes) {
-  shared_model::crypto::Hash invalid_tx_hash_1(std::string("0", 32)),
+  shared_model::crypto::Hash invalid_tx_hash_1(zero_string),
       invalid_tx_hash_2(std::string("9", 32));
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, invalid_tx_hash_2}), 2);
@@ -221,7 +222,7 @@ TEST_F(BlockQueryTest, GetTransactionsWithEmpty) {
  */
 TEST_F(BlockQueryTest, GetTransactionsWithInvalidTxAndValidTx) {
   // TODO 15/11/17 motxx - Use EqualList VerificationStrategy
-  shared_model::crypto::Hash invalid_tx_hash_1(std::string("0", 32));
+  shared_model::crypto::Hash invalid_tx_hash_1(zero_string);
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, tx_hashes[0]}), 2);
   wrapper.subscribe([this](auto tx) {
