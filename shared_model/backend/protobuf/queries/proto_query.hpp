@@ -152,7 +152,8 @@ namespace shared_model {
       const LazyVariantType variant_{
           [this] { return loadQuery<ProtoQueryListType>(*proto_); }};
 
-      const Lazy<interface::types::BlobType> blob_{[this] { return makeBlob(*proto_); }};
+      const Lazy<interface::types::BlobType> blob_{
+          [this] { return makeBlob(*proto_); }};
 
       const Lazy<interface::types::BlobType> payload_{
           [this] { return makeBlob(proto_->payload()); }};

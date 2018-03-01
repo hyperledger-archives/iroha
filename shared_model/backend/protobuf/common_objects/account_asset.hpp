@@ -62,8 +62,7 @@ namespace shared_model {
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const Lazy<Amount> balance_{
-          [this] { return Amount(proto_->balance()); }};
+      const Lazy<Amount> balance_{[this] { return Amount(proto_->balance()); }};
 
       const Lazy<interface::types::BlobType> blob_{
           [this] { return makeBlob(*proto_); }};

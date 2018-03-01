@@ -71,7 +71,7 @@ namespace shared_model {
       }};
 
       const Lazy<interface::types::BlobType> blob_{
-        [this] { return makeBlob(*proto_); }};
+          [this] { return makeBlob(*proto_); }};
     };
 
   }  // namespace proto

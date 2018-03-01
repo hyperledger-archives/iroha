@@ -108,10 +108,12 @@ namespace shared_model {
         return txs;
       }};
 
-      const Lazy<interface::types::BlobType> blob_{[this] { return makeBlob(*proto_); }};
+      const Lazy<interface::types::BlobType> blob_{
+          [this] { return makeBlob(*proto_); }};
 
-      const Lazy<interface::types::HashType> prev_hash_{
-          [this] { return interface::types::HashType(proto_->payload().prev_block_hash()); }};
+      const Lazy<interface::types::HashType> prev_hash_{[this] {
+        return interface::types::HashType(proto_->payload().prev_block_hash());
+      }};
 
       const Lazy<interface::SignatureSetType> signatures_{[this] {
         interface::SignatureSetType sigs;
@@ -122,7 +124,8 @@ namespace shared_model {
         return sigs;
       }};
 
-      const Lazy<interface::types::BlobType> payload_blob_{[this] { return makeBlob(payload_); }};
+      const Lazy<interface::types::BlobType> payload_blob_{
+          [this] { return makeBlob(payload_); }};
     };
   }  // namespace proto
 }  // namespace shared_model

@@ -44,7 +44,8 @@ namespace shared_model {
 
      private:
       // ------------------------------| fields |-------------------------------
-      const iroha::protocol::GetAccount &account_{proto_->payload().get_account()};
+      const iroha::protocol::GetAccount &account_{
+          proto_->payload().get_account()};
     };
 
   }  // namespace proto
