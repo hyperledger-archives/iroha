@@ -74,9 +74,6 @@ namespace shared_model {
       /// list of types in variant
       using ProtoQueryResponseListType = ProtoQueryResponseVariantType::types;
 
-      /// Type of query hash
-      using QueryHashType = interface::Query::HashType;
-
       template <typename QueryResponseType>
       explicit QueryResponse(QueryResponseType &&queryResponse)
           : CopyableProto(std::forward<QueryResponseType>(queryResponse)),
@@ -84,7 +81,7 @@ namespace shared_model {
               return loadQueryResponse<ProtoQueryResponseListType>(*proto_);
             }),
             hash_([this] {
-              return QueryHashType(proto_->query_hash());
+              return interface::types::HashType(proto_->query_hash());
             }) {}
 
       QueryResponse(const QueryResponse &o) : QueryResponse(o.proto_) {}
@@ -96,13 +93,13 @@ namespace shared_model {
         return *variant_;
       }
 
-      const QueryHashType &queryHash() const override {
+      const interface::types::HashType &queryHash() const override {
         return *hash_;
       }
 
      private:
       const LazyVariantType variant_;
-      const Lazy<QueryHashType> hash_;
+      const Lazy<interface::types::HashType> hash_;
     };
   }  // namespace proto
 }  // namespace shared_model

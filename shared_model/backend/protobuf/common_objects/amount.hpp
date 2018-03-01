@@ -61,7 +61,7 @@ namespace shared_model {
         return proto_->precision();
       }
 
-      const BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
@@ -72,7 +72,7 @@ namespace shared_model {
 
       const Lazy<boost::multiprecision::uint256_t> multiprecision_repr_;
 
-      const Lazy<BlobType> blob_;
+      const Lazy<interface::types::BlobType> blob_;
     };
 
   }  // namespace proto

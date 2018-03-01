@@ -76,15 +76,15 @@ namespace shared_model {
         return *commands_;
       }
 
-      const Transaction::BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
-      const Transaction::BlobType &payload() const override {
+      const interface::types::BlobType &payload() const override {
         return *blobTypePayload_;
       }
 
-      const Transaction::HashType &hash() const override {
+      const interface::types::HashType &hash() const override {
         return *txhash_;
       }
 
@@ -117,13 +117,13 @@ namespace shared_model {
 
       const Lazy<CommandsType> commands_;
 
-      const Lazy<BlobType> blob_;
+      const Lazy<interface::types::BlobType> blob_;
 
-      const Lazy<BlobType> blobTypePayload_;
+      const Lazy<interface::types::BlobType> blobTypePayload_;
 
       const Lazy<interface::SignatureSetType> signatures_;
 
-      const Lazy<HashType> txhash_;
+      const Lazy<interface::types::HashType> txhash_;
     };
   }  // namespace proto
 }  // namespace shared_model

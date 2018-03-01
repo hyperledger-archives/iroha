@@ -30,8 +30,9 @@ namespace iroha {
           execute_{makeExecuteOptional(transaction_, log_)} {}
 
     rxcpp::observable<BlockQuery::wBlock> PostgresBlockQuery::getBlocks(
-            shared_model::interface::types::HeightType height, uint32_t count) {
-      shared_model::interface::types::HeightType last_id = block_store_.last_id();
+        shared_model::interface::types::HeightType height, uint32_t count) {
+      shared_model::interface::types::HeightType last_id =
+          block_store_.last_id();
       auto to = std::min(last_id, height + count - 1);
       if (height > to or count == 0) {
         return rxcpp::observable<>::empty<wBlock>();
@@ -59,7 +60,7 @@ namespace iroha {
     }
 
     rxcpp::observable<BlockQuery::wBlock> PostgresBlockQuery::getBlocksFrom(
-            shared_model::interface::types::HeightType height) {
+        shared_model::interface::types::HeightType height) {
       return getBlocks(height, block_store_.last_id());
     }
 
@@ -122,8 +123,8 @@ namespace iroha {
               return x.at("index").template as<size_t>();
             }),
             [&](auto x) {
-              subscriber.on_next(
-                      PostgresBlockQuery::wTransaction(block->transactions().at(x)->copy()));
+              subscriber.on_next(PostgresBlockQuery::wTransaction(
+                  block->transactions().at(x)->copy()));
             });
       };
     }
@@ -166,7 +167,6 @@ namespace iroha {
         }
 
         for (const auto &block_id : block_ids) {
-          // create key for querying redis
           execute_(
               "SELECT DISTINCT index FROM index_by_id_height_asset WHERE id = "
               + transaction_.quote(account_id)
@@ -215,7 +215,8 @@ namespace iroha {
                            block.transactions().end(),
                            [&hash](auto tx) { return tx->hash() == hash; });
           if (it != block.transactions().end()) {
-            result = boost::optional<PostgresBlockQuery::wTransaction>(PostgresBlockQuery::wTransaction((*it)->copy()));
+            result = boost::optional<PostgresBlockQuery::wTransaction>(
+                PostgresBlockQuery::wTransaction((*it)->copy()));
           }
           return result;
         };

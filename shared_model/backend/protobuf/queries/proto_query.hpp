@@ -120,15 +120,15 @@ namespace shared_model {
         return proto_->payload().query_counter();
       }
 
-      const Query::BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
-      const Query::BlobType &payload() const override {
+      const interface::types::BlobType &payload() const override {
         return *payload_;
       }
 
-      const HashType &hash() const override {
+      const interface::types::HashType &hash() const override {
         if (hash_ == boost::none) {
           hash_.emplace(HashProviderType::makeHash(payload()));
         }
@@ -161,8 +161,8 @@ namespace shared_model {
       // lazy
       const LazyVariantType variant_;
 
-      const Lazy<BlobType> blob_;
-      const Lazy<BlobType> payload_;
+      const Lazy<interface::types::BlobType> blob_;
+      const Lazy<interface::types::BlobType> payload_;
       const Lazy<interface::SignatureSetType> signatures_;
     };
   }  // namespace proto

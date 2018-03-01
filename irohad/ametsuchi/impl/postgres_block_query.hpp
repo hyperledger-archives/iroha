@@ -34,7 +34,7 @@ namespace iroha {
     class FlatFile;
 
     /**
-     * Class which implements BlockQuery with a Redis backend.
+     * Class which implements BlockQuery with a Postgres backend.
      */
     class PostgresBlockQuery : public BlockQuery {
      public:
@@ -55,10 +55,12 @@ namespace iroha {
       boost::optional<wTransaction> getTxByHashSync(
           const shared_model::crypto::Hash &hash) override;
 
-      rxcpp::observable<wBlock> getBlocks(shared_model::interface::types::HeightType height,
-                                          uint32_t count) override;
+      rxcpp::observable<wBlock> getBlocks(
+          shared_model::interface::types::HeightType height,
+          uint32_t count) override;
 
-      rxcpp::observable<wBlock> getBlocksFrom(shared_model::interface::types::HeightType height) override;
+      rxcpp::observable<wBlock> getBlocksFrom(
+          shared_model::interface::types::HeightType height) override;
 
       rxcpp::observable<wBlock> getTopBlocks(uint32_t count) override;
 
@@ -80,7 +82,7 @@ namespace iroha {
           const shared_model::crypto::Hash &hash);
 
       /**
-       * creates callback to lrange query to redis to supply result to
+       * creates callback to lrange query to Postgres to supply result to
        * subscriber s
        * @param s
        * @param block_id
