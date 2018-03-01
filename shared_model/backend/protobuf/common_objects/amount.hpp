@@ -35,19 +35,7 @@ namespace shared_model {
      public:
       template <typename AmountType>
       explicit Amount(AmountType &&amount)
-          : CopyableProto(std::forward<AmountType>(amount)),
-            multiprecision_repr_([this] {
-              const auto offset = 64u;
-              auto times = 3u;
-              const auto &value = proto_->value();
-              boost::multiprecision::uint256_t result;
-              result |= value.first() << offset * times--;
-              result |= value.second() << offset * times--;
-              result |= value.third() << offset * times--;
-              result |= value.fourth() << offset * times--;
-              return result;
-            }),
-            blob_([this] { return makeBlob(*proto_); }) {}
+          : CopyableProto(std::forward<AmountType>(amount)) {}
 
       Amount(const Amount &o) : Amount(o.proto_) {}
 
@@ -70,9 +58,20 @@ namespace shared_model {
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const Lazy<boost::multiprecision::uint256_t> multiprecision_repr_;
+      const Lazy<boost::multiprecision::uint256_t> multiprecision_repr_{[this] {
+        const auto offset = 64u;
+        auto times = 3u;
+        const auto &value = proto_->value();
+        boost::multiprecision::uint256_t result;
+        result |= value.first() << offset * times--;
+        result |= value.second() << offset * times--;
+        result |= value.third() << offset * times--;
+        result |= value.fourth() << offset * times--;
+        return result;
+      }};
 
-      const Lazy<interface::types::BlobType> blob_;
+      const Lazy<interface::types::BlobType> blob_{
+          [this] { return makeBlob(*proto_); }};
     };
 
   }  // namespace proto

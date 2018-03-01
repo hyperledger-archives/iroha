@@ -35,34 +35,12 @@ namespace shared_model {
      public:
       template <typename TransactionType>
       explicit Transaction(TransactionType &&transaction)
-          : CopyableProto(std::forward<TransactionType>(transaction)),
-            payload_(proto_->payload()),
-            commands_([this] {
-              return boost::accumulate(
-                  payload_.commands(),
-                  CommandsType{},
-                  [](auto &&acc, const auto &cmd) {
-                    acc.emplace_back(new Command(cmd));
-                    return std::forward<decltype(acc)>(acc);
-                  });
-            }),
-            blob_([this] { return makeBlob(*proto_); }),
-            blobTypePayload_([this] { return makeBlob(payload_); }),
-            signatures_([this] {
-              return boost::accumulate(
-                  proto_->signature(),
-                  interface::SignatureSetType{},
-                  [](auto &&acc, const auto &sig) {
-                    acc.emplace(new Signature(sig));
-                    return std::forward<decltype(acc)>(acc);
-                  });
-            }),
-            txhash_([this] { return HashProviderType::makeHash(payload()); }) {}
+          : CopyableProto(std::forward<TransactionType>(transaction)) {}
 
       Transaction(const Transaction &o) : Transaction(o.proto_) {}
 
-      Transaction(Transaction &&o) noexcept
-          : Transaction(std::move(o.proto_)) {}
+      Transaction(Transaction &&o) noexcept : Transaction(std::move(o.proto_)) {
+      }
 
       const interface::types::AccountIdType &creatorAccountId() const override {
         return payload_.creator_account_id();
@@ -113,17 +91,34 @@ namespace shared_model {
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const iroha::protocol::Transaction::Payload &payload_;
+      const iroha::protocol::Transaction::Payload &payload_{proto_->payload()};
 
-      const Lazy<CommandsType> commands_;
+      const Lazy<CommandsType> commands_{[this] {
+        return boost::accumulate(payload_.commands(),
+                                 CommandsType{},
+                                 [](auto &&acc, const auto &cmd) {
+                                   acc.emplace_back(new Command(cmd));
+                                   return std::forward<decltype(acc)>(acc);
+                                 });
+      }};
 
-      const Lazy<interface::types::BlobType> blob_;
+      const Lazy<interface::types::BlobType> blob_{
+          [this] { return makeBlob(*proto_); }};
 
-      const Lazy<interface::types::BlobType> blobTypePayload_;
+      const Lazy<interface::types::BlobType> blobTypePayload_{
+          [this] { return makeBlob(payload_); }};
 
-      const Lazy<interface::SignatureSetType> signatures_;
+      const Lazy<interface::SignatureSetType> signatures_{[this] {
+        return boost::accumulate(proto_->signature(),
+                                 interface::SignatureSetType{},
+                                 [](auto &&acc, const auto &sig) {
+                                   acc.emplace(new Signature(sig));
+                                   return std::forward<decltype(acc)>(acc);
+                                 });
+      }};
 
-      const Lazy<interface::types::HashType> txhash_;
+      const Lazy<interface::types::HashType> txhash_{
+          [this] { return HashProviderType::makeHash(payload()); }};
     };
   }  // namespace proto
 }  // namespace shared_model

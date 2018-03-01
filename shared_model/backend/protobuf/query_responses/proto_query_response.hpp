@@ -39,9 +39,10 @@ template <typename... T, typename Archive>
 auto loadQueryResponse(Archive &&ar) {
   int which =
       ar.GetDescriptor()->FindFieldByNumber(ar.response_case())->index();
-  return shared_model::detail::variant_impl<T...>::template load<
-      shared_model::interface::QueryResponse::QueryResponseVariantType>(
-      std::forward<Archive>(ar), which);
+  return shared_model::detail::variant_impl<T...>::
+      template load<shared_model::interface::QueryResponse::
+                        QueryResponseVariantType>(std::forward<Archive>(ar),
+                                                  which);
 }
 
 namespace shared_model {
@@ -76,13 +77,7 @@ namespace shared_model {
 
       template <typename QueryResponseType>
       explicit QueryResponse(QueryResponseType &&queryResponse)
-          : CopyableProto(std::forward<QueryResponseType>(queryResponse)),
-            variant_([this] {
-              return loadQueryResponse<ProtoQueryResponseListType>(*proto_);
-            }),
-            hash_([this] {
-              return interface::types::HashType(proto_->query_hash());
-            }) {}
+          : CopyableProto(std::forward<QueryResponseType>(queryResponse)) {}
 
       QueryResponse(const QueryResponse &o) : QueryResponse(o.proto_) {}
 
@@ -98,8 +93,12 @@ namespace shared_model {
       }
 
      private:
-      const LazyVariantType variant_;
-      const Lazy<interface::types::HashType> hash_;
+      const LazyVariantType variant_{[this] {
+        return loadQueryResponse<ProtoQueryResponseListType>(*proto_);
+      }};
+
+      const Lazy<interface::types::HashType> hash_{
+          [this] { return interface::types::HashType(proto_->query_hash()); }};
     };
   }  // namespace proto
 }  // namespace shared_model
