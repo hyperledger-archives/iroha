@@ -80,9 +80,14 @@ namespace iroha {
     auto zero_string = std::string("0", 32);
     auto fake_hash = shared_model::crypto::Hash(zero_string);
 
-    /*
+    /**
      * Make block with one transaction(transfer 0 asset) with specified sender,
      * receiver, asset and creator of transaction
+     * @param creator1 - source account for transfer
+     * @param creator2 - dest account for transfer
+     * @param asset - asset for transfer
+     * @param tx_creator - creator of the transaction
+     * @return block with one transaction
      */
     shared_model::proto::Block makeBlockWithCreator(std::string creator1,
                                                     std::string creator2,
@@ -101,9 +106,13 @@ namespace iroha {
           .build();
     }
 
-    /*
+    /**
      * Make block with one transaction(transfer 0 asset) with specified sender,
      * receiver and asset
+     * @param creator1 - source account for transfer
+     * @param creator2 - dest account for transfer
+     * @param asset - asset for transfer
+     * @return block with one transaction
      */
     shared_model::proto::Block makeBlock(
         std::string creator1,

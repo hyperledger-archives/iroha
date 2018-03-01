@@ -33,7 +33,7 @@ namespace iroha {
      * Public interface for queries on blocks and transactions
      */
     class BlockQuery {
-     protected:
+    protected:
       using wTransaction =
           std::shared_ptr<shared_model::interface::Transaction>;
       using wBlock = std::shared_ptr<shared_model::interface::Block>;
@@ -72,7 +72,7 @@ namespace iroha {
        * @param count - number of blocks to retrieve
        * @return observable of Model Block
        */
-      virtual rxcpp::observable<wBlock> getBlocks(uint32_t height,
+      virtual rxcpp::observable<wBlock> getBlocks(shared_model::interface::types::HeightType height,
                                                   uint32_t count) = 0;
 
       /**
@@ -80,7 +80,7 @@ namespace iroha {
        * @param from - starting height
        * @return observable of Model Block
        */
-      virtual rxcpp::observable<wBlock> getBlocksFrom(uint32_t height) = 0;
+      virtual rxcpp::observable<wBlock> getBlocksFrom(shared_model::interface::types::HeightType height) = 0;
 
       /**
        * Get given number of blocks from top.
