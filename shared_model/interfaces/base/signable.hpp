@@ -19,6 +19,7 @@
 #define IROHA_SIGNABLE_HPP
 
 #include <boost/functional/hash.hpp>
+
 #include "interfaces/base/hashable.hpp"
 #include "interfaces/common_objects/signable_hash.hpp"
 #include "interfaces/common_objects/signature.hpp"
