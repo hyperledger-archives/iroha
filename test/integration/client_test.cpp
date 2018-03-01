@@ -103,8 +103,6 @@ class ClientServerTest : public testing::Test {
     runner->waitForServersReady();
   }
 
-  virtual void TearDown() {}
-
   std::unique_ptr<ServerRunner> runner;
   std::shared_ptr<MockPeerCommunicationService> pcsMock;
 

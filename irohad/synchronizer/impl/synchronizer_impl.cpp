@@ -29,8 +29,7 @@ namespace iroha {
         std::shared_ptr<network::BlockLoader> blockLoader)
         : validator_(std::move(validator)),
           mutableFactory_(std::move(mutableFactory)),
-          blockLoader_(std::move(blockLoader)),
-          subscription_(rxcpp::composite_subscription()) {
+          blockLoader_(std::move(blockLoader)) {
       log_ = logger::log("synchronizer");
       consensus_gate->on_commit().subscribe(
           subscription_,
