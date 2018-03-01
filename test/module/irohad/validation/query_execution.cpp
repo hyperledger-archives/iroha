@@ -68,6 +68,12 @@ class QueryValidateExecuteTest : public ::testing::Test {
     return factory->execute(query);
   }
 
+  /**
+   * Make transaction with specified parameters
+   * @param counter
+   * @param creator
+   * @return wrapper with created transaction
+   */
   wTransaction makeTransaction(int counter, std::string creator) {
     return wTransaction(TestTransactionBuilder()
                             .creatorAccountId(creator)
@@ -76,6 +82,11 @@ class QueryValidateExecuteTest : public ::testing::Test {
                             .copy());
   }
 
+  /**
+   * @param creator
+   * @param N
+   * @return observable with transactions
+   */
   rxcpp::observable<wTransaction> getDefaultTransactions(
       const std::string &creator, size_t N) {
     return rxcpp::observable<>::iterate([&creator, &N, this] {
