@@ -220,6 +220,9 @@ void Irohad::initPeerCommunicationService() {
   pcs->on_commit().subscribe(
       [this](auto) { log_->info("~~~~~~~~~| COMMIT =^._.^= |~~~~~~~~~ "); });
 
+  // complete initialization of ordering gate
+  ordering_gate->setPcs(*pcs);
+
   log_->info("[Init] => pcs");
 }
 
