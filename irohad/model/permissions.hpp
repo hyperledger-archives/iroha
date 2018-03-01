@@ -65,7 +65,7 @@ namespace iroha {
     //  During stateful validations, these permissions are checked
     //  to be assigned to query creator.
     //  These permissions are divided into three groups:
-    // * my — query creator can only query its data
+    // * my — query creator can query its data
     // * domain — query creator can only query the data from the domain
     //   where the account was created
     // * all — query creator can query all the data in the system
@@ -202,7 +202,7 @@ namespace iroha {
                               can_grant + can_add_signatory,
                               can_grant + can_remove_signatory,
                               can_grant + can_transfer,
-                              can_grant + can_set_detail,
+                              can_grant + can_set_detail
                               };
 
   }  // namespace model

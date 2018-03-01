@@ -18,7 +18,7 @@ package iroha.protocol;
  * Command and Query related permissions are included in the role,
  * which an Account can have.
  *
- * Grantable permission is being set as a relation between two accounts:
+ * Grantable permission is set as a relation between two accounts:
  * Account A is granting Permission to Account B,
  * so that Account B can perform actions over Account A.
  */
