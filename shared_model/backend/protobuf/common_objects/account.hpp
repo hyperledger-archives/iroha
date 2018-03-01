@@ -56,7 +56,7 @@ namespace shared_model {
         return proto_->json_data();
       }
 
-      const BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
@@ -64,7 +64,7 @@ namespace shared_model {
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const Lazy<BlobType> blob_;
+      const Lazy<interface::types::BlobType> blob_;
     };
   }  // namespace proto
 }  // namespace shared_model
