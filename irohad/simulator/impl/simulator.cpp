@@ -16,6 +16,7 @@
  */
 
 #include "simulator/impl/simulator.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include "model/sha3_hash.hpp"
 
 namespace iroha {
@@ -74,8 +75,13 @@ namespace iroha {
       temporaryStorageResult.match(
           [&](expected::Value<std::unique_ptr<ametsuchi::TemporaryWsv>>
                   &temporaryStorage) {
-            notifier_.get_subscriber().on_next(
-                validator_->validate(proposal, *(temporaryStorage.value)));
+            auto shm_proposal = shared_model::proto::Proposal(
+                shared_model::proto::from_old(proposal));
+            auto validated_proposal =
+                validator_->validate(shm_proposal, *temporaryStorage.value);
+            std::unique_ptr<model::Proposal> old_proposal(
+                validated_proposal->makeOldModel());
+            notifier_.get_subscriber().on_next(*old_proposal);
           },
           [&](expected::Error<std::string> &error) {
             log_->error(error.error);
@@ -92,8 +98,7 @@ namespace iroha {
       new_block.prev_hash = last_block.value().hash;
       new_block.transactions = proposal.transactions;
       new_block.txs_number = proposal.transactions.size();
-      new_block.created_ts = 0;  // TODO 14/08/17 Muratov set timestamp from
-                                 // proposal & for new model IR-501
+      new_block.created_ts = proposal.created_time;
       new_block.hash = hash(new_block);
       crypto_provider_->sign(new_block);
 

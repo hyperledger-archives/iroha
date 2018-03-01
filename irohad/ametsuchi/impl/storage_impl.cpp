@@ -24,6 +24,7 @@
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "model/converters/json_common.hpp"
 #include "model/execution/command_executor_factory.hpp"  // for CommandExecutorFactory
+#include "postgres_ordering_service_persistent_state.hpp"
 
 #include <boost/format.hpp>
 
@@ -31,7 +32,7 @@ namespace iroha {
   namespace ametsuchi {
 
     const char *kCommandExecutorError = "Cannot create CommandExecutorFactory";
-    const char *kPsqlBroken = "Connection to PostgreSQL broken: {}";
+    const char *kPsqlBroken = "Connection to PostgreSQL broken: %s";
     const char *kTmpWsv = "TemporaryWsv";
 
     ConnectionContext::ConnectionContext(
@@ -194,7 +195,7 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
       auto block_store = FlatFile::create(block_store_dir);
       if (not block_store) {
         return expected::makeError(
-            (boost::format("Cannot create block store in {}") % block_store_dir)
+            (boost::format("Cannot create block store in %s") % block_store_dir)
                 .str());
       }
       log_->info("block store created");
