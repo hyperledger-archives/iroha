@@ -16,28 +16,21 @@
  */
 
 #include <gtest/gtest.h>
-#include <boost/range/algorithm/for_each.hpp>
-#include <boost/range/combine.hpp>
-#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
-#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 #include "ametsuchi/impl/postgres_block_query.hpp"
 #include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-#include "ametsuchi/impl/storage_impl.hpp"
+#include "ametsuchi/impl/wsv_restorer_impl.hpp"
 #include "ametsuchi/mutable_storage.hpp"
-#include "common/byteutils.hpp"
+#include "builders/protobuf/transaction.hpp"
 #include "framework/test_subscriber.hpp"
 #include "model/account.hpp"
 #include "model/account_asset.hpp"
-#include "model/asset.hpp"
-#include "model/commands/all.hpp"
-#include "model/converters/pb_block_factory.hpp"
 #include "model/domain.hpp"
-#include "model/peer.hpp"
 #include "model/permissions.hpp"
-#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 using namespace iroha::ametsuchi;
 using namespace iroha::model;
@@ -170,15 +163,6 @@ void apply(S &&storage, const shared_model::interface::Block &block) {
 
 TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
   // Commit block => get block => observable completed
-  std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        storage = _storage.value;
-      },
-      [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
-      });
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
@@ -193,15 +177,6 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
 }
 
 TEST_F(AmetsuchiTest, SampleTest) {
-  std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        storage = _storage.value;
-      },
-      [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
-      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -261,7 +236,7 @@ TEST_F(AmetsuchiTest, SampleTest) {
   // Block store tests
   auto hashes = {block1.hash(), block2.hash()};
   validateCalls(blocks->getBlocks(1, 2),
-                [i = 0, &hashes](auto eachBlock) mutable {
+                [ i = 0, &hashes ](auto eachBlock) mutable {
                   EXPECT_EQ(*(hashes.begin() + i), eachBlock->hash());
                   ++i;
                 },
@@ -278,16 +253,6 @@ TEST_F(AmetsuchiTest, SampleTest) {
 }
 
 TEST_F(AmetsuchiTest, PeerTest) {
-  std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        storage = _storage.value;
-      },
-      [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
-      });
-  ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
   auto txn = TestTransactionBuilder()
@@ -313,15 +278,6 @@ TEST_F(AmetsuchiTest, PeerTest) {
 }
 
 TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
-  std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        storage = _storage.value;
-      },
-      [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
-      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
@@ -425,7 +381,7 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   // Block store test
   auto hashes = {block1.hash(), block2.hash(), block3.hash()};
   validateCalls(blocks->getBlocks(1, 3),
-                [i = 0, &hashes](auto eachBlock) mutable {
+                [ i = 0, &hashes ](auto eachBlock) mutable {
                   EXPECT_EQ(*(hashes.begin() + i), eachBlock->hash());
                   ++i;
                 },
@@ -448,15 +404,6 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
 }
 
 TEST_F(AmetsuchiTest, AddSignatoryTest) {
-  std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        storage = _storage.value;
-      },
-      [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
-      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
 
@@ -682,15 +629,6 @@ TEST_F(AmetsuchiTest, TestingStorageWhenInsertBlock) {
       "Test case: create storage "
       "=> insert block "
       "=> assert that inserted");
-  std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        storage = _storage.value;
-      },
-      [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
-      });
   ASSERT_TRUE(storage);
   auto wsv = storage->getWsvQuery();
   ASSERT_EQ(0, wsv->getPeers().value().size());
@@ -772,15 +710,6 @@ TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
  * with some other hash is not found.
  */
 TEST_F(AmetsuchiTest, FindTxByHashTest) {
-  std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        storage = _storage.value;
-      },
-      [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
-      });
   ASSERT_TRUE(storage);
   auto blocks = storage->getBlockQuery();
 
@@ -941,4 +870,70 @@ TEST_F(AmetsuchiTest,
   ASSERT_TRUE(ordering_state_2->saveProposalHeight(42));
   ASSERT_EQ(42, ordering_state_1->loadProposalHeight().value());
   ASSERT_EQ(42, ordering_state_2->loadProposalHeight().value());
+}
+
+/**
+ * @given spoiled WSV
+ * @when WSV is restored
+ * @then WSV is valid
+ */
+TEST_F(AmetsuchiTest, TestRestoreWSV) {
+  // initialize storage with genesis block
+  std::string default_domain = "test";
+  std::string default_role = "admin";
+  auto genesis_tx =
+      shared_model::proto::TransactionBuilder()
+          .creatorAccountId("admin@test")
+          .txCounter(1)
+          .createdTime(iroha::time::now())
+          .createRole(default_role,
+                      std::vector<std::string>{iroha::model::can_create_domain,
+                                               iroha::model::can_create_account,
+                                               iroha::model::can_add_asset_qty,
+                                               iroha::model::can_add_peer,
+                                               iroha::model::can_receive,
+                                               iroha::model::can_transfer})
+          .createDomain(default_domain, default_role)
+          .build()
+          .signAndAddSignature(
+              shared_model::crypto::DefaultCryptoAlgorithmType::
+                  generateKeypair());
+
+  auto genesis_block =
+      TestBlockBuilder()
+          .transactions(
+              std::vector<shared_model::proto::Transaction>{genesis_tx})
+          .txNumber(1)
+          .height(1)
+          .prevHash(shared_model::crypto::Sha3_256::makeHash(
+              shared_model::crypto::Blob("")))
+          .createdTime(iroha::time::now())
+          .build();
+
+  apply(storage, genesis_block);
+
+  auto res = storage->getWsvQuery()->getDomain("test");
+  EXPECT_TRUE(res);
+
+  // spoil WSV
+  pqxx::work txn(*connection);
+  txn.exec(R"(
+DELETE FROM domain;
+)");
+  txn.commit();
+
+  // check there is no data in WSV
+  res = storage->getWsvQuery()->getDomain("test");
+  EXPECT_FALSE(res);
+
+  // recover storage and check it is recovered
+  WsvRestorerImpl wsvRestorer;
+  wsvRestorer.restoreWsv(*storage).match(
+      [](iroha::expected::Value<void>) {},
+      [&](iroha::expected::Error<std::string> &error) {
+        FAIL() << "Failed to recover WSV";
+      });
+
+  res = storage->getWsvQuery()->getDomain("test");
+  EXPECT_TRUE(res);
 }
