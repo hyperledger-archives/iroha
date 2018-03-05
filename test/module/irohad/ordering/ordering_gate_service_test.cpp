@@ -17,6 +17,7 @@
 
 #include "backend/protobuf/common_objects/peer.hpp"
 #include "builders/protobuf/common_objects/proto_peer_builder.hpp"
+#include "builders/common_objects/peer_builder.hpp"
 #include "framework/test_subscriber.hpp"
 #include "mock_ordering_service_persistent_state.hpp"
 #include "model/asset.hpp"
@@ -25,6 +26,7 @@
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
+#include "validators/field_validator.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -40,7 +42,10 @@ using wPeer = std::shared_ptr<shared_model::interface::Peer>;
 class OrderingGateServiceTest : public ::testing::Test {
  public:
   OrderingGateServiceTest() {
-    peer.address = address;
+    peer = std::shared_ptr<shared_model::interface::Peer>(shared_model::proto::PeerBuilder()
+        .address(address)
+        .pubkey(shared_model::interface::types::PubkeyType(std::string(32, '0')))
+        .build().copy());
     gate_transport = std::make_shared<OrderingGateTransportGrpc>(address);
     gate = std::make_shared<OrderingGateImpl>(gate_transport);
     gate_transport->subscribe(gate);
@@ -115,7 +120,7 @@ class OrderingGateServiceTest : public ::testing::Test {
   std::thread thread;
   std::shared_ptr<grpc::Server> server;
 
-  Peer peer;
+  std::shared_ptr<shared_model::interface::Peer> peer;
   std::shared_ptr<OrderingGateTransportGrpc> gate_transport;
   std::shared_ptr<OrderingServiceTransportGrpc> service_transport;
   std::shared_ptr<MockOrderingServicePersistentState> fake_persistent_state;
@@ -133,8 +138,8 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
 
   shared_model::proto::PeerBuilder builder;
 
-  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
-  auto tmp = builder.address(peer.address).pubkey(key).build();
+  auto key = shared_model::crypto::PublicKey(peer->pubkey().toString());
+  auto tmp = builder.address(peer->address()).pubkey(key).build();
 
   wPeer w_peer(tmp.copy());
 
@@ -203,8 +208,8 @@ TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
 
   shared_model::proto::PeerBuilder builder;
 
-  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
-  auto tmp = builder.address(peer.address).pubkey(key).build();
+  auto key = shared_model::crypto::PublicKey(peer->pubkey().toString());
+  auto tmp = builder.address(peer->address()).pubkey(key).build();
 
   wPeer w_peer(tmp.copy());
   EXPECT_CALL(*wsv, getLedgerPeers())
