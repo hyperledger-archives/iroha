@@ -36,7 +36,7 @@ using namespace iroha::ametsuchi;
 using namespace iroha::model;
 using namespace framework::test_subscriber;
 
-auto zero_string = std::string("0", 32);
+auto zero_string = std::string(32, '0'/*, 32*/);
 auto fake_hash = shared_model::crypto::Hash(zero_string);
 auto fake_pubkey = shared_model::crypto::PublicKey(zero_string);
 
@@ -117,9 +117,9 @@ void validateAccountAsset(W &&wsv,
                           const iroha::Amount &amount) {
   auto account_asset = wsv->getAccountAsset(account, asset);
   ASSERT_TRUE(account_asset);
-  ASSERT_EQ(account_asset->account_id, account);
-  ASSERT_EQ(account_asset->asset_id, asset);
-  ASSERT_EQ(account_asset->balance, amount);
+  ASSERT_EQ((*account_asset)->accountId(), account);
+  ASSERT_EQ((*account_asset)->assetId(), asset);
+  ASSERT_EQ(*std::unique_ptr<iroha::Amount>((*account_asset)->balance().makeOldModel()), amount);
 }
 
 /**
@@ -135,8 +135,8 @@ void validateAccount(W &&wsv,
                      const std::string &domain) {
   auto account = wsv->getAccount(id);
   ASSERT_TRUE(account);
-  ASSERT_EQ(account->account_id, id);
-  ASSERT_EQ(account->domain_id, domain);
+  ASSERT_EQ((*account)->accountId(), id);
+  ASSERT_EQ((*account)->domainId(), domain);
 }
 
 /**
@@ -181,9 +181,9 @@ TEST_F(AmetsuchiTest, SampleTest) {
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
 
-  const auto domain = "ru", user1name = "user1", user2name = "user2",
-             user1id = "user1@ru", user2id = "user2@ru", assetname = "RUB",
-             assetid = "RUB#ru";
+  const auto domain = "ru", user1name = "userone", user2name = "usertwo",
+             user1id = "userone@ru", user2id = "usertwo@ru", assetname = "rub",
+             assetid = "rub#ru";
 
   std::string account, src_account, dest_account, asset;
   iroha::Amount amount;
@@ -271,10 +271,10 @@ TEST_F(AmetsuchiTest, PeerTest) {
   auto peers = wsv->getPeers();
   ASSERT_TRUE(peers);
   ASSERT_EQ(peers->size(), 1);
-  ASSERT_EQ(peers->at(0).address, "192.168.9.1:50051");
+  ASSERT_EQ(peers->at(0)->address(), "192.168.9.1:50051");
 
-  auto pubkey = iroha::blob_t<32>::from_string(zero_string);
-  ASSERT_EQ(peers->at(0).pubkey, pubkey);
+//  auto pubkey = iroha::blob_t<32>::from_string(zero_string);
+  ASSERT_EQ(peers->at(0)->pubkey(), fake_pubkey);
 }
 
 TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
@@ -282,11 +282,11 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   auto wsv = storage->getWsvQuery();
   auto blocks = storage->getBlockQuery();
 
-  const auto admin = "admin1", domain = "domain", user1name = "user1",
-             user2name = "user2", user3name = "user3", user1id = "user1@domain",
-             user2id = "user2@domain", user3id = "user3@domain",
-             asset1name = "asset1", asset2name = "asset2",
-             asset1id = "asset1#domain", asset2id = "asset2#domain";
+  const auto admin = "admin", domain = "domain", user1name = "userone",
+             user2name = "usertwo", user3name = "userthree", user1id = "userone@domain",
+             user2id = "usertwo@domain", user3id = "userthree@domain",
+             asset1name = "assetone", asset2name = "assettwo",
+             asset1id = "assetone#domain", asset2id = "assettwo#domain";
 
   std::string account, src_account, dest_account, asset;
   iroha::Amount amount;
@@ -410,18 +410,18 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   shared_model::crypto::PublicKey pubkey1(std::string("1", 32));
   shared_model::crypto::PublicKey pubkey2(std::string("2", 32));
 
-  auto user1id = "user1@domain";
-  auto user2id = "user2@domain";
+  auto user1id = "userone@domain";
+  auto user2id = "usertwo@domain";
 
   // 1st tx (create user1 with pubkey1)
   auto txn1 =
       TestTransactionBuilder()
-          .creatorAccountId("admin1")
+          .creatorAccountId("adminone")
           .createRole("user",
                       std::set<std::string>{
                           can_add_peer, can_create_asset, can_get_my_account})
           .createDomain("domain", "user")
-          .createAccount("user1", "domain", pubkey1)
+          .createAccount("userone", "domain", pubkey1)
           .build();
   auto block1 =
       TestBlockBuilder()
@@ -434,16 +434,16 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   apply(storage, block1);
 
   {
-    auto account = wsv->getAccount(user1id);
-    ASSERT_TRUE(account);
-    ASSERT_EQ(account->account_id, user1id);
-    ASSERT_EQ(account->domain_id, "domain");
+    auto account_opt = wsv->getAccount(user1id);
+    ASSERT_TRUE(account_opt);
+    auto account = account_opt.value();
+    ASSERT_EQ(account->accountId(), user1id);
+    ASSERT_EQ(account->domainId(), "domain");
 
     auto signatories = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 1);
-    ASSERT_EQ(signatories->at(0),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
+    ASSERT_EQ(signatories->at(0), pubkey1);
   }
 
   // 2nd tx (add sig2 to user1)
@@ -469,16 +469,15 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     auto signatories = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 2);
-    ASSERT_EQ(signatories->at(0),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
-    ASSERT_EQ(signatories->at(1),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey2)));
+    ASSERT_EQ(signatories->at(0), pubkey1);
+    ASSERT_EQ(signatories->at(1), pubkey2
+    );
   }
 
   // 3rd tx (create user2 with pubkey1 that is same as user1's key)
   auto txn3 = TestTransactionBuilder()
-                  .creatorAccountId("admin2")
-                  .createAccount("user2", "domain", pubkey1)
+                  .creatorAccountId("admintwo")
+                  .createAccount("usertwo", "domain", pubkey1)
                   .build();
 
   auto block3 =
@@ -501,16 +500,13 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     auto signatories1 = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories1);
     ASSERT_EQ(signatories1->size(), 2);
-    ASSERT_EQ(signatories1->at(0),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
-    ASSERT_EQ(signatories1->at(1),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey2)));
+    ASSERT_EQ(signatories1->at(0), pubkey1);
+    ASSERT_EQ(signatories1->at(1), pubkey2);
 
     auto signatories2 = wsv->getSignatories(user2id);
     ASSERT_TRUE(signatories2);
     ASSERT_EQ(signatories2->size(), 1);
-    ASSERT_EQ(signatories2->at(0),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
+    ASSERT_EQ(signatories2->at(0), pubkey1);
   }
 
   // 4th tx (remove pubkey1 from user1)
@@ -537,15 +533,13 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     auto signatories1 = wsv->getSignatories(user1id);
     ASSERT_TRUE(signatories1);
     ASSERT_EQ(signatories1->size(), 1);
-    ASSERT_EQ(signatories1->at(0),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey2)));
+    ASSERT_EQ(signatories1->at(0), pubkey2);
 
     // user2 still has pubkey1.
     auto signatories2 = wsv->getSignatories(user2id);
     ASSERT_TRUE(signatories2);
     ASSERT_EQ(signatories2->size(), 1);
-    ASSERT_EQ(signatories2->at(0),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
+    ASSERT_EQ(signatories2->at(0), pubkey1);
   }
 
   // 5th tx (add sig2 to user2 and set quorum = 1)
@@ -566,18 +560,17 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
   apply(storage, block5);
 
   {
-    auto account = wsv->getAccount(user2id);
-    ASSERT_TRUE(account);
-    ASSERT_EQ(account->quorum, 2);
+    auto account_opt = wsv->getAccount(user2id);
+    ASSERT_TRUE(account_opt);
+    auto &account = account_opt.value();
+    ASSERT_EQ(account->quorum(), 2);
 
     // user2 has pubkey1 and pubkey2.
     auto signatories = wsv->getSignatories(user2id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 2);
-    ASSERT_EQ(signatories->at(0),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
-    ASSERT_EQ(signatories->at(1),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey2)));
+    ASSERT_EQ(signatories->at(0), pubkey1);
+    ASSERT_EQ(signatories->at(1), pubkey2);
   }
 
   // 6th tx (remove sig2 fro user2: This must success)
@@ -602,15 +595,14 @@ TEST_F(AmetsuchiTest, AddSignatoryTest) {
     auto signatories = wsv->getSignatories(user2id);
     ASSERT_TRUE(signatories);
     ASSERT_EQ(signatories->size(), 1);
-    ASSERT_EQ(signatories->at(0),
-              iroha::pubkey_t::from_string(toBinaryString(pubkey1)));
+    ASSERT_EQ(signatories->at(0), pubkey1);
   }
 }
 
 shared_model::proto::Block getBlock() {
   auto txn = TestTransactionBuilder()
-                 .creatorAccountId("admin1")
-                 .addPeer("192.168.0.0", fake_pubkey)
+                 .creatorAccountId("adminone")
+                 .addPeer("192.168.0.0:10001", fake_pubkey)
                  .build();
 
   auto block =
