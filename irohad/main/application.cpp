@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <memory>
 #include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
+#include "consensus/yac/impl/supermajority_checker_impl.hpp"
 #include "ametsuchi/impl/wsv_restorer_impl.hpp"
 
 using namespace iroha;
@@ -149,7 +150,8 @@ void Irohad::initCryptoProvider() {
  */
 void Irohad::initValidators() {
   stateful_validator = std::make_shared<StatefulValidatorImpl>();
-  chain_validator = std::make_shared<ChainValidatorImpl>();
+  chain_validator = std::make_shared<ChainValidatorImpl>(
+      std::make_shared<consensus::yac::SupermajorityCheckerImpl>());
 
   log_->info("[Init] => validators");
 }
