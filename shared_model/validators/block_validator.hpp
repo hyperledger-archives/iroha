@@ -34,12 +34,24 @@ namespace shared_model {
      */
     class BlockValidator {
      public:
+
+      //TODO 05-03-2018 Alexey Chernyshov: remove polymorphic wrapper in IR-872
       /**
        * Applies validation on block
        * @param block
        * @return Answer containing found error if any
        */
       Answer validate(const interface::Block &block) const {
+        return Answer();
+      }
+
+      /**
+       * Applies validation on block
+       * @param block
+       * @return Answer containing found error if any
+       */
+      Answer validate(
+          std::shared_ptr<interface::Block> block) const {
         return Answer();
       }
 

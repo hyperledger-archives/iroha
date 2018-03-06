@@ -36,7 +36,7 @@
 #include "module/irohad/model/model_mocks.hpp"
 #include "network/impl/block_loader_impl.hpp"
 #include "network/impl/block_loader_service.hpp"
-#include "validators/field_validator.hpp"
+#include "validators/default_validator.hpp"
 
 using namespace iroha::network;
 using namespace iroha::ametsuchi;
@@ -56,7 +56,11 @@ class BlockLoaderTest : public testing::Test {
     peer_query = std::make_shared<MockPeerQuery>();
     storage = std::make_shared<MockBlockQuery>();
     provider = std::make_shared<MockCryptoProvider>();
-    loader = std::make_shared<BlockLoaderImpl>(peer_query, storage, provider);
+    loader = std::make_shared<BlockLoaderImpl>(
+        peer_query,
+        storage,
+        provider,
+        std::make_shared<shared_model::validation::DefaultBlockValidator>());
     service = std::make_shared<BlockLoaderService>(storage);
 
     grpc::ServerBuilder builder;
@@ -87,9 +91,9 @@ class BlockLoaderTest : public testing::Test {
   auto getBaseBlockBuilder() const {
     constexpr auto kTotal = (1 << 5) - 1;
     return shared_model::proto::TemplateBlockBuilder<
-        kTotal,
-        shared_model::validation::DefaultBlockValidator,
-        shared_model::proto::Block>()
+               kTotal,
+               shared_model::validation::DefaultBlockValidator,
+               shared_model::proto::Block>()
         .txNumber(0)
         .height(1)
         .prevHash(Hash(std::string(32, '0')))
@@ -122,7 +126,8 @@ TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
       shared_model::proto::PeerBuilder()
           .pubkey(peer->pubkey())
           .address(peer->address())
-          .build().copy());
+          .build()
+          .copy());
 
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{w_peer}));
@@ -131,9 +136,8 @@ TEST_F(BlockLoaderTest, ValidWhenSameTopBlock) {
           [](auto &&x) { return wBlock(x.copy()); })));
   EXPECT_CALL(*storage, getBlocksFrom(block.height() + 1))
       .WillOnce(Return(rxcpp::observable<>::empty<wBlock>()));
-  auto wrapper =
-      make_test_subscriber<CallExact>(loader->retrieveBlocks(peer->pubkey()
-      ), 0);
+  auto wrapper = make_test_subscriber<CallExact>(
+      loader->retrieveBlocks(peer->pubkey()), 0);
   wrapper.subscribe();
 
   ASSERT_TRUE(wrapper.validate());
