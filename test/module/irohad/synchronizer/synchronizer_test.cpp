@@ -67,7 +67,7 @@ MATCHER_P(NewBlockMatcher,
           "is shared_model Block is equal to the old model Block ") {
   std::unique_ptr<iroha::model::Block> old_block(arg.makeOldModel());
   return *old_block == block;
-};
+}
 
 TEST_F(SynchronizerTest, ValidWhenInitialized) {
   // synchronizer constructor => on_commit subscription called
