@@ -19,8 +19,9 @@
 #define IROHA_SYNCHRONIZER_HPP
 
 #include <rxcpp/rx-observable.hpp>
-#include "model/block.hpp"
-#include "model/commit.hpp"
+
+#include "interfaces/iroha_internal/block.hpp"
+#include "network/peer_communication_service.hpp"
 
 namespace iroha {
   namespace synchronizer {
@@ -31,15 +32,16 @@ namespace iroha {
     class Synchronizer {
      public:
       /**
-       * Processing block last committed block
+       * Processing last committed block
        */
-      virtual void process_commit(model::Block block) = 0;
+      virtual void process_commit(
+          std::shared_ptr<shared_model::interface::Block> commit_message) = 0;
 
       /**
        * Emit committed blocks
        * Note: from one block received on consensus
        */
-      virtual rxcpp::observable<OldCommit> on_commit_chain() = 0;
+      virtual rxcpp::observable<Commit> on_commit_chain() = 0;
 
       virtual ~Synchronizer() = default;
     };

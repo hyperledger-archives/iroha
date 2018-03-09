@@ -20,10 +20,6 @@
 #include "ametsuchi/mutable_storage.hpp"
 #include "synchronizer/impl/synchronizer_impl.hpp"
 
-// TODO: 14-02-2018 Alexey Chernyshov remove this after relocation to
-// shared_model https://soramitsu.atlassian.net/browse/IR-903
-#include "backend/protobuf/from_old_model.hpp"
-
 namespace iroha {
   namespace synchronizer {
 
@@ -39,8 +35,7 @@ namespace iroha {
       consensus_gate->on_commit().subscribe(
           subscription_,
           [&](std::shared_ptr<shared_model::interface::Block> block) {
-            std::unique_ptr<model::Block> bl(block->makeOldModel());
-            this->process_commit(*bl);
+            this->process_commit(block);
           });
     }
 
@@ -49,7 +44,7 @@ namespace iroha {
     }
 
     void SynchronizerImpl::process_commit(
-        iroha::model::Block old_commit_message) {
+        std::shared_ptr<shared_model::interface::Block> commit_message) {
       log_->info("processing commit");
       auto storageResult = mutableFactory_->createMutableStorage();
       std::unique_ptr<ametsuchi::MutableStorage> storage;
@@ -64,21 +59,18 @@ namespace iroha {
         return;
       }
 
-      // TODO: 14-02-2018 Alexey Chernyshov remove this after relocation to
-      // shared_model https://soramitsu.atlassian.net/browse/IR-903
-      auto commit_message = shared_model::proto::from_old(old_commit_message);
-      if (validator_->validateBlock(commit_message, *storage)) {
+      if (validator_->validateBlock(*commit_message, *storage)) {
         // Block can be applied to current storage
         // Commit to main Ametsuchi
         mutableFactory_->commit(std::move(storage));
 
-        auto single_commit = rxcpp::observable<>::just(old_commit_message);
+        auto single_commit = rxcpp::observable<>::just(commit_message);
 
         notifier_.get_subscriber().on_next(single_commit);
       } else {
         // Block can't be applied to current storage
         // Download all missing blocks
-        for (auto signature : old_commit_message.sigs) {
+        for (const auto &signature : commit_message->signatures()) {
           auto storageResult = mutableFactory_->createMutableStorage();
           std::unique_ptr<ametsuchi::MutableStorage> storage;
           storageResult.match(
@@ -91,20 +83,12 @@ namespace iroha {
           if (not storage) {
             return;
           }
-          auto chain =
-              blockLoader_->retrieveBlocks(shared_model::crypto::PublicKey(
-                  {signature.pubkey.begin(), signature.pubkey.end()}));
+          auto chain = blockLoader_->retrieveBlocks(
+              shared_model::crypto::PublicKey(signature->publicKey()));
           if (validator_->validateChain(chain, *storage)) {
             // Peer send valid chain
             mutableFactory_->commit(std::move(storage));
-
-            // TODO: 07-03-2018 Alexey Chernyshov remove this after relocation
-            // to shared_model https://soramitsu.atlassian.net/browse/IR-903
-            notifier_.get_subscriber().on_next(chain.map([](auto block) {
-              std::unique_ptr<iroha::model::Block> old_block(
-                  block->makeOldModel());
-              return *old_block;
-            }));
+            notifier_.get_subscriber().on_next(chain);
             // You are synchronized
             return;
           }
@@ -112,7 +96,7 @@ namespace iroha {
       }
     }
 
-    rxcpp::observable<OldCommit> SynchronizerImpl::on_commit_chain() {
+    rxcpp::observable<Commit> SynchronizerImpl::on_commit_chain() {
       return notifier_.get_observable();
     }
   }  // namespace synchronizer
