@@ -16,26 +16,45 @@
  */
 
 #include "multi_sig_transactions/transport/mst_transport_grpc.hpp"
+#include "backend/protobuf/transaction.hpp"
+#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
+#include "builders/protobuf/transport_builder.hpp"
+#include "validators/default_validator.hpp"
 
 using namespace iroha::network;
 
 MstTransportGrpc::MstTransportGrpc() : log_(logger::log("MstTransport")) {}
 
 grpc::Status MstTransportGrpc::SendState(
-    ::grpc::ServerContext* context,
-    const ::iroha::network::transport::MstState* request,
-    ::google::protobuf::Empty* response) {
+    ::grpc::ServerContext *context,
+    const ::iroha::network::transport::MstState *request,
+    ::google::protobuf::Empty *response) {
   log_->info("MstState Received");
 
   MstState newState = MstState::empty();
-  for (const auto& tx : request->transactions()) {
+  shared_model::proto::TransportBuilder<
+      shared_model::proto::Transaction,
+      shared_model::validation::DefaultTransactionValidator>
+      builder;
+  for (const auto &tx : request->transactions()) {
     // TODO: use monad after deserialize() will return optional
-    newState += factory_.deserialize(tx);
+    builder.build(tx).match(
+        [&](iroha::expected::Value<shared_model::proto::Transaction> &v) {
+          newState += std::make_shared<shared_model::proto::Transaction>(
+              std::move(v.value));
+        },
+        [&](iroha::expected::Error<std::string> &e) {
+          log_->warn("Can't deserialize tx: {}", e.error);
+        });
   }
   log_->info("transactions in MstState: {}", newState.getTransactions().size());
 
-  model::Peer from(request->peer().address(),
-                   blob_t<32>::from_string(request->peer().pubkey()));
+  auto &peer = request->peer();
+  auto from = std::make_shared<shared_model::proto::Peer>(
+      shared_model::proto::PeerBuilder()
+          .address(peer.address())
+          .pubkey(shared_model::crypto::PublicKey(peer.pubkey()))
+          .build());
   subscriber_.lock()->onNewState(std::move(from), std::move(newState));
 
   return grpc::Status::OK;
@@ -46,20 +65,24 @@ void MstTransportGrpc::subscribe(
   subscriber_ = notification;
 }
 
-void MstTransportGrpc::sendState(ConstRefPeer to, ConstRefState providing_state) {
-  log_->info("Propagate MstState to peer {}", to.address);
+void MstTransportGrpc::sendState(const shared_model::interface::Peer &to,
+                                 ConstRefState providing_state) {
+  log_->info("Propagate MstState to peer {}", to.address());
   auto client = transport::MstTransportGrpc::NewStub(
-      grpc::CreateChannel(to.address, grpc::InsecureChannelCredentials()));
+      grpc::CreateChannel(to.address(), grpc::InsecureChannelCredentials()));
 
-  AsyncClientCall* call = new AsyncClientCall;
+  auto call = new AsyncClientCall;
 
   transport::MstState protoState;
   auto peer = protoState.mutable_peer();
-  peer->set_pubkey(to.pubkey.to_string());
-  peer->set_address(to.address);
-  for (auto& tx : providing_state.getTransactions()) {
+  peer->set_pubkey(shared_model::crypto::toBinaryString(to.pubkey()));
+  peer->set_address(to.address());
+  for (auto &tx : providing_state.getTransactions()) {
     auto addtxs = protoState.add_transactions();
-    new (addtxs) protocol::Transaction(factory_.serialize(*tx));
+    // TODO (@l4l) 04/03/18 simplify with IR-1040
+    new (addtxs) protocol::Transaction(
+        std::static_pointer_cast<shared_model::proto::Transaction>(tx)
+            ->getTransport());
   }
 
   call->response_reader =

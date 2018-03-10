@@ -49,4 +49,5 @@ target_link_libraries(multisig_tx_pipeline_test
   application
   raw_block_insertion
   model_generators
+  tx_pipeline_integration_test_fixture
   )

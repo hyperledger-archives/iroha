@@ -50,6 +50,7 @@ iroha::protocol::Transaction generateEmptyTransaction() {
   payload.set_tx_counter(tx_counter);
   payload.set_creator_account_id(creator_account_id);
   payload.set_created_time(created_time);
+  payload.set_quorum(1);
 
   return proto_tx;
 }
@@ -102,6 +103,7 @@ TEST(ProtoTransaction, Builder) {
                 .creatorAccountId(creator_account_id)
                 .addAssetQuantity(account_id, asset_id, amount)
                 .createdTime(created_time)
+                .quorum(1)
                 .build();
 
   auto signedTx = tx.signAndAddSignature(keypair);
@@ -127,6 +129,7 @@ TEST(ProtoTransaction, BuilderWithInvalidTx) {
           .creatorAccountId(invalid_account_id)
           .addAssetQuantity(invalid_account_id, invalid_asset_id, amount)
           .createdTime(created_time)
+          .quorum(1)
           .build(),
       std::invalid_argument);
 }

@@ -78,8 +78,9 @@ namespace iroha {
 
   // -------------------| MstTransportNotification override |-------------------
 
-  void FairMstProcessor::onNewState(ConstRefPeer from,
-                                    ConstRefState new_state) {
+  void FairMstProcessor::onNewState(
+      const std::shared_ptr<shared_model::interface::Peer> &from,
+      ConstRefState new_state) {
     log_->info("Applying new state");
     auto current_time = time_provider_->getCurrentTime();
 
@@ -106,7 +107,7 @@ namespace iroha {
     auto current_time = time_provider_->getCurrentTime();
     std::for_each(
         data.begin(), data.end(), [this, &current_time](const auto &peer) {
-          transport_->sendState(peer,
+          transport_->sendState(*peer,
                                 storage_->getDiffState(peer, current_time));
         });
   }

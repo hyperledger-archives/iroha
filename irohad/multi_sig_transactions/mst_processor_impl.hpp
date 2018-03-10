@@ -63,7 +63,8 @@ namespace iroha {
 
     // ------------------| MstTransportNotification override |------------------
 
-    void onNewState(ConstRefPeer from, ConstRefState new_state) override;
+    void onNewState(const std::shared_ptr<shared_model::interface::Peer> &from,
+                    ConstRefState new_state) override;
 
     // ----------------------------| end override |-----------------------------
 

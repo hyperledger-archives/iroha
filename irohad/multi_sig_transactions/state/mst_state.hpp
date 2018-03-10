@@ -55,8 +55,8 @@ namespace iroha {
   class TxHashEquality {
    public:
     bool operator()(const DataType &left_tx, const DataType &right_tx) const {
-      return (*left_tx).tx_hash.to_hexstring()
-          == (*right_tx).tx_hash.to_hexstring();
+      return shared_model::crypto::toBinaryString((*left_tx).hash())
+          == shared_model::crypto::toBinaryString((*right_tx).hash());
     }
   };
 
@@ -65,7 +65,7 @@ namespace iroha {
    */
   class DefaultCompleter : public Completer {
     bool operator()(const DataType transaction) const override {
-      return transaction->signatures.size() >= transaction->quorum;
+      return transaction->signatures().size() >= transaction->quorum();
     }
 
     bool operator()(const DataType &tx, const TimeType &time) const override {
@@ -145,12 +145,13 @@ namespace iroha {
     class Less {
      public:
       bool operator()(const DataType &left, const DataType &right) const {
-        return left->created_ts < right->created_ts;
+        return left->createdTime() < right->createdTime();
       }
     };
 
     using InternalStateType =
-        std::unordered_set<DataType, iroha::model::PointerTxHasher<DataType>,
+        std::unordered_set<DataType,
+                           iroha::model::PointerTxHasher<DataType>,
                            TxHashEquality>;
 
     using IndexType =

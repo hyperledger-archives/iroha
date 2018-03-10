@@ -17,6 +17,7 @@
 
 #include <gtest/gtest.h>
 #include <tuple>
+#include "datetime/time.hpp"
 #include "framework/test_subscriber.hpp"
 #include "logger/logger.hpp"
 #include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
@@ -26,9 +27,7 @@
 
 auto log_ = logger::log("MstProcessorTest");
 
-using namespace std;
 using namespace iroha;
-using namespace iroha::model;
 using namespace framework::test_subscriber;
 
 using testing::Return;
@@ -36,11 +35,11 @@ using testing::_;
 
 class TestCompleter : public Completer {
   bool operator()(const DataType transaction) const override {
-    return transaction->signatures.size() >= transaction->quorum;
+    return transaction->signatures().size() >= transaction->quorum();
   }
 
   bool operator()(const DataType &tx, const TimeType &time) const override {
-    return tx->created_ts < time;
+    return tx->createdTime() < time;
   }
 };
 
@@ -52,28 +51,37 @@ class MstProcessorTest : public testing::Test {
   rxcpp::subjects::subject<PropagationStrategy::PropagationData>
       propagation_subject;
   /// use effective implementation of storage
-  shared_ptr<MstStorage> storage;
-  shared_ptr<FairMstProcessor> mst_processor;
+  std::shared_ptr<MstStorage> storage;
+  std::shared_ptr<FairMstProcessor> mst_processor;
 
   // ---------------------------------| mocks |---------------------------------
 
-  shared_ptr<MockMstTransport> transport;
-  shared_ptr<MockPropagationStrategy> propagation_strategy;
-  shared_ptr<MockTimeProvider> time_provider;
+  std::shared_ptr<MockMstTransport> transport;
+  std::shared_ptr<MockPropagationStrategy> propagation_strategy;
+  std::shared_ptr<MockTimeProvider> time_provider;
+
+  const shared_model::interface::types::CounterType time_before =
+      iroha::time::now() - 10000;
+  const shared_model::interface::types::CounterType time_now =
+      iroha::time::now();
+  const shared_model::interface::types::CounterType time_after =
+      iroha::time::now() + 10000;
 
  protected:
   void SetUp() override {
-    transport = make_shared<MockMstTransport>();
-    storage = make_shared<MstStorageStateImpl>(make_shared<TestCompleter>());
+    transport = std::make_shared<MockMstTransport>();
+    storage = std::make_shared<MstStorageStateImpl>(
+        std::make_shared<TestCompleter>());
 
-    propagation_strategy = make_shared<MockPropagationStrategy>();
+    propagation_strategy = std::make_shared<MockPropagationStrategy>();
     EXPECT_CALL(*propagation_strategy, emitter())
         .WillOnce(Return(propagation_subject.get_observable()));
 
-    time_provider = make_shared<MockTimeProvider>();
-    EXPECT_CALL(*time_provider, getCurrentTime()).WillRepeatedly(Return(111));
+    time_provider = std::make_shared<MockTimeProvider>();
+    EXPECT_CALL(*time_provider, getCurrentTime())
+        .WillRepeatedly(Return(time_now));
 
-    mst_processor = make_shared<FairMstProcessor>(
+    mst_processor = std::make_shared<FairMstProcessor>(
         transport, storage, propagation_strategy, time_provider);
   }
 };
@@ -81,7 +89,9 @@ class MstProcessorTest : public testing::Test {
 /*
  * Initialize observables of mst processor
  */
-auto initObservers(shared_ptr<FairMstProcessor> mst_processor, int a, int b,
+auto initObservers(std::shared_ptr<FairMstProcessor> mst_processor,
+                   int a,
+                   int b,
                    int c) {
   auto obs = std::make_tuple(
       make_test_subscriber<CallExact>(mst_processor->onStateUpdate(), a),
@@ -121,10 +131,7 @@ TEST_F(MstProcessorTest, notCompletedTransactionUsecase) {
   auto observers = initObservers(mst_processor, 0, 0, 0);
 
   // ---------------------------------| when |----------------------------------
-  auto quorum = 2;
-  auto creation_time = 112;
-  mst_processor->propagateTransaction(
-      makeTx("hash", "sign", quorum, creation_time));
+  mst_processor->propagateTransaction(makeTx(1));
 
   // ---------------------------------| then |----------------------------------
   check(observers);
@@ -146,12 +153,10 @@ TEST_F(MstProcessorTest, completedTransactionUsecase) {
   auto observers = initObservers(mst_processor, 0, 1, 0);
 
   // ---------------------------------| when |----------------------------------
-  auto quorum = 2;
-  auto creation_time = 112;
-  mst_processor->propagateTransaction(
-      makeTx("hash", "sign_one", quorum, creation_time));
-  mst_processor->propagateTransaction(
-      makeTx("hash", "sign_two", quorum, creation_time));
+  auto time = iroha::time::now();
+  mst_processor->propagateTransaction(makeTx(1, time));
+  mst_processor->propagateTransaction(makeTx(1, time));
+  mst_processor->propagateTransaction(makeTx(1, time));
 
   // ---------------------------------| then |----------------------------------
   check(observers);
@@ -175,9 +180,8 @@ TEST_F(MstProcessorTest, expiredTransactionUsecase) {
 
   // ---------------------------------| when |----------------------------------
   auto quorum = 1;
-  auto timeBefore = 110;
   mst_processor->propagateTransaction(
-      makeTx("another hash", "sign", quorum, timeBefore));
+      makeTx(1, time_before, makeKey(), quorum));
 
   // ---------------------------------| then |----------------------------------
   check(observers);
@@ -201,14 +205,12 @@ TEST_F(MstProcessorTest, onUpdateFromTransportUsecase) {
   auto observers = initObservers(mst_processor, 1, 1, 0);
 
   auto quorum = 2;
-  auto timeAfter = 112;
-  mst_processor->propagateTransaction(
-      makeTx("hash", "sign_one", quorum, timeAfter));
+  mst_processor->propagateTransaction(makeTx(1, time_after, makeKey(), quorum));
 
   // ---------------------------------| when |----------------------------------
   auto another_peer = makePeer("another", "another_pubkey");
-  auto transported_state = MstState::empty(make_shared<TestCompleter>());
-  transported_state += makeTx("hash", "sign_two", quorum, timeAfter);
+  auto transported_state = MstState::empty(std::make_shared<TestCompleter>());
+  transported_state += makeTx(1, time_after, makeKey(), quorum);
   mst_processor->onNewState(another_peer, transported_state);
 
   // ---------------------------------| then |----------------------------------
@@ -228,13 +230,11 @@ TEST_F(MstProcessorTest, onUpdateFromTransportUsecase) {
 TEST_F(MstProcessorTest, onNewPropagationUsecase) {
   // ---------------------------------| given |---------------------------------
   auto quorum = 2;
-  auto timeAfter = 112;
-  mst_processor->propagateTransaction(
-      makeTx("hash", "sign_one", quorum, timeAfter));
+  mst_processor->propagateTransaction(makeTx(1, time_after, makeKey(), quorum));
   EXPECT_CALL(*transport, sendState(_, _)).Times(2);
 
   // ---------------------------------| when |----------------------------------
-  std::vector<Peer> peers = {makePeer("one", "sign_one"),
-                             makePeer("two", "sign_two")};
+  std::vector<std::shared_ptr<shared_model::interface::Peer>> peers{
+      makePeer("one", "sign_one"), makePeer("two", "sign_two")};
   propagation_subject.get_subscriber().on_next(peers);
 }

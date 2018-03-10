@@ -21,6 +21,8 @@
 #include "module/irohad/torii/torii_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
+#include "backend/protobuf/from_old_model.hpp"
+#include "builders/protobuf/common_objects/proto_signature_builder.hpp"
 #include "builders/protobuf/transaction.hpp"
 #include "framework/test_subscriber.hpp"
 #include "model/transaction_response.hpp"
@@ -43,7 +45,6 @@ class TransactionProcessorTest : public ::testing::Test {
   void SetUp() override {
     pcs = std::make_shared<MockPeerCommunicationService>();
     mp = std::make_shared<MockMstProcessor>();
-
     rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Proposal>>
         prop_notifier;
     rxcpp::subjects::subject<Commit> commit_notifier;
@@ -61,6 +62,15 @@ class TransactionProcessorTest : public ::testing::Test {
     tp = std::make_shared<TransactionProcessorImpl>(pcs, mp);
   }
 
+  auto base_tx() {
+    return shared_model::proto::TransactionBuilder()
+        .creatorAccountId("user@domain")
+        .createdTime(iroha::time::now())
+        .txCounter(1)
+        .setAccountQuorum("user@domain", 2)
+        .quorum(1);
+  }
+
   rxcpp::subjects::subject<iroha::DataType> mst_prepared_notifier;
   rxcpp::subjects::subject<iroha::DataType> mst_expired_notifier;
 
@@ -70,7 +80,7 @@ class TransactionProcessorTest : public ::testing::Test {
 };
 
 /**
- * @given simple tx and permanently true tx validator
+ * @given simple valid tx
  * @when transaction_processor handle it
  * @then it returns STATELESS_VALIDATION_SUCCESS
  */
@@ -78,15 +88,8 @@ TEST_F(TransactionProcessorTest, ValidTransaction) {
   EXPECT_CALL(*mp, propagateTransactionImpl(_)).Times(0);
   EXPECT_CALL(*pcs, propagate_transaction(_)).Times(1);
 
-  auto tx = shared_model::proto::TransactionBuilder()
-                .creatorAccountId("user@domain")
-                .createdTime(iroha::time::now())
-                .txCounter(1)
-                .setAccountQuorum("user@domain", 2)
-                .build()
-                .signAndAddSignature(
-                    shared_model::crypto::DefaultCryptoAlgorithmType::
-                        generateKeypair());
+  auto tx = base_tx().build().signAndAddSignature(
+      shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair());
 
   auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 1);
   wrapper.subscribe([](auto response) {
@@ -94,31 +97,44 @@ TEST_F(TransactionProcessorTest, ValidTransaction) {
     ASSERT_EQ(resp.current_status,
               TransactionResponse::STATELESS_VALIDATION_SUCCESS);
   });
-  tp->transactionHandle(tx);
+  tp->transactionHandle(std::shared_ptr<model::Transaction>(tx.makeOldModel()));
 
   ASSERT_TRUE(wrapper.validate());
 }
 
 /**
- * @given multisig tx and permanently true tx validator
+ * @given valid multisig tx
  * @when transaction_processor handle it
  * @then it goes to mst and after signing goes to PeerCommunicationService
  */
 TEST_F(TransactionProcessorTest, MultisigTransaction) {
+  std::shared_ptr<shared_model::proto::Transaction> after_mst;
+  auto mst_propagate = [&after_mst](
+                           std::shared_ptr<shared_model::interface::Transaction>
+                               tx) {
+    after_mst = std::static_pointer_cast<shared_model::proto::Transaction>(tx);
+    auto make_signature = [&after_mst] {
+      auto keypair =
+          shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair();
+      auto signedBlob = shared_model::crypto::CryptoSigner<>::sign(
+          shared_model::crypto::Blob(after_mst->payload()), keypair);
+      return shared_model::detail::makePolymorphic<
+          shared_model::proto::Signature>(
+          shared_model::proto::SignatureBuilder()
+              .publicKey(keypair.publicKey())
+              .signedData(signedBlob)
+              .build());
+    };
+    after_mst->addSignature(make_signature());
+    after_mst->addSignature(make_signature());
+  };
   EXPECT_CALL(*mp, propagateTransactionImpl(_))
-      .Times(1)
-      .WillRepeatedly(testing::Invoke([](auto &tx) {
-        tx->signatures.emplace_back();
-        tx->signatures.emplace_back();
-      }));
+      .WillOnce(testing::Invoke(mst_propagate));
   EXPECT_CALL(*pcs, propagate_transaction(_)).Times(1);
 
-  EXPECT_CALL(*validation, validate(A<const Transaction &>()))
-      .WillRepeatedly(Return(true));
-
-  auto tx = std::make_shared<Transaction>();
-  // ensure we have bigger quorum than signatures
-  tx->quorum = 2;
+  auto tx = base_tx().quorum(2).build().signAndAddSignature(
+      shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair());
+  std::shared_ptr<model::Transaction> old_tx(tx.makeOldModel());
 
   auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 2);
   wrapper.subscribe([](auto response) {
@@ -126,14 +142,14 @@ TEST_F(TransactionProcessorTest, MultisigTransaction) {
     ASSERT_EQ(resp.current_status,
               TransactionResponse::STATELESS_VALIDATION_SUCCESS);
   });
-  tp->transactionHandle(tx);
-  mst_prepared_notifier.get_subscriber().on_next(tx);
+  tp->transactionHandle(old_tx);
+  mst_prepared_notifier.get_subscriber().on_next(after_mst);
 
   ASSERT_TRUE(wrapper.validate());
 }
 
 /**
- * @given multisig tx and permanently true tx validator
+ * @given valid multisig tx
  * @when transaction_processor handle it
  * @then ensure after expiring it leads to MST_EXPIRED status
  */
@@ -141,12 +157,9 @@ TEST_F(TransactionProcessorTest, MultisigExpired) {
   EXPECT_CALL(*mp, propagateTransactionImpl(_)).Times(1);
   EXPECT_CALL(*pcs, propagate_transaction(_)).Times(0);
 
-  EXPECT_CALL(*validation, validate(A<const Transaction &>()))
-      .WillRepeatedly(Return(true));
-
-  auto tx = std::make_shared<Transaction>();
-  // ensure we have bigger quorum than signatures
-  tx->quorum = 2;
+  auto tx = base_tx().quorum(2).build().signAndAddSignature(
+      shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair());
+  std::shared_ptr<model::Transaction> old_tx(tx.makeOldModel());
 
   auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 2);
   wrapper.subscribe([](auto response) {
@@ -156,8 +169,10 @@ TEST_F(TransactionProcessorTest, MultisigExpired) {
               idx++ == 0 ? TransactionResponse::STATELESS_VALIDATION_SUCCESS
                          : TransactionResponse::MST_EXPIRED);
   });
-  tp->transactionHandle(std::shared_ptr<model::Transaction>(tx.makeOldModel()));
-  mst_expired_notifier.get_subscriber().on_next(tx);
+  tp->transactionHandle(old_tx);
+  mst_expired_notifier.get_subscriber().on_next(
+      std::make_shared<shared_model::proto::Transaction>(
+          shared_model::proto::from_old(*old_tx)));
 
   ASSERT_TRUE(wrapper.validate());
 }

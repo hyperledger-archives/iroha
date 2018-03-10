@@ -20,6 +20,7 @@
 
 #include <functional>
 #include <string>
+#include "interfaces/common_objects/peer.hpp"
 #include "model/types.hpp"
 
 namespace iroha {
@@ -32,22 +33,8 @@ namespace iroha {
      public:
       using TxType = Tx;
       size_t operator()(const TxType &tx) const {
-        auto hash = string_hasher(tx->tx_hash.to_hexstring());
-        return hash;
-      }
-
-     private:
-      std::hash<std::string> string_hasher;
-    };
-
-    /**
-     * Hash calculation factory for signature
-     */
-    class SignatureHasher {
-     public:
-      size_t operator()(const iroha::model::Signature &sign) const {
         auto hash =
-            string_hasher(sign.signature.to_string() + sign.pubkey.to_string());
+            string_hasher(shared_model::crypto::toBinaryString(tx->hash()));
         return hash;
       }
 
@@ -60,8 +47,9 @@ namespace iroha {
      */
     class PeerHasher {
      public:
-      std::size_t operator()(ConstPeer &obj) const {
-        return hasher(obj.address + obj.pubkey.to_string());
+      std::size_t operator()(
+          const std::shared_ptr<shared_model::interface::Peer> &obj) const {
+        return hasher(obj->address() + obj->pubkey().hex());
       }
 
      private:

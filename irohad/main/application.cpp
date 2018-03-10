@@ -84,6 +84,7 @@ void Irohad::init() {
  */
 void Irohad::dropStorage() {
   storage->dropStorage();
+  ordering_service_storage_->resetState();
 }
 
 /**

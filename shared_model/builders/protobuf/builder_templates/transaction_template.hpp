@@ -55,6 +55,7 @@ namespace shared_model {
         CreatorAccountId,
         TxCounter,
         CreatedTime,
+        Quorum,
         TOTAL
       };
 
@@ -65,7 +66,8 @@ namespace shared_model {
       using ProtoCommand = iroha::protocol::Command;
 
       template <int Sp>
-      TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp, SV, BT> &o)
+      TemplateTransactionBuilder(
+          const TemplateTransactionBuilder<Sp, SV, BT> &o)
           : transaction_(o.transaction_),
             stateless_validator_(o.stateless_validator_) {}
 
@@ -116,6 +118,11 @@ namespace shared_model {
         return transform<CreatedTime>([&](auto &tx) {
           tx.mutable_payload()->set_created_time(created_time);
         });
+      }
+
+      auto quorum(interface::types::QuorumType quorum) const {
+        return transform<Quorum>(
+            [&](auto &tx) { tx.mutable_payload()->set_quorum(quorum); });
       }
 
       auto addAssetQuantity(const interface::types::AccountIdType &account_id,

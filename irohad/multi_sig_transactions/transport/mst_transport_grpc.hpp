@@ -41,14 +41,15 @@ namespace iroha {
        * @return grpc::Status (always OK)
        */
       grpc::Status SendState(
-          ::grpc::ServerContext* context,
-          const ::iroha::network::transport::MstState* request,
-          ::google::protobuf::Empty* response) override;
+          ::grpc::ServerContext *context,
+          const ::iroha::network::transport::MstState *request,
+          ::google::protobuf::Empty *response) override;
 
       void subscribe(
           std::shared_ptr<MstTransportNotification> notification) override;
 
-      void sendState(ConstRefPeer to, ConstRefState providing_state) override;
+      void sendState(const shared_model::interface::Peer &to,
+                     ConstRefState providing_state) override;
 
      private:
       std::weak_ptr<MstTransportNotification> subscriber_;

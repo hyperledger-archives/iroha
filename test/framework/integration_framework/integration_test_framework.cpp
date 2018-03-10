@@ -52,6 +52,7 @@ namespace integration_framework {
             .createDomain(default_domain, default_role)
             .createAccount("admin", default_domain, key.publicKey())
             .createAsset("coin", default_domain, 1)
+            .quorum(1)
             .build()
             .signAndAddSignature(key);
     auto genesis_block =

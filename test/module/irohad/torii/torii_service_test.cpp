@@ -226,6 +226,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
                       .txCounter(i + 1)
                       .createdTime(iroha::time::now())
                       .setAccountQuorum(account_id, 2)
+                      .quorum(1)
                       .build()
                       .signAndAddSignature(
                           shared_model::crypto::DefaultCryptoAlgorithmType::
@@ -373,6 +374,7 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
                       .creatorAccountId("a@domain")
                       .setAccountQuorum("a@domain", 2)
                       .createdTime(iroha::time::now())
+                      .quorum(1)
                       .build()
                       .signAndAddSignature(keypair);
 

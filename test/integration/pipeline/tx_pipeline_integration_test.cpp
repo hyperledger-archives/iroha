@@ -199,6 +199,7 @@ TEST(PipelineIntegrationTest, SendTx) {
                 .creatorAccountId(kUser)
                 .txCounter(1)
                 .addAssetQuantity(kUser, kAsset, "1.0")
+                .quorum(1)
                 .build()
                 .signAndAddSignature(
                     shared_model::crypto::DefaultCryptoAlgorithmType::

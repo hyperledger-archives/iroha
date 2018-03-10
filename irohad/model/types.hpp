@@ -19,22 +19,25 @@
 #define IROHA_MODEL_TYPES_HPP
 
 #include <memory>
-#include "model/peer.hpp"
-#include "model/transaction.hpp"
-#include "model/transaction_response.hpp"
+#include "common/wrapper.hpp"
+#include "interfaces/common_objects/peer.hpp"
+#include "interfaces/common_objects/types.hpp"
+#include "interfaces/transaction.hpp"
+#include "interfaces/transaction_responses/tx_response.hpp"
 
 namespace iroha {
-  using TxType = model::Transaction;
+  using TxType = shared_model::interface::Transaction;
   using SharedTx = std::shared_ptr<TxType>;
-  using ConstPeer = const model::Peer;
-  using TimeType = model::Transaction::TimeType;
-  using TxResponse = std::shared_ptr<model::TransactionResponse>;
+  using ConstPeer = const shared_model::interface::Peer;
+  using TimeType = shared_model::interface::types::TimestampType;
+  using TxResponse =
+      std::shared_ptr<shared_model::interface::TransactionResponse>;
 
   template <typename T>
   using ConstRefT = const T &;
 
   using ConstRefTransaction = ConstRefT<SharedTx>;
-  using ConstRefPeer = ConstRefT<model::Peer>;
+  using ConstRefPeer = ConstRefT<shared_model::interface::Peer>;
   using ConstRefTime = ConstRefT<TimeType>;
 }  // namespace iroha
 #endif  // IROHA_MODEL_TYPES_HPP

@@ -19,7 +19,8 @@
 #define IROHA_MST_PROPAGATION_STRATEGY_HPP
 
 #include <rxcpp/rx.hpp>
-#include "model/peer.hpp"
+#include <vector>
+#include "interfaces/common_objects/peer.hpp"
 
 namespace iroha {
 
@@ -28,7 +29,8 @@ namespace iroha {
    */
   class PropagationStrategy {
    public:
-    using PropagationData = std::vector<iroha::model::Peer>;
+    using PropagationData =
+        std::vector<std::shared_ptr<shared_model::interface::Peer>>;
 
     /**
      * Provides observable that will be emit new results

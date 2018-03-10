@@ -37,13 +37,15 @@ namespace iroha {
        * Add transaction to the system for processing
        * @param transaction - transaction for processing
        */
-      virtual void transactionHandle(ConstRefTransaction transaction) = 0;
+      virtual void transactionHandle(
+          std::shared_ptr<model::Transaction> transaction) = 0;
 
       /**
        * Subscribers will be notified with transaction status
        * @return observable for subscribing
        */
-      virtual rxcpp::observable<TxResponse> transactionNotifier() = 0;
+      virtual rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
+      transactionNotifier() = 0;
 
       virtual ~TransactionProcessor() = default;
     };

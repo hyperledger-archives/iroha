@@ -24,8 +24,9 @@ namespace iroha {
     log_ = logger::log("MstStorage");
   }
 
-  MstState MstStorage::apply(const model::Peer &target_peer,
-                             const MstState &new_state) {
+  MstState MstStorage::apply(
+      const std::shared_ptr<shared_model::interface::Peer> &target_peer,
+      const MstState &new_state) {
     std::lock_guard<std::mutex> lock{this->mutex_};
     return applyImpl(target_peer, new_state);
   }
@@ -40,8 +41,9 @@ namespace iroha {
     return getExpiredTransactionsImpl(current_time);
   }
 
-  MstState MstStorage::getDiffState(const model::Peer &target_peer,
-                                    const TimeType &current_time) {
+  MstState MstStorage::getDiffState(
+      const std::shared_ptr<shared_model::interface::Peer> &target_peer,
+      const TimeType &current_time) {
     std::lock_guard<std::mutex> lock{this->mutex_};
     return getDiffStateImpl(target_peer, current_time);
   }

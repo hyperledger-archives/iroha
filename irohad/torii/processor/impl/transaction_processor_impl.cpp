@@ -24,6 +24,8 @@
 
 #include "backend/protobuf/from_old_model.hpp"
 #include "backend/protobuf/transaction.hpp"
+#include "interfaces/iroha_internal/block.hpp"
+#include "interfaces/iroha_internal/proposal.hpp"
 #include "model/sha3_hash.hpp"
 #include "model/transaction_response.hpp"
 
@@ -46,7 +48,8 @@ namespace iroha {
             std::unique_ptr<model::Proposal>(model_proposal->makeOldModel());
         for (const auto &tx : proposal->transactions) {
           proposal_set_.insert(hash(tx).to_string());
-          notify(hash(tx).to_string(), Status::STATELESS_VALIDATION_SUCCESS);
+          this->notify(hash(tx).to_string(),
+                       Status::STATELESS_VALIDATION_SUCCESS);
         }
       });
 
@@ -56,12 +59,20 @@ namespace iroha {
             // on next..
             [this](auto &&block) {
               const auto in_proposal = [this](const auto &tx) {
-                return this->proposal_set_.count(hash(tx).to_string());
+                return this->proposal_set_.count(
+                    shared_model::crypto::toBinaryString(
+                        static_cast<const shared_model::proto::Transaction *>(
+                            tx.operator->())
+                            ->hash()));
               };
               boost::for_each(
-                  block.transactions | boost::adaptors::filtered(in_proposal),
+                  block->transactions()
+                      | boost::adaptors::filtered(in_proposal),
                   [this](auto &&t) {
-                    const auto &h = hash(t).to_string();
+                    const auto &h = shared_model::crypto::toBinaryString(
+                        static_cast<const shared_model::proto::Transaction *>(
+                            t.operator->())
+                            ->hash());
                     this->proposal_set_.erase(h);
                     this->candidate_set_.insert(h);
                     this->notify(h, Status::STATEFUL_VALIDATION_SUCCESS);
@@ -82,31 +93,40 @@ namespace iroha {
 
       mst_processor_->onPreparedTransactions().subscribe([this](auto &&tx) {
         log_->info("MST tx prepared");
-        return this->transactionHandle(tx);
+        return this->transactionHandle(
+            std::shared_ptr<iroha::model::Transaction>(tx->makeOldModel()));
       });
       mst_processor_->onExpiredTransactions().subscribe([this](auto &&tx) {
         log_->info("MST tx expired");
-        return this->notify(hash(*tx).to_string(), Status::MST_EXPIRED);
+        return this->notify(
+            shared_model::crypto::toBinaryString(
+                static_cast<shared_model::proto::Transaction &>(*tx).hash()),
+            Status::MST_EXPIRED);
       });
     }
 
     void TransactionProcessorImpl::transactionHandle(
-        ConstRefTransaction transaction) {
+        std::shared_ptr<model::Transaction> transaction) {
       log_->info("handle transaction");
       const auto &h = hash(*transaction).to_string();
 
       if (transaction->signatures.size() < transaction->quorum) {
         log_->info("waiting for quorum signatures");
-        mst_processor_->propagateTransaction(transaction);
+        mst_processor_->propagateTransaction(
+            std::make_shared<shared_model::proto::Transaction>(
+                shared_model::proto::from_old(*transaction)));
       } else {
         log_->info("propagating tx");
-        pcs_->propagate_transaction(transaction);
+        pcs_->propagate_transaction(
+            std::make_shared<shared_model::proto::Transaction>(
+                shared_model::proto::from_old(*transaction)));
       }
+
       log_->info("stateless validated");
       notify(h, Status::STATELESS_VALIDATION_SUCCESS);
     }
 
-    rxcpp::observable<TxResponse>
+    rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
     TransactionProcessorImpl::transactionNotifier() {
       return notifier_.get_observable();
     }

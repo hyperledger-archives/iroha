@@ -19,8 +19,8 @@
 #define IROHA_MST_STORAGE_HPP
 
 #include <mutex>
+#include "interfaces/common_objects/peer.hpp"
 #include "logger/logger.hpp"
-#include "model/peer.hpp"
 #include "multi_sig_transactions/mst_types.hpp"
 #include "multi_sig_transactions/state/mst_state.hpp"
 
@@ -42,7 +42,9 @@ namespace iroha {
      * @return State with completed transaction
      * General note: implementation of method covered by lock
      */
-    MstState apply(const model::Peer &target_peer, const MstState &new_state);
+    MstState apply(
+        const std::shared_ptr<shared_model::interface::Peer> &target_peer,
+        const MstState &new_state);
 
     /**
      * Provide updating state of current peer with new transaction
@@ -65,7 +67,9 @@ namespace iroha {
      * @return difference between own and target state
      * General note: implementation of method covered by lock
      */
-    MstState getDiffState(const model::Peer &target_peer, const TimeType &current_time);
+    MstState getDiffState(
+        const std::shared_ptr<shared_model::interface::Peer> &target_peer,
+        const TimeType &current_time);
 
     /**
      * Return diff between own and new state
@@ -86,7 +90,9 @@ namespace iroha {
     MstStorage();
 
    private:
-    virtual auto applyImpl(const model::Peer &target_peer, const MstState &new_state)
+    virtual auto applyImpl(
+        const std::shared_ptr<shared_model::interface::Peer> target_peer,
+        const MstState &new_state)
         -> decltype(apply(target_peer, new_state)) = 0;
 
     virtual auto updateOwnStateImpl(const DataType &tx)
@@ -95,8 +101,9 @@ namespace iroha {
     virtual auto getExpiredTransactionsImpl(const TimeType &current_time)
         -> decltype(getExpiredTransactions(current_time)) = 0;
 
-    virtual auto getDiffStateImpl(const model::Peer &target_peer,
-                                  const TimeType &current_time)
+    virtual auto getDiffStateImpl(
+        const std::shared_ptr<shared_model::interface::Peer> target_peer,
+        const TimeType &current_time)
         -> decltype(getDiffState(target_peer, current_time)) = 0;
 
     virtual auto whatsNewImpl(ConstRefState new_state) const

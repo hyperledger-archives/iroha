@@ -116,6 +116,9 @@ class ClientServerTest : public testing::Test {
   std::shared_ptr<MockPeerCommunicationService> pcsMock;
   std::shared_ptr<iroha::MockMstProcessor> mst;
 
+  rxcpp::subjects::subject<iroha::DataType> mst_prepared_notifier;
+  rxcpp::subjects::subject<iroha::DataType> mst_expired_notifier;
+
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
 };
@@ -129,6 +132,7 @@ TEST_F(ClientServerTest, SendTxWhenValid) {
                     .txCounter(1)
                     .createdTime(iroha::time::now())
                     .setAccountQuorum("some@account", 2)
+                    .quorum(1)
                     .build()
                     .signAndAddSignature(
                         shared_model::crypto::DefaultCryptoAlgorithmType::
