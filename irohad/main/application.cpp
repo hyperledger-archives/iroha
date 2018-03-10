@@ -16,6 +16,7 @@
  */
 
 #include "main/application.hpp"
+#include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
 
 using namespace iroha;
 using namespace iroha::ametsuchi;
@@ -58,30 +59,10 @@ Irohad::Irohad(const std::string &block_store_dir,
   initStorage();
 }
 
-Irohad::~Irohad() {
-  // Shutting down services used by internal server
-  if (internal_server) {
-    internal_server->Shutdown();
-  }
-  // Shutting down torii server
-  if (torii_server) {
-    torii_server->shutdown();
-  }
-  // Waiting until internal server thread dies
-  if (internal_thread.joinable()) {
-    internal_thread.join();
-  }
-  // Waiting until torii server thread dies
-  if (server_thread.joinable()) {
-    server_thread.join();
-  }
-}
-
 /**
  * Initializing iroha daemon
  */
 void Irohad::init() {
-  initProtoFactories();
   initPeerQuery();
   initCryptoProvider();
   initValidators();
@@ -114,22 +95,20 @@ void Irohad::initStorage() {
       [&](expected::Value<std::shared_ptr<ametsuchi::StorageImpl>> &_storage) {
         storage = _storage.value;
       },
-      [](expected::Error<std::string> &error) {
-        throw std::runtime_error(error.error);
-      });
+      [&](expected::Error<std::string> &error) { log_->error(error.error); });
+
+  PostgresOrderingServicePersistentState::create(pg_conn_).match(
+      [&](expected::Value<
+          std::shared_ptr<ametsuchi::PostgresOrderingServicePersistentState>>
+              &_storage) { ordering_service_storage_ = _storage.value; },
+      [&](expected::Error<std::string> &error) { log_->error(error.error); });
 
   log_->info("[Init] => storage", logger::logBool(storage));
 }
 
-/**
- * Creating transaction, query and query response factories
- */
-void Irohad::initProtoFactories() {
-  pb_tx_factory = std::make_shared<PbTransactionFactory>();
-  pb_query_factory = std::make_shared<PbQueryFactory>();
-  pb_query_response_factory = std::make_shared<PbQueryResponseFactory>();
-
-  log_->info("[Init] => converters");
+void Irohad::resetOrderingService() {
+  if (not ordering_service_storage_->resetState())
+    log_->error("cannot reset ordering service storage");
 }
 
 /**
@@ -154,8 +133,6 @@ void Irohad::initCryptoProvider() {
  * Initializing validators
  */
 void Irohad::initValidators() {
-  stateless_validator =
-      std::make_shared<StatelessValidatorImpl>(crypto_verifier);
   stateful_validator = std::make_shared<StatefulValidatorImpl>();
   chain_validator = std::make_shared<ChainValidatorImpl>();
 
@@ -166,8 +143,8 @@ void Irohad::initValidators() {
  * Initializing ordering gate
  */
 void Irohad::initOrderingGate() {
-  ordering_gate =
-      ordering_init.initOrderingGate(wsv, max_proposal_size_, proposal_delay_);
+  ordering_gate = ordering_init.initOrderingGate(
+      wsv, max_proposal_size_, proposal_delay_, ordering_service_storage_);
   log_->info("[Init] => init ordering gate - [{}]",
              logger::logBool(ordering_gate));
 }
@@ -249,11 +226,11 @@ void Irohad::initMstProcessor() {
  * Initializing transaction command service
  */
 void Irohad::initTransactionCommandService() {
-  auto tx_processor = std::make_shared<TransactionProcessorImpl>(
-      pcs, stateless_validator, mst_processor);
+  auto tx_processor =
+      std::make_shared<TransactionProcessorImpl>(pcs, mst_processor);
 
-  command_service = std::make_unique<::torii::CommandService>(
-      pb_tx_factory, tx_processor, storage, proposal_delay_);
+  command_service = std::make_shared<::torii::CommandService>(
+      tx_processor, storage->getBlockQuery(), proposal_delay_);
 
   log_->info("[Init] => command service");
 }
@@ -265,11 +242,10 @@ void Irohad::initQueryService() {
   auto query_processing_factory = std::make_unique<QueryProcessingFactory>(
       storage->getWsvQuery(), storage->getBlockQuery());
 
-  auto query_processor = std::make_shared<QueryProcessorImpl>(
-      std::move(query_processing_factory), stateless_validator);
+  auto query_processor =
+      std::make_shared<QueryProcessorImpl>(std::move(query_processing_factory));
 
-  query_service = std::make_unique<::torii::QueryService>(
-      pb_query_factory, pb_query_response_factory, query_processor);
+  query_service = std::make_shared<::torii::QueryService>(query_processor);
 
   log_->info("[Init] => query service");
 }
@@ -278,31 +254,32 @@ void Irohad::initQueryService() {
  * Run iroha daemon
  */
 void Irohad::run() {
+  using iroha::expected::operator|;
+
   // Initializing torii server
   std::string ip = "0.0.0.0";
   torii_server =
       std::make_unique<ServerRunner>(ip + ":" + std::to_string(torii_port_));
 
   // Initializing internal server
-  grpc::ServerBuilder builder;
-  int port = 0;
-  builder.AddListeningPort(ip + ":" + std::to_string(internal_port_),
-                           grpc::InsecureServerCredentials(),
-                           &port);
-  builder.RegisterService(ordering_init.ordering_gate_transport.get());
-  builder.RegisterService(ordering_init.ordering_service_transport.get());
-  builder.RegisterService(yac_init.consensus_network.get());
-  builder.RegisterService(loader_init.service.get());
-  // Run internal server
-  internal_server = builder.BuildAndStart();
+  internal_server =
+      std::make_unique<ServerRunner>(ip + ":" + std::to_string(internal_port_));
+
   // Run torii server
-  server_thread = std::thread([this] {
-    torii_server->append(std::move(command_service))
-        .append(std::move(query_service))
-        .run();
-  });
-  log_->info("===> iroha initialized");
-  // Wait until servers shutdown
-  torii_server->waitForServersReady();
-  internal_server->Wait();
+  (torii_server->append(command_service).append(query_service).run() |
+   [&](const auto &port) {
+     log_->info("Torii server bound on port {}", port);
+     // Run internal server
+     return internal_server->append(ordering_init.ordering_gate_transport)
+         .append(ordering_init.ordering_service_transport)
+         .append(yac_init.consensus_network)
+         .append(loader_init.service)
+         .run();
+   })
+      .match(
+          [&](const auto &port) {
+            log_->info("Internal server bound on port {}", port.value);
+            log_->info("===> iroha initialized");
+          },
+          [&](const expected::Error<std::string> &e) { log_->error(e.error); });
 }

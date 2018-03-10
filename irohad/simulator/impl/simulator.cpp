@@ -16,6 +16,7 @@
  */
 
 #include "simulator/impl/simulator.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include "model/sha3_hash.hpp"
 
 namespace iroha {
@@ -32,12 +33,21 @@ namespace iroha {
           block_queries_(std::move(blockQuery)),
           crypto_provider_(std::move(crypto_provider)) {
       log_ = logger::log("Simulator");
-      ordering_gate->on_proposal().subscribe(
-          [this](auto proposal) { this->process_proposal(proposal); });
+      ordering_gate->on_proposal().subscribe(proposal_subscription_,
+                                             [this](model::Proposal proposal) {
+                                               this->process_proposal(proposal);
+                                             });
 
-      notifier_.get_observable().subscribe([this](auto verified_proposal) {
-        this->process_verified_proposal(verified_proposal);
-      });
+      notifier_.get_observable().subscribe(
+          verified_proposal_subscription_,
+          [this](model::Proposal verified_proposal) {
+            this->process_verified_proposal(verified_proposal);
+          });
+    }
+
+    Simulator::~Simulator() {
+      proposal_subscription_.unsubscribe();
+      verified_proposal_subscription_.unsubscribe();
     }
 
     rxcpp::observable<model::Proposal> Simulator::on_verified_proposal() {
@@ -48,7 +58,10 @@ namespace iroha {
       log_->info("process proposal");
       // Get last block from local ledger
       block_queries_->getTopBlocks(1).as_blocking().subscribe(
-          [this](auto block) { last_block = block; });
+          [this](auto block) {
+            last_block =
+                *std::unique_ptr<iroha::model::Block>(block->makeOldModel());
+          });
       if (not last_block.has_value()) {
         log_->warn("Could not fetch last block");
         return;
@@ -63,8 +76,13 @@ namespace iroha {
       temporaryStorageResult.match(
           [&](expected::Value<std::unique_ptr<ametsuchi::TemporaryWsv>>
                   &temporaryStorage) {
-            notifier_.get_subscriber().on_next(
-                validator_->validate(proposal, *(temporaryStorage.value)));
+            auto shm_proposal = shared_model::proto::Proposal(
+                shared_model::proto::from_old(proposal));
+            auto validated_proposal =
+                validator_->validate(shm_proposal, *temporaryStorage.value);
+            std::unique_ptr<model::Proposal> old_proposal(
+                validated_proposal->makeOldModel());
+            notifier_.get_subscriber().on_next(*old_proposal);
           },
           [&](expected::Error<std::string> &error) {
             log_->error(error.error);

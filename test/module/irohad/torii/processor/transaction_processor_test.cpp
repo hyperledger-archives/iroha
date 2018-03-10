@@ -21,6 +21,7 @@
 #include "module/irohad/torii/torii_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
 
+#include "builders/protobuf/transaction.hpp"
 #include "framework/test_subscriber.hpp"
 #include "model/transaction_response.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
@@ -41,10 +42,10 @@ class TransactionProcessorTest : public ::testing::Test {
  public:
   void SetUp() override {
     pcs = std::make_shared<MockPeerCommunicationService>();
-    validation = std::make_shared<MockStatelessValidator>();
     mp = std::make_shared<MockMstProcessor>();
 
-    rxcpp::subjects::subject<Proposal> prop_notifier;
+    rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Proposal>>
+        prop_notifier;
     rxcpp::subjects::subject<Commit> commit_notifier;
 
     EXPECT_CALL(*pcs, on_proposal())
@@ -57,14 +58,13 @@ class TransactionProcessorTest : public ::testing::Test {
     EXPECT_CALL(*mp, onExpiredTransactionsImpl())
         .WillRepeatedly(Return(mst_expired_notifier.get_observable()));
 
-    tp = std::make_shared<TransactionProcessorImpl>(pcs, validation, mp);
+    tp = std::make_shared<TransactionProcessorImpl>(pcs, mp);
   }
 
   rxcpp::subjects::subject<iroha::DataType> mst_prepared_notifier;
   rxcpp::subjects::subject<iroha::DataType> mst_expired_notifier;
 
   std::shared_ptr<MockPeerCommunicationService> pcs;
-  std::shared_ptr<MockStatelessValidator> validation;
   std::shared_ptr<TransactionProcessorImpl> tp;
   std::shared_ptr<MockMstProcessor> mp;
 };
@@ -78,43 +78,21 @@ TEST_F(TransactionProcessorTest, ValidTransaction) {
   EXPECT_CALL(*mp, propagateTransactionImpl(_)).Times(0);
   EXPECT_CALL(*pcs, propagate_transaction(_)).Times(1);
 
-  EXPECT_CALL(*validation, validate(A<const Transaction &>()))
-      .WillRepeatedly(Return(true));
-
-  auto tx = std::make_shared<Transaction>();
-  tx->signatures.emplace_back();
+  auto tx = shared_model::proto::TransactionBuilder()
+                .creatorAccountId("user@domain")
+                .createdTime(iroha::time::now())
+                .txCounter(1)
+                .setAccountQuorum("user@domain", 2)
+                .build()
+                .signAndAddSignature(
+                    shared_model::crypto::DefaultCryptoAlgorithmType::
+                        generateKeypair());
 
   auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 1);
   wrapper.subscribe([](auto response) {
     auto resp = static_cast<TransactionResponse &>(*response);
     ASSERT_EQ(resp.current_status,
               TransactionResponse::STATELESS_VALIDATION_SUCCESS);
-  });
-  tp->transactionHandle(tx);
-
-  ASSERT_TRUE(wrapper.validate());
-}
-
-/**
- * @given simple tx and permanently false tx validator
- * @when transaction_processor handle it
- * @then it returns STATELESS_VALIDATION_FAILED
- */
-TEST_F(TransactionProcessorTest, InvalidTransaction) {
-  EXPECT_CALL(*mp, propagateTransactionImpl(_)).Times(0);
-  EXPECT_CALL(*pcs, propagate_transaction(_)).Times(0);
-
-  EXPECT_CALL(*validation, validate(A<const Transaction &>()))
-      .WillRepeatedly(Return(false));
-
-  auto tx = std::make_shared<Transaction>();
-  tx->signatures.emplace_back();
-
-  auto wrapper = make_test_subscriber<CallExact>(tp->transactionNotifier(), 1);
-  wrapper.subscribe([](auto response) {
-    auto resp = static_cast<TransactionResponse &>(*response);
-    ASSERT_EQ(resp.current_status,
-              TransactionResponse::STATELESS_VALIDATION_FAILED);
   });
   tp->transactionHandle(tx);
 
@@ -178,7 +156,7 @@ TEST_F(TransactionProcessorTest, MultisigExpired) {
               idx++ == 0 ? TransactionResponse::STATELESS_VALIDATION_SUCCESS
                          : TransactionResponse::MST_EXPIRED);
   });
-  tp->transactionHandle(tx);
+  tp->transactionHandle(std::shared_ptr<model::Transaction>(tx.makeOldModel()));
   mst_expired_notifier.get_subscriber().on_next(tx);
 
   ASSERT_TRUE(wrapper.validate());

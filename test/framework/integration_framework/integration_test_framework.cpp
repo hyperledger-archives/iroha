@@ -76,6 +76,7 @@ namespace integration_framework {
     log_->info("created pipeline");
     // iroha_instance_->clearLedger();
     // log_->info("cleared ledger");
+    iroha_instance_->instance_->resetOrderingService();
     std::shared_ptr<iroha::model::Block> old_block(block.makeOldModel());
     iroha_instance_->makeGenesis(*old_block);
     log_->info("added genesis block");
@@ -86,8 +87,7 @@ namespace integration_framework {
         ->getPeerCommunicationService()
         ->on_proposal()
         .subscribe([this](auto proposal) {
-          proposal_queue_.push(
-              std::make_shared<iroha::model::Proposal>(proposal));
+          proposal_queue_.push(proposal);
           log_->info("proposal");
           queue_cond.notify_all();
         });
@@ -97,8 +97,7 @@ namespace integration_framework {
         ->on_commit()
         .subscribe([this](auto commit_observable) {
           commit_observable.subscribe([this](auto committed_block) {
-            block_queue_.push(
-                std::make_shared<iroha::model::Block>(committed_block));
+            block_queue_.push(committed_block);
             log_->info("block");
             queue_cond.notify_all();
           });

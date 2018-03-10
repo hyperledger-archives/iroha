@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-
+#include "torii/processor/transaction_processor_impl.hpp"
 #include <iostream>
 #include <utility>
+
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 
-#include "endpoint.pb.h"
+#include "backend/protobuf/from_old_model.hpp"
+#include "backend/protobuf/transaction.hpp"
 #include "model/sha3_hash.hpp"
 #include "model/transaction_response.hpp"
-#include "torii/processor/transaction_processor_impl.hpp"
 
 namespace iroha {
   namespace torii {
@@ -32,28 +33,25 @@ namespace iroha {
     using model::TransactionResponse;
     using Status = model::TransactionResponse::Status;
     using network::PeerCommunicationService;
-    using validation::StatelessValidator;
 
     TransactionProcessorImpl::TransactionProcessorImpl(
         std::shared_ptr<PeerCommunicationService> pcs,
-        std::shared_ptr<StatelessValidator> validator,
         std::shared_ptr<MstProcessor> mst_processor)
-        : pcs_(std::move(pcs)),
-          validator_(std::move(validator)),
-          mst_processor_(std::move(mst_processor)) {
+        : pcs_(std::move(pcs)), mst_processor_(std::move(mst_processor)) {
       log_ = logger::log("TxProcessor");
 
       // insert all txs from proposal to proposal set
-      pcs_->on_proposal().subscribe([this](model::Proposal proposal) {
-        for (const auto &tx : proposal.transactions) {
+      pcs_->on_proposal().subscribe([this](auto model_proposal) {
+        auto proposal =
+            std::unique_ptr<model::Proposal>(model_proposal->makeOldModel());
+        for (const auto &tx : proposal->transactions) {
           proposal_set_.insert(hash(tx).to_string());
           notify(hash(tx).to_string(), Status::STATELESS_VALIDATION_SUCCESS);
         }
       });
 
       // move commited txs from proposal to candidate map
-      pcs_->on_commit().subscribe([this](
-                                      rxcpp::observable<model::Block> blocks) {
+      pcs_->on_commit().subscribe([this](Commit blocks) {
         blocks.subscribe(
             // on next..
             [this](auto &&block) {
@@ -97,12 +95,6 @@ namespace iroha {
       log_->info("handle transaction");
       const auto &h = hash(*transaction).to_string();
 
-      if (!validator_->validate(*transaction)) {
-        log_->info("stateless validation failed");
-        notify(h, Status::STATELESS_VALIDATION_FAILED);
-        return;
-      }
-
       if (transaction->signatures.size() < transaction->quorum) {
         log_->info("waiting for quorum signatures");
         mst_processor_->propagateTransaction(transaction);
@@ -110,6 +102,7 @@ namespace iroha {
         log_->info("propagating tx");
         pcs_->propagate_transaction(transaction);
       }
+      log_->info("stateless validated");
       notify(h, Status::STATELESS_VALIDATION_SUCCESS);
     }
 

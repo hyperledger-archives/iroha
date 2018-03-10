@@ -38,7 +38,6 @@ namespace iroha {
        */
       TransactionProcessorImpl(
           std::shared_ptr<network::PeerCommunicationService> pcs,
-          std::shared_ptr<validation::StatelessValidator> validator,
           std::shared_ptr<MstProcessor> mst_processor);
 
       void transactionHandle(ConstRefTransaction transaction) override;
@@ -50,10 +49,7 @@ namespace iroha {
       std::shared_ptr<network::PeerCommunicationService> pcs_;
 
       // processing
-      std::shared_ptr<validation::StatelessValidator> validator_;
-
       std::shared_ptr<MstProcessor> mst_processor_;
-
       std::unordered_set<std::string> proposal_set_;
       std::unordered_set<std::string> candidate_set_;
 

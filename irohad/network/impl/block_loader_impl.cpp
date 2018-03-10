@@ -15,14 +15,13 @@
  * limitations under the License.
  */
 
-#include "network/impl/block_loader_impl.hpp"
-
-#include <algorithm>
-
 #include <grpc++/create_channel.h>
+#include <algorithm>
 
 #include "backend/protobuf/block.hpp"
 #include "backend/protobuf/from_old_model.hpp"
+#include "interfaces/common_objects/peer.hpp"
+#include "network/impl/block_loader_impl.hpp"
 
 using iroha::Wrapper;
 using iroha::makeWrapper;
@@ -55,7 +54,10 @@ rxcpp::observable<Wrapper<Block>> BlockLoaderImpl::retrieveBlocks(
     block_query_->getTopBlocks(1)
         .subscribe_on(rxcpp::observe_on_new_thread())
         .as_blocking()
-        .subscribe([&top_block](auto block) { top_block = block; });
+        .subscribe([&top_block](auto block) {
+          top_block =
+              *std::unique_ptr<iroha::model::Block>(block->makeOldModel());
+        });
     if (not top_block.has_value()) {
       log_->error(kTopBlockRetrieveFail);
       subscriber.on_completed();
@@ -94,7 +96,7 @@ rxcpp::observable<Wrapper<Block>> BlockLoaderImpl::retrieveBlocks(
 }
 
 nonstd::optional<Wrapper<Block>> BlockLoaderImpl::retrieveBlock(
-    const PublicKey &peer_pubkey, const Block::HashType &block_hash) {
+    const PublicKey &peer_pubkey, const types::HashType &block_hash) {
   auto peer = findPeer(peer_pubkey);
   if (not peer.has_value()) {
     log_->error(kPeerNotFound);
@@ -128,7 +130,7 @@ nonstd::optional<Wrapper<Block>> BlockLoaderImpl::retrieveBlock(
 nonstd::optional<iroha::model::Peer> BlockLoaderImpl::findPeer(
     const PublicKey &pubkey) {
   auto peers = peer_query_->getLedgerPeers();
-  if (not peers.has_value()) {
+  if (not peers) {
     log_->error(kPeerRetrieveFail);
     return nonstd::nullopt;
   }
@@ -136,18 +138,13 @@ nonstd::optional<iroha::model::Peer> BlockLoaderImpl::findPeer(
   auto &blob = pubkey.blob();
   auto it = std::find_if(
       peers.value().begin(), peers.value().end(), [&blob](const auto &peer) {
-        return peer.pubkey.size() == blob.size()
-            and std::equal(peer.pubkey.begin(),
-                           peer.pubkey.end(),
-                           blob.begin(),
-                           blob.end());
+        return peer->pubkey().blob() == blob;
       });
   if (it == peers.value().end()) {
     log_->error(kPeerFindFail);
     return nonstd::nullopt;
   }
-
-  return *it;
+  return *std::unique_ptr<iroha::model::Peer>((*it)->makeOldModel());
 }
 
 proto::Loader::Stub &BlockLoaderImpl::getPeerStub(

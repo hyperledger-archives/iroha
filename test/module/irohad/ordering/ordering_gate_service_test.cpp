@@ -15,13 +15,16 @@
  * limitations under the License.
  */
 
+#include "backend/protobuf/common_objects/peer.hpp"
+#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 #include "framework/test_subscriber.hpp"
+#include "mock_ordering_service_persistent_state.hpp"
+#include "model/asset.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
-#include "model/asset.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::model;
@@ -30,6 +33,8 @@ using namespace framework::test_subscriber;
 using namespace iroha::ametsuchi;
 using namespace std::chrono_literals;
 using ::testing::Return;
+
+using wPeer = std::shared_ptr<shared_model::interface::Peer>;
 
 // TODO: refactor services to allow dynamic port binding IR-741
 class OrderingGateServiceTest : public ::testing::Test {
@@ -44,7 +49,10 @@ class OrderingGateServiceTest : public ::testing::Test {
     counter = 2;
   }
 
-  void SetUp() override {}
+  void SetUp() override {
+    fake_persistent_state =
+        std::make_shared<MockOrderingServicePersistentState>();
+  }
 
   void start() {
     std::mutex mtx;
@@ -91,7 +99,7 @@ class OrderingGateServiceTest : public ::testing::Test {
   void send_transaction(size_t i) {
     auto tx = std::make_shared<Transaction>();
     tx->tx_counter = i;
-    gate->propagate_transaction(tx);
+    gate->propagateTransaction(tx);
     // otherwise tx may come unordered
     std::this_thread::sleep_for(20ms);
   }
@@ -110,19 +118,48 @@ class OrderingGateServiceTest : public ::testing::Test {
   Peer peer;
   std::shared_ptr<OrderingGateTransportGrpc> gate_transport;
   std::shared_ptr<OrderingServiceTransportGrpc> service_transport;
+  std::shared_ptr<MockOrderingServicePersistentState> fake_persistent_state;
 };
 
+/**
+ * @given ordering service
+ * @when a bunch of transaction has arrived
+ * @then proposal is sent
+ */
 TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   // 8 transaction -> proposal -> 2 transaction -> proposal
 
   std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
+
+  shared_model::proto::PeerBuilder builder;
+
+  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
+  auto tmp = builder.address(peer.address).pubkey(key).build();
+
+  wPeer w_peer(tmp.copy());
+
   EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+      .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
+
   const size_t max_proposal = 100;
   const size_t commit_delay = 400;
 
-  service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport);
+  EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
+      .Times(1)
+      .WillOnce(Return(boost::optional<size_t>(2)));
+
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(3))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(4))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  service = std::make_shared<OrderingServiceImpl>(wsv,
+                                                  max_proposal,
+                                                  commit_delay,
+                                                  service_transport,
+                                                  fake_persistent_state);
   service_transport->subscribe(service);
 
   start();
@@ -153,18 +190,45 @@ TEST_F(OrderingGateServiceTest, SplittingBunchTransactions) {
   }
 }
 
+/**
+ * @given ordering service
+ * @when a bunch of transaction has arrived
+ * @then split transactions on to two proposal
+ */
 TEST_F(OrderingGateServiceTest, ProposalsReceivedWhenProposalSize) {
   // commits on the fulfilling proposal queue
   // 10 transaction -> proposal with 5 -> proposal with 5
 
   std::shared_ptr<MockPeerQuery> wsv = std::make_shared<MockPeerQuery>();
+
+  shared_model::proto::PeerBuilder builder;
+
+  auto key = shared_model::crypto::PublicKey(peer.pubkey.to_string());
+  auto tmp = builder.address(peer.address).pubkey(key).build();
+
+  wPeer w_peer(tmp.copy());
   EXPECT_CALL(*wsv, getLedgerPeers())
-      .WillRepeatedly(Return(std::vector<Peer>{peer}));
+      .WillRepeatedly(Return(std::vector<wPeer>{w_peer}));
+
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 
-  service = std::make_shared<OrderingServiceImpl>(
-      wsv, max_proposal, commit_delay, service_transport);
+  EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
+      .Times(1)
+      .WillOnce(Return(boost::optional<size_t>(2)));
+
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(3))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(4))
+      .Times(1)
+      .WillOnce(Return(true));
+
+  service = std::make_shared<OrderingServiceImpl>(wsv,
+                                                  max_proposal,
+                                                  commit_delay,
+                                                  service_transport,
+                                                  fake_persistent_state);
   service_transport->subscribe(service);
 
   start();

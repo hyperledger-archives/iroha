@@ -26,6 +26,7 @@
 #include "model/generators/query_generator.hpp"
 #include "responses.pb.h"
 
+using namespace std::chrono_literals;
 using namespace iroha::model::generators;
 using namespace iroha::model::converters;
 
@@ -45,21 +46,23 @@ class TxPipelineIntegrationTest : public TxPipelineIntegrationTestFixture {
     manager = std::make_shared<iroha::KeysManagerImpl>("node0");
     auto keypair = manager->loadKeys().value();
 
-    irohad = std::make_shared<TestIrohad>(
-        block_store_path,
-        pgopt_,
-        0,
-        10001,
-        10,
-        5000ms,
-        5000ms,
-        5000ms,
-        keypair);
+    irohad = std::make_shared<TestIrohad>(block_store_path,
+                                          pgopt_,
+                                          0,
+                                          10001,
+                                          10,
+                                          5000ms,
+                                          5000ms,
+                                          5000ms,
+                                          keypair);
 
     ASSERT_TRUE(irohad->storage);
 
     // insert genesis block
     irohad->storage->insertBlock(genesis_block);
+
+    // reset ordering storage state
+    irohad->resetOrderingService();
 
     // initialize irohad
     irohad->init();
@@ -207,10 +210,10 @@ TEST(PipelineIntegrationTest, SendTx) {
             shared_model::interface::StatelessValidTxResponse>>(status.get()));
   };
   auto checkProposal = [](auto &proposal) {
-    ASSERT_EQ(proposal->transactions.size(), 1);
+    ASSERT_EQ(proposal->transactions().size(), 1);
   };
   auto checkBlock = [](auto &block) {
-    ASSERT_EQ(block->transactions.size(), 0);
+    ASSERT_EQ(block->transactions().size(), 0);
   };
   integration_framework::IntegrationTestFramework()
       .setInitialState(kAdminKeypair)

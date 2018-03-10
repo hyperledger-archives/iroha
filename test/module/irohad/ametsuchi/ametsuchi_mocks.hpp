@@ -19,6 +19,7 @@
 #define IROHA_AMETSUCHI_MOCKS_HPP
 
 #include <gmock/gmock.h>
+#include <boost/optional.hpp>
 #include "ametsuchi/block_query.hpp"
 #include "ametsuchi/mutable_factory.hpp"
 #include "ametsuchi/mutable_storage.hpp"
@@ -27,15 +28,15 @@
 #include "ametsuchi/temporary_factory.hpp"
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
+#include "common/result.hpp"
+#include "interfaces/common_objects/peer.hpp"
 #include "model/account.hpp"
 #include "model/account_asset.hpp"
 #include "model/asset.hpp"
+#include "model/block.hpp"
 #include "model/domain.hpp"
 #include "model/peer.hpp"
-
-#include <boost/optional.hpp>
-
-#include "common/result.hpp"
+#include "model/transaction.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -80,27 +81,28 @@ namespace iroha {
       MOCK_METHOD1(insertRole, WsvCommandResult(const std::string &role_name));
       MOCK_METHOD2(insertAccountRole,
                    WsvCommandResult(const std::string &account_id,
-                        const std::string &role_name));
+                                    const std::string &role_name));
       MOCK_METHOD2(deleteAccountRole,
                    WsvCommandResult(const std::string &account_id,
-                        const std::string &role_name));
+                                    const std::string &role_name));
       MOCK_METHOD2(insertRolePermissions,
                    WsvCommandResult(const std::string &role_id,
-                        const std::set<std::string> &permissions));
+                                    const std::set<std::string> &permissions));
 
       MOCK_METHOD3(insertAccountGrantablePermission,
                    WsvCommandResult(const std::string &permittee_account_id,
-                        const std::string &account_id,
-                        const std::string &permission_id));
+                                    const std::string &account_id,
+                                    const std::string &permission_id));
 
       MOCK_METHOD3(deleteAccountGrantablePermission,
                    WsvCommandResult(const std::string &permittee_account_id,
-                        const std::string &account_id,
-                        const std::string &permission_id));
+                                    const std::string &account_id,
+                                    const std::string &permission_id));
       MOCK_METHOD1(insertAccount, WsvCommandResult(const model::Account &));
       MOCK_METHOD1(updateAccount, WsvCommandResult(const model::Account &));
       MOCK_METHOD1(insertAsset, WsvCommandResult(const model::Asset &));
-      MOCK_METHOD1(upsertAccountAsset, WsvCommandResult(const model::AccountAsset &));
+      MOCK_METHOD1(upsertAccountAsset,
+                   WsvCommandResult(const model::AccountAsset &));
       MOCK_METHOD1(insertSignatory, WsvCommandResult(const pubkey_t &));
       MOCK_METHOD1(deleteSignatory, WsvCommandResult(const pubkey_t &));
 
@@ -117,30 +119,32 @@ namespace iroha {
       MOCK_METHOD1(insertDomain, WsvCommandResult(const model::Domain &));
       MOCK_METHOD4(setAccountKV,
                    WsvCommandResult(const std::string &,
-                        const std::string &,
-                        const std::string &,
-                        const std::string &));
+                                    const std::string &,
+                                    const std::string &,
+                                    const std::string &));
     };
 
     class MockBlockQuery : public BlockQuery {
      public:
       MOCK_METHOD1(
           getAccountTransactions,
-          rxcpp::observable<model::Transaction>(const std::string &account_id));
-      MOCK_METHOD1(
-          getTxByHashSync,
-          boost::optional<model::Transaction>(const std::string &hash));
+          rxcpp::observable<wTransaction>(
+              const shared_model::interface::types::AccountIdType &account_id));
+      MOCK_METHOD1(getTxByHashSync,
+                   boost::optional<wTransaction>(
+                       const shared_model::crypto::Hash &hash));
       MOCK_METHOD2(
           getAccountAssetTransactions,
-          rxcpp::observable<model::Transaction>(const std::string &account_id,
-                                                const std::string &asset_id));
-      MOCK_METHOD1(getTransactions,
-                   rxcpp::observable<boost::optional<model::Transaction>>(
-                       const std::vector<iroha::hash256_t> &tx_hashes));
-      MOCK_METHOD2(getBlocks,
-                   rxcpp::observable<model::Block>(uint32_t, uint32_t));
-      MOCK_METHOD1(getBlocksFrom, rxcpp::observable<model::Block>(uint32_t));
-      MOCK_METHOD1(getTopBlocks, rxcpp::observable<model::Block>(uint32_t));
+          rxcpp::observable<wTransaction>(
+              const shared_model::interface::types::AccountIdType &account_id,
+              const shared_model::interface::types::AssetIdType &asset_id));
+      MOCK_METHOD1(
+          getTransactions,
+          rxcpp::observable<boost::optional<wTransaction>>(
+              const std::vector<shared_model::crypto::Hash> &tx_hashes));
+      MOCK_METHOD2(getBlocks, rxcpp::observable<wBlock>(shared_model::interface::types::HeightType, uint32_t));
+      MOCK_METHOD1(getBlocksFrom, rxcpp::observable<wBlock>(shared_model::interface::types::HeightType));
+      MOCK_METHOD1(getTopBlocks, rxcpp::observable<wBlock>(uint32_t));
     };
 
     class MockTemporaryFactory : public TemporaryFactory {
@@ -155,8 +159,8 @@ namespace iroha {
       MOCK_METHOD2(
           apply,
           bool(const model::Block &,
-               std::function<bool(
-                   const model::Block &, WsvQuery &, const hash256_t &)>));
+               std::function<
+                   bool(const model::Block &, WsvQuery &, const hash256_t &)>));
     };
 
     /**
@@ -188,8 +192,7 @@ namespace iroha {
      public:
       MockPeerQuery() = default;
 
-      MOCK_METHOD0(getLedgerPeers,
-                   nonstd::optional<std::vector<model::Peer>>());
+      MOCK_METHOD0(getLedgerPeers, boost::optional<std::vector<wPeer>>());
     };
 
     class MockStorage : public Storage {

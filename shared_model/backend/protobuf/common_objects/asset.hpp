@@ -19,6 +19,7 @@
 #define IROHA_SHARED_MODEL_PROTO_ASSET_HPP
 
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
+#include "backend/protobuf/util.hpp"
 #include "interfaces/common_objects/asset.hpp"
 #include "responses.pb.h"
 #include "utils/lazy_initializer.hpp"
@@ -32,8 +33,7 @@ namespace shared_model {
      public:
       template <typename AssetType>
       explicit Asset(AssetType &&account)
-          : CopyableProto(std::forward<AssetType>(account)),
-            blob_([this] { return makeBlob(*proto_); }) {}
+          : CopyableProto(std::forward<AssetType>(account)) {}
 
       Asset(const Asset &o) : Asset(o.proto_) {}
 
@@ -51,7 +51,7 @@ namespace shared_model {
         return proto_->precision();
       }
 
-      const BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
@@ -59,7 +59,8 @@ namespace shared_model {
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const Lazy<BlobType> blob_;
+      const Lazy<interface::types::BlobType> blob_{
+          [this] { return makeBlob(*proto_); }};
     };
   }  // namespace proto
 }  // namespace shared_model
