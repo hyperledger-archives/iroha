@@ -113,7 +113,7 @@ namespace iroha {
         static_cast<shared_model::proto::Transaction &>(*found).getTransport();
 
     // Find the signature difference between to txes
-    std::vector<iroha::Wrapper<shared_model::interface::Signature>> diff;
+    std::vector<shared_model::interface::types::SignatureType> diff;
     std::copy_if(rhs_tx->signatures().begin(),
                  rhs_tx->signatures().end(),
                  std::back_inserter(diff),

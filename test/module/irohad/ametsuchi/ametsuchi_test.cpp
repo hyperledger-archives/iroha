@@ -886,6 +886,7 @@ TEST_F(AmetsuchiTest, TestRestoreWSV) {
                                                iroha::model::can_receive,
                                                iroha::model::can_transfer})
           .createDomain(default_domain, default_role)
+          .quorum(1)
           .build()
           .signAndAddSignature(
               shared_model::crypto::DefaultCryptoAlgorithmType::

@@ -19,7 +19,6 @@
 #define IROHA_MODEL_TYPES_HPP
 
 #include <memory>
-#include "common/wrapper.hpp"
 #include "interfaces/common_objects/peer.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/transaction.hpp"
