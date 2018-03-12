@@ -16,7 +16,7 @@
  */
 
 #include "framework/integration_framework/iroha_instance.hpp"
-#include <cstdlib>
+#include <boost/filesystem.hpp>
 #include "backend/protobuf/from_old_model.hpp"
 
 using namespace std::chrono_literals;
@@ -24,7 +24,9 @@ using namespace std::chrono_literals;
 namespace integration_framework {
 
   IrohaInstance::IrohaInstance()
-      : block_store_dir_("/tmp/block_store"),
+      : block_store_dir_(
+            (boost::filesystem::temp_directory_path() / "block_store")
+                .string()),
         pg_conn_(getPostgreCredsOrDefault()),
         torii_port_(11501),
         internal_port_(10001),

@@ -64,7 +64,7 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
     txn.commit();
     connection.disconnect();
 
-    iroha::remove_all(iroha_instance_->block_store_dir_);
+    iroha::remove_dir_contents(iroha_instance_->block_store_dir_);
   }
 
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
