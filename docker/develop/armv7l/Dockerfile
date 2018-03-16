@@ -25,9 +25,7 @@ RUN set -e; \
         # dev dependencies
         libssl-dev zlib1g-dev libcurl4-openssl-dev libc6-dbg golang \
         # CircleCI dependencies
-        git ssh tar gzip ca-certificates python python-pip python-setuptools \
-        # code coverage
-        lcov \
+        git ssh tar gzip ca-certificates python3 python3-pip python3-setuptools \
         # other
         wget curl file unzip gdb iputils-ping vim ccache \
         gcovr cppcheck doxygen graphviz graphviz-dev; \
@@ -193,6 +191,8 @@ RUN set -e; \
 RUN set -e; \
     git clone https://github.com/jtv/libpqxx /tmp/libpqxx; \
     (cd /tmp/libpqxx ; git checkout 5b17abce5ac2b1a2f8278718405b7ade8bb30ae9); \
+    curl -L -o /tmp/libpqxx/config/config.guess 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=6b2374c79506ee82a8b440f6d1ca293e2e2e2463'; \
+    curl -L -o /tmp/libpqxx/config/config.sub 'http://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=6b2374c79506ee82a8b440f6d1ca293e2e2e2463'; \
     (cd /tmp/libpqxx ; /tmp/libpqxx/configure --disable-documentation --with-pic); \
     make -j${PARALLELISM} -C /tmp/libpqxx; \
     make -C /tmp/libpqxx install; \
@@ -213,7 +213,7 @@ RUN set -e; \
 # install docker
 ENV DOCKER_VERSION=17.06.0-ce
 RUN set -e; \
-    curl -L -o /tmp/docker-${DOCKER_VERSION}.tgz https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_VERSION}.tgz; \
+    curl -L -o /tmp/docker-${DOCKER_VERSION}.tgz https://download.docker.com/linux/static/stable/armhf/docker-${DOCKER_VERSION}.tgz; \
     tar -xz -C /tmp -f /tmp/docker-${DOCKER_VERSION}.tgz; \
     mv /tmp/docker/* /usr/bin; \
     rm /tmp/docker-${DOCKER_VERSION}.tgz; \
@@ -241,6 +241,12 @@ RUN set -e; \
     cmake --build /tmp/ed25519/build --target install -- -j${PARALLELISM}; \
     ldconfig; \
     rm -rf /tmp/ed25519
+
+# fetch lcov reports converter
+RUN curl -L -o /tmp/lcov_cobertura.py https://raw.githubusercontent.com/eriwen/lcov-to-cobertura-xml/8c55cd11f80a21e7e46f20f8c81fcde0bf11f5e5/lcov_cobertura/lcov_cobertura.py
+
+# install lcov
+RUN curl -L -o /tmp/lcov-1.13.tar.gz https://github.com/linux-test-project/lcov/releases/download/v1.13/lcov-1.13.tar.gz; cd /tmp; tar zxf lcov-1.13.tar.gz; cd lcov-1.13; make install
 
 # non-interactive adduser
 #   -m = create home dir
