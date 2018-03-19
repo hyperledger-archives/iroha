@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_library(shared_model_proto_builders
-    impl.cpp
-    transaction_responses/proto_transaction_status_builder.cpp
+addtest(transaction_response_builder_test
+    transaction_response_builder_test.cpp
     )
 
-target_link_libraries(
+target_link_libraries(transaction_response_builder_test
     shared_model_proto_builders
-    model_interfaces
-    shared_model_proto_backend
-)
+    )

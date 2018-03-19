@@ -15,10 +15,24 @@
  * limitations under the License.
  */
 
-#include "builders/protobuf/transaction.hpp"
-#include "builders/protobuf/queries.hpp"
-#include "builders/protobuf/block.hpp"
-#include "builders/protobuf/proposal.hpp"
-#include "builders/protobuf/transport_builder.hpp"
-#include "builders/protobuf/transaction_responses/proto_transaction_status_builder.hpp"
+#ifndef IROHA_TRANSACTION_BUILDERS_COMMON_HPP
+#define IROHA_TRANSACTION_BUILDERS_COMMON_HPP
 
+/**
+ * Prepares lambda that checks if val's type is the same with T type
+ * @tparam T expected type
+ * @return lambda checking val's type
+ */
+template <typename T>
+auto verifyType() {
+  return [](auto val) {
+    if (std::is_same<decltype(val), T>::value) {
+      SUCCEED();
+    } else {
+      FAIL() << "obtained: " << typeid(decltype(val)).name() << std::endl
+             << "expected: " << typeid(T).name() << std::endl;
+    }
+  };
+}
+
+#endif //IROHA_TRANSACTION_BUILDERS_COMMON_HPP
