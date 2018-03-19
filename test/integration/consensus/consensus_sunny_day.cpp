@@ -61,7 +61,7 @@ class ConsensusSunnyDayTest : public ::testing::Test {
   uint64_t delay = 3 * 1000;
   std::shared_ptr<Yac> yac;
 
-  static const size_t port = 10001;
+  static const size_t port = 50541;
 
   void SetUp() override {
     network = std::make_shared<NetworkImpl>();
