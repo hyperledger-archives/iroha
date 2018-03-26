@@ -55,8 +55,9 @@ namespace iroha {
       void YacGateImpl::vote(const shared_model::interface::Block &block) {
         std::unique_ptr<model::Block> bl(block.makeOldModel());
         auto hash = hash_provider_->makeHash(*bl);
-        log_->info(
-            "vote for block ({}, {})", hash.proposal_hash, block.hash().toString());
+        log_->info("vote for block ({}, {})",
+                   hash.proposal_hash,
+                   block.hash().toString());
         auto order = orderer_->getOrdering(hash);
         if (not order) {
           log_->error("ordering doesn't provide peers => pass round");
