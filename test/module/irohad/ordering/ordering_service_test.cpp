@@ -68,10 +68,10 @@ class OrderingServiceTest : public ::testing::Test {
  public:
   OrderingServiceTest() {
     peer = clone(shared_model::proto::PeerBuilder()
-            .address(address)
-            .pubkey(shared_model::interface::types::PubkeyType(
-                std::string(32, '0')))
-            .build());
+                     .address(address)
+                     .pubkey(shared_model::interface::types::PubkeyType(
+                         std::string(32, '0')))
+                     .build());
   }
 
   void SetUp() override {
@@ -81,7 +81,7 @@ class OrderingServiceTest : public ::testing::Test {
         std::make_shared<MockOrderingServicePersistentState>();
   }
 
-  auto get_tx() {
+  auto getTx() {
     return std::make_shared<shared_model::proto::Transaction>(
         shared_model::proto::TransactionBuilder()
         .txCounter(2)
@@ -130,8 +130,9 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
   const size_t max_proposal = 5;
   const size_t commit_delay = 1000;
 
-  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(_)).Times(2);
-
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(_))
+      .Times(2)
+      .WillRepeatedly(Return(true));
   EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
       .Times(1)
       .WillOnce(Return(boost::optional<size_t>(2)));
@@ -158,7 +159,7 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
       .WillRepeatedly(Return(std::vector<decltype(peer)>{peer}));
 
   for (size_t i = 0; i < 10; ++i) {
-    ordering_service->onTransaction(get_tx());
+    ordering_service->onTransaction(getTx());
   }
 
   std::unique_lock<std::mutex> lock(m);
@@ -168,8 +169,9 @@ TEST_F(OrderingServiceTest, ValidWhenProposalSizeStrategy) {
 TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
   // Init => proposal timer 400 ms => 10 tx by 50 ms => 2 proposals in 1 second
 
-  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(_)).Times(2);
-
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(_))
+      .Times(2)
+      .WillRepeatedly(Return(true));
   shared_model::proto::PeerBuilder builder;
 
   auto key = shared_model::crypto::PublicKey(peer->pubkey().toString());
@@ -197,13 +199,36 @@ TEST_F(OrderingServiceTest, ValidWhenTimerStrategy) {
       }));
 
   for (size_t i = 0; i < 8; ++i) {
-    ordering_service->onTransaction(get_tx());
+    ordering_service->onTransaction(getTx());
   }
 
   std::unique_lock<std::mutex> lk(m);
   cv.wait_for(lk, 10s);
 
-  ordering_service->onTransaction(get_tx());
-  ordering_service->onTransaction(get_tx());
+  ordering_service->onTransaction(getTx());
+  ordering_service->onTransaction(getTx());
   cv.wait_for(lk, 10s);
+}
+
+/**
+ * @given Ordering service and the persistent state that cannot save proposals
+ * @when onTransaction is called
+ * @then no published proposal
+ */
+TEST_F(OrderingServiceTest, BrokenPersistentState) {
+  const size_t max_proposal = 1;
+  const size_t commit_delay = 100;
+  EXPECT_CALL(*fake_persistent_state, loadProposalHeight())
+      .Times(1)
+      .WillOnce(Return(boost::optional<size_t>(1)));
+  EXPECT_CALL(*fake_persistent_state, saveProposalHeight(2))
+      .Times(1)
+      .WillRepeatedly(Return(false));
+
+  auto ordering_service = std::make_shared<OrderingServiceImpl>(
+      wsv, max_proposal, commit_delay, fake_transport, fake_persistent_state);
+  ordering_service->onTransaction(getTx());
+
+  std::unique_lock<std::mutex> lk(m);
+  cv.wait_for(lk, 2s);
 }
