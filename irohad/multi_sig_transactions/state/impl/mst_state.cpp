@@ -108,38 +108,19 @@ namespace iroha {
       return;
     }
 
-    const auto &found = *corresponding;
-    auto raw_tx =
-        static_cast<shared_model::proto::Transaction &>(*found).getTransport();
-
-    // Find the signature difference between to txes
-    std::vector<shared_model::interface::types::SignatureType> diff;
-    std::copy_if(rhs_tx->signatures().begin(),
-                 rhs_tx->signatures().end(),
-                 std::back_inserter(diff),
-                 [&found](auto &sig) {
-                   return found->signatures().find(sig)
-                       == found->signatures().end();
-                 });
-
-    // Append new signatures
-    for (auto &&sig : diff) {
-      // TODO (@l4l) 04/03/18 simplify with IR-1040
-      *raw_tx.add_signature() =
-          static_cast<const shared_model::proto::Signature &>(*sig.operator->())
-              .getTransport();
+    auto &found = *corresponding;
+    // Append new signatures to the existing state
+    for (auto &sig : rhs_tx->signatures()) {
+      if (found->signatures().find(sig) == found->signatures().end()) {
+        found->addSignature(sig);
+      }
     }
 
-    auto tx =
-        std::make_shared<shared_model::proto::Transaction>(std::move(raw_tx));
-    internal_state_.erase(corresponding);
-    internal_state_.insert(tx);
-
-    if ((*completer_)(tx)) {
+    if ((*completer_)(found)) {
       // state already has completed transaction,
       // remove from state and return it
-      out_state += tx;
-      internal_state_.erase(internal_state_.find(tx));
+      out_state += found;
+      internal_state_.erase(internal_state_.find(found));
     }
   }
 
