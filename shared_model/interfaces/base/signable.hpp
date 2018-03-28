@@ -28,6 +28,12 @@
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
+
+  namespace crypto {
+    class Signed;
+    class PublicKey;
+  }  // namespace crypto
+
   namespace interface {
 
 #ifdef DISABLE_BACKWARD
@@ -36,12 +42,12 @@ namespace shared_model {
 #define SIGNABLE(Model) Signable<Model, iroha::model::Model>
 #endif
 
-/**
- * Interface provides signatures and adds them to model object
- * @tparam Model - your new style model
- * Architecture note: we inherit Signable from Hashable with following
- * assumption - all Signable objects are signed by hash value.
- */
+  /**
+   * Interface provides signatures and adds them to model object
+   * @tparam Model - your new style model
+   * Architecture note: we inherit Signable from Hashable with following
+   * assumption - all Signable objects are signed by hash value.
+   */
 
 #ifndef DISABLE_BACKWARD
     template <typename Model, typename OldModel>
@@ -61,7 +67,8 @@ namespace shared_model {
        * @param signature - signature object for insertion
        * @return true, if signature was added
        */
-      virtual bool addSignature(const types::SignatureType &signature) = 0;
+      virtual bool addSignature(const crypto::Signed &signed_blob,
+                                const crypto::PublicKey &public_key) = 0;
 
       /**
        * Clear object's signatures
