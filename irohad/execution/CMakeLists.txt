@@ -1,4 +1,4 @@
-# Copyright 2017 Soramitsu Co., Ltd.
+# Copyright 2018 Soramitsu Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(ametsuchi)
-add_subdirectory(consensus)
-add_subdirectory(main)
-add_subdirectory(ordering)
-add_subdirectory(validation)
-add_subdirectory(torii)
-add_subdirectory(network)
-add_subdirectory(model)
-add_subdirectory(simulator)
-add_subdirectory(synchronizer)
-add_subdirectory(execution)
+add_library(common_execution
+        impl/common_executor.cpp
+        )
+target_link_libraries(common_execution
+        rxcpp
+        )
+
+add_library(command_execution
+        impl/command_executor.cpp
+        )
+target_link_libraries(command_execution
+        ${Boost_LIBRARIES}
+        logger
+        common_execution
+        validator
+        rxcpp
+        )

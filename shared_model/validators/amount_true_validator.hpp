@@ -15,27 +15,23 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_EXECUTION_ERROR_HPP
-#define IROHA_EXECUTION_ERROR_HPP
+#ifndef IROHA_SHARED_MODEL_AMOUNT_TRUE_VALIDATOR_HPP
+#define IROHA_SHARED_MODEL_AMOUNT_TRUE_VALIDATOR_HPP
 
-#include <boost/format.hpp>
-
-namespace iroha {
-  namespace model {
+namespace shared_model {
+  namespace validation {
 
     /**
-     * Error for command execution.
-     * Contains command name, as well as an error message
+     * Class that validates fields of commands, concrete queries, transaction,
+     * and query
      */
-    struct ExecutionError {
-      std::string command_name;
-      std::string error_message;
-
-      std::string toString() const {
-        return (boost::format("%s: %s") % command_name % error_message).str();
-      }
+    class AmountTrueValidator {
+     public:
+      void validateAmount(ReasonsGroupType &reason,
+                          const interface::Amount &amount) const
+      {};
     };
-  }  // namespace model
-}  // namespace iroha
+  }  // namespace validation
+}  // namespace shared_model
 
-#endif  // IROHA_EXECUTION_ERROR_HPP
+#endif  // IROHA_SHARED_MODEL_AMOUNT_TRUE_VALIDATOR_HPP

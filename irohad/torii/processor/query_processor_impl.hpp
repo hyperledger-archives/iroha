@@ -37,15 +37,14 @@ namespace iroha {
        * Register client query
        * @param query - client intent
        */
-      void queryHandle(std::shared_ptr<
-                       shared_model::interface::Query> qry) override;
+      void queryHandle(
+          std::shared_ptr<shared_model::interface::Query> qry) override;
 
       /**
        * Subscribe for query responses
        * @return observable with query responses
        */
-      rxcpp::observable<std::shared_ptr<
-          shared_model::interface::QueryResponse>>
+      rxcpp::observable<std::shared_ptr<shared_model::interface::QueryResponse>>
       queryNotifier() override;
 
      private:
