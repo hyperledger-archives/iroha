@@ -32,7 +32,7 @@
 namespace shared_model {
   namespace interface {
 
-    class Proposal : public HASHABLE(Proposal) {
+    class Proposal : public PRIMITIVE(Proposal) {
      public:
       template <class T>
       using w = detail::PolymorphicWrapper<T>;
@@ -71,6 +71,11 @@ namespace shared_model {
         return oldModel;
       }
 #endif
+
+      bool operator==(const Proposal &rhs) const override {
+        return transactions() == rhs.transactions() and height() == rhs.height()
+            and createdTime() == rhs.createdTime();
+      }
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
