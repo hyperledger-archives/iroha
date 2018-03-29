@@ -271,7 +271,19 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
     }
 
     std::shared_ptr<WsvQuery> StorageImpl::getWsvQuery() const {
-      return wsv_;
+      auto postgres_connection =
+          std::make_unique<pqxx::lazyconnection>(postgres_options_);
+      try {
+        postgres_connection->activate();
+      } catch (const pqxx::broken_connection &e) {
+        // TODO 29.03.2018 vdrobny IR-1184 Handle this exception
+        throw pqxx::broken_connection(e);
+      }
+      auto wsv_transaction =
+          std::make_unique<pqxx::nontransaction>(*postgres_connection);
+
+      return std::make_shared<PostgresWsvQuery>(std::move(postgres_connection),
+                                                std::move(wsv_transaction));
     }
 
     std::shared_ptr<BlockQuery> StorageImpl::getBlockQuery() const {

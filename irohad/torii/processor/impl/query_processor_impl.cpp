@@ -23,8 +23,8 @@ namespace iroha {
   namespace torii {
 
     QueryProcessorImpl::QueryProcessorImpl(
-        std::unique_ptr<model::QueryProcessingFactory> qpf)
-        : qpf_(std::move(qpf)) {}
+        std::shared_ptr<ametsuchi::Storage> storage)
+        : storage_(storage) {}
 
     void QueryProcessorImpl::queryHandle(
         std::shared_ptr<shared_model::interface::Query> qry) {
@@ -33,7 +33,9 @@ namespace iroha {
       // query is already stateless valid when passing to query  processor
 
       auto qpf_response =
-          qpf_->execute(std::shared_ptr<const model::Query>(query));
+          model::QueryProcessingFactory(storage_->getWsvQuery(),
+                                        storage_->getBlockQuery())
+              .execute(std::shared_ptr<const model::Query>(query));
       auto qry_resp = shared_model::proto::from_old(qpf_response);
       subject_.get_subscriber().on_next(
           std::make_shared<shared_model::proto::QueryResponse>(

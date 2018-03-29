@@ -74,6 +74,7 @@ class ClientServerTest : public testing::Test {
     pcsMock = std::make_shared<MockPeerCommunicationService>();
     wsv_query = std::make_shared<MockWsvQuery>();
     block_query = std::make_shared<MockBlockQuery>();
+    storage = std::make_shared<MockStorage>();
 
     rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Proposal>>
         prop_notifier;
@@ -92,11 +93,11 @@ class ClientServerTest : public testing::Test {
         std::make_shared<iroha::model::converters::PbTransactionFactory>();
 
     //----------- Query Service ----------
-    auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
-        wsv_query, block_query);
 
-      auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(
-          std::move(qpf));
+    auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(storage);
+
+    EXPECT_CALL(*storage, getWsvQuery()).WillRepeatedly(Return(wsv_query));
+    EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_query));
 
     //----------- Server run ----------------
     runner
@@ -113,6 +114,7 @@ class ClientServerTest : public testing::Test {
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
+  std::shared_ptr<MockStorage> storage;
 };
 
 TEST_F(ClientServerTest, SendTxWhenValid) {

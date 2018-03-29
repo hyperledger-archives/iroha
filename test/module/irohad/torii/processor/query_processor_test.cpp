@@ -63,10 +63,11 @@ class QueryProcessorTest : public ::testing::Test {
 TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   auto wsv_queries = std::make_shared<MockWsvQuery>();
   auto block_queries = std::make_shared<MockBlockQuery>();
+  auto storage = std::make_shared<MockStorage>();
   auto qpf = std::make_unique<model::QueryProcessingFactory>(wsv_queries,
                                                              block_queries);
 
-  iroha::torii::QueryProcessorImpl qpi(std::move(qpf));
+  iroha::torii::QueryProcessorImpl qpi(storage);
 
   auto query = TestUnsignedQueryBuilder()
                    .createdTime(created_time)
@@ -86,6 +87,8 @@ TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   std::vector<std::string> roles = {role};
   std::vector<std::string> perms = {iroha::model::can_get_my_account};
 
+  EXPECT_CALL(*storage, getWsvQuery()).WillRepeatedly(Return(wsv_queries));
+  EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_queries));
   EXPECT_CALL(*wsv_queries, getAccount(account_id))
       .WillOnce(Return(shared_account));
   EXPECT_CALL(*wsv_queries, getAccountRoles(account_id))
