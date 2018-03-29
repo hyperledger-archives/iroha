@@ -201,7 +201,7 @@ Automake, Bison, Cmake
 Building the Library
 """"""""""""""""""""
 
-All you need now is to download `build script <https://github.com/hyperledger/iroha/blob/develop/example/Android/android-build.sh>`__
+All you need now is to download `build script <https://github.com/hyperledger/iroha/blob/develop/shared_model/packages/android/android-build.sh>`__
 ``android-build.sh`` to any empty folder and launch it there.
 
 Launch parameters are listed in the table below.
