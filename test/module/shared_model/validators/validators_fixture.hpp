@@ -160,8 +160,11 @@ class ValidatorsTest : public ::testing::Test {
   std::string account_name;
   std::string domain_id;
   std::string detail_key;
+  std::string detail_value;
+  std::string description;
   std::string public_key;
   std::string hash;
+  std::string permission;
   iroha::protocol::RolePermission role_permission;
   iroha::protocol::GrantablePermission grantable_permission;
   uint8_t quorum;

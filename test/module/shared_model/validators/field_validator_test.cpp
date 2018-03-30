@@ -23,10 +23,13 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <boost/format.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/range/join.hpp>
 
 #include "backend/protobuf/common_objects/peer.hpp"
 #include "builders/protobuf/queries.hpp"
 #include "builders/protobuf/transaction.hpp"
+#include "model/permissions.hpp"
 #include "module/shared_model/validators/validators_fixture.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "validators/field_validator.hpp"
@@ -93,13 +96,23 @@ class FieldValidatorTest : public ValidatorsTest {
                                             &FieldValidatorTest::account_id,
                                             account_id_test_cases));
     }
-    for (const auto &field : {"key", "detail"}) {
-      field_validators.insert(
-          makeValidator(field,
-                        &FieldValidator::validateAccountDetailKey,
-                        &FieldValidatorTest::detail_key,
-                        detail_test_cases));
-    }
+
+    field_validators.insert(
+        makeValidator("key",
+                      &FieldValidator::validateAccountDetailKey,
+                      &FieldValidatorTest::detail_key,
+                      detail_key_test_cases));
+
+    field_validators.insert(
+        makeValidator("value",
+                      &FieldValidator::validateAccountDetailValue,
+                      &FieldValidatorTest::detail_value,
+                      detail_value_test_cases));
+
+    field_validators.insert(makeValidator("domain_id",
+                                          &FieldValidator::validateDomainId,
+                                          &FieldValidatorTest::domain_id,
+                                          domain_id_test_cases));
     for (const auto &field : {"tx_counter", "query_counter"}) {
       field_validators.insert(makeValidator(field,
                                             &FieldValidator::validateCounter,
@@ -107,15 +120,23 @@ class FieldValidatorTest : public ValidatorsTest {
                                             tx_counter_test_cases));
     }
 
+    field_validators.insert(makeValidator("quorum",
+                                          &FieldValidator::validateQuorum,
+                                          &FieldValidatorTest::quorum,
+                                          quorum_test_cases));
+
+    field_validators.insert(makeValidator("permission",
+                                          &FieldValidator::validatePermission,
+                                          &FieldValidatorTest::permission,
+                                          permission_test_cases));
+
     // TODO: add validation to all fields
     for (const auto &field : {"value",
-                              "description",
                               "signature",
                               "commands",
                               "quorum",
                               "tx_hashes",
-                              "precision",
-                              "permission"}) {
+                              "precision"}) {
       field_validators.insert(makeNullValidator(field));
     }
   }
@@ -153,9 +174,7 @@ class FieldValidatorTest : public ValidatorsTest {
       if (!testcase.value_is_valid) {
         ASSERT_TRUE(!reason.second.empty())
             << testFailMessage(field_name, testcase.name);
-        ASSERT_THAT(reason.second.at(0),
-                    testing::MatchesRegex(testcase.expected_message))
-            << testFailMessage(field_name, testcase.name);
+        // TODO IR-1183 add returned message check 29.03.2018
       } else {
         EXPECT_TRUE(reason.second.empty())
             << testFailMessage(field_name, testcase.name)
@@ -173,19 +192,6 @@ class FieldValidatorTest : public ValidatorsTest {
   std::unordered_set<std::string> checked_fields;
 
   /************************** TEST CASES ***************************/
-
-  /**
-   * Make expected message for test with wrongly formed field.
-   * @param field_name - wrongly formed field
-   * @param value - wrongly formed value
-   * @return message expected from test
-   */
-  std::string makeMessageWrongField(const std::string &field_name,
-                                    const std::string &value) {
-    return (boost::format("Wrongly formed %s, passed value: '%s'") % field_name
-            % value)
-        .str();
-  }
 
   /**
    * Make expected message for test with wrong key size.
@@ -221,11 +227,7 @@ class FieldValidatorTest : public ValidatorsTest {
                                 const std::string &field_name,
                                 F field,
                                 const std::string &value) {
-    return makeTestCase(case_name,
-                        field,
-                        value,
-                        false,
-                        makeMessageWrongField(field_name, value));
+    return makeTestCase(case_name, field, value, false, "");
   }
 
   /// Generate test cases for id types with name, separator, and domain
@@ -242,7 +244,6 @@ class FieldValidatorTest : public ValidatorsTest {
     };
 
     return {makeValidCase(field, f("name%cdomain")),
-            c("start_with_digit", f("1abs%cdomain")),
             c("domain_start_with_digit", f("abs%c3domain")),
             c("empty_string", ""),
             c("illegal_char", f("ab--s%cdo--main")),
@@ -282,7 +283,26 @@ class FieldValidatorTest : public ValidatorsTest {
               this->peer.set_peer_key(pubkey);
             },
             false,
-            makeMessageWrongField("peer address", address)};
+            ""};
+  }
+
+  /**
+   * Make test case for valid peer address.
+   * @param case_name - test case name
+   * @param address - peer address
+   * @param pubkey - peer public key
+   * @return test case for valid peer address
+   */
+  FieldTestCase makeValidPeerAddressTestCase(const std::string &case_name,
+                                             const std::string &address,
+                                             const std::string &pubkey) {
+    return {case_name,
+            [&, address, pubkey] {
+              this->peer.set_address(address);
+              this->peer.set_peer_key(pubkey);
+            },
+            true,
+            ""};
   }
 
   /**
@@ -326,32 +346,67 @@ class FieldValidatorTest : public ValidatorsTest {
       invalidPublicKeyTestCase("empty_string", "")};
 
   std::vector<FieldTestCase> peer_test_cases{
-      {"valid_peer",
-       [&] {
-         peer.set_address("182.13.35.1:3040");
-         peer.set_peer_key(std::string(32, '0'));
-       },
-       true,
-       ""},
-      makeInvalidPeerAddressTestCase(
-          "invalid_peer_address", "182.13.35.1:3040xx", std::string(32, '0')),
-      makeInvalidPeerAddressTestCase(
-          "invalid_peer_address_empty", "", std::string(32, '0')),
+      // clang-format off
+      // ip addresses
+      makeValidPeerAddressTestCase("zeros_ip","0.0.0.0:0", std::string(32, '0')),
+      makeValidPeerAddressTestCase("max_ip", "255.255.255.255:65535", std::string(32, '0')),
+      makeValidPeerAddressTestCase("common_ip","192.168.0.1:8080", std::string(32, '0')),
+
+      makeInvalidPeerAddressTestCase("invalid_peer_address", "182.13.35.1:3040xx", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("invalid symbol in ip", "-0.0.0.0:0", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("too big number in ip", "256.256.256.255:65535", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("too big port", "192.168.0.1:65536", std::string(32, '0')),
+
+      // hostname
+      makeValidPeerAddressTestCase("valid hostname with port", "abc.efg:0", std::string(32, '0')),
+      makeValidPeerAddressTestCase("valid hostname with max port", "abc.efg.hij:65535", std::string(32, '0')),
+      makeValidPeerAddressTestCase("hostname with hyphen", "a-hyphen.ru-i:8080", std::string(32, '0')),
+      makeValidPeerAddressTestCase("common hostname with port", "altplus.com.jp:80", std::string(32, '0')),
+      makeValidPeerAddressTestCase("max label length in hostname with port", "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad:8080", std::string(32, '0')),
+      makeValidPeerAddressTestCase("max domain name length in hostname with port",
+                                   "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+                                   "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+                                   "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+                                   "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad:256", std::string(32, '0')),
+
+
+      makeInvalidPeerAddressTestCase("hostname starting with nonletter", "9.start.with.non.letter:0", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("hostname starting with dash", "-startWithDash:65535", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("hostname starting with at", "@.is.not.allowed:8080", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("hostname with space", "no space is allowed:80", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("hostname with too big port", "too.big.port:65536", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("hostname with not allowed character", "some\u2063host:123", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("hostname ending with hyphen", "endWith-:909", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("hostname with too large label", "aLabelMustNotExceeds63charactersALabelMustNotExceeds63characters:9090", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("hostname with more than 256 character domain",
+      "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+      "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+      "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+      "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPadP:256", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("empty address", "", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("empty domain", ":6565", std::string(32, '0')),
+      makeInvalidPeerAddressTestCase("empty domain two : symbols", "::6565:", std::string(32, '0')),
+
+      // invalid pubkey
       makeInvalidPeerPubkeyTestCase("invalid_peer_pubkey_length",
                                     "182.13.35.1:3040",
                                     std::string(64, '0')),
       makeInvalidPeerPubkeyTestCase(
-          "invalid_peer_pubkey_empty", "182.13.35.1:3040", "")};
+          "invalid_peer_pubkey_empty", "182.13.35.1:3040", "")
+      // clang-format on
+  };
 
-  /// Generate test cases for name types
+  /// Generate test cases for name types (account_name, asset_name, role_id)
   template <typename F>
   std::vector<FieldTestCase> nameTestCases(const std::string &field_name,
                                            F field) {
-    return {
-        makeTestCase("valid_name", field, "admin", true, ""),
-        makeInvalidCase("empty_string", field_name, field, ""),
-        makeInvalidCase("illegal_characters", field_name, field, "-math-"),
-        makeInvalidCase("name_too_long", field_name, field, "somelongname")};
+    return {makeTestCase("valid_name", field, "admin", true, ""),
+            makeInvalidCase("empty_string", field_name, field, ""),
+            makeInvalidCase("illegal_characters", field_name, field, "-math-"),
+            makeInvalidCase("name_too_long",
+                            field_name,
+                            field,
+                            "long_long_long_long_long_long_name")};
   }
 
   std::vector<FieldTestCase> role_name_test_cases =
@@ -360,11 +415,52 @@ class FieldValidatorTest : public ValidatorsTest {
   std::vector<FieldTestCase> account_name_test_cases =
       nameTestCases("account_name", &FieldValidatorTest::account_name);
 
-  std::vector<FieldTestCase> domain_id_test_cases =
-      nameTestCases("domain_id", &FieldValidatorTest::domain_id);
-
   std::vector<FieldTestCase> asset_name_test_cases =
       nameTestCases("asset_name", &FieldValidatorTest::asset_name);
+
+  /// domain_id
+  std::vector<FieldTestCase> domainIdTestCases() {
+    auto true_case = [&](const auto &name, const auto &case_value) {
+      return this->makeTestCase(
+          name, &FieldValidatorTest::domain_id, case_value, true, "");
+    };
+    auto false_case = [&](const auto &name, const auto &case_value) {
+      return this->makeTestCase(
+          name, &FieldValidatorTest::domain_id, case_value, false, "");
+    };
+    return {
+        // clang-format off
+      true_case("one_letter", "a"),
+      true_case("two_letter", "ab"),
+      true_case("period_separated", "abc.efg"),
+      true_case("multiple_periods_separated", "abc.efg.hij"),
+      true_case("with_numbers", "u9EEA432F"),
+      true_case("with_hyphen", "a-hyphen"),
+      true_case("with_63_character", "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad"),
+      true_case("ending_with_digit","endWith0"),
+      true_case("max_long_domain",
+                 "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+                 "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+                 "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+                 "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad"),
+
+      false_case("space", " "),
+      false_case("start_with_digit", "9start.with.non.letter"),
+      false_case("start_with_dash", "-startWithDash"),
+      false_case("with_@", "@.is.not.allowed"),
+      false_case("with_space","no space is allowed"),
+      false_case("end_with_hyphen", "endWith-"),
+      false_case("label_ending_with_hyphen","label.endedWith-.is.not.allowed"),
+      false_case("too_long_label","aLabelMustNotExceeds63charactersALabelMustNotExceeds63characters"),
+      false_case("too_long_domain",
+                 "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+                 "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+                 "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPad."
+                 "maxLabelLengthIs63paddingPaddingPaddingPaddingPaddingPaddingPadP")
+        // clang-format on
+    };
+  }
+  std::vector<FieldTestCase> domain_id_test_cases = domainIdTestCases();
 
   std::vector<FieldTestCase> permissions_test_cases{
       makeValidCase(&FieldValidatorTest::role_permission,
@@ -388,12 +484,59 @@ class FieldValidatorTest : public ValidatorsTest {
           false,
           "bad timestamp: sent from future, timestamp: [0-9]+, now: [0-9]+")};
 
-  std::vector<FieldTestCase> detail_test_cases{
+  std::vector<FieldTestCase> detail_key_test_cases{
       makeValidCase(&FieldValidatorTest::detail_key, "happy"),
       makeInvalidCase(
           "empty_string", "key", &FieldValidatorTest::detail_key, ""),
       makeInvalidCase(
           "illegal_char", "key", &FieldValidatorTest::detail_key, "hi-there")};
+
+  std::vector<FieldTestCase> detail_value_test_cases{
+      makeValidCase(&FieldValidatorTest::detail_value, "valid value"),
+      makeValidCase(&FieldValidatorTest::detail_value, std::string(4096, '0')),
+      makeValidCase(&FieldValidatorTest::detail_value, ""),
+      makeInvalidCase("long_value",
+                      "value",
+                      &FieldValidatorTest::detail_value,
+                      std::string(4097, '0'))};
+
+  std::vector<FieldTestCase> description_test_cases{
+      makeValidCase(&FieldValidatorTest::description, "valid description"),
+      makeValidCase(&FieldValidatorTest::description, ""),
+      makeValidCase(&FieldValidatorTest::description, std::string(64, 0)),
+      makeInvalidCase("long_description",
+                      "value",
+                      &FieldValidatorTest::description,
+                      std::string(65, '0'))};
+
+  std::vector<FieldTestCase> quorum_test_cases{
+      makeValidCase(&FieldValidatorTest::quorum, 1),
+      makeValidCase(&FieldValidatorTest::quorum, 128),
+      makeTestCase(
+          "too big quorum size", &FieldValidatorTest::quorum, 129, false, "")};
+
+  std::vector<FieldTestCase> permissionTestCases() {
+    auto valid_cases = iroha::model::role_perm_group
+        | boost::adaptors::transformed([&](const auto &permission) {
+                         return this->makeTestCase(permission,
+                                             &FieldValidatorTest::permission,
+                                             permission,
+                                             true,
+                                             "");
+                       });
+    std::vector<FieldTestCase> invalid_cases = {
+        makeInvalidCase("non existing permission",
+                        "permission",
+                        &FieldValidatorTest::permission,
+                        "non_existing_permission")};
+    // merge valid and invalid cases
+    std::vector<FieldTestCase> all_cases;
+    all_cases.insert(all_cases.begin(), valid_cases.begin(), valid_cases.end());
+    all_cases.insert(
+        all_cases.begin(), invalid_cases.begin(), invalid_cases.end());
+    return all_cases;
+  }
+  std::vector<FieldTestCase> permission_test_cases = permissionTestCases();
 
   /**************************************************************************/
 
@@ -470,11 +613,14 @@ class FieldValidatorTest : public ValidatorsTest {
                                    iroha::protocol::RolePermission_Name(x)};
                              },
                              permissions_test_cases),
-
       makeValidator("created_time",
                     &FieldValidator::validateCreatedTime,
                     &FieldValidatorTest::created_time,
-                    created_time_test_cases)};
+                    created_time_test_cases),
+      makeValidator("description",
+                    &FieldValidator::validateDescription,
+                    &FieldValidatorTest::description,
+                    description_test_cases)};
 };
 
 /**

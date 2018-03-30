@@ -92,6 +92,7 @@ namespace shared_model {
 
         validator_.validatePubkey(reason, ca->pubkey());
         validator_.validateAccountName(reason, ca->accountName());
+        validator_.validateDomainId(reason, ca->domainId());
 
         return reason;
       }
@@ -114,6 +115,7 @@ namespace shared_model {
         addInvalidCommand(reason, "CreateDomain");
 
         validator_.validateDomainId(reason, cd->domainId());
+        validator_.validateRoleId(reason, cd->userDefaultRole());
 
         return reason;
       }
@@ -147,6 +149,7 @@ namespace shared_model {
         addInvalidCommand(reason, "GrantPermission");
 
         validator_.validateAccountId(reason, gp->accountId());
+        validator_.validatePermission(reason, gp->permissionName());
 
         return reason;
       }
@@ -182,6 +185,7 @@ namespace shared_model {
 
         validator_.validateAccountId(reason, sad->accountId());
         validator_.validateAccountDetailKey(reason, sad->key());
+        validator_.validateAccountDetailValue(reason, sad->value());
 
         return reason;
       }
@@ -225,6 +229,7 @@ namespace shared_model {
         validator_.validateAccountId(reason, ta->destAccountId());
         validator_.validateAssetId(reason, ta->assetId());
         validator_.validateAmount(reason, ta->amount());
+        validator_.validateDescription(reason, ta->description());
 
         return reason;
       }

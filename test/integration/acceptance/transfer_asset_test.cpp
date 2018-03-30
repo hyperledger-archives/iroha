@@ -16,6 +16,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <type_traits>
 #include "backend/protobuf/transaction.hpp"
 #include "builders/protobuf/queries.hpp"
 #include "builders/protobuf/transaction.hpp"
@@ -285,28 +286,27 @@ TEST_F(TransferAsset, EmptyDesc) {
 /**
  * @given pair of users with all required permissions
  * @when execute tx with TransferAsset command with very long description
- * @then it passed to the proposal and commited description matches
+ * @then the tx hasn't passed stateless validation
+ *       (aka skipProposal throws)
  */
 TEST_F(TransferAsset, LongDesc) {
   std::string long_desc(100000, 'a');
-  IntegrationTestFramework()
-      .setInitialState(kAdminKeypair)
+  auto invalid_tx = completeTx(
+      baseTx().transferAsset(kUser1Id, kUser2Id, kAsset, long_desc, kAmount));
+  using ExpectedStatusType = shared_model::detail::PolymorphicWrapper<
+      shared_model::interface::StatelessFailedTxResponse>;
+  IntegrationTestFramework itf;
+  itf.setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms(kUser1, kUser1Keypair, kPerms, kRole1))
       .sendTx(makeUserWithPerms(kUser2, kUser2Keypair, kPerms, kRole2))
       .sendTx(addAssets(kUser1, kUser1Keypair))
       .skipProposal()
       .skipBlock()
-      .sendTx(completeTx(baseTx().transferAsset(
-          kUser1Id, kUser2Id, kAsset, long_desc, kAmount)))
-      .skipProposal()
-      .checkBlock([&long_desc](auto &block) {
-        auto txes = block->transactions();
-        ASSERT_EQ(txes.size(), 1);
-        auto transfer = *boost::apply_visitor(
-            interface::SpecifiedVisitor<interface::TransferAsset>(),
-            txes[0]->commands()[0]->get());
-        ASSERT_EQ(transfer->message(), long_desc);
-      })
+      .sendTx(invalid_tx,
+              [](shared_model::proto::TransactionResponse &status) {
+                // check if returned status is as expected
+                ASSERT_NO_THROW(boost::get<ExpectedStatusType>(status.get()));
+              })
       .done();
 }
 
