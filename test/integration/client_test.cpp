@@ -19,35 +19,48 @@
 
 #include <endpoint.pb.h>
 
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "builders/protobuf/common_objects/proto_account_builder.hpp"
+#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
+#include "module/shared_model/builders/protobuf/test_query_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 #include "client.hpp"
 
 #include "main/server_runner.hpp"
+#include "torii/command_service.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/query_service.hpp"
 
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_query_factory.hpp"
 #include "model/converters/json_transaction_factory.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 #include "model/permissions.hpp"
+
+#include "builders/protobuf/queries.hpp"
+#include "builders/protobuf/transaction.hpp"
 
 constexpr const char *Ip = "0.0.0.0";
 constexpr int Port = 50051;
 
-using ::testing::Return;
 using ::testing::A;
-using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::Return;
+using ::testing::_;
 
 using namespace iroha::ametsuchi;
 using namespace iroha::network;
 using namespace iroha::validation;
 using namespace iroha::model::converters;
 using namespace iroha::model;
+using namespace shared_model::proto;
+
+using namespace std::chrono_literals;
+constexpr std::chrono::milliseconds proposal_delay = 10s;
 
 class ClientServerTest : public testing::Test {
  public:
@@ -56,145 +69,114 @@ class ClientServerTest : public testing::Test {
     // Run a server
     runner = std::make_unique<ServerRunner>(std::string(Ip) + ":"
                                             + std::to_string(Port));
-    th = std::thread([this] {
-      // ----------- Command Service --------------
-      pcsMock = std::make_shared<MockPeerCommunicationService>();
-      svMock = std::make_shared<MockStatelessValidator>();
-      wsv_query = std::make_shared<MockWsvQuery>();
-      block_query = std::make_shared<MockBlockQuery>();
-      storageMock = std::make_shared<MockStorage>();
 
-      rxcpp::subjects::subject<iroha::model::Proposal> prop_notifier;
-      rxcpp::subjects::subject<Commit> commit_notifier;
+    // ----------- Command Service --------------
+    pcsMock = std::make_shared<MockPeerCommunicationService>();
+    wsv_query = std::make_shared<MockWsvQuery>();
+    block_query = std::make_shared<MockBlockQuery>();
+    storage = std::make_shared<MockStorage>();
 
-      EXPECT_CALL(*pcsMock, on_proposal())
-          .WillRepeatedly(Return(prop_notifier.get_observable()));
+    rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Proposal>>
+        prop_notifier;
+    rxcpp::subjects::subject<iroha::Commit> commit_notifier;
 
-      EXPECT_CALL(*pcsMock, on_commit())
-          .WillRepeatedly(Return(commit_notifier.get_observable()));
+    EXPECT_CALL(*pcsMock, on_proposal())
+        .WillRepeatedly(Return(prop_notifier.get_observable()));
 
-      auto tx_processor =
-          std::make_shared<iroha::torii::TransactionProcessorImpl>(pcsMock,
-                                                                   svMock);
-      auto pb_tx_factory =
-          std::make_shared<iroha::model::converters::PbTransactionFactory>();
-      auto command_service = std::make_unique<torii::CommandService>(
-          pb_tx_factory, tx_processor, storageMock);
+    EXPECT_CALL(*pcsMock, on_commit())
+        .WillRepeatedly(Return(commit_notifier.get_observable()));
 
-      //----------- Query Service ----------
-      auto qpf = std::make_unique<iroha::model::QueryProcessingFactory>(
-          wsv_query, block_query);
+    auto tx_processor =
+        std::make_shared<iroha::torii::TransactionProcessorImpl>(pcsMock);
 
-      auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(
-          std::move(qpf), svMock);
+    auto pb_tx_factory =
+        std::make_shared<iroha::model::converters::PbTransactionFactory>();
 
-      auto pb_query_factory =
-          std::make_shared<iroha::model::converters::PbQueryFactory>();
-      auto pb_query_resp_factory =
-          std::make_shared<iroha::model::converters::PbQueryResponseFactory>();
+    //----------- Query Service ----------
 
-      auto query_service = std::make_unique<torii::QueryService>(
-          pb_query_factory, pb_query_resp_factory, qpi);
+    auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(storage);
 
-      //----------- Server run ----------------
-      runner->run(std::move(command_service), std::move(query_service));
-    });
+    EXPECT_CALL(*storage, getWsvQuery()).WillRepeatedly(Return(wsv_query));
+    EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_query));
+
+    //----------- Server run ----------------
+    runner
+        ->append(std::make_unique<torii::CommandService>(
+            tx_processor, block_query, proposal_delay))
+        .append(std::make_unique<torii::QueryService>(qpi))
+        .run();
 
     runner->waitForServersReady();
   }
-
-  virtual void TearDown() {
-    runner->shutdown();
-    th.join();
-  }
+  decltype(shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair())
+      pair =
+          shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair();
+  std::vector<shared_model::interface::types::PubkeyType> signatories = {
+      pair.publicKey()};
 
   std::unique_ptr<ServerRunner> runner;
-  std::thread th;
   std::shared_ptr<MockPeerCommunicationService> pcsMock;
-  std::shared_ptr<MockStatelessValidator> svMock;
 
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
-  std::shared_ptr<MockStorage> storageMock;
+  std::shared_ptr<MockStorage> storage;
 };
 
 TEST_F(ClientServerTest, SendTxWhenValid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
-      .WillOnce(Return(true));
   EXPECT_CALL(*pcsMock, propagate_transaction(_)).Times(1);
 
-  auto json_string =
-      R"({"signatures": [ {
-            "pubkey":
-              "2323232323232323232323232323232323232323232323232323232323232323",
-            "signature":
-              "23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323"
-        }], "created_ts": 0,
-          "creator_account_id": "123",
-          "tx_counter": 0,
-          "commands": [{
-            "command_type": "AddPeer",
-            "address": "localhost",
-            "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
-        }]})";
+  auto shm_tx = shared_model::proto::TransactionBuilder()
+                    .creatorAccountId("some@account")
+                    .txCounter(1)
+                    .createdTime(iroha::time::now())
+                    .setAccountQuorum("some@account", 2)
+                    .build()
+                    .signAndAddSignature(
+                        shared_model::crypto::DefaultCryptoAlgorithmType::
+                            generateKeypair());
 
-  JsonTransactionFactory tx_factory;
-  auto json_doc = stringToJson(json_string);
-  ASSERT_TRUE(json_doc.has_value());
-  auto model_tx = tx_factory.deserialize(json_doc.value());
-  ASSERT_TRUE(model_tx.has_value());
-  auto status = client.sendTx(model_tx.value());
+  std::unique_ptr<iroha::model::Transaction> old_model(shm_tx.makeOldModel());
+  auto status = client.sendTx(*old_model);
   ASSERT_EQ(status.answer, iroha_cli::CliClient::OK);
 }
 
 TEST_F(ClientServerTest, SendTxWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port);
   // Must not call stateful validation since json is invalid
-  EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
-      .Times(0);
   // Json with no Transaction
   auto json_string =
       R"({"creator_account_id": "test",
           "commands":[{
             "command_type": "AddPeer",
-            "address": "localhost",
-            "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            "peer": {
+              "address": "localhost",
+              "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            }
           }]
         })";
   JsonTransactionFactory tx_factory;
   auto json_doc = stringToJson(json_string);
-  ASSERT_TRUE(json_doc.has_value());
+  ASSERT_TRUE(json_doc);
   auto model_tx = tx_factory.deserialize(json_doc.value());
-  ASSERT_FALSE(model_tx.has_value());
+  ASSERT_FALSE(model_tx);
 }
 
 TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
-  EXPECT_CALL(*svMock, validate(A<const iroha::model::Transaction &>()))
-      .WillOnce(Return(false));
-  auto json_string =
-      R"({"signatures": [ {
-            "pubkey":
-              "2423232323232323232323232323232323232323232323232323232323232323",
-            "signature":
-              "23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323"
-        }], "created_ts": 0,
-          "creator_account_id": "123",
-          "tx_counter": 0,
-          "commands": [{
-            "command_type": "AddPeer",
-            "address": "localhost",
-            "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
-        }]})";
+  // creating stateless invalid tx
+  auto shm_tx = TestTransactionBuilder()
+                    .creatorAccountId("some@account")
+                    .txCounter(1)
+                    .createdTime(iroha::time::now())
+                    .setAccountQuorum("some@@account", 2)
+                    .build();
+  std::unique_ptr<iroha::model::Transaction> old_tx(shm_tx.makeOldModel());
 
-  auto doc = iroha::model::converters::stringToJson(json_string).value();
-  iroha::model::converters::JsonTransactionFactory transactionFactory;
-  auto tx = transactionFactory.deserialize(doc).value();
-
-  ASSERT_EQ(iroha_cli::CliClient(Ip, Port).sendTx(tx).answer,
+  ASSERT_EQ(iroha_cli::CliClient(Ip, Port).sendTx(*old_tx).answer,
             iroha_cli::CliClient::OK);
+  auto tx_hash = shm_tx.hash();
   ASSERT_EQ(iroha_cli::CliClient(Ip, Port)
-                .getTxStatus(iroha::hash(tx).to_string())
+                .getTxStatus(shared_model::crypto::toBinaryString(tx_hash))
                 .answer.tx_status(),
             iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
 }
@@ -203,46 +185,35 @@ TEST_F(ClientServerTest, SendQueryWhenInvalidJson) {
   iroha_cli::CliClient client(Ip, Port);
   // Must not call stateful validation since json is invalid and shouldn't be
   // passed to stateless validation
-  EXPECT_CALL(*svMock, validate(A<const iroha::model::Query &>())).Times(0);
 
   auto json_query =
       R"({"creator_account_id": "test",
           "commands":[{
             "command_type": "AddPeer",
-            "address": "localhost",
-            "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            "peer": {
+              "address": "localhost",
+              "peer_key": "2323232323232323232323232323232323232323232323232323232323232323"
+            }
           }]
         })";
 
   JsonQueryFactory queryFactory;
   auto model_query = queryFactory.deserialize(json_query);
-  ASSERT_FALSE(model_query.has_value());
+  ASSERT_FALSE(model_query);
 }
 
 TEST_F(ClientServerTest, SendQueryWhenStatelessInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock, validate(A<const iroha::model::Query &>()))
-      .WillOnce(Return(false));
 
-  auto json_query =
-      R"({"signature": {
-            "pubkey":
-              "2323232323232323232323232323232323232323232323232323232323232323",
-            "signature":
-              "23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323"
-          },
-          "created_ts": 0,
-          "creator_account_id": "123",
-          "query_counter": 0,
-          "query_type": "GetAccount",
-          "account_id": "test@test"
-        })";
+  shared_model::proto::Query query = TestQueryBuilder()
+                                         .createdTime(0)
+                                         .creatorAccountId("123")
+                                         .getAccount("asd")
+                                         .build();
+  auto proto_query = query.getTransport();
 
-  JsonQueryFactory queryFactory;
-  auto model_query = queryFactory.deserialize(json_query);
-  ASSERT_TRUE(model_query.has_value());
-
-  auto res = client.sendQuery(model_query.value());
+  auto res = client.sendQuery(
+      std::shared_ptr<iroha::model::Query>(query.makeOldModel()));
   ASSERT_TRUE(res.status.ok());
   ASSERT_TRUE(res.answer.has_error_response());
   ASSERT_EQ(res.answer.error_response().reason(),
@@ -250,86 +221,64 @@ TEST_F(ClientServerTest, SendQueryWhenStatelessInvalid) {
 }
 
 TEST_F(ClientServerTest, SendQueryWhenValid) {
+  // TODO: 30/04/2018 x3medima17, fix Uninteresting mock function call, IR-1187
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock, validate(A<const iroha::model::Query &>()))
-      .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
   account_admin.account_id = "admin@test";
 
-  auto account_test = iroha::model::Account();
-  account_test.account_id = "test@test";
+  std::shared_ptr<shared_model::interface::Account> account_test = clone(
+      shared_model::proto::AccountBuilder().accountId("test@test").build());
+
+  EXPECT_CALL(*wsv_query, getSignatories("admin@test"))
+      .WillRepeatedly(Return(signatories));
 
   EXPECT_CALL(*wsv_query,
               hasAccountGrantablePermission(
-                  "admin@test", "test@test", can_get_my_account))
+                  "admin@test", "test@test", can_get_my_acc_detail))
       .WillOnce(Return(true));
-  EXPECT_CALL(*wsv_query, getAccount("test@test"))
-      .WillOnce(Return(account_test));
 
-  std::vector<std::string> roles = {"user"};
-  EXPECT_CALL(*wsv_query, getAccountRoles("test@test")).WillOnce(Return(roles));
-  EXPECT_CALL(*wsv_query, getAccountRoles("admin@test"))
-      .WillOnce(Return(nonstd::nullopt));
+  EXPECT_CALL(*wsv_query, getAccountDetail("test@test"))
+      .WillOnce(Return(boost::make_optional(std::string("value"))));
 
-  auto json_query =
-      R"({"signature": {
-            "pubkey":
-              "2323232323232323232323232323232323232323232323232323232323232323",
-            "signature":
-              "23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323"
-          },
-          "created_ts": 0,
-          "creator_account_id": "admin@test",
-          "query_counter": 0,
-          "query_type": "GetAccount",
-          "account_id": "test@test"
-        })";
+  auto query = QueryBuilder()
+                   .createdTime(iroha::time::now())
+                   .creatorAccountId("admin@test")
+                   .queryCounter(1)
+                   .getAccountDetail("test@test")
+                   .build()
+                   .signAndAddSignature(pair);
 
-  JsonQueryFactory queryFactory;
-  auto model_query = queryFactory.deserialize(json_query);
-  ASSERT_TRUE(model_query.has_value());
-
-  auto res = client.sendQuery(model_query.value());
-  ASSERT_EQ(res.answer.account_response().account().account_id(), "test@test");
+  auto res = client.sendQuery(
+      std::shared_ptr<iroha::model::Query>(query.makeOldModel()));
+  ASSERT_EQ(res.answer.account_detail_response().detail(), "value");
 }
 
 TEST_F(ClientServerTest, SendQueryWhenStatefulInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-  EXPECT_CALL(*svMock, validate(A<const iroha::model::Query &>()))
-      .WillOnce(Return(true));
   auto account_admin = iroha::model::Account();
   account_admin.account_id = "admin@test";
 
   auto account_test = iroha::model::Account();
   account_test.account_id = "test@test";
 
+  EXPECT_CALL(*wsv_query, getSignatories("admin@test"))
+      .WillRepeatedly(Return(signatories));
+
   EXPECT_CALL(*wsv_query,
               hasAccountGrantablePermission(
-                  "admin@test", "test@test", can_get_my_account))
+                  "admin@test", "test@test", can_get_my_acc_detail))
       .WillOnce(Return(false));
-  EXPECT_CALL(*wsv_query, getAccount("test@test")).Times(0);
 
-  auto json_query =
-      R"({"signature": {
-            "pubkey":
-              "2323232323232323232323232323232323232323232323232323232323232323",
-            "signature":
-              "23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323"
-          },
-          "created_ts": 0,
-          "creator_account_id": "admin@test",
-          "query_counter": 0,
-          "query_type": "GetAccount",
-          "account_id": "test@test"
-        })";
+  auto query = QueryBuilder()
+                   .createdTime(iroha::time::now())
+                   .creatorAccountId("admin@test")
+                   .queryCounter(1)
+                   .getAccountDetail("test@test")
+                   .build()
+                   .signAndAddSignature(pair);
 
-  JsonQueryFactory queryFactory;
-  auto model_query = queryFactory.deserialize(json_query);
-  ASSERT_TRUE(model_query.has_value());
-
-  auto res = client.sendQuery(model_query.value());
-  ASSERT_TRUE(res.status.ok());
-  ASSERT_TRUE(res.answer.has_error_response());
+  auto res = client.sendQuery(
+      std::shared_ptr<iroha::model::Query>(query.makeOldModel()));
   ASSERT_EQ(res.answer.error_response().reason(),
             iroha::protocol::ErrorResponse::STATEFUL_INVALID);
 }

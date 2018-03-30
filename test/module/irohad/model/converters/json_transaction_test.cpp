@@ -16,9 +16,9 @@
  */
 
 #include <gtest/gtest.h>
-#include "model/converters/json_transaction_factory.hpp"
-#include "model/converters/json_common.hpp"
 #include "model/commands/add_asset_quantity.hpp"
+#include "model/converters/json_common.hpp"
+#include "model/converters/json_transaction_factory.hpp"
 
 using namespace iroha;
 using namespace iroha::model;
@@ -29,7 +29,7 @@ class JsonTransactionTest : public ::testing::Test {
   JsonTransactionFactory factory;
 };
 
-TEST_F(JsonTransactionTest, ValidWhenWellFormed){
+TEST_F(JsonTransactionTest, ValidWhenWellFormed) {
   Transaction transaction{};
   transaction.signatures.emplace_back();
   transaction.commands.push_back(std::make_shared<AddAssetQuantity>());
@@ -37,20 +37,20 @@ TEST_F(JsonTransactionTest, ValidWhenWellFormed){
   auto json_transaction = factory.serialize(transaction);
   auto serial_transaction = factory.deserialize(json_transaction);
 
-  ASSERT_TRUE(serial_transaction.has_value());
-  ASSERT_EQ(transaction, serial_transaction.value());
+  ASSERT_TRUE(serial_transaction);
+  ASSERT_EQ(transaction, *serial_transaction);
 }
 
-TEST_F(JsonTransactionTest, InvalidWhenFieldsMissing){
+TEST_F(JsonTransactionTest, InvalidWhenFieldsMissing) {
   Transaction transaction{};
 
   auto json_transaction = factory.serialize(transaction);
-  
+
   json_transaction.RemoveMember("created_ts");
-  
+
   auto serial_transaction = factory.deserialize(json_transaction);
 
-  ASSERT_FALSE(serial_transaction.has_value());
+  ASSERT_FALSE(serial_transaction);
 }
 
 TEST_F(JsonTransactionTest, InvalidWhenNegativeAddAssetQuantity) {
@@ -84,9 +84,9 @@ TEST_F(JsonTransactionTest, InvalidWhenNegativeAddAssetQuantity) {
   })";
   auto json = stringToJson(transaction_string);
 
-  ASSERT_TRUE(json.has_value());
+  ASSERT_TRUE(json);
 
   auto transaction = factory.deserialize(json.value());
 
-  ASSERT_FALSE(transaction.has_value());
+  ASSERT_FALSE(transaction);
 }

@@ -21,24 +21,36 @@ add_library(bindings
 
 target_link_libraries(bindings
         shared_model_proto_backend
-        shared_model_ed25519_sha3
+        shared_model_cryptography
         generator
+        shared_model_stateless_validation
+        iroha_amount
         )
 
 
 
-if (SWIG_PYTHON OR SWIG_JAVA OR SWIG_CSHARP)
-    find_package(SWIG 3.0.12 REQUIRED)
+if (SWIG_PYTHON OR SWIG_JAVA OR SWIG_CSHARP OR SWIG_NODE)
+    find_package(swig REQUIRED)
     include(${SWIG_USE_FILE})
 
     set(CMAKE_SWIG_FLAGS "")
+    if (SHARED_MODEL_DISABLE_COMPATIBILITY)
+        set(CMAKE_SWIG_FLAGS "-DDISABLE_BACKWARD")
+    endif()
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
     set_source_files_properties(bindings.i PROPERTIES CPLUSPLUS ON)
     set_property(GLOBAL PROPERTY SWIG_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+    add_dependencies(bindings swig)
 endif()
 
 if (SWIG_PYTHON)
-    find_package(PythonLibs 2.7 REQUIRED)
+    if(SUPPORT_PYTHON2)
+        find_package(PythonLibs 2.7 REQUIRED)
+    else()
+        find_package(PythonLibs 3.6 REQUIRED)
+    endif()
+
     # path to where Python.h is found
     include_directories(${PYTHON_INCLUDE_DIRS})
 
@@ -67,4 +79,35 @@ if (SWIG_CSHARP)
     swig_add_library(libirohacs LANGUAGE csharp SOURCES bindings.i)
     swig_link_libraries(libirohacs bindings)
     add_custom_target(irohacs DEPENDS ${SWIG_MODULE_libirohacs_REAL_NAME})
+endif()
+
+if (SWIG_NODE)
+    find_package (nodejs REQUIRED)
+    include_directories (
+            ${NODEJS_INCLUDE_DIRS}
+            ${CMAKE_CURRENT_SOURCE_DIR}/..
+            )
+
+    set (V8_VERSION_HEX 0x0${V8_VERSION_MAJOR}${V8_VERSION_MINOR}${V8_VERSION_PATCH})
+    string (LENGTH "${V8_VERSION_HEX}" V8_VERSION_HEX_length)
+    while (V8_VERSION_HEX_length LESS 8)
+        set (V8_VERSION_HEX "${V8_VERSION_HEX}0")
+        message (STATUS "INFO - Padded V8 version to match SWIG format")
+        string (LENGTH "${V8_VERSION_HEX}" V8_VERSION_HEX_length)
+    endwhile ()
+
+    if (${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+        set(MAC_OPTS "-flat_namespace -undefined suppress")
+    endif()
+
+    set_property(SOURCE bindings.i PROPERTY SWIG_FLAGS "-node" "-DV8_VERSION=${V8_VERSION_HEX}")
+
+    # Build SWIG library always statically for the subsequent assembly by GYP
+    swig_add_library(irohanode 
+        TYPE STATIC 
+        LANGUAGE javascript 
+        SOURCES bindings.i
+        )
+    set_target_properties(irohanode PROPERTIES PREFIX ${CMAKE_STATIC_LIBRARY_PREFIX})
+    target_link_libraries(irohanode bindings ${MAC_OPTS})
 endif()

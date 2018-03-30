@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,15 +20,39 @@
 
 #include <set>
 #include <string>
+
+#include "common/result.hpp"
 #include "common/types.hpp"
-#include "model/account.hpp"
-#include "model/account_asset.hpp"
-#include "model/asset.hpp"
-#include "model/domain.hpp"
-#include "model/peer.hpp"
+#include "interfaces/common_objects/types.hpp"
+
+namespace shared_model {
+  namespace interface {
+    class Asset;
+    class Account;
+    class Domain;
+    class Peer;
+    class AccountAsset;
+  }  // namespace interface
+}  // namespace shared_model
 
 namespace iroha {
   namespace ametsuchi {
+
+    /**
+     * Error returned by wsv command.
+     * It is a string which contains what action has failed (e.g, "failed to
+     * insert role"), and an error which was provided by underlying
+     * implementation (e.g, database exception info)
+     */
+    using WsvError = std::string;
+
+    /**
+     *  If command is successful, we assume changes are made,
+     *  and do not need anything
+     *  If something goes wrong, Result will contain WsvError
+     *  with additional information
+     */
+    using WsvCommandResult = expected::Result<void, WsvError>;
 
     /**
      * Commands for modifying world state view
@@ -40,48 +64,54 @@ namespace iroha {
       /**
        * Insert role entity
        * @param role_name
-       * @return true if insert successful
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertRole(const std::string &role_name) = 0;
+      virtual WsvCommandResult insertRole(
+          const shared_model::interface::types::RoleIdType &role_name) = 0;
 
       /**
        * Bind account and role
        * @param account_id
        * @param role_name
-       * @return true if insert successful
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertAccountRole(const std::string &account_id,
-                                     const std::string &role_name) = 0;
+      virtual WsvCommandResult insertAccountRole(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::RoleIdType &role_name) = 0;
       /**
-        * Unbind account and role
-        * @param account_id
-        * @param role_name
-        * @return true if delete successful
-        */
-      virtual bool deleteAccountRole(const std::string &account_id,
-                                     const std::string &role_name) = 0;
+       * Unbind account and role
+       * @param account_id
+       * @param role_name
+       * @return WsvCommandResult, which will contain error in case of failure
+       */
+      virtual WsvCommandResult deleteAccountRole(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::RoleIdType &role_name) = 0;
 
       /**
        * Bind role and permissions
        * @param role_id
        * @param permissions
-       * @return true is insert successful, false otherwise
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertRolePermissions(
-          const std::string &role_id,
-          const std::set<std::string> &permissions) = 0;
+      virtual WsvCommandResult insertRolePermissions(
+          const shared_model::interface::types::RoleIdType &role_id,
+          const std::set<shared_model::interface::types::PermissionNameType>
+              &permissions) = 0;
 
       /**
        * Insert grantable permission
        * @param permittee_account_id to who give the grant permission
        * @param account_id on which account
        * @param permission_id what permission
-       * @return true is execution is successful
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertAccountGrantablePermission(
-          const std::string &permittee_account_id,
-          const std::string &account_id,
-          const std::string &permission_id) = 0;
+      virtual WsvCommandResult insertAccountGrantablePermission(
+          const shared_model::interface::types::AccountIdType
+              &permittee_account_id,
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::PermissionNameType
+              &permission_id) = 0;
 
       /**
        * Delete grantable permission
@@ -89,26 +119,30 @@ namespace iroha {
        * granted
        * @param account_id on which account
        * @param permission_id what permission
-       * @return true is execution is successful
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool deleteAccountGrantablePermission(
-          const std::string &permittee_account_id,
-          const std::string &account_id,
-          const std::string &permission_id) = 0;
+      virtual WsvCommandResult deleteAccountGrantablePermission(
+          const shared_model::interface::types::AccountIdType
+              &permittee_account_id,
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::PermissionNameType
+              &permission_id) = 0;
+
+      /**
+       *git
+       * @param account
+       * @return WsvCommandResult, which will contain error in case of failure
+       */
+      virtual WsvCommandResult insertAccount(
+          const shared_model::interface::Account &account) = 0;
 
       /**
        *
        * @param account
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertAccount(const model::Account &account) = 0;
-
-      /**
-       *
-       * @param account
-       * @return true if no error occurred, false otherwise
-       */
-      virtual bool updateAccount(const model::Account &account) = 0;
+      virtual WsvCommandResult updateAccount(
+          const shared_model::interface::Account &account) = 0;
 
       /**
        * @param account_id  account in which update key value
@@ -116,79 +150,90 @@ namespace iroha {
        * account_id
        * @param key - key to set
        * @param val - value of the key/value pair
-       * @return true if no error occurred, false otherwise
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool setAccountKV(const std::string &account_id,
-                                const std::string &creator_account_id,
-                                const std::string &key,
-                                const std::string &val) = 0;
+      virtual WsvCommandResult setAccountKV(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::AccountIdType
+              &creator_account_id,
+          const std::string &key,
+          const std::string &val) = 0;
 
       /**
        *
        * @param asset
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertAsset(const model::Asset &asset) = 0;
+      virtual WsvCommandResult insertAsset(
+          const shared_model::interface::Asset &asset) = 0;
 
       /**
        * Update or insert account asset
        * @param asset
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool upsertAccountAsset(const model::AccountAsset &asset) = 0;
+      virtual WsvCommandResult upsertAccountAsset(
+          const shared_model::interface::AccountAsset &asset) = 0;
 
       /**
        *
        * @param signatory
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertSignatory(const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult insertSignatory(
+          const shared_model::interface::types::PubkeyType &signatory) = 0;
 
       /**
        * Insert account signatory relationship
        * @param account_id
        * @param signatory
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertAccountSignatory(const std::string &account_id,
-                                          const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult insertAccountSignatory(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::PubkeyType &signatory) = 0;
 
       /**
        * Delete account signatory relationship
        * @param account_id
        * @param signatory
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool deleteAccountSignatory(const std::string &account_id,
-                                          const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult deleteAccountSignatory(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::PubkeyType &signatory) = 0;
 
       /**
        * Delete signatory
        * @param signatory
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool deleteSignatory(const pubkey_t &signatory) = 0;
+      virtual WsvCommandResult deleteSignatory(
+          const shared_model::interface::types::PubkeyType &signatory) = 0;
 
       /**
        *
        * @param peer
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertPeer(const model::Peer &peer) = 0;
+      virtual WsvCommandResult insertPeer(
+          const shared_model::interface::Peer &peer) = 0;
 
       /**
        *
        * @param peer
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool deletePeer(const model::Peer &peer) = 0;
+      virtual WsvCommandResult deletePeer(
+          const shared_model::interface::Peer &peer) = 0;
 
       /**
        *
        * @param peer
-       * @return
+       * @return WsvCommandResult, which will contain error in case of failure
        */
-      virtual bool insertDomain(const model::Domain &domain) = 0;
+      virtual WsvCommandResult insertDomain(
+          const shared_model::interface::Domain &domain) = 0;
     };
 
   }  // namespace ametsuchi

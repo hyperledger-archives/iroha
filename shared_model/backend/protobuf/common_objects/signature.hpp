@@ -18,8 +18,8 @@
 #ifndef IROHA_PROTO_SIGNATURE_HPP
 #define IROHA_PROTO_SIGNATURE_HPP
 
-#include "interfaces/common_objects/signature.hpp"
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
+#include "interfaces/common_objects/signature.hpp"
 #include "primitive.pb.h"
 
 namespace shared_model {
@@ -30,27 +30,30 @@ namespace shared_model {
      public:
       template <typename SignatureType>
       explicit Signature(SignatureType &&signature)
-          : CopyableProto(std::forward<SignatureType>(signature)),
-            public_key_([this] { return PublicKeyType(proto_->pubkey()); }),
-            signed_([this] { return SignedType(proto_->signature()); }) {}
+          : CopyableProto(std::forward<SignatureType>(signature)) {}
 
       Signature(const Signature &o) : Signature(o.proto_) {}
 
-      Signature(Signature &&o) noexcept
-          : Signature(std::move(o.proto_)) {}
+      Signature(Signature &&o) noexcept : Signature(std::move(o.proto_)) {}
 
-      const PublicKeyType &publicKey() const override { return *public_key_; }
+      const PublicKeyType &publicKey() const override {
+        return *public_key_;
+      }
 
-      const SignedType &signedData() const override { return *signed_; }
+      const SignedType &signedData() const override {
+        return *signed_;
+      }
 
      private:
       // lazy
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const Lazy<PublicKeyType> public_key_;
+      const Lazy<PublicKeyType> public_key_{
+          [this] { return PublicKeyType(proto_->pubkey()); }};
 
-      const Lazy<SignedType> signed_;
+      const Lazy<SignedType> signed_{
+          [this] { return SignedType(proto_->signature()); }};
     };
   }  // namespace proto
 }  // namespace shared_model

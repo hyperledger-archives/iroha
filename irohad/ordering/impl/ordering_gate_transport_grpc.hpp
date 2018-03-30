@@ -18,11 +18,17 @@
 #define IROHA_ORDERING_GATE_TRANSPORT_GRPC_H
 
 #include <google/protobuf/empty.pb.h>
+
 #include "logger/logger.hpp"
-#include "model/converters/pb_transaction_factory.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_gate_transport.hpp"
 #include "ordering.grpc.pb.h"
+
+namespace shared_model {
+  namespace interface {
+    class Transaction;
+  }
+}  // namespace shared_model
 
 namespace iroha {
   namespace ordering {
@@ -34,11 +40,12 @@ namespace iroha {
       explicit OrderingGateTransportGrpc(const std::string &server_address);
 
       grpc::Status onProposal(::grpc::ServerContext *context,
-                              const proto::Proposal *request,
+                              const protocol::Proposal *request,
                               ::google::protobuf::Empty *response) override;
 
-      void propagate_transaction(
-          std::shared_ptr<const model::Transaction> transaction) override;
+      void propagateTransaction(
+          std::shared_ptr<const shared_model::interface::Transaction>
+              transaction) override;
 
       void subscribe(std::shared_ptr<iroha::network::OrderingGateNotification>
                          subscriber) override;
@@ -46,7 +53,6 @@ namespace iroha {
      private:
       std::weak_ptr<iroha::network::OrderingGateNotification> subscriber_;
       std::unique_ptr<proto::OrderingServiceTransportGrpc::Stub> client_;
-      model::converters::PbTransactionFactory factory_;
       logger::Logger log_;
     };
 

@@ -1,5 +1,6 @@
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
 
+add_subdirectory(acceptance)
 add_subdirectory(consensus)
 add_subdirectory(pipeline)
 
@@ -14,4 +15,3 @@ target_link_libraries(client_test
 target_include_directories(client_test PUBLIC
     ${PROJECT_SOURCE_DIR}/iroha-cli
     )
-

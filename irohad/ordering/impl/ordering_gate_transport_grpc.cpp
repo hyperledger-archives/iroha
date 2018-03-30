@@ -16,22 +16,31 @@
  */
 #include "ordering_gate_transport_grpc.hpp"
 
+#include "backend/protobuf/transaction.hpp"
+#include "builders/protobuf/proposal.hpp"
+#include "interfaces/common_objects/types.hpp"
+
 using namespace iroha::ordering;
 
 grpc::Status OrderingGateTransportGrpc::onProposal(
     ::grpc::ServerContext *context,
-    const proto::Proposal *request,
+    const iroha::protocol::Proposal *request,
     ::google::protobuf::Empty *response) {
   log_->info("receive proposal");
 
-  auto transactions = decltype(std::declval<model::Proposal>().transactions)();
+  std::vector<shared_model::proto::Transaction> transactions;
   for (const auto &tx : request->transactions()) {
-    transactions.push_back(*factory_.deserialize(tx));
+    transactions.emplace_back(tx);
   }
   log_->info("transactions in proposal: {}", transactions.size());
 
-  model::Proposal proposal(transactions);
-  proposal.height = request->height();
+  auto proposal = std::make_shared<shared_model::proto::Proposal>(
+      shared_model::proto::ProposalBuilder()
+          .transactions(transactions)
+          .height(request->height())
+          .createdTime(request->created_time())
+          .build());
+
   if (not subscriber_.expired()) {
     subscriber_.lock()->onProposal(std::move(proposal));
   } else {
@@ -47,13 +56,16 @@ OrderingGateTransportGrpc::OrderingGateTransportGrpc(
           server_address, grpc::InsecureChannelCredentials()))),
       log_(logger::log("OrderingGate")) {}
 
-void OrderingGateTransportGrpc::propagate_transaction(
-    std::shared_ptr<const model::Transaction> transaction) {
+void OrderingGateTransportGrpc::propagateTransaction(
+    std::shared_ptr<const shared_model::interface::Transaction> transaction) {
   log_->info("Propagate tx (on transport)");
   auto call = new AsyncClientCall;
 
-  call->response_reader = client_->AsynconTransaction(
-      &call->context, factory_.serialize(*transaction), &cq_);
+  auto transaction_transport =
+      static_cast<const shared_model::proto::Transaction &>(*transaction)
+          .getTransport();
+  call->response_reader =
+      client_->AsynconTransaction(&call->context, transaction_transport, &cq_);
 
   call->response_reader->Finish(&call->reply, &call->status, call);
 }

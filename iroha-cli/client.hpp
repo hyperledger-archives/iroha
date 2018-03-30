@@ -15,15 +15,20 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_CLIENT_HPP
-#define IROHA_CLIENT_HPP
+#ifndef IROHACLI_CLIENT_HPP
+#define IROHACLI_CLIENT_HPP
 
 #include <string>
-#include "torii/command_client.hpp"
-#include "torii_utils/query_client.hpp"
 
-#include "model/query.hpp"
-#include "model/transaction.hpp"
+#include "torii/command_client.hpp"
+#include "torii/query_client.hpp"
+
+namespace iroha {
+  namespace model {
+    struct Query;
+    struct Transaction;
+  }
+}
 
 namespace iroha_cli {
 
@@ -35,7 +40,7 @@ namespace iroha_cli {
       T answer;
     };
 
-    //TODO 13/09/17 luckychess: check if we need more status codes IR-494
+    // TODO 13/09/17 luckychess: check if we need more status codes IR-494
     enum TxStatus { OK };
 
     CliClient(std::string target_ip, int port);
@@ -64,4 +69,4 @@ namespace iroha_cli {
   };
 }  // namespace iroha_cli
 
-#endif  // IROHA_CLIENT_CPP_HPP
+#endif  // IROHACLI_CLIENT_CPP_HPP

@@ -19,16 +19,18 @@
 #define IROHA_SHARED_MODEL_TRANSFER_ASSET_HPP
 
 #include "interfaces/base/primitive.hpp"
+#include "interfaces/common_objects/amount.hpp"
 #include "interfaces/common_objects/types.hpp"
+#ifndef DISABLE_BACKWARD
 #include "model/commands/transfer_asset.hpp"
+#endif
 
 namespace shared_model {
   namespace interface {
     /**
      * Grant permission to account
      */
-    class TransferAsset
-        : public Primitive<TransferAsset, iroha::model::TransferAsset> {
+    class TransferAsset : public PRIMITIVE(TransferAsset) {
      public:
       /**
        * @return Id of the account from which transfer assets
@@ -46,13 +48,10 @@ namespace shared_model {
        * @return asset amount to transfer
        */
       virtual const Amount &amount() const = 0;
-
-      /// Type of the transfer message
-      using MessageType = std::string;
       /**
        * @return message of the transfer
        */
-      virtual const MessageType &message() const = 0;
+      virtual const types::DescriptionType &description() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
@@ -60,11 +59,12 @@ namespace shared_model {
             .append("src_account_id", srcAccountId())
             .append("dest_account_id", destAccountId())
             .append("asset_id", assetId())
-            .append("message", message())
+            .append("description", description())
             .append("amount", amount().toString())
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       OldModelType *makeOldModel() const override {
         auto oldModel = new iroha::model::TransferAsset;
         oldModel->src_account_id = srcAccountId();
@@ -75,15 +75,17 @@ namespace shared_model {
         auto p = std::shared_ptr<OldAmountType>(amount().makeOldModel());
         new (&oldModel->amount) OldAmountType(*p);
         oldModel->asset_id = assetId();
-        oldModel->description = message();
+        oldModel->description = description();
         return oldModel;
       }
+
+#endif
 
       bool operator==(const ModelType &rhs) const override {
         return srcAccountId() == rhs.srcAccountId()
             and destAccountId() == rhs.destAccountId()
             and assetId() == rhs.assetId() and amount() == rhs.amount()
-            and message() == rhs.message();
+            and description() == rhs.description();
       }
     };
   }  // namespace interface

@@ -18,7 +18,13 @@
 #ifndef IROHA_BLOCK_INDEX_HPP
 #define IROHA_BLOCK_INDEX_HPP
 
-#include "model/block.hpp"
+#include <memory>
+
+namespace shared_model {
+  namespace interface {
+    class Block;
+  }  // namespace interface
+}  // namespace shared_model
 
 namespace iroha {
   namespace ametsuchi {
@@ -33,9 +39,9 @@ namespace iroha {
        * Add block to index
        * @param block to be indexed
        */
-      virtual void index(const model::Block &block) = 0;
+      virtual void index(const shared_model::interface::Block &) = 0;
     };
-  } // namespace ametsuchi
-} // namespace iroha
+  }  // namespace ametsuchi
+}  // namespace iroha
 
-#endif //IROHA_BLOCK_INDEX_HPP
+#endif  // IROHA_BLOCK_INDEX_HPP

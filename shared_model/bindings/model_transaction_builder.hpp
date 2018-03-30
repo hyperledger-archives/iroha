@@ -18,7 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_MODEL_TRANSACTION_BUILDER_HPP
 #define IROHA_SHARED_MODEL_MODEL_TRANSACTION_BUILDER_HPP
 
-#include "builders/protobuf/transaction.hpp"
+#include "builders/protobuf/builder_templates/transaction_template.hpp"
 #include "builders/protobuf/unsigned_proto.hpp"
 #include "cryptography/public_key.hpp"
 
@@ -180,7 +180,7 @@ namespace shared_model {
 
       /**
        * Revokes permission
-       * @param account_id - accound id to revoke permission
+       * @param account_id - account id to revoke permission
        * @param permission - permission to revoke
        * @return builder with revoke permission command appended
        */
@@ -197,8 +197,8 @@ namespace shared_model {
        */
       ModelTransactionBuilder setAccountDetail(
           const interface::types::AccountIdType &account_id,
-          const interface::SetAccountDetail::AccountDetailKeyType &key,
-          const interface::SetAccountDetail::AccountDetailValueType &value);
+          const interface::types::AccountDetailKeyType &key,
+          const interface::types::AccountDetailValueType &value);
 
       /**
        * Sets account quorum

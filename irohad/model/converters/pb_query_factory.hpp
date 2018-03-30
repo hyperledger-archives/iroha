@@ -39,14 +39,14 @@ namespace iroha {
          * @return model Query
          */
         optional_ptr<model::Query> deserialize(
-            const protocol::Query& pb_query) const;
+            const protocol::Query &pb_query) const;
 
         /**
          * Convert model query to proto query
          * @param query - model query to serialize
-         * @return nonstd::nullopt if no query type is found
+         * @return boost::noneif no query type is found
          */
-        nonstd::optional<protocol::Query> serialize(
+        boost::optional<protocol::Query> serialize(
             std::shared_ptr<const model::Query> query) const;
 
         PbQueryFactory();
@@ -79,7 +79,7 @@ namespace iroha {
          * @param pb_query - protocol query  object
          * @param query - model query to serialize
          */
-        void serializeQueryMetaData(protocol::Query& pb_query,
+        void serializeQueryMetaData(protocol::Query &pb_query,
                                     std::shared_ptr<const Query> query) const;
 
         using Serializer = protocol::Query (PbQueryFactory::*)(

@@ -6,18 +6,22 @@ add_library(ametsuchi
     impl/postgres_wsv_query.cpp
     impl/postgres_wsv_command.cpp
     impl/peer_query_wsv.cpp
-    impl/redis_block_query.cpp
-    impl/redis_block_index.cpp
+    impl/postgres_block_query.cpp
+    impl/postgres_block_index.cpp
+    impl/postgres_ordering_service_persistent_state.cpp
+    impl/wsv_restorer_impl.cpp
     )
 
 target_link_libraries(ametsuchi
     json_model_converters
     logger
     rxcpp
-    optional
     pqxx
-    cpp_redis
     libs_common
     command_execution
     boost
+    model_interfaces
+    shared_model_proto_backend
+    shared_model_proto_builders
+    shared_model_stateless_validation
     )

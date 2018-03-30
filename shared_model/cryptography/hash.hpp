@@ -19,7 +19,6 @@
 #define IROHA_SHARED_MODEL_HASH_HPP
 
 #include "cryptography/blob.hpp"
-#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace crypto {
@@ -30,14 +29,18 @@ namespace shared_model {
      */
     class Hash : public Blob {
      public:
-      explicit Hash(const std::string &hash) : Blob(hash) {}
+      /**
+       * To calculate hash used by some standard containers
+       */
+      struct Hasher {
+        std::size_t operator()(const Hash &h) const;
+      };
 
-      std::string toString() const override {
-        return detail::PrettyStringBuilder()
-            .init("Hash")
-            .append(Blob::hex())
-            .finalize();
-      }
+      Hash();
+
+      explicit Hash(const std::string &hash);
+
+      std::string toString() const override;
     };
   }  // namespace crypto
 }  // namespace shared_model

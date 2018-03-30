@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,22 +18,24 @@
 #ifndef IROHA_YAC_BLOCK_VOTE_STORAGE_HPP
 #define IROHA_YAC_BLOCK_VOTE_STORAGE_HPP
 
+#include <memory>
+#include <boost/optional.hpp>
 #include <vector>
-#include <nonstd/optional.hpp>
+
+#include "consensus/yac/impl/supermajority_checker_impl.hpp"
+#include "consensus/yac/messages.hpp"
 #include "consensus/yac/storage/storage_result.hpp"
-#include "consensus/yac/storage/yac_common.hpp"
+#include "consensus/yac/yac_hash_provider.hpp"
 #include "logger/logger.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
-
       /**
        * Class provide storage of votes for one block.
        */
       class YacBlockStorage {
        private:
-
         // --------| fields |--------
 
         /**
@@ -42,8 +44,11 @@ namespace iroha {
         std::vector<VoteMessage> votes_;
 
        public:
-
-        YacBlockStorage(YacHash hash, uint64_t peers_in_round);
+        YacBlockStorage(
+            YacHash hash,
+            uint64_t peers_in_round,
+            std::shared_ptr<SupermajorityChecker> supermajority_checker =
+                std::make_shared<SupermajorityCheckerImpl>());
 
         /**
          * Try to insert vote to storage
@@ -51,7 +56,7 @@ namespace iroha {
          * @return actual state of storage,
          * nullopt when storage doesn't has supermajority
          */
-        nonstd::optional<Answer> insert(VoteMessage msg);
+        boost::optional<Answer> insert(VoteMessage msg);
 
         /**
          * Insert vector of votes to current storage
@@ -59,22 +64,22 @@ namespace iroha {
          * @return state of storage after insertion last vote,
          * nullopt when storage doesn't has supermajority
          */
-        nonstd::optional<Answer> insert(std::vector<VoteMessage> votes);
+        boost::optional<Answer> insert(std::vector<VoteMessage> votes);
 
         /**
          * @return votes attached to storage
          */
-        auto getVotes() -> decltype(votes_);
+        std::vector<VoteMessage> getVotes() const;
 
         /**
          * @return number of votes attached to storage
          */
-        auto getNumberOfVotes() -> decltype(votes_)::size_type;
+        size_t getNumberOfVotes() const;
 
         /**
          * @return current block store state
          */
-        nonstd::optional<Answer> getState();
+        boost::optional<Answer> getState();
 
         /**
          * Verify that passed vote contains in storage
@@ -118,12 +123,17 @@ namespace iroha {
         uint64_t peers_in_round_;
 
         /**
+         * Provide functions to check supermajority
+         */
+        std::shared_ptr<SupermajorityChecker> supermajority_checker_;
+
+        /**
          * Storage logger
          */
         logger::Logger log_;
       };
 
-    } // namespace yac
-  } // namespace consensus
-} // namespace iroha
-#endif //IROHA_YAC_BLOCK_VOTE_STORAGE_HPP
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
+#endif  // IROHA_YAC_BLOCK_VOTE_STORAGE_HPP

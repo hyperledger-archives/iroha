@@ -17,26 +17,27 @@
 
 #include "model/converters/json_command_factory.hpp"
 
-#include <model/commands/set_account_detail.hpp>
 #include <regex>
+
 #include "model/commands/add_asset_quantity.hpp"
-#include "model/commands/subtract_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
+#include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
 #include "model/commands/create_domain.hpp"
-#include "model/commands/remove_signatory.hpp"
-#include "model/commands/set_quorum.hpp"
-#include "model/commands/transfer_asset.hpp"
-
-#include "model/commands/append_role.hpp"
 #include "model/commands/create_role.hpp"
 #include "model/commands/detach_role.hpp"
 #include "model/commands/grant_permission.hpp"
+#include "model/commands/remove_signatory.hpp"
 #include "model/commands/revoke_permission.hpp"
+#include "model/commands/set_account_detail.hpp"
+#include "model/commands/set_quorum.hpp"
+#include "model/commands/subtract_asset_quantity.hpp"
+#include "model/commands/transfer_asset.hpp"
 
 using namespace rapidjson;
+using namespace boost::multiprecision;
 
 namespace iroha {
   namespace model {
@@ -44,18 +45,18 @@ namespace iroha {
       template <>
       struct Convert<Amount> {
         template <typename T>
-        nonstd::optional<Amount> operator()(T &&x) {
+        boost::optional<Amount> operator()(T &&x) {
           auto des = makeFieldDeserializer(x);
           auto str_int_value = des.String("value");
 
-          if (not str_int_value.has_value()) {
-            return nonstd::nullopt;
+          if (not str_int_value) {
+            return boost::none;
           }
 
           // check if value is actually number
           std::regex e("\\d+");
           if (not std::regex_match(str_int_value.value(), e)) {
-            return nonstd::nullopt;
+            return boost::none;
           }
 
           uint256_t value(str_int_value.value());
@@ -63,8 +64,25 @@ namespace iroha {
           rapidjson::Document dd;
           precision = des.document["precision"].GetUint();
 
-          return nonstd::make_optional<Amount>(
-              {value, static_cast<uint8_t>(precision)});
+          return boost::make_optional(Amount(value, static_cast<uint8_t>(precision)));
+        }
+      };
+
+      template <>
+      struct Convert<Peer> {
+        template <typename T>
+        boost::optional<Peer> operator()(T &&x) {
+          auto des = makeFieldDeserializer(x);
+          auto address = des.String("address");
+          auto pubkey = des.String("peer_key");
+
+          if (not address or not pubkey) {
+            return boost::none;
+          }
+
+          return boost::make_optional(Peer(address.value(),
+               iroha::hexstringToArray<iroha::pubkey_t::size()>(pubkey.value())
+                   .value()));
         }
       };
 
@@ -93,8 +111,7 @@ namespace iroha {
             {typeid(GrantPermission),
              &JsonCommandFactory::serializeGrantPermission},
             {typeid(RevokePermission),
-             &JsonCommandFactory::serializeRevokePermission}
-        };
+             &JsonCommandFactory::serializeRevokePermission}};
 
         deserializers_ = {
             {"AddAssetQuantity",
@@ -118,8 +135,7 @@ namespace iroha {
             {"GrantPermission",
              &JsonCommandFactory::deserializeGrantPermission},
             {"RevokePermission",
-             &JsonCommandFactory::deserializeRevokePermission}
-        };
+             &JsonCommandFactory::deserializeRevokePermission}};
       }
 
       // AddAssetQuantity
@@ -162,15 +178,19 @@ namespace iroha {
       Document JsonCommandFactory::serializeAddPeer(
           std::shared_ptr<Command> command) {
         auto add_peer = static_cast<AddPeer *>(command.get());
-
         Document document;
         auto &allocator = document.GetAllocator();
 
         document.SetObject();
         document.AddMember("command_type", "AddPeer", allocator);
-        document.AddMember("address", add_peer->address, allocator);
-        document.AddMember(
-            "peer_key", add_peer->peer_key.to_hexstring(), allocator);
+
+        Value peer;
+        peer.SetObject();
+        peer.AddMember("address", add_peer->peer.address, allocator);
+        peer.AddMember(
+            "peer_key", add_peer->peer.pubkey.to_hexstring(), allocator);
+
+        document.AddMember("peer", peer, allocator);
 
         return document;
       }
@@ -178,9 +198,8 @@ namespace iroha {
       optional_ptr<Command> JsonCommandFactory::deserializeAddPeer(
           const Value &document) {
         auto des = makeFieldDeserializer(document);
-        return make_optional_ptr<AddPeer>()
-            | des.String(&AddPeer::peer_key, "peer_key")
-            | des.String(&AddPeer::address, "address") | toCommand;
+        return make_optional_ptr<AddPeer>() | des.Object(&AddPeer::peer, "peer")
+            | toCommand;
       }
 
       // AddSignatory
@@ -479,14 +498,14 @@ namespace iroha {
           std::set<std::string> perms;
           for (auto &v : document["permissions"].GetArray()) {
             if (not v.IsString()) {
-              return nonstd::nullopt;
+              return boost::none;
             }
             perms.insert(v.GetString());
           }
           auto role_name = document["role_name"].GetString();
           return make_optional_ptr<CreateRole>(role_name, perms) | toCommand;
         }
-        return nonstd::nullopt;
+        return boost::none;
       }
 
       rapidjson::Document JsonCommandFactory::serializeGrantPermission(
@@ -535,9 +554,9 @@ namespace iroha {
 
       // SubtractAssetQuantity
       Document JsonCommandFactory::serializeSubtractAssetQuantity(
-        std::shared_ptr<Command> command) {
+          std::shared_ptr<Command> command) {
         auto subtract_asset_quantity =
-          static_cast<SubtractAssetQuantity *>(command.get());
+            static_cast<SubtractAssetQuantity *>(command.get());
 
         Document document;
         auto &allocator = document.GetAllocator();
@@ -545,28 +564,32 @@ namespace iroha {
         document.SetObject();
         document.AddMember("command_type", "SubtractAssetQuantity", allocator);
         document.AddMember(
-          "account_id", subtract_asset_quantity->account_id, allocator);
-        document.AddMember("asset_id", subtract_asset_quantity->asset_id, allocator);
+            "account_id", subtract_asset_quantity->account_id, allocator);
+        document.AddMember(
+            "asset_id", subtract_asset_quantity->asset_id, allocator);
 
         Value amount;
         amount.SetObject();
-        amount.AddMember(
-          "value", subtract_asset_quantity->amount.getIntValue().str(), allocator);
-        amount.AddMember(
-          "precision", subtract_asset_quantity->amount.getPrecision(), allocator);
+        amount.AddMember("value",
+                         subtract_asset_quantity->amount.getIntValue().str(),
+                         allocator);
+        amount.AddMember("precision",
+                         subtract_asset_quantity->amount.getPrecision(),
+                         allocator);
 
         document.AddMember("amount", amount, allocator);
 
         return document;
       }
 
-      optional_ptr<Command> JsonCommandFactory::deserializeSubtractAssetQuantity(
-        const Value &document) {
+      optional_ptr<Command>
+      JsonCommandFactory::deserializeSubtractAssetQuantity(
+          const Value &document) {
         auto des = makeFieldDeserializer(document);
         return make_optional_ptr<SubtractAssetQuantity>()
-               | des.String(&SubtractAssetQuantity::account_id, "account_id")
-               | des.String(&SubtractAssetQuantity::asset_id, "asset_id")
-               | des.Object(&SubtractAssetQuantity::amount, "amount") | toCommand;
+            | des.String(&SubtractAssetQuantity::account_id, "account_id")
+            | des.String(&SubtractAssetQuantity::asset_id, "asset_id")
+            | des.Object(&SubtractAssetQuantity::amount, "amount") | toCommand;
       }
 
       // Abstract

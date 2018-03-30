@@ -20,59 +20,109 @@
 
 #include "ametsuchi/wsv_command.hpp"
 
-#include <pqxx/nontransaction>
+#include <set>
+#include <string>
 
-#include "logger/logger.hpp"
+#include "ametsuchi/impl/postgres_wsv_common.hpp"
 
 namespace iroha {
   namespace ametsuchi {
+
     class PostgresWsvCommand : public WsvCommand {
      public:
       explicit PostgresWsvCommand(pqxx::nontransaction &transaction);
-      bool insertRole(const std::string &role_name) override;
+      WsvCommandResult insertRole(
+          const shared_model::interface::types::RoleIdType &role_name) override;
 
-      bool insertAccountRole(const std::string &account_id,
-                             const std::string &role_name) override;
-      bool deleteAccountRole(const std::string &account_id,
-                             const std::string &role_name) override;
+      WsvCommandResult insertAccountRole(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::RoleIdType &role_name) override;
+      WsvCommandResult deleteAccountRole(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::RoleIdType &role_name) override;
 
-      bool insertRolePermissions(
-          const std::string &role_id,
-          const std::set<std::string> &permissions) override;
+      WsvCommandResult insertRolePermissions(
+          const shared_model::interface::types::RoleIdType &role_id,
+          const std::set<shared_model::interface::types::PermissionNameType>
+              &permissions) override;
 
-      bool insertAccount(const model::Account &account) override;
-      bool updateAccount(const model::Account &account) override;
-      bool setAccountKV(const std::string &account_id,
-                        const std::string &creator_account_id,
-                        const std::string &key,
-                        const std::string &val) override;
-      bool insertAsset(const model::Asset &asset) override;
-      bool upsertAccountAsset(const model::AccountAsset &asset) override;
-      bool insertSignatory(const pubkey_t &signatory) override;
-      bool insertAccountSignatory(const std::string &account_id,
-                                  const pubkey_t &signatory) override;
-      bool deleteAccountSignatory(const std::string &account_id,
-                                  const pubkey_t &signatory) override;
-      bool deleteSignatory(const pubkey_t &signatory) override;
-      bool insertPeer(const model::Peer &peer) override;
-      bool deletePeer(const model::Peer &peer) override;
-      bool insertDomain(const model::Domain &domain) override;
-      bool insertAccountGrantablePermission(
-          const std::string &permittee_account_id,
-          const std::string &account_id,
-          const std::string &permission_id) override;
+      WsvCommandResult insertAccount(
+          const shared_model::interface::Account &account) override;
+      WsvCommandResult updateAccount(
+          const shared_model::interface::Account &account) override;
+      WsvCommandResult setAccountKV(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::AccountIdType
+              &creator_account_id,
+          const std::string &key,
+          const std::string &val) override;
+      WsvCommandResult insertAsset(
+          const shared_model::interface::Asset &asset) override;
+      WsvCommandResult upsertAccountAsset(
+          const shared_model::interface::AccountAsset &asset) override;
+      WsvCommandResult insertSignatory(
+          const shared_model::interface::types::PubkeyType &signatory) override;
+      WsvCommandResult insertAccountSignatory(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::PubkeyType &signatory) override;
+      WsvCommandResult deleteAccountSignatory(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::PubkeyType &signatory) override;
+      WsvCommandResult deleteSignatory(
+          const shared_model::interface::types::PubkeyType &signatory) override;
+      WsvCommandResult insertPeer(
+          const shared_model::interface::Peer &peer) override;
+      WsvCommandResult deletePeer(
+          const shared_model::interface::Peer &peer) override;
+      WsvCommandResult insertDomain(
+          const shared_model::interface::Domain &domain) override;
+      WsvCommandResult insertAccountGrantablePermission(
+          const shared_model::interface::types::AccountIdType
+              &permittee_account_id,
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::PermissionNameType
+              &permission_id) override;
 
-      bool deleteAccountGrantablePermission(
-          const std::string &permittee_account_id,
-          const std::string &account_id,
-          const std::string &permission_id) override;
+      WsvCommandResult deleteAccountGrantablePermission(
+          const shared_model::interface::types::AccountIdType
+              &permittee_account_id,
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::PermissionNameType
+              &permission_id) override;
 
      private:
       const size_t default_tx_counter = 0;
 
       pqxx::nontransaction &transaction_;
 
-      logger::Logger log_;
+      using ExecuteType = decltype(makeExecuteResult(transaction_));
+      ExecuteType execute_;
+
+      /**
+       * Transforms result which contains pqxx to WsvCommandResult,
+       * which will have error message generated by error_generator
+       * appended to error received from given result
+       * @param result which can be received by calling execute_
+       * @param error_generator function which must generate error message
+       * to be used as a return error.
+       * Function is passed instead of string to avoid overhead of string
+       * construction in successful case.
+       * @return WsvCommandResult with combined error message
+       * in case of result contains error
+       */
+      template <typename Function>
+      WsvCommandResult makeCommandResult(
+          expected::Result<pqxx::result, std::string> &&result,
+          Function &&error_generator) const noexcept {
+        return result.match(
+            [](expected::Value<pqxx::result> v) -> WsvCommandResult {
+              return {};
+            },
+            [&error_generator](
+                expected::Error<std::string> e) -> WsvCommandResult {
+              return expected::makeError(error_generator() + "\n" + e.error);
+            });
+      }
     };
   }  // namespace ametsuchi
 }  // namespace iroha

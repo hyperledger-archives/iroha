@@ -39,19 +39,21 @@
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "backend/protobuf/util.hpp"
 #include "commands.pb.h"
+#include "interfaces/common_objects/types.hpp"
 #include "utils/lazy_initializer.hpp"
 #include "utils/variant_deserializer.hpp"
 
 template <typename... T, typename Archive>
-auto load(Archive &&ar) {
+auto loadCommand(Archive &&ar) {
   int which = ar.GetDescriptor()->FindFieldByNumber(ar.command_case())->index();
-  return shared_model::detail::variant_impl<T...>::template load<
-      shared_model::interface::Command::CommandVariantType>(
-      std::forward<Archive>(ar), which);
+  return shared_model::detail::variant_impl<T...>::
+      template load<shared_model::interface::Command::CommandVariantType>(
+          std::forward<Archive>(ar), which);
 }
 
 namespace shared_model {
   namespace proto {
+
     class Command final : public CopyableProto<interface::Command,
                                                iroha::protocol::Command,
                                                Command> {
@@ -90,23 +92,20 @@ namespace shared_model {
 
       template <typename CommandType>
       explicit Command(CommandType &&command)
-          : CopyableProto(std::forward<CommandType>(command)),
-            variant_([this] { return load<ProtoCommandListType>(*proto_); }),
-            blob_([this] { return makeBlob(*proto_); }) {}
+          : CopyableProto(std::forward<CommandType>(command)) {}
 
       Command(const Command &o) : Command(o.proto_) {}
 
       Command(Command &&o) noexcept : Command(std::move(o.proto_)) {}
 
-      const CommandVariantType &get() const override { return *variant_; }
-
-      const BlobType &blob() const override { return *blob_; }
+      const CommandVariantType &get() const override {
+        return *variant_;
+      }
 
      private:
       // lazy
-      const LazyVariantType variant_;
-
-      const Lazy<BlobType> blob_;
+      const LazyVariantType variant_{
+          [this] { return loadCommand<ProtoCommandListType>(*proto_); }};
     };
   }  // namespace proto
 }  // namespace shared_model

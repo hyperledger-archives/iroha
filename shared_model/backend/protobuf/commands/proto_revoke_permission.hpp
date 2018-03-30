@@ -29,9 +29,7 @@ namespace shared_model {
      public:
       template <typename CommandType>
       explicit RevokePermission(CommandType &&command)
-          : CopyableProto(std::forward<CommandType>(command)),
-            revoke_permission_(detail::makeReferenceGenerator(
-                proto_, &iroha::protocol::Command::revoke_permission)) {}
+          : CopyableProto(std::forward<CommandType>(command)) {}
 
       RevokePermission(const RevokePermission &o)
           : RevokePermission(o.proto_) {}
@@ -40,21 +38,18 @@ namespace shared_model {
           : RevokePermission(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return revoke_permission_->account_id();
+        return revoke_permission_.account_id();
       }
 
       const interface::types::PermissionNameType &permissionName()
           const override {
         return iroha::protocol::GrantablePermission_Name(
-            revoke_permission_->permission());
+            revoke_permission_.permission());
       }
 
      private:
-      // lazy
-      template <typename T>
-      using Lazy = detail::LazyInitializer<T>;
-
-      const Lazy<const iroha::protocol::RevokePermission &> revoke_permission_;
+      const iroha::protocol::RevokePermission &revoke_permission_{
+          proto_->revoke_permission()};
     };
 
   }  // namespace proto

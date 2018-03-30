@@ -21,53 +21,56 @@
 #include "ametsuchi/storage.hpp"
 
 #include <cmath>
-#include <shared_mutex>
-
-#include <cpp_redis/cpp_redis>
-#include <nonstd/optional.hpp>
+#include <boost/optional.hpp>
 #include <pqxx/pqxx>
-#include "ametsuchi/impl/flat_file/flat_file.hpp"
+#include <shared_mutex>
 #include "logger/logger.hpp"
 #include "model/converters/json_block_factory.hpp"
 
 namespace iroha {
   namespace ametsuchi {
 
+    class FlatFile;
+
     struct ConnectionContext {
       ConnectionContext(std::unique_ptr<FlatFile> block_store,
-                        std::unique_ptr<cpp_redis::client> index,
                         std::unique_ptr<pqxx::lazyconnection> pg_lazy,
-                        std::unique_ptr<pqxx::nontransaction> pg_nontx)
-          : block_store(std::move(block_store)),
-            index(std::move(index)),
-            pg_lazy(std::move(pg_lazy)),
-            pg_nontx(std::move(pg_nontx)) {
-      }
+                        std::unique_ptr<pqxx::nontransaction> pg_nontx);
 
       std::unique_ptr<FlatFile> block_store;
-      std::unique_ptr<cpp_redis::client> index;
       std::unique_ptr<pqxx::lazyconnection> pg_lazy;
       std::unique_ptr<pqxx::nontransaction> pg_nontx;
     };
 
     class StorageImpl : public Storage {
      protected:
-      static nonstd::optional<ConnectionContext>
-      initConnections(std::string block_store_dir,
-                      std::string redis_host,
-                      std::size_t redis_port,
-                      std::string postgres_options);
+      static expected::Result<ConnectionContext, std::string> initConnections(
+          std::string block_store_dir, std::string postgres_options);
 
      public:
-      static std::shared_ptr<StorageImpl> create(
-          std::string block_store_dir, std::string redis_host,
-          std::size_t redis_port, std::string postgres_connection);
+      static expected::Result<std::shared_ptr<StorageImpl>, std::string> create(
+          std::string block_store_dir, std::string postgres_connection);
 
-      std::unique_ptr<TemporaryWsv> createTemporaryWsv() override;
+      expected::Result<std::unique_ptr<TemporaryWsv>, std::string>
+      createTemporaryWsv() override;
 
-      std::unique_ptr<MutableStorage> createMutableStorage() override;
+      expected::Result<std::unique_ptr<MutableStorage>, std::string>
+      createMutableStorage() override;
 
-      virtual bool insertBlock(model::Block block) override;
+      /**
+       * Insert block without validation
+       * @param blocks - block for insertion
+       * @return true if all blocks are inserted
+       */
+      virtual bool insertBlock(const shared_model::interface::Block &block) override;
+
+      /**
+       * Insert blocks without validation
+       * @param blocks - collection of blocks for insertion
+       * @return true if inserted
+       */
+      virtual bool insertBlocks(
+          const std::vector<std::shared_ptr<shared_model::interface::Block>> &blocks) override;
 
       virtual void dropStorage() override;
 
@@ -77,14 +80,12 @@ namespace iroha {
 
       std::shared_ptr<BlockQuery> getBlockQuery() const override;
 
-     protected:
+      ~StorageImpl() override;
 
+     protected:
       StorageImpl(std::string block_store_dir,
-                  std::string redis_host,
-                  std::size_t redis_port,
                   std::string postgres_options,
                   std::unique_ptr<FlatFile> block_store,
-                  std::unique_ptr<cpp_redis::client> index,
                   std::unique_ptr<pqxx::lazyconnection> wsv_connection,
                   std::unique_ptr<pqxx::nontransaction> wsv_transaction);
 
@@ -94,17 +95,10 @@ namespace iroha {
       const std::string block_store_dir_;
 
       // db info
-      const std::string redis_host_;
-      const std::size_t redis_port_;
       const std::string postgres_options_;
 
      private:
       std::unique_ptr<FlatFile> block_store_;
-
-      /**
-       * Redis connection
-       */
-      std::unique_ptr<cpp_redis::client> index_;
 
       /**
        * Pg connection with direct transaction management
@@ -127,12 +121,12 @@ namespace iroha {
      protected:
       const std::string init_ = R"(
 CREATE TABLE IF NOT EXISTS role (
-    role_id character varying(45),
+    role_id character varying(32),
     PRIMARY KEY (role_id)
 );
 CREATE TABLE IF NOT EXISTS domain (
-    domain_id character varying(164),
-    default_role character varying(45) NOT NULL REFERENCES role(role_id),
+    domain_id character varying(255),
+    default_role character varying(32) NOT NULL REFERENCES role(role_id),
     PRIMARY KEY (domain_id)
 );
 CREATE TABLE IF NOT EXISTS signatory (
@@ -140,51 +134,71 @@ CREATE TABLE IF NOT EXISTS signatory (
     PRIMARY KEY (public_key)
 );
 CREATE TABLE IF NOT EXISTS account (
-    account_id character varying(197),
-    domain_id character varying(164) NOT NULL REFERENCES domain,
+    account_id character varying(288),
+    domain_id character varying(255) NOT NULL REFERENCES domain,
     quorum int NOT NULL,
     transaction_count int NOT NULL DEFAULT 0,
     data JSONB,
     PRIMARY KEY (account_id)
 );
 CREATE TABLE IF NOT EXISTS account_has_signatory (
-    account_id character varying(197) NOT NULL REFERENCES account,
+    account_id character varying(288) NOT NULL REFERENCES account,
     public_key bytea NOT NULL REFERENCES signatory,
     PRIMARY KEY (account_id, public_key)
 );
 CREATE TABLE IF NOT EXISTS peer (
     public_key bytea NOT NULL,
-    address character varying(21) NOT NULL UNIQUE,
+    address character varying(261) NOT NULL UNIQUE,
     PRIMARY KEY (public_key)
 );
 CREATE TABLE IF NOT EXISTS asset (
-    asset_id character varying(197),
-    domain_id character varying(164) NOT NULL REFERENCES domain,
+    asset_id character varying(288),
+    domain_id character varying(255) NOT NULL REFERENCES domain,
     precision int NOT NULL,
     data json,
     PRIMARY KEY (asset_id)
 );
 CREATE TABLE IF NOT EXISTS account_has_asset (
-    account_id character varying(197) NOT NULL REFERENCES account,
-    asset_id character varying(197) NOT NULL REFERENCES asset,
+    account_id character varying(288) NOT NULL REFERENCES account,
+    asset_id character varying(288) NOT NULL REFERENCES asset,
     amount decimal NOT NULL,
     PRIMARY KEY (account_id, asset_id)
 );
 CREATE TABLE IF NOT EXISTS role_has_permissions (
-    role_id character varying(45) NOT NULL REFERENCES role,
+    role_id character varying(32) NOT NULL REFERENCES role,
     permission_id character varying(45),
     PRIMARY KEY (role_id, permission_id)
 );
 CREATE TABLE IF NOT EXISTS account_has_roles (
-    account_id character varying(197) NOT NULL REFERENCES account,
-    role_id character varying(45) NOT NULL REFERENCES role,
+    account_id character varying(288) NOT NULL REFERENCES account,
+    role_id character varying(32) NOT NULL REFERENCES role,
     PRIMARY KEY (account_id, role_id)
 );
 CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
-    permittee_account_id character varying(197) NOT NULL REFERENCES account,
-    account_id character varying(197) NOT NULL REFERENCES account,
+    permittee_account_id character varying(288) NOT NULL REFERENCES account,
+    account_id character varying(288) NOT NULL REFERENCES account,
     permission_id character varying(45),
     PRIMARY KEY (permittee_account_id, account_id, permission_id)
+);
+CREATE TABLE IF NOT EXISTS height_by_hash (
+    hash bytea,
+    height text
+);
+CREATE TABLE IF NOT EXISTS height_by_account_set (
+    account_id text,
+    height text
+);
+CREATE TABLE IF NOT EXISTS index_by_creator_height (
+    id serial,
+    creator_id text,
+    height text,
+    index text
+);
+CREATE TABLE IF NOT EXISTS index_by_id_height_asset (
+    id text,
+    height text,
+    asset_id text,
+    index text
 );
 )";
     };

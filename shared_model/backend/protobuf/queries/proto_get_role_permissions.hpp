@@ -33,10 +33,7 @@ namespace shared_model {
      public:
       template <typename QueryType>
       explicit GetRolePermissions(QueryType &&query)
-          : CopyableProto(std::forward<QueryType>(query)),
-            role_permissions_(detail::makeReferenceGenerator(
-                &proto_->payload(),
-                &iroha::protocol::Query::Payload::get_role_permissions)) {}
+          : CopyableProto(std::forward<QueryType>(query)) {}
 
       GetRolePermissions(const GetRolePermissions &o)
           : GetRolePermissions(o.proto_) {}
@@ -45,13 +42,13 @@ namespace shared_model {
           : GetRolePermissions(std::move(o.proto_)) {}
 
       const interface::types::RoleIdType &roleId() const override {
-        return role_permissions_->role_id();
+        return role_permissions_.role_id();
       }
 
      private:
       // ------------------------------| fields |-------------------------------
-      const detail::LazyInitializer<const iroha::protocol::GetRolePermissions &>
-          role_permissions_;
+      const iroha::protocol::GetRolePermissions &role_permissions_{
+          proto_->payload().get_role_permissions()};
     };
 
   }  // namespace proto

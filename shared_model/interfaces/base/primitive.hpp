@@ -18,8 +18,19 @@
 #ifndef IROHA_SHARED_MODEL_PRIMITIVE_HPP
 #define IROHA_SHARED_MODEL_PRIMITIVE_HPP
 
+#include <memory>
+#include <numeric>
+#include <vector>
+
 #include "interfaces/base/model_primitive.hpp"
 #include "utils/swig_keyword_hider.hpp"
+
+#ifdef DISABLE_BACKWARD
+#define PRIMITIVE_WITH_OLD(Model, OldModel) ModelPrimitive<Model>
+#else
+#define PRIMITIVE_WITH_OLD(Model, OldModel) Primitive<Model, OldModel>
+#endif
+#define PRIMITIVE(Model) PRIMITIVE_WITH_OLD(Model, iroha::model::Model)
 
 namespace shared_model {
   namespace interface {
@@ -49,6 +60,19 @@ namespace shared_model {
       DEPRECATED virtual OldModelType *makeOldModel() const = 0;
     };
 
+    template <class NewModel, class OldModel = typename NewModel::OldModelType>
+    static inline std::vector<OldModel> toOldVector(
+        const std::vector<std::shared_ptr<NewModel>> &vec) {
+      return std::accumulate(
+          vec.begin(),
+          vec.end(),
+          std::vector<OldModel>{},
+          [](auto &out, const auto &item) {
+            auto ptr = std::unique_ptr<OldModel>(item->makeOldModel());
+            out.emplace_back(*ptr);
+            return out;
+          });
+    }
   }  // namespace interface
 }  // namespace shared_model
 #endif  // IROHA_SHARED_MODEL_PRIMITIVE_HPP

@@ -15,42 +15,44 @@
  * limitations under the License.
  */
 
-#include <grpc++/server.h>
-#include <grpc++/server_builder.h>
-#include <grpc++/server_context.h>
-#include <logger/logger.hpp>
-#include <main/server_runner.hpp>
+#include "main/server_runner.hpp"
 
-ServerRunner::ServerRunner(const std::string &address)
-    : serverAddress_(address) {}
+#include <boost/format.hpp>
 
-ServerRunner::~ServerRunner() { toriiServiceHandler_->shutdown(); }
+const auto kPortBindError = "Cannot bind server to address %s";
 
-void ServerRunner::run(std::unique_ptr<torii::CommandService> command_service,
-                       std::unique_ptr<torii::QueryService> query_service) {
+ServerRunner::ServerRunner(const std::string &address, bool reuse)
+    : serverAddress_(address), reuse_(reuse) {}
+
+ServerRunner &ServerRunner::append(std::shared_ptr<grpc::Service> service) {
+  services_.push_back(service);
+  return *this;
+}
+
+iroha::expected::Result<int, std::string> ServerRunner::run() {
   grpc::ServerBuilder builder;
+  int selected_port = 0;
 
-  builder.AddListeningPort(serverAddress_, grpc::InsecureServerCredentials());
+  if (not reuse_) {
+    builder.AddChannelArgument(GRPC_ARG_ALLOW_REUSEPORT, 0);
+  }
 
-  // Register services.
-  toriiServiceHandler_ = std::make_unique<torii::ToriiServiceHandler>(builder);
-  toriiServiceHandler_->assignCommandHandler(std::move(command_service));
-  toriiServiceHandler_->assignQueryHandler(std::move(query_service));
+  builder.AddListeningPort(
+      serverAddress_, grpc::InsecureServerCredentials(), &selected_port);
+
+  for (auto &service : services_) {
+    builder.RegisterService(service.get());
+  }
 
   serverInstance_ = builder.BuildAndStart();
   serverInstanceCV_.notify_one();
 
-  // proceed to server's main loop
-  toriiServiceHandler_->handleRpcs();
-}
-
-void ServerRunner::shutdown() {
-  serverInstance_->Shutdown();
-
-  while (not toriiServiceHandler_->isShutdownCompletionQueue()) {
-    usleep(1);  // wait for shutting down completion queue
+  if (selected_port == 0) {
+    return iroha::expected::makeError(
+        (boost::format(kPortBindError) % serverAddress_).str());
   }
-  toriiServiceHandler_->shutdown();
+
+  return iroha::expected::makeValue(selected_port);
 }
 
 void ServerRunner::waitForServersReady() {

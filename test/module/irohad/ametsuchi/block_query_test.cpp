@@ -15,15 +15,17 @@
  * limitations under the License.
  */
 
+#include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
-#include "ametsuchi/impl/redis_block_index.hpp"
-#include "ametsuchi/impl/redis_block_query.hpp"
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
+#include "ametsuchi/impl/postgres_block_index.hpp"
+#include "ametsuchi/impl/postgres_block_query.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 using namespace iroha::ametsuchi;
-using namespace iroha::model;
 using namespace framework::test_subscriber;
 
 class BlockQueryTest : public AmetsuchiTest {
@@ -31,57 +33,78 @@ class BlockQueryTest : public AmetsuchiTest {
   void SetUp() override {
     AmetsuchiTest::SetUp();
 
-    file = FlatFile::create(block_store_path);
-    ASSERT_TRUE(file);
-    index = std::make_shared<RedisBlockIndex>(client);
-    blocks = std::make_shared<RedisBlockQuery>(client, *file);
+    auto tmp = FlatFile::create(block_store_path);
+    ASSERT_TRUE(tmp);
+    file = std::move(*tmp);
+    postgres_connection = std::make_unique<pqxx::lazyconnection>(pgopt_);
+    try {
+      postgres_connection->activate();
+    } catch (const pqxx::broken_connection &e) {
+      FAIL() << "Connection to PostgreSQL broken: " << e.what();
+    }
+    transaction = std::make_unique<pqxx::nontransaction>(
+        *postgres_connection, "Postgres block indexes");
+
+    index = std::make_shared<PostgresBlockIndex>(*transaction);
+    blocks = std::make_shared<PostgresBlockQuery>(*transaction, *file);
+
+    transaction->exec(init_);
 
     // First transaction in block1
-    Transaction txn1_1;
-    txn1_1.creator_account_id = creator1;
-    tx_hashes.push_back(iroha::hash(txn1_1));
+    auto txn1_1 = TestTransactionBuilder().creatorAccountId(creator1).build();
+    tx_hashes.push_back(txn1_1.hash());
 
     // Second transaction in block1
-    Transaction txn1_2;
-    txn1_2.creator_account_id = creator1;
-    tx_hashes.push_back(iroha::hash(txn1_2));
+    auto txn1_2 = TestTransactionBuilder().creatorAccountId(creator1).build();
+    tx_hashes.push_back(txn1_2.hash());
 
-    Block block1;
-    block1.height = 1;
-    block1.transactions.push_back(txn1_1);
-    block1.transactions.push_back(txn1_2);
-    auto block1hash = iroha::hash(block1);
+    auto block1 =
+        TestBlockBuilder()
+            .height(1)
+            .transactions(
+                std::vector<shared_model::proto::Transaction>({txn1_1, txn1_2}))
+            .prevHash(shared_model::crypto::Hash(zero_string))
+            .build();
 
     // First tx in block 1
-    Transaction txn2_1;
-    txn2_1.creator_account_id = creator1;
-    tx_hashes.push_back(iroha::hash(txn2_1));
+    auto txn2_1 = TestTransactionBuilder().creatorAccountId(creator1).build();
+    tx_hashes.push_back(txn2_1.hash());
 
     // Second tx in block 2
-    Transaction txn2_2;
-    // this tx has another creator
-    txn2_2.creator_account_id = creator2;
-    tx_hashes.push_back(iroha::hash(txn2_2));
+    auto txn2_2 = TestTransactionBuilder().creatorAccountId(creator2).build();
+    tx_hashes.push_back(txn2_2.hash());
 
-    Block block2;
-    block2.height = 2;
-    block2.prev_hash = block1hash;
-    block2.transactions.push_back(txn2_1);
-    block2.transactions.push_back(txn2_2);
+    auto block2 =
+        TestBlockBuilder()
+            .height(2)
+            .transactions(
+                std::vector<shared_model::proto::Transaction>({txn2_1, txn2_2}))
+            .prevHash(block1.hash())
+            .build();
 
     for (const auto &b : {block1, block2}) {
-      file->add(b.height, iroha::stringToBytes(converters::jsonToString(
-          converters::JsonBlockFactory().serialize(b))));
+      // TODO IR-975 victordrobny 12.02.2018 convert from
+      // shared_model::proto::Block after FlatFile will be reworked to new
+      // model
+      auto old_block = *std::unique_ptr<iroha::model::Block>(b.makeOldModel());
+      file->add(b.height(),
+                iroha::stringToBytes(iroha::model::converters::jsonToString(
+                    iroha::model::converters::JsonBlockFactory().serialize(old_block))));
       index->index(b);
+      blocks_total++;
     }
   }
 
-  std::vector<iroha::hash256_t> tx_hashes;
+  std::unique_ptr<pqxx::lazyconnection> postgres_connection;
+  std::unique_ptr<pqxx::nontransaction> transaction;
+  std::vector<shared_model::crypto::Hash> tx_hashes;
   std::shared_ptr<BlockQuery> blocks;
   std::shared_ptr<BlockIndex> index;
   std::unique_ptr<FlatFile> file;
   std::string creator1 = "user1@test";
   std::string creator2 = "user2@test";
+  std::size_t blocks_total{0};
+  std::string zero_string = std::string("0", 32);
 };
 
 /**
@@ -96,7 +119,7 @@ TEST_F(BlockQueryTest, GetAccountTransactionsFromSeveralBlocks) {
   auto getCreator1TxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions(creator1), 3);
   getCreator1TxWrapper.subscribe(
-      [this](auto val) { EXPECT_EQ(val.creator_account_id, creator1); });
+      [this](auto val) { EXPECT_EQ(val->creatorAccountId(), creator1); });
   ASSERT_TRUE(getCreator1TxWrapper.validate());
 }
 
@@ -112,7 +135,7 @@ TEST_F(BlockQueryTest, GetAccountTransactionsFromSingleBlock) {
   auto getCreator2TxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions(creator2), 1);
   getCreator2TxWrapper.subscribe(
-      [this](auto val) { EXPECT_EQ(val.creator_account_id, creator2); });
+      [this](auto val) { EXPECT_EQ(val->creatorAccountId(), creator2); });
   ASSERT_TRUE(getCreator2TxWrapper.validate());
 }
 
@@ -145,10 +168,10 @@ TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
     subs_cnt++;
     if (subs_cnt == 1) {
       EXPECT_TRUE(tx);
-      EXPECT_EQ(this->tx_hashes[1], iroha::hash(*tx));
+      EXPECT_EQ(tx_hashes[1], (*tx)->hash());
     } else {
       EXPECT_TRUE(tx);
-      EXPECT_EQ(this->tx_hashes[3], iroha::hash(*tx));
+      EXPECT_EQ(tx_hashes[3], (*tx)->hash());
     }
   });
   ASSERT_TRUE(wrapper.validate());
@@ -162,9 +185,8 @@ TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
  * @then nullopt values are retrieved
  */
 TEST_F(BlockQueryTest, GetTransactionsIncludesNonExistingTxHashes) {
-  iroha::hash256_t invalid_tx_hash_1, invalid_tx_hash_2;
-  invalid_tx_hash_1[0] = 1;
-  invalid_tx_hash_2[0] = 2;
+  shared_model::crypto::Hash invalid_tx_hash_1(zero_string),
+      invalid_tx_hash_2(std::string("9", 32));
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, invalid_tx_hash_2}), 2);
   wrapper.subscribe(
@@ -196,8 +218,7 @@ TEST_F(BlockQueryTest, GetTransactionsWithEmpty) {
  */
 TEST_F(BlockQueryTest, GetTransactionsWithInvalidTxAndValidTx) {
   // TODO 15/11/17 motxx - Use EqualList VerificationStrategy
-  iroha::hash256_t invalid_tx_hash_1;
-  invalid_tx_hash_1[0] = 1;
+  shared_model::crypto::Hash invalid_tx_hash_1(zero_string);
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, tx_hashes[0]}), 2);
   wrapper.subscribe([this](auto tx) {
@@ -207,8 +228,145 @@ TEST_F(BlockQueryTest, GetTransactionsWithInvalidTxAndValidTx) {
       EXPECT_EQ(boost::none, tx);
     } else {
       EXPECT_TRUE(tx);
-      EXPECT_EQ(this->tx_hashes[0], iroha::hash(*tx));
+      EXPECT_EQ(tx_hashes[0], (*tx)->hash());
     }
   });
+  ASSERT_TRUE(wrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test AND 1 tx created by user2@test
+ * @when get non-existent 1000th block
+ * @then nothing is returned
+ */
+TEST_F(BlockQueryTest, GetNonExistentBlock) {
+  auto wrapper = make_test_subscriber<CallExact>(blocks->getBlocks(1000, 1), 0);
+  wrapper.subscribe();
+  ASSERT_TRUE(wrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test AND 1 tx created by user2@test
+ * @when height=1, count=1
+ * @then returned exactly 1 block
+ */
+TEST_F(BlockQueryTest, GetExactlyOneBlock) {
+  auto wrapper = make_test_subscriber<CallExact>(blocks->getBlocks(1, 1), 1);
+  wrapper.subscribe();
+  ASSERT_TRUE(wrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test AND 1 tx created by user2@test
+ * @when count=0
+ * @then no blocks returned
+ */
+TEST_F(BlockQueryTest, GetBlocks_Count0) {
+  auto wrapper = make_test_subscriber<CallExact>(blocks->getBlocks(1, 0), 0);
+  wrapper.subscribe();
+  ASSERT_TRUE(wrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test AND 1 tx created by user2@test
+ * @when get zero block
+ * @then no blocks returned
+ */
+TEST_F(BlockQueryTest, GetZeroBlock) {
+  auto wrapper = make_test_subscriber<CallExact>(blocks->getBlocks(0, 1), 0);
+  wrapper.subscribe();
+  ASSERT_TRUE(wrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test AND 1 tx created by user2@test
+ * @when get all blocks starting from 1
+ * @then returned all blocks (2)
+ */
+TEST_F(BlockQueryTest, GetBlocksFrom1) {
+  auto wrapper =
+      make_test_subscriber<CallExact>(blocks->getBlocksFrom(1), blocks_total);
+  size_t counter = 1;
+  wrapper.subscribe([&counter](const auto &b) {
+    // wrapper returns blocks 1 and 2
+    ASSERT_EQ(b->height(), counter++)
+        << "block height: " << b->height() << "counter: " << counter;
+  });
+  ASSERT_TRUE(wrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test AND 1 tx created by user2@test. Block #1 is filled with trash data
+ * (NOT JSON).
+ * @when read block #1
+ * @then get no blocks
+ */
+TEST_F(BlockQueryTest, GetBlockButItIsNotJSON) {
+  namespace fs = boost::filesystem;
+  size_t block_n = 1;
+
+  // write something that is NOT JSON to block #1
+  auto block_path = fs::path{block_store_path} / FlatFile::id_to_name(block_n);
+  fs::ofstream block_file(block_path);
+  std::string content = R"(this is definitely not json)";
+  block_file << content;
+  block_file.close();
+
+  auto wrapper =
+      make_test_subscriber<CallExact>(blocks->getBlocks(block_n, 1), 0);
+  wrapper.subscribe();
+
+  ASSERT_TRUE(wrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test AND 1 tx created by user2@test. Block #1 is filled with trash data
+ * (NOT JSON).
+ * @when read block #1
+ * @then get no blocks
+ */
+TEST_F(BlockQueryTest, GetBlockButItIsInvalidBlock) {
+  namespace fs = boost::filesystem;
+  size_t block_n = 1;
+
+  // write bad block instead of block #1
+  auto block_path = fs::path{block_store_path} / FlatFile::id_to_name(block_n);
+  fs::ofstream block_file(block_path);
+  std::string content = R"({
+  "testcase": [],
+  "description": "make sure this is valid json, but definitely not a block"
+})";
+  block_file << content;
+  block_file.close();
+
+  auto wrapper =
+      make_test_subscriber<CallExact>(blocks->getBlocks(block_n, 1), 0);
+  wrapper.subscribe();
+
+  ASSERT_TRUE(wrapper.validate());
+}
+
+/**
+ * @given block store with 2 blocks totally containing 3 txs created by
+ * user1@test AND 1 tx created by user2@test
+ * @when get top 2 blocks
+ * @then last 2 blocks returned with correct height
+ */
+TEST_F(BlockQueryTest, GetTop2Blocks) {
+  size_t blocks_n = 2;  // top 2 blocks
+  auto wrapper =
+      make_test_subscriber<CallExact>(blocks->getTopBlocks(blocks_n), blocks_n);
+
+  size_t counter = blocks_total - blocks_n + 1;
+  wrapper.subscribe(
+      [&counter](const auto &b) { ASSERT_EQ(b->height(), counter++); });
+
   ASSERT_TRUE(wrapper.validate());
 }

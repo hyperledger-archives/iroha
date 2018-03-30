@@ -31,35 +31,44 @@ BlockLoaderService::BlockLoaderService(std::shared_ptr<BlockQuery> storage)
 }
 
 grpc::Status BlockLoaderService::retrieveBlocks(
-    ::grpc::ServerContext *context, const proto::BlocksRequest *request,
+    ::grpc::ServerContext *context,
+    const proto::BlocksRequest *request,
     ::grpc::ServerWriter<::iroha::protocol::Block> *writer) {
   storage_->getBlocksFrom(request->height())
-      .map([this](auto block) { return factory_.serialize(block); })
+      .map([this](auto block) {
+        return factory_.serialize(
+            *std::unique_ptr<iroha::model::Block>(block->makeOldModel()));
+      })
       .as_blocking()
       .subscribe([writer](auto block) { writer->Write(block); });
   return grpc::Status::OK;
 }
 
 grpc::Status BlockLoaderService::retrieveBlock(
-    ::grpc::ServerContext *context, const proto::BlockRequest *request,
+    ::grpc::ServerContext *context,
+    const proto::BlockRequest *request,
     protocol::Block *response) {
   const auto hash = stringToBlob<Block::HashType::size()>(request->hash());
-  if (not hash.has_value()) {
+  if (not hash) {
     log_->error("Bad hash in request, {}",
                 bytestringToHexstring(request->hash()));
     return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
                         "Bad hash provided");
   }
 
-  nonstd::optional<protocol::Block> result;
+  boost::optional<protocol::Block> result;
   storage_->getBlocksFrom(1)
       .filter([hash](auto block) {
-        return block.hash == hash.value();
+        return shared_model::crypto::toBinaryString(block->hash())
+            == hash->to_string();
       })
-      .map([this](auto block) { return factory_.serialize(block); })
+      .map([this](auto block) {
+        return factory_.serialize(
+            *std::unique_ptr<iroha::model::Block>(block->makeOldModel()));
+      })
       .as_blocking()
       .subscribe([&result](auto block) { result = block; });
-  if (not result.has_value()) {
+  if (not result) {
     log_->info("Cannot find block with requested hash");
     return grpc::Status(grpc::StatusCode::NOT_FOUND, "Block not found");
   }

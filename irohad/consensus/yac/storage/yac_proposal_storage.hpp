@@ -18,26 +18,27 @@
 #ifndef IROHA_YAC_PROPOSAL_STORAGE_HPP
 #define IROHA_YAC_PROPOSAL_STORAGE_HPP
 
+#include <memory>
+#include <boost/optional.hpp>
 #include <vector>
-#include <unordered_map>
-#include <nonstd/optional.hpp>
 
-#include "consensus/yac/messages.hpp"
-#include "consensus/yac/storage/yac_common.hpp"
+#include "consensus/yac/impl/supermajority_checker_impl.hpp"
 #include "consensus/yac/storage/storage_result.hpp"
 #include "consensus/yac/storage/yac_block_storage.hpp"
+#include "consensus/yac/storage/yac_common.hpp"
 #include "logger/logger.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
+      struct VoteMessage;
+
       /**
        * Class for storing votes related to given proposal hash
        * and gain information about commits/rejects for those hash
        */
       class YacProposalStorage {
-
        private:
         // --------| private api |--------
 
@@ -53,7 +54,11 @@ namespace iroha {
        public:
         // --------| public api |--------
 
-        YacProposalStorage(ProposalHash hash, uint64_t peers_in_round);
+        YacProposalStorage(
+            ProposalHash hash,
+            uint64_t peers_in_round,
+            std::shared_ptr<SupermajorityChecker> supermajority_checker =
+                std::make_shared<SupermajorityCheckerImpl>());
 
         /**
          * Try to insert vote to storage
@@ -62,7 +67,7 @@ namespace iroha {
          * Nullopt if not inserted, possible reasons - duplication,
          * wrong proposal hash.
          */
-        nonstd::optional<Answer> insert(VoteMessage vote);
+        boost::optional<Answer> insert(VoteMessage vote);
 
         /**
          * Insert bundle of messages into storage
@@ -70,7 +75,7 @@ namespace iroha {
          * @return result, that contains actual state of storage,
          * after insertion of all votes.
          */
-        nonstd::optional<Answer> insert(std::vector<VoteMessage> messages);
+        boost::optional<Answer> insert(std::vector<VoteMessage> messages);
 
         /**
          * Provides hash assigned for storage
@@ -80,7 +85,7 @@ namespace iroha {
         /**
          * @return current state of storage
          */
-        nonstd::optional<Answer> getState() const;
+        boost::optional<Answer> getState() const;
 
        private:
         // --------| private api |--------
@@ -111,16 +116,14 @@ namespace iroha {
          * number of not voted peers + most frequent vote count < supermajority
          * @return answer with proof
          */
-        nonstd::optional<Answer> findRejectProof();
-
-
+        boost::optional<Answer> findRejectProof();
 
         // --------| fields |--------
 
         /**
          * Current state of storage
          */
-        nonstd::optional<Answer> current_state_;
+        boost::optional<Answer> current_state_;
 
         /**
          * Vector of block storages based on this proposal
@@ -138,11 +141,16 @@ namespace iroha {
         uint64_t peers_in_round_;
 
         /**
+         * Provide functions to check supermajority
+         */
+        std::shared_ptr<SupermajorityChecker> supermajority_checker_;
+
+        /**
          * Storage logger
          */
         logger::Logger log_;
       };
-    } // namespace yac
-  } // namespace consensus
-} // namespace iroha
-#endif //IROHA_YAC_PROPOSAL_STORAGE_HPP
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha
+#endif  // IROHA_YAC_PROPOSAL_STORAGE_HPP

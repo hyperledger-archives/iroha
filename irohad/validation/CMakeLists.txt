@@ -19,25 +19,17 @@ add_library(stateful_validator
     impl/stateful_validator_impl.cpp
     )
 target_link_libraries(stateful_validator
-    optional
     rxcpp
     model
-    logger
-    )
-
-add_library(stateless_validator
-    impl/stateless_validator_impl.cpp
-    )
-target_link_libraries(stateless_validator
-    model
+    model_interfaces
     logger
     )
 
 add_library(chain_validator
     impl/chain_validator_impl.cpp)
 target_link_libraries(chain_validator
-    optional
     rxcpp
     model
     logger
+    supermajority_check
     )

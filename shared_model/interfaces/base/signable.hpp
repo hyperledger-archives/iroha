@@ -18,56 +18,45 @@
 #ifndef IROHA_SIGNABLE_HPP
 #define IROHA_SIGNABLE_HPP
 
-#include <boost/functional/hash.hpp>
-#include <unordered_set>
-#include "interfaces/base/hashable.hpp"
+#include <boost/optional.hpp>
+
+#include "cryptography/hash_providers/sha3_256.hpp"
+#include "interfaces/common_objects/signable_hash.hpp"
 #include "interfaces/common_objects/signature.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "utils/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
 
 namespace shared_model {
+
+  namespace crypto {
+    class Signed;
+    class PublicKey;
+  }  // namespace crypto
+
   namespace interface {
 
-    /**
-     * Interface provides signatures and adding them to model object
-     * @tparam Model - your new style model
-     * Architecture note: we inherit Signable from Hashable with following
-     * assumption - all Signable objects are signed by hash value.
-     */
-    template <typename Model, typename OldModel>
-    class Signable : public Hashable<Model, OldModel> {
-     public:
-      /**
-       * Hash class for SigWrapper type. It's required since std::unordered_set
-       * uses hash inside and it should be declared explicitly for user-defined
-       * types.
-       */
-      class SignableHash {
-       public:
-        /**
-         * Operator which actually calculates hash. Uses boost::hash_combine to
-         * calculate hash from several fields.
-         * @param sig - item to find hash from
-         * @return calculated hash
-         */
-        size_t operator()(const types::SignatureType &sig) const {
-          std::size_t seed = 0;
-          boost::hash_combine(seed, sig->publicKey().blob());
-          boost::hash_combine(seed, sig->signedData().blob());
-          return seed;
-        }
-      };
+#ifdef DISABLE_BACKWARD
+#define SIGNABLE(Model) Signable<Model>
+#else
+#define SIGNABLE(Model) Signable<Model, iroha::model::Model>
+#endif
 
-      /**
-       * Type of set of signatures
-       *
-       * Note: we can't use const SignatureType due to unordered_set
-       * limitations: it requires to have write access for elements for some
-       * internal operations.
-       */
-      using SignatureSetType =
-          std::unordered_set<types::SignatureType, SignableHash>;
+/**
+ * Interface provides signatures and adds them to model object
+ * @tparam Model - your new style model
+ */
+#ifndef DISABLE_BACKWARD
+    template <typename Model,
+              typename OldModel,
+              typename HashProvider = shared_model::crypto::Sha3_256>
+    class Signable : public Primitive<Model, OldModel> {
+#else
+    template <typename Model,
+              typename HashProvider = shared_model::crypto::Sha3_256>
+    class Signable : public ModelPrimitive<Model> {
+#endif
+     public:
+      using HashProviderType = HashProvider;
 
       /**
        * @return attached signatures
@@ -79,7 +68,14 @@ namespace shared_model {
        * @param signature - signature object for insertion
        * @return true, if signature was added
        */
-      virtual bool addSignature(const types::SignatureType &signature) = 0;
+      virtual bool addSignature(const crypto::Signed &signed_blob,
+                                const crypto::PublicKey &public_key) = 0;
+
+      /**
+       * Clear object's signatures
+       * @return true, if signatures were cleared
+       */
+      virtual bool clearSignatures() = 0;
 
       /**
        * @return time of creation
@@ -89,17 +85,29 @@ namespace shared_model {
       /**
        * @return object payload (everything except signatures)
        */
-      virtual const typename Hashable<Model, OldModel>::BlobType &payload()
-          const = 0;
+      virtual const types::BlobType &payload() const = 0;
+
+      /**
+       * @return blob representation of object include signatures
+       */
+      virtual const types::BlobType &blob() const = 0;
 
       /**
        * Provides comparison based on equality of objects and signatures.
        * @param rhs - another model object
        * @return true, if objects totally equal
        */
-      virtual bool equals(const Model &rhs) const {
-        return *this == rhs and this->signatures() == rhs.signatures()
+      bool operator==(const Model &rhs) const override {
+        return this->hash() == rhs.hash()
+            and this->signatures() == rhs.signatures()
             and this->createdTime() == rhs.createdTime();
+      }
+
+      const types::HashType &hash() const {
+        if (hash_ == boost::none) {
+          hash_.emplace(HashProviderType::makeHash(payload()));
+        }
+        return *hash_;
       }
 
       // ------------------------| Primitive override |-------------------------
@@ -112,6 +120,9 @@ namespace shared_model {
                        [](auto &signature) { return signature->toString(); })
             .finalize();
       }
+
+     private:
+      mutable boost::optional<types::HashType> hash_;
     };
 
   }  // namespace interface

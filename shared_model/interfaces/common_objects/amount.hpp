@@ -22,7 +22,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <vector>
 #include "amount/amount.hpp"
-#include "interfaces/base/hashable.hpp"
+#include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "utils/string_builder.hpp"
 
@@ -32,7 +32,7 @@ namespace shared_model {
     /**
      * Representation of fixed point number
      */
-    class Amount : public Hashable<Amount, iroha::Amount> {
+    class Amount : public PRIMITIVE_WITH_OLD(Amount, iroha::Amount) {
      public:
       /**
        * Gets integer representation value, which ignores precision
@@ -56,6 +56,19 @@ namespace shared_model {
       }
 
       /**
+       * String representation.
+       * @return string representation of the asset.
+       */
+      std::string toStringRepr() const {
+        if (precision() > 0) {
+          boost::multiprecision::cpp_dec_float_50 float50(intValue());
+          float50 /= pow(10, precision());
+          return float50.str(precision(), std::ios_base::fixed);
+        }
+        return intValue().str(0, std::ios_base::fixed);
+      }
+
+      /**
        * Stringify the data.
        * @return the content of asset.
        */
@@ -67,6 +80,7 @@ namespace shared_model {
             .finalize();
       }
 
+#ifndef DISABLE_BACKWARD
       /**
        * Makes old model.
        * @return An allocated old model of account asset response.
@@ -74,6 +88,8 @@ namespace shared_model {
       OldModelType *makeOldModel() const override {
         return new OldModelType(intValue(), precision());
       }
+
+#endif
     };
   }  // namespace interface
 }  // namespace shared_model

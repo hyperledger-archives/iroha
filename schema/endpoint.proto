@@ -14,8 +14,7 @@ enum TxStatus {
   STATEFUL_VALIDATION_FAILED = 2;
   STATEFUL_VALIDATION_SUCCESS = 3;
   COMMITTED = 4;
-  IN_PROGRESS = 5;
-  NOT_RECEIVED = 6;
+  NOT_RECEIVED = 5;
 }
 
 message ToriiResponse {
@@ -30,23 +29,10 @@ message TxStatusRequest{
 service CommandService {
   rpc Torii (Transaction) returns (google.protobuf.Empty);
   rpc Status (TxStatusRequest) returns (ToriiResponse);
+  rpc StatusStream(TxStatusRequest) returns (stream ToriiResponse);
 }
 
 
 service QueryService {
   rpc Find (Query) returns (QueryResponse);
-}
-
-enum GenesisBlockApplied {
-  APPLY_FAILURE = 0;
-  APPLY_SUCCESS = 1;
-}
-
-message ApplyGenesisBlockResponse {
-  GenesisBlockApplied applied = 1;
-}
-
-service GenesisBlockService {
-  rpc SendGenesisBlock (Block) returns (ApplyGenesisBlockResponse);
-  rpc SendAbortGenesisBlock (Block) returns (google.protobuf.Empty);
 }

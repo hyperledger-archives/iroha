@@ -15,30 +15,49 @@
  * limitations under the License.
  */
 
-#include <utility>
 #include "consensus/yac/cluster_order.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
 
-      ClusterOrdering::ClusterOrdering(std::vector<model::Peer> order)
-          : order_(std::move(order)) {}
-
-      model::Peer ClusterOrdering::currentLeader() {
-        if (index_ >= order_.size()) {
-          index_ = 0;  // TODO 01/08/17 Muratov: dangerous indexing, what if order_.size == 0? IR-503
+      boost::optional<ClusterOrdering> ClusterOrdering::create(
+          const std::vector<std::shared_ptr<shared_model::interface::Peer>>
+              &order) {
+        if (order.empty()) {
+          return boost::none;
         }
-        return order_.at(index_);
+        return ClusterOrdering(order);
       }
 
-      bool ClusterOrdering::hasNext() {
+      ClusterOrdering::ClusterOrdering(
+          std::vector<std::shared_ptr<shared_model::interface::Peer>> order)
+          : order_(std::move(order)) {}
+
+    // TODO :  24/03/2018 x3medima17: make it const, IR-1164
+    const shared_model::interface::Peer& ClusterOrdering::currentLeader() {
+        if (index_ >= order_.size()) {
+          index_ = 0;
+        }
+        return *order_.at(index_);
+      }
+
+      bool ClusterOrdering::hasNext() const {
         return index_ != order_.size();
       }
 
       ClusterOrdering &ClusterOrdering::switchToNext() {
         ++index_;
         return *this;
+      }
+
+      std::vector<std::shared_ptr<shared_model::interface::Peer>>
+      ClusterOrdering::getPeers() const {
+        return order_;
+      }
+
+      size_t ClusterOrdering::getNumberOfPeers() const {
+        return order_.size();
       }
     }  // namespace yac
   }    // namespace consensus

@@ -42,22 +42,20 @@ namespace iroha {
        */
       auto createLoader(
           std::shared_ptr<ametsuchi::PeerQuery> peer_query,
-          std::shared_ptr<ametsuchi::BlockQuery> storage,
-          std::shared_ptr<model::ModelCryptoProvider> crypto_provider);
-     public:
+          std::shared_ptr<ametsuchi::BlockQuery> storage);
 
+     public:
       /**
        * Initialize block loader with service and loader
        * @return initialized service
        */
       std::shared_ptr<BlockLoader> initBlockLoader(
           std::shared_ptr<ametsuchi::PeerQuery> peer_query,
-          std::shared_ptr<ametsuchi::BlockQuery> storage,
-          std::shared_ptr<model::ModelCryptoProvider> crypto_provider);
+          std::shared_ptr<ametsuchi::BlockQuery> storage);
 
       std::shared_ptr<BlockLoaderImpl> loader;
       std::shared_ptr<BlockLoaderService> service;
     };
-  } // namespace network
-} // namespace iroha
-#endif //IROHA_BLOCK_LOADER_INIT_HPP
+  }  // namespace network
+}  // namespace iroha
+#endif  // IROHA_BLOCK_LOADER_INIT_HPP

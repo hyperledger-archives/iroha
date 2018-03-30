@@ -11,6 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// TODO luckychess 8.08.2018 add test for number of methods
+// in interface and proto implementation IR-1080
+
 public class QueryTest {
     static {
         try {
@@ -138,6 +141,24 @@ public class QueryTest {
     @Test
     void getRolePermissions() {
         UnsignedQuery query = builder.getRolePermissions("user").build();
+        assertTrue(checkProtoQuery(proto(query)));
+    }
+
+    @Test
+    void getTransactions() {
+        HashVector hv = new HashVector();
+        char[] hash = new char[32];
+        java.util.Arrays.fill(hash, '1');
+        hv.add(new Hash(new String(hash)));
+        java.util.Arrays.fill(hash, '2');
+        hv.add(new Hash(new String(hash)));
+        UnsignedQuery query = builder.getTransactions(hv).build();
+        assertTrue(checkProtoQuery(proto(query)));
+    }
+
+    @Test
+    void getAccountDetail() {
+        UnsignedQuery query = builder.getAccountDetail("user@test").build();
         assertTrue(checkProtoQuery(proto(query)));
     }
 }

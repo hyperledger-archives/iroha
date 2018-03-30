@@ -20,16 +20,13 @@ add_library(hash
         )
 
 target_link_libraries(hash
-        common
-        pb_model_converters
         ed25519
+        boost
         )
 
-add_library(cryptography
+add_library(ed25519_crypto
         ed25519_impl.cpp
         )
-
-target_link_libraries(cryptography
-        ed25519
+target_link_libraries(ed25519_crypto
         hash
         )

@@ -20,265 +20,203 @@
 namespace iroha {
   namespace ametsuchi {
 
-    using std::string;
+    using shared_model::interface::types::AccountIdType;
+    using shared_model::interface::types::AssetIdType;
+    using shared_model::interface::types::DomainIdType;
+    using shared_model::interface::types::JsonType;
+    using shared_model::interface::types::PermissionNameType;
+    using shared_model::interface::types::PubkeyType;
+    using shared_model::interface::types::RoleIdType;
 
-    using nonstd::optional;
-    using nonstd::nullopt;
-    using model::Account;
-    using model::Asset;
-    using model::AccountAsset;
-    using model::Peer;
-    using model::Domain;
+    const std::string kRoleId = "role_id";
+    const char *kAccountNotFound = "Account {} not found";
+    const std::string kPublicKey = "public_key";
+    const std::string kAssetId = "asset_id";
+    const std::string kAccountId = "account_id";
+    const std::string kDomainId = "domain_id";
 
     PostgresWsvQuery::PostgresWsvQuery(pqxx::nontransaction &transaction)
-        : transaction_(transaction), log_(logger::log("PostgresWsvQuery")) {}
+        : transaction_(transaction),
+          log_(logger::log("PostgresWsvQuery")),
+          execute_{makeExecuteOptional(transaction_, log_)} {}
+
+    PostgresWsvQuery::PostgresWsvQuery(
+        std::unique_ptr<pqxx::lazyconnection> connection,
+        std::unique_ptr<pqxx::nontransaction> transaction)
+        : connection_ptr_(std::move(connection)),
+          transaction_ptr_(std::move(transaction)),
+          transaction_(*transaction_ptr_),
+          log_(logger::log("PostgresWsvQuery")),
+          execute_{makeExecuteOptional(transaction_, log_)} {}
 
     bool PostgresWsvQuery::hasAccountGrantablePermission(
-        const std::string &permitee_account_id,
-        const std::string &account_id,
-        const std::string &permission_id) {
-      pqxx::result result;
-      try {
-        result = transaction_.exec(
-            "SELECT * FROM account_has_grantable_permissions WHERE "
-            "permittee_account_id = "
-            + transaction_.quote(permitee_account_id)
-            + " AND account_id = "
-            + transaction_.quote(account_id)
-            + " AND permission_id = "
-            + transaction_.quote(permission_id)
-            + ";");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return false;
-      }
-      return result.size() == 1;
+        const AccountIdType &permitee_account_id,
+        const AccountIdType &account_id,
+        const PermissionNameType &permission_id) {
+      return execute_(
+                 "SELECT * FROM account_has_grantable_permissions WHERE "
+                 "permittee_account_id = "
+                 + transaction_.quote(permitee_account_id)
+                 + " AND account_id = " + transaction_.quote(account_id)
+                 + " AND permission_id = " + transaction_.quote(permission_id)
+                 + ";")
+          | [](const auto &result) { return result.size() == 1; };
     }
 
-    nonstd::optional<std::vector<std::string>>
-    PostgresWsvQuery::getAccountRoles(const std::string &account_id) {
-      pqxx::result result;
-      try {
-        result = transaction_.exec(
-            "SELECT role_id FROM account_has_roles WHERE account_id = "
-            + transaction_.quote(account_id)
-            + ";");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      std::vector<std::string> roles;
-      for (const auto &row : result) {
-        roles.emplace_back(row.at("role_id").c_str());
-      }
-      return roles;
+    boost::optional<std::vector<RoleIdType>> PostgresWsvQuery::getAccountRoles(
+        const AccountIdType &account_id) {
+      return execute_(
+                 "SELECT role_id FROM account_has_roles WHERE account_id = "
+                 + transaction_.quote(account_id) + ";")
+          | [&](const auto &result) {
+              return transform<std::string>(result, [](const auto &row) {
+                return row.at(kRoleId).c_str();
+              });
+            };
     }
 
-    nonstd::optional<std::vector<std::string>>
-    PostgresWsvQuery::getRolePermissions(const std::string &role_name) {
-      pqxx::result result;
-      try {
-        result = transaction_.exec(
-            "SELECT permission_id FROM role_has_permissions WHERE role_id = "
-            + transaction_.quote(role_name)
-            + ";");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      std::vector<std::string> permissions;
-      for (const auto &row : result) {
-        permissions.emplace_back(row.at("permission_id").c_str());
-      }
-      return permissions;
+    boost::optional<std::vector<PermissionNameType>>
+    PostgresWsvQuery::getRolePermissions(const RoleIdType &role_name) {
+      return execute_(
+                 "SELECT permission_id FROM role_has_permissions WHERE role_id "
+                 "= "
+                 + transaction_.quote(role_name) + ";")
+          | [&](const auto &result) {
+              return transform<std::string>(result, [](const auto &row) {
+                return row.at("permission_id").c_str();
+              });
+            };
     }
 
-    nonstd::optional<std::vector<std::string>> PostgresWsvQuery::getRoles() {
-      pqxx::result result;
-      try {
-        result = transaction_.exec("SELECT role_id FROM role;");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      std::vector<std::string> roles;
-      for (const auto &row : result) {
-        roles.emplace_back(row.at("role_id").c_str());
-      }
-      return roles;
+    boost::optional<std::vector<RoleIdType>> PostgresWsvQuery::getRoles() {
+      return execute_("SELECT role_id FROM role;") | [&](const auto &result) {
+        return transform<std::string>(
+            result, [](const auto &row) { return row.at(kRoleId).c_str(); });
+      };
     }
 
-    optional<Account> PostgresWsvQuery::getAccount(const string &account_id) {
-      pqxx::result result;
-      try {
-        result = transaction_.exec("SELECT * FROM account WHERE account_id = "
-                                   + transaction_.quote(account_id)
-                                   + ";");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      if (result.empty()) {
-        log_->info("Account {} not found", account_id);
-        return nullopt;
-      }
-      Account account;
-      auto row = result.at(0);
-      row.at("account_id") >> account.account_id;
-      row.at("domain_id") >> account.domain_id;
-      row.at("quorum") >> account.quorum;
-      row.at("data") >> account.json_data;
-      //      row.at("transaction_count") >> ?
-      return account;
+    boost::optional<std::shared_ptr<shared_model::interface::Account>>
+    PostgresWsvQuery::getAccount(const AccountIdType &account_id) {
+      return execute_("SELECT * FROM account WHERE account_id = "
+                      + transaction_.quote(account_id) + ";")
+                 | [&](const auto &result)
+                 -> boost::optional<
+                     std::shared_ptr<shared_model::interface::Account>> {
+        if (result.empty()) {
+          log_->info(kAccountNotFound, account_id);
+          return boost::none;
+        }
+
+        return fromResult(makeAccount(result.at(0)));
+      };
     }
 
-    nonstd::optional<std::string> PostgresWsvQuery::getAccountDetail(
-        const std::string &account_id,
-        const std::string &creator_account_id,
-        const std::string &detail) {
-      pqxx::result result;
-      try {
-        result = transaction_.exec(
-            "SELECT data#>>"
-            + transaction_.quote("{" + creator_account_id + ", " + detail + "}")
-            + " FROM account WHERE account_id = "
-            + transaction_.quote(account_id)
-            + ";");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      if (result.empty()) {
-        log_->info("Account {} not found", account_id);
-        return nullopt;
-      }
-      auto row = result.at(0);
-      std::string res;
-      row.at(0) >> res;
+    boost::optional<std::string> PostgresWsvQuery::getAccountDetail(
+        const std::string &account_id) {
+      return execute_("SELECT data#>>" + transaction_.quote("{}")
+                      + " FROM account WHERE account_id = "
+                      + transaction_.quote(account_id) + ";")
+                 | [&](const auto &result) -> boost::optional<std::string> {
+        if (result.empty()) {
+          log_->info(kAccountNotFound, account_id);
+          return boost::none;
+        }
+        auto row = result.at(0);
+        std::string res;
+        row.at(0) >> res;
 
-      // if res is empty, then that key does not exist for this account
-      if (res.empty()) {
-        return nullopt;
-      }
-      return res;
+        // if res is empty, then that key does not exist for this account
+        if (res.empty()) {
+          return boost::none;
+        }
+        return res;
+      };
     }
 
-    nonstd::optional<std::vector<pubkey_t>> PostgresWsvQuery::getSignatories(
-        const string &account_id) {
-      pqxx::result result;
-      try {
-        result = transaction_.exec(
-            "SELECT public_key FROM account_has_signatory WHERE account_id = "
-            + transaction_.quote(account_id)
-            + ";");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      std::vector<pubkey_t> signatories;
-      for (const auto &row : result) {
-        pqxx::binarystring public_key_str(row.at("public_key"));
-        pubkey_t pubkey;
-        std::copy(public_key_str.begin(), public_key_str.end(), pubkey.begin());
-        signatories.push_back(pubkey);
-      }
-      return signatories;
+    boost::optional<std::vector<PubkeyType>> PostgresWsvQuery::getSignatories(
+        const AccountIdType &account_id) {
+      return execute_(
+                 "SELECT public_key FROM account_has_signatory WHERE "
+                 "account_id = "
+                 + transaction_.quote(account_id) + ";")
+          | [&](const auto &result) {
+              return transform<PubkeyType>(result, [&](const auto &row) {
+                pqxx::binarystring public_key_str(row.at(kPublicKey));
+                return PubkeyType(public_key_str.str());
+              });
+            };
     }
 
-    optional<Asset> PostgresWsvQuery::getAsset(const string &asset_id) {
+    boost::optional<std::shared_ptr<shared_model::interface::Asset>>
+    PostgresWsvQuery::getAsset(const AssetIdType &asset_id) {
       pqxx::result result;
-      try {
-        result = transaction_.exec("SELECT * FROM asset WHERE asset_id = "
-                                   + transaction_.quote(asset_id)
-                                   + ";");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      if (result.empty()) {
-        log_->info("Asset {} not found", asset_id);
-        return nullopt;
-      }
-      Asset asset;
-      auto row = result.at(0);
-      row.at("asset_id") >> asset.asset_id;
-      row.at("domain_id") >> asset.domain_id;
-      int32_t precision;
-      row.at("precision") >> precision;
-      asset.precision = precision;
-      //      row.at("data") >> ?
-      return asset;
+      return execute_("SELECT * FROM asset WHERE asset_id = "
+                      + transaction_.quote(asset_id) + ";")
+                 | [&](const auto &result)
+                 -> boost::optional<
+                     std::shared_ptr<shared_model::interface::Asset>> {
+        if (result.empty()) {
+          log_->info("Asset {} not found", asset_id);
+          return boost::none;
+        }
+        return fromResult(makeAsset(result.at(0)));
+      };
     }
 
-    optional<AccountAsset> PostgresWsvQuery::getAccountAsset(
-        const std::string &account_id, const std::string &asset_id) {
-      pqxx::result result;
-      try {
-        result = transaction_.exec(
-            "SELECT * FROM account_has_asset WHERE account_id = "
-            + transaction_.quote(account_id)
-            + " AND asset_id = "
-            + transaction_.quote(asset_id)
-            + ";");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      if (result.empty()) {
-        log_->info("Account {} does not have asset {}", account_id, asset_id);
-        return nullopt;
-      }
-      model::AccountAsset asset;
-      auto row = result.at(0);
-      row.at("account_id") >> asset.account_id;
-      row.at("asset_id") >> asset.asset_id;
-      std::string amount_str;
-      row.at("amount") >> amount_str;
-      asset.balance = Amount::createFromString(amount_str).value();
-      return asset;
+    boost::optional<std::shared_ptr<shared_model::interface::AccountAsset>>
+    PostgresWsvQuery::getAccountAsset(const AccountIdType &account_id,
+                                      const AssetIdType &asset_id) {
+      return execute_("SELECT * FROM account_has_asset WHERE account_id = "
+                      + transaction_.quote(account_id)
+                      + " AND asset_id = " + transaction_.quote(asset_id) + ";")
+                 | [&](const auto &result)
+                 -> boost::optional<
+                     std::shared_ptr<shared_model::interface::AccountAsset>> {
+        if (result.empty()) {
+          log_->info("Account {} does not have asset {}", account_id, asset_id);
+          return boost::none;
+        }
+
+        return fromResult(makeAccountAsset(result.at(0)));
+      };
     }
 
-    nonstd::optional<model::Domain> PostgresWsvQuery::getDomain(
-        const std::string &domain_id) {
-      pqxx::result result;
-      try {
-        result = transaction_.exec("SELECT * FROM domain WHERE domain_id = "
-                                   + transaction_.quote(domain_id)
-                                   + ";");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      if (result.empty()) {
-        log_->info("Domain {} not found", domain_id);
-        return nullopt;
-      }
-      Domain domain;
-      auto row = result.at(0);
-      row.at("domain_id") >> domain.domain_id;
-      row.at("default_role") >> domain.default_role;
-      return domain;
+    boost::optional<std::shared_ptr<shared_model::interface::Domain>>
+    PostgresWsvQuery::getDomain(const DomainIdType &domain_id) {
+      return execute_("SELECT * FROM domain WHERE domain_id = "
+                      + transaction_.quote(domain_id) + ";")
+                 | [&](const auto &result)
+                 -> boost::optional<
+                     std::shared_ptr<shared_model::interface::Domain>> {
+        if (result.empty()) {
+          log_->info("Domain {} not found", domain_id);
+          return boost::none;
+        }
+        return fromResult(makeDomain(result.at(0)));
+      };
     }
 
-    nonstd::optional<std::vector<model::Peer>> PostgresWsvQuery::getPeers() {
+    boost::optional<std::vector<std::shared_ptr<shared_model::interface::Peer>>>
+    PostgresWsvQuery::getPeers() {
       pqxx::result result;
-      try {
-        result = transaction_.exec("SELECT * FROM peer;");
-      } catch (const std::exception &e) {
-        log_->error(e.what());
-        return nullopt;
-      }
-      std::vector<Peer> peers;
-      for (const auto &row : result) {
-        model::Peer peer;
-        pqxx::binarystring public_key_str(row.at("public_key"));
-        pubkey_t pubkey;
-        std::copy(public_key_str.begin(), public_key_str.end(), pubkey.begin());
-        peer.pubkey = pubkey;
-        row.at("address") >> peer.address;
-        peers.push_back(peer);
-      }
-      return peers;
+      return execute_("SELECT * FROM peer;") | [&](const auto &result)
+                 -> boost::optional<std::vector<
+                     std::shared_ptr<shared_model::interface::Peer>>> {
+        auto results = transform<shared_model::builder::BuilderResult<
+            shared_model::interface::Peer>>(result, makePeer);
+        std::vector<std::shared_ptr<shared_model::interface::Peer>> peers;
+        for (auto &r : results) {
+          r.match(
+              [&](expected::Value<
+                  std::shared_ptr<shared_model::interface::Peer>> &v) {
+                peers.push_back(v.value);
+              },
+              [&](expected::Error<std::shared_ptr<std::string>> &e) {
+                log_->info(*e.error);
+              });
+        }
+        return peers;
+      };
     }
   }  // namespace ametsuchi
 }  // namespace iroha

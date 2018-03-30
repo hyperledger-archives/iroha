@@ -29,27 +29,22 @@ namespace shared_model {
      public:
       template <typename CommandType>
       explicit AppendRole(CommandType &&command)
-          : CopyableProto(std::forward<CommandType>(command)),
-            append_role_(detail::makeReferenceGenerator(
-                proto_, &iroha::protocol::Command::append_role)) {}
+          : CopyableProto(std::forward<CommandType>(command)) {}
 
       AppendRole(const AppendRole &o) : AppendRole(o.proto_) {}
 
-      AppendRole(AppendRole &&o) noexcept
-          : AppendRole(std::move(o.proto_)) {}
+      AppendRole(AppendRole &&o) noexcept : AppendRole(std::move(o.proto_)) {}
 
       const interface::types::AccountIdType &accountId() const override {
-        return append_role_->account_id();
+        return append_role_.account_id();
       }
 
       const interface::types::RoleIdType &roleName() const override {
-        return append_role_->role_name();
+        return append_role_.role_name();
       }
 
      private:
-      template <typename Value>
-      using Lazy = detail::LazyInitializer<Value>;
-      const Lazy<const iroha::protocol::AppendRole &> append_role_;
+      const iroha::protocol::AppendRole &append_role_{proto_->append_role()};
     };
 
   }  // namespace proto

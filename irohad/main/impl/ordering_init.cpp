@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-#include "ordering/impl/ordering_service_transport_grpc.hpp"
 #include "main/impl/ordering_init.hpp"
+#include "ametsuchi/ordering_service_persistent_state.hpp"
+#include "interfaces/common_objects/peer.hpp"
 
 namespace iroha {
   namespace network {
@@ -31,22 +32,40 @@ namespace iroha {
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
         size_t max_size,
         std::chrono::milliseconds delay_milliseconds,
-        std::shared_ptr<network::OrderingServiceTransport> transport) {
+        std::shared_ptr<network::OrderingServiceTransport> transport,
+        std::shared_ptr<ametsuchi::OrderingServicePersistentState>
+            persistent_state) {
       return std::make_shared<ordering::OrderingServiceImpl>(
-          wsv, max_size, delay_milliseconds.count(), transport);
+          wsv,
+          max_size,
+          delay_milliseconds.count(),
+          transport,
+          persistent_state);
     }
 
     std::shared_ptr<ordering::OrderingGateImpl> OrderingInit::initOrderingGate(
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
         size_t max_size,
-        std::chrono::milliseconds delay_milliseconds) {
-      auto network_address = wsv->getLedgerPeers().value().front().address;
+        std::chrono::milliseconds delay_milliseconds,
+        std::shared_ptr<ametsuchi::OrderingServicePersistentState>
+            persistent_state) {
+      auto ledger_peers = wsv->getLedgerPeers();
+      if (not ledger_peers or ledger_peers.value().empty()) {
+        log_->error(
+            "Ledger don't have peers. Do you set correct genesis block?");
+      }
+      auto network_address = ledger_peers->front()->address();
       ordering_gate_transport =
           std::make_shared<iroha::ordering::OrderingGateTransportGrpc>(
               network_address);
 
-      ordering_service_transport = std::make_shared<ordering::OrderingServiceTransportGrpc>();
-      ordering_service = createService(wsv, max_size, delay_milliseconds, ordering_service_transport);
+      ordering_service_transport =
+          std::make_shared<ordering::OrderingServiceTransportGrpc>();
+      ordering_service = createService(wsv,
+                                       max_size,
+                                       delay_milliseconds,
+                                       ordering_service_transport,
+                                       persistent_state);
       ordering_service_transport->subscribe(ordering_service);
       ordering_gate = createGate(ordering_gate_transport);
       return ordering_gate;

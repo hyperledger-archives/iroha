@@ -20,11 +20,14 @@
 
 #include <algorithm>
 #include <iostream>
-#include <nonstd/optional.hpp>
+#include <boost/optional.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "parser/parser.hpp"
+
+namespace parser {
+  boost::optional<std::string> parseFirstCommand(std::string line);
+}
 
 namespace iroha_cli {
   namespace interactive {
@@ -67,7 +70,8 @@ namespace iroha_cli {
      * Return mapping of Command_name to parameters descriptions
      * @return Map with parameters of common commands
      */
-    ParamsMap getCommonParamsMap();
+    ParamsMap getCommonParamsMap(const std::string &default_ip,
+                                 int default_port);
 
     /**
      * Handle error with empty command
@@ -116,9 +120,9 @@ namespace iroha_cli {
     /**
      * Get string input from user
      * @param message Message to ask user
-     * @return user's input
+     * @return nullopt if termintaing symbol, else user's input
      */
-    std::string promtString(const std::string &message);
+    boost::optional<std::string> promptString(const std::string &message);
 
     /**
      * Parse parameters in interactive and shortcuted mode.
@@ -131,7 +135,7 @@ namespace iroha_cli {
      * @param notes - parameters needed to run the command
      * @return vector with needed parameters
      */
-    nonstd::optional<std::vector<std::string>> parseParams(
+    boost::optional<std::vector<std::string>> parseParams(
         std::string line, std::string command_name, ParamsMap params_map);
 
     /**
@@ -167,13 +171,13 @@ namespace iroha_cli {
      * @return nullopt if key not found, value if found
      */
     template <typename K, typename V>
-    nonstd::optional<V> findInHandlerMap(K command_name,
+    boost::optional<V> findInHandlerMap(K command_name,
                                          std::unordered_map<K, V> params_map) {
       auto it = params_map.find(command_name);
       if (it == params_map.end()) {
         // Command not found, report error
         handleUnknownCommand(command_name);
-        return nonstd::nullopt;
+        return boost::none;
       }
       return it->second;
     }
@@ -183,8 +187,10 @@ namespace iroha_cli {
      * @param params in format: vector of strings
      * @return pair if ip and port if formed right, nullopt otherwise
      */
-    nonstd::optional<std::pair<std::string, uint16_t>> parseIrohaPeerParams(
-        std::vector<std::string> params);
+    boost::optional<std::pair<std::string, uint16_t>> parseIrohaPeerParams(
+        std::vector<std::string> params,
+        const std::string &default_ip,
+        int default_port);
 
     /**
      * Handle parsing routine:
@@ -201,26 +207,26 @@ namespace iroha_cli {
      * @return T if parsing successful, nullopt otherwise
      */
     template <typename T, typename V, typename C>
-    nonstd::optional<T> handleParse(
+    boost::optional<T> handleParse(
         C class_pointer,
         std::string &line,
         std::unordered_map<std::string, V> &parsers_map,
         ParamsMap params_map) {
       auto raw_command = parser::parseFirstCommand(line);
-      if (not raw_command.has_value()) {
+      if (not raw_command) {
         handleEmptyCommand();
-        return nonstd::nullopt;
+        return boost::none;
       }
       auto command_name = raw_command.value();
       auto parser = findInHandlerMap(command_name, parsers_map);
-      if (not parser.has_value()) {
+      if (not parser) {
         std::cout << "Parser for command not found" << std::endl;
-        return nonstd::nullopt;
+        return boost::none;
       }
       auto params = parseParams(line, command_name, params_map);
-      if (not params.has_value()) {
+      if (not params) {
         std::cout << "Parse params returned no value" << std::endl;
-        return nonstd::nullopt;
+        return boost::none;
       }
       return (class_pointer->*parser.value())(params.value());
     }

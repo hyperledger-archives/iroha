@@ -19,7 +19,12 @@
 #define IROHA_CONSENSUS_GATE_HPP
 
 #include <rxcpp/rx.hpp>
-#include <model/block.hpp>
+
+namespace shared_model {
+  namespace interface {
+    class Block;
+  }
+}  // namespace shared_model
 
 namespace iroha {
   namespace network {
@@ -29,21 +34,21 @@ namespace iroha {
      */
     class ConsensusGate {
      public:
-
       /**
        * Providing data for consensus for voting
        */
-      virtual void vote(model::Block) = 0;
+      virtual void vote(const shared_model::interface::Block &) = 0;
 
       /**
        * Emit committed blocks
        * Note: committed block may be not satisfy for top block in ledger
        * because synchronization reasons
        */
-      virtual rxcpp::observable<model::Block> on_commit() = 0;
+      virtual rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
+      on_commit() = 0;
 
       virtual ~ConsensusGate() = default;
     };
-  } // namespace network
-} // namespace iroha
-#endif //IROHA_CONSENSUS_GATE_HPP
+  }  // namespace network
+}  // namespace iroha
+#endif  // IROHA_CONSENSUS_GATE_HPP

@@ -18,10 +18,15 @@
 #ifndef IROHA_PEER_QUERY_HPP
 #define IROHA_PEER_QUERY_HPP
 
-#include <vector>
+#include <boost/optional.hpp>
 #include <memory>
-#include "model/peer.hpp"
-#include "ametsuchi/wsv_query.hpp"
+#include <vector>
+
+namespace shared_model {
+  namespace interface {
+    class Peer;
+  }  // namespace interface
+}  // namespace shared_model
 
 namespace iroha {
   namespace ametsuchi {
@@ -30,18 +35,19 @@ namespace iroha {
      * Interface provide clean dependency for getting peers in system
      */
     class PeerQuery {
-     public:
+     protected:
+      using wPeer = std::shared_ptr<shared_model::interface::Peer>;
 
+     public:
       /**
        * Fetch peers stored in ledger
        * @return list of peers in insertion to ledger order
        */
-      virtual nonstd::optional<std::vector<model::Peer>> getLedgerPeers() = 0;
+      virtual boost::optional<std::vector<wPeer>> getLedgerPeers() = 0;
 
       virtual ~PeerQuery() = default;
-
     };
 
   }  // namespace ametsuchi
 }  // namespace iroha
-#endif //IROHA_PEER_QUERY_HPP
+#endif  // IROHA_PEER_QUERY_HPP

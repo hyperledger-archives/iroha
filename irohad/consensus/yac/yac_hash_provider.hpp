@@ -18,12 +18,17 @@
 #ifndef IROHA_YAC_HASH_PROVIDER_HPP
 #define IROHA_YAC_HASH_PROVIDER_HPP
 
-#include <functional>
+#include <memory>
 #include <string>
-#include <vector>
-#include "consensus/yac/cluster_order.hpp"
-#include "model/block.hpp"
-#include "model/peer.hpp"
+
+#include "interfaces/common_objects/types.hpp"
+
+namespace shared_model {
+  namespace interface {
+    class Block;
+    class Signature;
+  }  // namespace interface
+}  // namespace shared_model
 
 namespace iroha {
   namespace consensus {
@@ -33,8 +38,7 @@ namespace iroha {
        public:
         YacHash(std::string proposal, std::string block)
             : proposal_hash(std::move(proposal)),
-              block_hash(std::move(block)) {
-        }
+              block_hash(std::move(block)) {}
 
         YacHash() = default;
 
@@ -51,11 +55,11 @@ namespace iroha {
         /**
          * Peer signature of block
          */
-        model::Signature block_signature;
+        std::shared_ptr<shared_model::interface::Signature> block_signature;
 
         bool operator==(const YacHash &obj) const {
-          return proposal_hash == obj.proposal_hash and
-              block_hash == obj.block_hash;
+          return proposal_hash == obj.proposal_hash
+              and block_hash == obj.block_hash;
         };
 
         bool operator!=(const YacHash &obj) const {
@@ -73,14 +77,15 @@ namespace iroha {
          * @param block - for hashing
          * @return hashed value of block
          */
-        virtual YacHash makeHash(const model::Block &block) const = 0;
+        virtual YacHash makeHash(
+            const shared_model::interface::Block &block) const = 0;
 
         /**
          * Convert YacHash to model hash
          * @param hash - for converting
          * @return HashType of model hash
          */
-        virtual model::Block::HashType toModelHash(
+        virtual shared_model::interface::types::HashType toModelHash(
             const YacHash &hash) const = 0;
 
         virtual ~YacHashProvider() = default;

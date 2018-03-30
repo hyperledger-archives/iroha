@@ -27,13 +27,12 @@
 #include <rapidjson/document.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/stringbuffer.h>
-#include <nonstd/optional.hpp>
 
 #include "common/byteutils.hpp"
 #include "model/block.hpp"
 #include "model/common.hpp"
-#include "model/signature.hpp"
 #include "model/queries/get_transactions.hpp"
+#include "model/signature.hpp"
 
 namespace iroha {
   namespace model {
@@ -52,7 +51,7 @@ namespace iroha {
          */
         template <typename T>
         auto operator()(T &&x) {
-          return nonstd::optional<V>(x);
+          return boost::optional<V>(x);
         }
       };
 
@@ -73,13 +72,13 @@ namespace iroha {
        * @return deserialized field on success, nullopt otherwise
        */
       template <typename T, typename D>
-      nonstd::optional<T> deserializeField(const D &document,
+      boost::optional<T> deserializeField(const D &document,
                                            const std::string &field) {
         if (document.HasMember(field.c_str())
             and document[field.c_str()].template Is<T>()) {
           return document[field.c_str()].template Get<T>();
         }
-        return nonstd::nullopt;
+        return boost::none;
       }
 
       /**
@@ -107,9 +106,12 @@ namespace iroha {
          * @return function, which takes block, returns block with deserialized
          * member on success, nullopt otherwise
          */
-        template <typename T, typename V, typename B,
+        template <typename T,
+                  typename V,
+                  typename B,
                   typename Convert = Convert<V>>
-        auto deserialize(V B::*member, const std::string &field,
+        auto deserialize(V B::*member,
+                         const std::string &field,
                          Convert transform = Convert()) {
           return [this, member, field, transform](auto block) {
             return deserializeField<T>(document, field) | transform
@@ -190,10 +192,11 @@ namespace iroha {
          * @return @see deserialize
          */
         template <typename V, typename B, typename Convert = Convert<V>>
-        auto Array(V B::*member, const std::string &field,
+        auto Array(V B::*member,
+                   const std::string &field,
                    Convert transform = Convert()) {
-          return deserialize<rapidjson::Value::ConstArray>(member, field,
-                                                           transform);
+          return deserialize<rapidjson::Value::ConstArray>(
+              member, field, transform);
         }
 
         /**
@@ -205,10 +208,11 @@ namespace iroha {
          * @return @see deserialize
          */
         template <typename V, typename B, typename Convert = Convert<V>>
-        auto Object(V B::*member, const std::string &field,
+        auto Object(V B::*member,
+                    const std::string &field,
                     Convert transform = Convert()) {
-          return deserialize<rapidjson::Value::ConstObject>(member, field,
-                                                            transform);
+          return deserialize<rapidjson::Value::ConstObject>(
+              member, field, transform);
         }
 
         // document for deserialization
@@ -231,7 +235,7 @@ namespace iroha {
         template <typename T>
         auto operator()(T &&x) {
           auto des = makeFieldDeserializer(x);
-          return nonstd::make_optional<Signature>()
+          return boost::make_optional(Signature())
               | des.String(&Signature::pubkey, "pubkey")
               | des.String(&Signature::signature, "signature");
         }
@@ -245,12 +249,13 @@ namespace iroha {
             return init | [&x](auto signatures) {
               return Convert<Signature>()(x) | [&signatures](auto signature) {
                 signatures.push_back(signature);
-                return nonstd::make_optional(signatures);
+                return boost::make_optional(std::move(signatures));
               };
             };
           };
-          return std::accumulate(x.begin(), x.end(),
-                                 nonstd::make_optional<Block::SignaturesType>(),
+          return std::accumulate(x.begin(),
+                                 x.end(),
+                                 boost::make_optional(Block::SignaturesType()),
                                  acc_signatures);
         }
       };
@@ -261,29 +266,29 @@ namespace iroha {
         auto operator()(T &&x) {
           auto acc_hashes = [](auto init, auto &x) {
             return init | [&x](auto tx_hashes)
-              -> nonstd::optional<GetTransactions::TxHashCollectionType>
-            {
+                       -> boost::optional<
+                           GetTransactions::TxHashCollectionType> {
               // If invalid type included, returns nullopt
               if (not x.IsString()) {
-                return nonstd::nullopt;
+                return boost::none;
               }
               auto tx_hash_opt =
-                Convert<GetTransactions::TxHashType>()(x.GetString());
+                  Convert<GetTransactions::TxHashType>()(x.GetString());
               if (not tx_hash_opt) {
                 // If the the hash is wrong, just skip.
-                return nonstd::make_optional(tx_hashes);
+                return boost::make_optional(std::move(tx_hashes));
               }
               return tx_hash_opt | [&tx_hashes](auto tx_hash) {
                 tx_hashes.push_back(tx_hash);
-                return nonstd::make_optional(tx_hashes);
+                return boost::make_optional(std::move(tx_hashes));
               };
             };
           };
           return std::accumulate(
-            x.begin(),
-            x.end(),
-            nonstd::make_optional<GetTransactions::TxHashCollectionType>(),
-            acc_hashes);
+              x.begin(),
+              x.end(),
+              boost::make_optional(GetTransactions::TxHashCollectionType()),
+              acc_hashes);
         }
       };
 
@@ -302,7 +307,7 @@ namespace iroha {
        * @param string - string for parsing
        * @return JSON document on success, nullopt otherwise
        */
-      nonstd::optional<rapidjson::Document> stringToJson(
+      boost::optional<rapidjson::Document> stringToJson(
           const std::string &string);
 
       /**

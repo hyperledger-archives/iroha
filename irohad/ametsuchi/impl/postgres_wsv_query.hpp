@@ -20,46 +20,65 @@
 
 #include "ametsuchi/wsv_query.hpp"
 
-#include <pqxx/nontransaction>
+#include <pqxx/connection>
 
-#include "logger/logger.hpp"
+#include "postgres_wsv_common.hpp"
 
 namespace iroha {
   namespace ametsuchi {
     class PostgresWsvQuery : public WsvQuery {
      public:
       explicit PostgresWsvQuery(pqxx::nontransaction &transaction);
-      nonstd::optional<std::vector<std::string>> getAccountRoles(
-          const std::string &account_id) override;
+      PostgresWsvQuery(std::unique_ptr<pqxx::lazyconnection> connection,
+                       std::unique_ptr<pqxx::nontransaction> transaction);
+      boost::optional<std::vector<shared_model::interface::types::RoleIdType>>
+      getAccountRoles(const shared_model::interface::types::AccountIdType
+                          &account_id) override;
 
-      nonstd::optional<std::vector<std::string>> getRolePermissions(
-          const std::string &role_name) override;
+      boost::optional<
+          std::vector<shared_model::interface::types::PermissionNameType>>
+      getRolePermissions(
+          const shared_model::interface::types::RoleIdType &role_name) override;
 
-      nonstd::optional<model::Account> getAccount(
-          const std::string &account_id) override;
-      nonstd::optional<std::string> getAccountDetail(
-          const std::string &account_id,
-          const std::string &creator_account_id,
-          const std::string &detail) override;
-      nonstd::optional<std::vector<pubkey_t>> getSignatories(
-          const std::string &account_id) override;
-      nonstd::optional<model::Asset> getAsset(
-          const std::string &asset_id) override;
-      nonstd::optional<model::AccountAsset> getAccountAsset(
-          const std::string &account_id, const std::string &asset_id) override;
-      nonstd::optional<std::vector<model::Peer>> getPeers() override;
-      nonstd::optional<std::vector<std::string>> getRoles() override;
-      nonstd::optional<model::Domain> getDomain(
-          const std::string &domain_id) override;
+      boost::optional<std::shared_ptr<shared_model::interface::Account>>
+      getAccount(const shared_model::interface::types::AccountIdType
+                     &account_id) override;
+      boost::optional<std::string> getAccountDetail(
+          const shared_model::interface::types::AccountIdType &account_id)
+          override;
+      boost::optional<std::vector<shared_model::interface::types::PubkeyType>>
+      getSignatories(const shared_model::interface::types::AccountIdType
+                         &account_id) override;
+      boost::optional<std::shared_ptr<shared_model::interface::Asset>> getAsset(
+          const shared_model::interface::types::AssetIdType &asset_id) override;
+      boost::optional<std::shared_ptr<shared_model::interface::AccountAsset>>
+      getAccountAsset(
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::AssetIdType &asset_id) override;
+      boost::optional<
+          std::vector<std::shared_ptr<shared_model::interface::Peer>>>
+      getPeers() override;
+      boost::optional<std::vector<shared_model::interface::types::RoleIdType>>
+      getRoles() override;
+      boost::optional<std::shared_ptr<shared_model::interface::Domain>>
+      getDomain(const shared_model::interface::types::DomainIdType &domain_id)
+          override;
       bool hasAccountGrantablePermission(
-          const std::string &permitee_account_id,
-          const std::string &account_id,
-          const std::string &permission_id) override;
+          const shared_model::interface::types::AccountIdType
+              &permitee_account_id,
+          const shared_model::interface::types::AccountIdType &account_id,
+          const shared_model::interface::types::PermissionNameType
+              &permission_id) override;
 
      private:
-      pqxx::nontransaction &transaction_;
+      std::unique_ptr<pqxx::lazyconnection> connection_ptr_;
+      std::unique_ptr<pqxx::nontransaction> transaction_ptr_;
 
+      pqxx::nontransaction &transaction_;
       logger::Logger log_;
+
+      using ExecuteType = decltype(makeExecuteOptional(transaction_, log_));
+      ExecuteType execute_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

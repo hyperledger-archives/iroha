@@ -16,73 +16,112 @@
  */
 
 #include "model/converters/pb_query_response_factory.hpp"
-#include "model/converters/pb_transaction_factory.hpp"
 #include "model/converters/pb_common.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 
 namespace iroha {
   namespace model {
     namespace converters {
 
-      nonstd::optional<protocol::QueryResponse>
+      boost::optional<protocol::QueryResponse>
       PbQueryResponseFactory::serialize(
           const std::shared_ptr<QueryResponse> query_response) const {
-        nonstd::optional<protocol::QueryResponse> response = nonstd::nullopt;
+        boost::optional<protocol::QueryResponse> response = boost::none;
         // TODO 26/09/17 grimadas: refactor #VARIANT
         if (instanceof <model::ErrorResponse>(*query_response)) {
-          response = nonstd::make_optional<protocol::QueryResponse>();
+          response = boost::make_optional(protocol::QueryResponse());
           auto er = static_cast<model::ErrorResponse &>(*query_response);
           auto pb_er = serializeErrorResponse(er);
           response->mutable_error_response()->CopyFrom(pb_er);
         }
         if (instanceof <model::AccountAssetResponse>(*query_response)) {
-          response = nonstd::make_optional<protocol::QueryResponse>();
+          response = boost::make_optional(protocol::QueryResponse());
           response->mutable_account_assets_response()->CopyFrom(
               serializeAccountAssetResponse(
                   static_cast<model::AccountAssetResponse &>(*query_response)));
         }
         if (instanceof <model::AccountDetailResponse>(*query_response)) {
-          response = nonstd::make_optional<protocol::QueryResponse>();
+          response = boost::make_optional(protocol::QueryResponse());
           response->mutable_account_detail_response()->CopyFrom(
-            serializeAccountDetailResponse(
-              static_cast<model::AccountDetailResponse &>(*query_response)));
+              serializeAccountDetailResponse(
+                  static_cast<model::AccountDetailResponse &>(
+                      *query_response)));
         }
         if (instanceof <model::AccountResponse>(*query_response)) {
-          response = nonstd::make_optional<protocol::QueryResponse>();
+          response = boost::make_optional(protocol::QueryResponse());
           response->mutable_account_response()->CopyFrom(
               serializeAccountResponse(
                   static_cast<model::AccountResponse &>(*query_response)));
         }
         if (instanceof <model::SignatoriesResponse>(*query_response)) {
-          response = nonstd::make_optional<protocol::QueryResponse>();
+          response = boost::make_optional(protocol::QueryResponse());
           response->mutable_signatories_response()->CopyFrom(
               serializeSignatoriesResponse(
                   static_cast<model::SignatoriesResponse &>(*query_response)));
         }
         if (instanceof <model::TransactionsResponse>(*query_response)) {
-          response = nonstd::make_optional<protocol::QueryResponse>();
+          response = boost::make_optional(protocol::QueryResponse());
           response->mutable_transactions_response()->CopyFrom(
               serializeTransactionsResponse(
                   static_cast<model::TransactionsResponse &>(*query_response)));
         }
         if (instanceof <model::AssetResponse>(*query_response)) {
-          response = nonstd::make_optional<protocol::QueryResponse>();
+          response = boost::make_optional(protocol::QueryResponse());
           response->mutable_asset_response()->CopyFrom(serializeAssetResponse(
               static_cast<model::AssetResponse &>(*query_response)));
         }
         if (instanceof <model::RolesResponse>(*query_response)) {
-          response = nonstd::make_optional<protocol::QueryResponse>();
+          response = boost::make_optional(protocol::QueryResponse());
           response->mutable_roles_response()->CopyFrom(serializeRolesResponse(
               static_cast<model::RolesResponse &>(*query_response)));
         }
         if (instanceof <model::RolePermissionsResponse>(*query_response)) {
-          response = nonstd::make_optional<protocol::QueryResponse>();
+          response = boost::make_optional(protocol::QueryResponse());
           response->mutable_role_permissions_response()->CopyFrom(
               serializeRolePermissionsResponse(
                   static_cast<model::RolePermissionsResponse &>(
                       *query_response)));
         }
 
+        if (response) {
+          response->set_query_hash(query_response->query_hash.to_string());
+        }
         return response;
+      }
+
+      optional_ptr<model::QueryResponse> PbQueryResponseFactory::deserialize(
+          const protocol::QueryResponse &response) const {
+        auto p = [](auto &&o) {
+          using ResponseType = decltype(o);
+          std::shared_ptr<QueryResponse> result =
+              std::make_shared<std::remove_reference_t<ResponseType>>(
+                  std::forward<ResponseType>(o));
+          return result;
+        };
+        switch (response.response_case()) {
+          case protocol::QueryResponse::kAccountAssetsResponse:
+            return p(deserializeAccountAssetResponse(
+                response.account_assets_response()));
+          case protocol::QueryResponse::kAccountDetailResponse:
+            return p(deserializeAccountDetailResponse(
+                response.account_detail_response()));
+          case protocol::QueryResponse::kAccountResponse:
+            return p(deserializeAccountResponse(response.account_response()));
+          case protocol::QueryResponse::kErrorResponse:
+            return p(deserializeErrorResponse(response.error_response()));
+          case protocol::QueryResponse::kSignatoriesResponse:
+            return p(deserializeSignatoriesResponse(
+                response.signatories_response()));
+          case protocol::QueryResponse::kAssetResponse:
+            return p(deserializeAssetResponse(response.asset_response()));
+          case protocol::QueryResponse::kRolesResponse:
+            return p(deserializeRolesResponse(response.roles_response()));
+          case protocol::QueryResponse::kRolePermissionsResponse:
+            return p(deserializeRolePermissionsResponse(
+                response.role_permissions_response()));
+          default:
+            return boost::none;
+        }
       }
 
       protocol::Account PbQueryResponseFactory::serializeAccount(
@@ -111,7 +150,7 @@ namespace iroha {
         protocol::AccountResponse pb_response;
         pb_response.mutable_account()->CopyFrom(
             serializeAccount(accountResponse.account));
-        for (auto role : accountResponse.roles){
+        for (auto role : accountResponse.roles) {
           pb_response.add_account_roles(role);
         }
         return pb_response;
@@ -153,7 +192,8 @@ namespace iroha {
         pb_account_asset->set_account_id(
             accountAssetResponse.acct_asset.account_id);
         auto pb_amount = pb_account_asset->mutable_balance();
-        pb_amount->CopyFrom(serializeAmount(accountAssetResponse.acct_asset.balance));
+        pb_amount->CopyFrom(
+            serializeAmount(accountAssetResponse.acct_asset.balance));
         return pb_response;
       }
 
@@ -172,7 +212,7 @@ namespace iroha {
 
       protocol::AccountDetailResponse
       PbQueryResponseFactory::serializeAccountDetailResponse(
-        const model::AccountDetailResponse &accountDetailResponse) const {
+          const model::AccountDetailResponse &accountDetailResponse) const {
         protocol::AccountDetailResponse pb_response;
         pb_response.set_detail(accountDetailResponse.detail);
         return pb_response;
@@ -180,14 +220,14 @@ namespace iroha {
 
       model::AccountDetailResponse
       PbQueryResponseFactory::deserializeAccountDetailResponse(
-        const protocol::AccountDetailResponse &account_detail_response) const {
+          const protocol::AccountDetailResponse &account_detail_response)
+          const {
         model::AccountDetailResponse res;
         res.detail = account_detail_response.detail();
         return res;
       }
 
-
-        protocol::SignatoriesResponse
+      protocol::SignatoriesResponse
       PbQueryResponseFactory::serializeSignatoriesResponse(
           const model::SignatoriesResponse &signatoriesResponse) const {
         protocol::SignatoriesResponse pb_response;
@@ -241,7 +281,8 @@ namespace iroha {
       model::RolesResponse PbQueryResponseFactory::deserializeRolesResponse(
           const protocol::RolesResponse &response) const {
         model::RolesResponse res{};
-        std::copy(response.roles().begin(), response.roles().end(),
+        std::copy(response.roles().begin(),
+                  response.roles().end(),
                   res.roles.begin());
         return res;
       }
@@ -260,7 +301,8 @@ namespace iroha {
       PbQueryResponseFactory::deserializeRolePermissionsResponse(
           const protocol::RolePermissionsResponse &response) const {
         model::RolePermissionsResponse res;
-        std::copy(response.permissions().begin(), response.permissions().end(),
+        std::copy(response.permissions().begin(),
+                  response.permissions().end(),
                   res.role_permissions.begin());
         return res;
       }
@@ -316,6 +358,43 @@ namespace iroha {
             break;
         }
         return pb_response;
+      }
+
+      model::ErrorResponse PbQueryResponseFactory::deserializeErrorResponse(
+          const protocol::ErrorResponse &response) const {
+        model::ErrorResponse result{};
+        switch (response.reason()) {
+          case protocol::ErrorResponse_Reason_STATELESS_INVALID:
+            result.reason = ErrorResponse::STATELESS_INVALID;
+            break;
+          case protocol::ErrorResponse_Reason_STATEFUL_INVALID:
+            result.reason = ErrorResponse::STATEFUL_INVALID;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ACCOUNT:
+            result.reason = ErrorResponse::NO_ACCOUNT;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ACCOUNT_ASSETS:
+            result.reason = ErrorResponse::NO_ACCOUNT_ASSETS;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ACCOUNT_DETAIL:
+            result.reason = ErrorResponse::NO_ACCOUNT_DETAIL;
+            break;
+          case protocol::ErrorResponse_Reason_NO_SIGNATORIES:
+            result.reason = ErrorResponse::NO_SIGNATORIES;
+            break;
+          case protocol::ErrorResponse_Reason_NOT_SUPPORTED:
+            result.reason = ErrorResponse::NOT_SUPPORTED;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ASSET:
+            result.reason = ErrorResponse::NO_ASSET;
+            break;
+          case protocol::ErrorResponse_Reason_NO_ROLES:
+            result.reason = ErrorResponse::NO_ROLES;
+            break;
+          default:
+            break;
+        }
+        return result;
       }
     }  // namespace converters
   }    // namespace model

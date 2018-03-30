@@ -23,12 +23,10 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <typeinfo>
 #include <type_traits>
+#include <typeinfo>
 #include <vector>
-
-#include <nonstd/optional.hpp>
-#include "crypto/base64.hpp"
+#include <boost/optional.hpp>
 
 /**
  * This file defines common types used in iroha.
@@ -43,8 +41,22 @@ namespace iroha {
   using BadFormatException = std::invalid_argument;
   using byte_t = uint8_t;
 
-  static const std::string code = {'0', '1', '2', '3', '4', '5', '6', '7',
-                                   '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+  static const std::string code = {'0',
+                                   '1',
+                                   '2',
+                                   '3',
+                                   '4',
+                                   '5',
+                                   '6',
+                                   '7',
+                                   '8',
+                                   '9',
+                                   'a',
+                                   'b',
+                                   'c',
+                                   'd',
+                                   'e',
+                                   'f'};
 
   /**
    * Base type which represents blob of fixed size.
@@ -57,29 +69,25 @@ namespace iroha {
   template <size_t size_>
   class blob_t : public std::array<byte_t, size_> {
    public:
-
     /**
      * Initialize blob value
      */
-    blob_t() { this->fill(0); }
+    blob_t() {
+      this->fill(0);
+    }
 
     /**
      * In compile-time returns size of current blob.
      */
-    constexpr static size_t size() { return size_; }
+    constexpr static size_t size() {
+      return size_;
+    }
 
     /**
      * Converts current blob to std::string
      */
     std::string to_string() const noexcept {
       return std::string{this->begin(), this->end()};
-    }
-
-    /**
-     * Converts current blob to base64, represented as std::string
-     */
-    std::string to_base64() const noexcept {
-      return base64_encode(this->data(), size_);
     }
 
     /**
@@ -99,7 +107,7 @@ namespace iroha {
 
     static blob_t<size_> from_string(const std::string &data) {
       if (data.size() != size_) {
-        throw BadFormatException("blob_t: input string has incorrect length");
+        throw BadFormatException("blob_t: input string has incorrect length " + std::to_string(data.size()));
       }
 
       blob_t<size_> b;
@@ -133,10 +141,10 @@ namespace iroha {
    * operator| is used since it has to be binary and left-associative
    * Non-void returning specialization
    *
-   * nonstd::optional<int> f();
-   * nonstd::optional<double> g(int);
+   * boost::optional<int> f();
+   * boost::optional<double> g(int);
    *
-   * nonstd::optional<double> d = f()
+   * boost::optional<double> d = f()
    *    | g;
    *
    * @tparam T - monadic type
@@ -162,7 +170,7 @@ namespace iroha {
    * operator| is used since it has to be binary and left-associative
    * Void specialization
    *
-   * nonstd::optional<int> f();
+   * boost::optional<int> f();
    * void g(int);
    *
    * f() | g;
@@ -175,9 +183,8 @@ namespace iroha {
    * @return monadic value, which can be of another type
    */
   template <typename T, typename Transform>
-  auto operator|(T t, Transform f) ->
-      typename std::enable_if<std::is_same<decltype(f(*t)),
-                                           void>::value>::type {
+  auto operator|(T t, Transform f) -> typename std::
+      enable_if<std::is_same<decltype(f(*t)), void>::value>::type {
     if (t) {
       f(*t);
     }
@@ -193,12 +200,12 @@ namespace iroha {
    */
   template <typename C>
   auto makeOptionalGet(C map) {
-    return [&map](auto key) -> nonstd::optional<typename C::mapped_type> {
+    return [&map](auto key) -> boost::optional<typename C::mapped_type> {
       auto it = map.find(key);
       if (it != std::end(map)) {
         return it->second;
       }
-      return nonstd::nullopt;
+      return boost::none;
     };
   }
 
@@ -221,9 +228,7 @@ namespace iroha {
    */
   template <typename T, typename... Args>
   auto makeMethodInvoke(T &object, Args &&... args) {
-    return [&](auto f) {
-      return (object.*f)(std::forward<Args>(args)...);
-    };
+    return [&](auto f) { return (object.*f)(std::forward<Args>(args)...); };
   }
 
   /**
@@ -238,7 +243,7 @@ namespace iroha {
   auto assignObjectField(B object, V B::*member) {
     return [=](auto value) mutable {
       object.*member = value;
-      return nonstd::make_optional(object);
+      return boost::make_optional(object);
     };
   }
 
@@ -255,7 +260,7 @@ namespace iroha {
   auto assignObjectField(P<B> object, V B::*member) {
     return [=](auto value) mutable {
       (*object).*member = value;
-      return nonstd::make_optional(object);
+      return boost::make_optional(object);
     };
   }
 

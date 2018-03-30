@@ -19,13 +19,12 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 add_library(server_runner server_runner.cpp)
 target_link_libraries(server_runner
-    torii_service
     logger
-    endpoint
-    schema
+    grpc++
+    boost # iroha::expected::Result
     )
 
-add_library(raw_block_insertion impl/raw_block_insertion.cpp)
+add_library(raw_block_insertion impl/raw_block_loader.cpp)
 target_link_libraries(raw_block_insertion
     json_model_converters
     )
@@ -46,13 +45,13 @@ target_link_libraries(application
     ordering_service
     chain_validator
     hash
-    stateless_validator
     stateful_validator
     processors
-    cryptography
+    ed25519_crypto
     simulator
     block_loader
     block_loader_service
+    torii_service
     )
 
 add_executable(irohad irohad.cpp)

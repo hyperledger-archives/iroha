@@ -19,23 +19,34 @@
 #define IROHA_SHARED_MODEL_TYPES_HPP
 
 #include <cstdint>
+#include <set>
 #include <string>
 #include <vector>
-#include "common/types.hpp"
+
+#include "cryptography/hash.hpp"
 #include "cryptography/public_key.hpp"
-#include "interfaces/common_objects/signature.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 
 namespace shared_model {
 
   namespace interface {
+
+    class Signature;
+    class Transaction;
+
     namespace types {
+      /// Type of hash
+      using HashType = crypto::Hash;
+      /// Blob type
+      using BlobType = crypto::Blob;
       /// Type of account id
       using AccountIdType = std::string;
       /// Type of precision
       using PrecisionType = uint8_t;
       /// Type of height (for Block, Proposal etc)
       using HeightType = uint64_t;
+      /// Type of peer address
+      using AddressType = std::string;
       /// Type of public key
       using PubkeyType = crypto::PublicKey;
       /// Type of public keys' collection
@@ -49,9 +60,13 @@ namespace shared_model {
       using AssetIdType = std::string;
       /// Permission type used in permission commands
       using PermissionNameType = std::string;
+      /// Permission set
+      using PermissionSetType = std::set<PermissionNameType>;
       /// Type of Quorum used in transaction and set quorum
       using QuorumType = uint32_t;
       /// Type of transaction signature
+      // TODO Alexey Chernyshov 2018-03-28 - remove PolymorphicWrapper here
+      // https://soramitsu.atlassian.net/browse/IR-1175
       using SignatureType = detail::PolymorphicWrapper<Signature>;
       /// Type of timestamp
       using TimestampType = uint64_t;
@@ -63,10 +78,22 @@ namespace shared_model {
       using AccountNameType = std::string;
       /// Type of asset name
       using AssetNameType = std::string;
-      /// Type of asset name
+      /// Type of detail
       using DetailType = std::string;
       /// Type of JSON data
       using JsonType = std::string;
+      /// Type of account detail key
+      using AccountDetailKeyType = std::string;
+      /// Type of account detail value
+      using AccountDetailValueType = std::string;
+      /// Type of a number of transactions in block
+      using TransactionsNumberType = uint16_t;
+      /// Type of a single Transaction
+      using TransactionType = detail::PolymorphicWrapper<Transaction>;
+      /// Type of transactions' collection
+      using TransactionsCollectionType = std::vector<TransactionType>;
+      /// Type of the transfer message
+      using DescriptionType = std::string;
     }  // namespace types
   }    // namespace interface
 }  // namespace shared_model

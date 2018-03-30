@@ -18,33 +18,34 @@
 #ifndef IROHA_YAC_PEER_ORDERER_HPP
 #define IROHA_YAC_PEER_ORDERER_HPP
 
-#include <nonstd/optional.hpp>
-#include "consensus/yac/cluster_order.hpp"
-#include "consensus/yac/yac_hash_provider.hpp"
+#include <boost/optional.hpp>
 
 namespace iroha {
   namespace consensus {
     namespace yac {
+
+      class ClusterOrdering;
+      class YacHash;
 
       /**
        * Interface responsible for creating order for yac consensus
        */
       class YacPeerOrderer {
        public:
-
         /**
          * Provide initial order for voting, useful when consensus initialized,
          * bot not voted before.
          * @return ordering, like in ledger
          */
-        virtual nonstd::optional<ClusterOrdering> getInitialOrdering() = 0;
+        virtual boost::optional<ClusterOrdering> getInitialOrdering() = 0;
 
         /**
          * Provide order of peers based on hash and initial order of peers
          * @param hash - hash-object that used as seed of ordering shuffle
          * @return shuffled cluster order
          */
-        virtual nonstd::optional<ClusterOrdering> getOrdering(YacHash hash) = 0;
+        virtual boost::optional<ClusterOrdering> getOrdering(
+            const YacHash &hash) = 0;
 
         virtual ~YacPeerOrderer() = default;
       };

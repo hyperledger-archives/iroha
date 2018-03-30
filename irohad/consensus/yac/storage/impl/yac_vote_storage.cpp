@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+#include "consensus/yac/storage/yac_vote_storage.hpp"
+
 #include <algorithm>
 #include <utility>
 
-#include "consensus/yac/storage/yac_vote_storage.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -40,24 +42,26 @@ namespace iroha {
         if (val != proposal_storages_.end()) {
           return val;
         }
-        return proposal_storages_
-            .emplace(proposal_storages_.end(),
-                     msg.hash.proposal_hash, peers_in_round);
+        return proposal_storages_.emplace(
+            proposal_storages_.end(),
+            msg.hash.proposal_hash,
+            peers_in_round,
+            std::make_shared<SupermajorityCheckerImpl>());
       }
 
       // --------| public api |--------
 
-      nonstd::optional<Answer> YacVoteStorage::store(VoteMessage vote,
+      boost::optional<Answer> YacVoteStorage::store(VoteMessage vote,
                                                      uint64_t peers_in_round) {
         return findProposalStorage(vote, peers_in_round)->insert(vote);
       }
 
-      nonstd::optional<Answer> YacVoteStorage::store(CommitMessage commit,
+      boost::optional<Answer> YacVoteStorage::store(CommitMessage commit,
                                                      uint64_t peers_in_round) {
         return insert_votes(commit.votes, peers_in_round);
       }
 
-      nonstd::optional<Answer> YacVoteStorage::store(RejectMessage reject,
+      boost::optional<Answer> YacVoteStorage::store(RejectMessage reject,
                                                      uint64_t peers_in_round) {
         return insert_votes(reject.votes, peers_in_round);
       }
@@ -67,7 +71,7 @@ namespace iroha {
         if (iter == proposal_storages_.end()) {
           return false;
         }
-        return iter->getState().has_value();
+        return bool(iter->getState());
       }
 
       bool YacVoteStorage::getProcessingState(const ProposalHash &hash) {
@@ -80,17 +84,16 @@ namespace iroha {
 
       // --------| private api |--------
 
-      nonstd::optional<Answer>
-      YacVoteStorage::insert_votes(std::vector<VoteMessage> &votes,
-                                   uint64_t peers_in_round) {
+      boost::optional<Answer> YacVoteStorage::insert_votes(
+          std::vector<VoteMessage> &votes, uint64_t peers_in_round) {
         if (not sameProposals(votes)) {
-          return nonstd::nullopt;
+          return boost::none;
         }
 
         auto storage = findProposalStorage(votes.at(0), peers_in_round);
         return storage->insert(votes);
       }
 
-    } // namespace yac
-  } // namespace consensus
-} // namespace iroha
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha

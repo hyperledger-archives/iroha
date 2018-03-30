@@ -1,30 +1,27 @@
-/*
-Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+/**
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
+ * http://soramitsu.co.jp
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-#ifndef __IROHA_LOGGER_LOGGER_HPP__
-#define __IROHA_LOGGER_LOGGER_HPP__
-
-#include <algorithm>
-#include <functional>
-#include <iterator>
-#include <nonstd/optional.hpp>
-#include <numeric>
-#include <sstream>
-#include <string>
+#ifndef IROHA_SPDLOG_LOGGER_LOGGER_HPP
+#define IROHA_SPDLOG_LOGGER_LOGGER_HPP
 
 #include <spdlog/spdlog.h>
+#include <memory>
+#include <numeric>  // for std::accumulate
+#include <string>
 
 namespace logger {
 
@@ -111,7 +108,7 @@ namespace logger {
   template <class Optional, class Lambda>
   std::string opt_to_string(const Optional &opt, Lambda transform) {
     const std::string null_value = "nullopt";
-    return opt.has_value() ? null_value : transform(*opt);
+    return opt ? null_value : transform(*opt);
   }
 
 }  // namespace logger

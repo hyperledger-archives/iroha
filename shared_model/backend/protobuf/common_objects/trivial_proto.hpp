@@ -38,7 +38,8 @@ namespace shared_model {
       explicit TrivialProto(ProtoLoader &&ref)
           : proto_(std::forward<ProtoLoader>(ref)) {}
 
-      typename Iface::ModelType *copy() const override {
+     protected:
+      typename Iface::ModelType *clone() const override {
         return new TrivialProto(Proto(*proto_));
       }
 
@@ -63,13 +64,16 @@ namespace shared_model {
       explicit CopyableProto(ProtoLoader &&ref)
           : proto_(std::forward<ProtoLoader>(ref)) {}
 
-      typename Iface::ModelType *copy() const override final {
-        return new Impl(Proto(*proto_));
+      using TransportType = Proto;
+
+      const Proto &getTransport() const {
+        return *proto_;
       }
 
-      const Proto &getTransport() const { return *proto_; }
-
      protected:
+      typename Iface::ModelType *clone() const override final {
+        return new Impl(Proto(*proto_));
+      }
       detail::ReferenceHolder<Proto> proto_;
     };
   }  // namespace proto

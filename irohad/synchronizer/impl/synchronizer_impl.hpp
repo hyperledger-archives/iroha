@@ -18,12 +18,11 @@
 #define IROHA_SYNCHRONIZER_IMPL_HPP
 
 #include "ametsuchi/mutable_factory.hpp"
+#include "logger/logger.hpp"
 #include "network/block_loader.hpp"
 #include "network/consensus_gate.hpp"
 #include "synchronizer/synchronizer.hpp"
 #include "validation/chain_validator.hpp"
-
-#include "logger/logger.hpp"
 
 namespace iroha {
   namespace synchronizer {
@@ -35,7 +34,10 @@ namespace iroha {
           std::shared_ptr<ametsuchi::MutableFactory> mutableFactory,
           std::shared_ptr<network::BlockLoader> blockLoader);
 
-      void process_commit(iroha::model::Block commit_message) override;
+      ~SynchronizerImpl();
+
+      void process_commit(std::shared_ptr<shared_model::interface::Block>
+                              commit_message) override;
 
       rxcpp::observable<Commit> on_commit_chain() override;
 
@@ -46,10 +48,11 @@ namespace iroha {
 
       // internal
       rxcpp::subjects::subject<Commit> notifier_;
+      rxcpp::composite_subscription subscription_;
 
       logger::Logger log_;
     };
-  }
-}
+  }  // namespace synchronizer
+}  // namespace iroha
 
 #endif  // IROHA_SYNCHRONIZER_IMPL_HPP

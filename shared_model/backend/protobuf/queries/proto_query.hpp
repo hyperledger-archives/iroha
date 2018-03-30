@@ -40,7 +40,7 @@
 #include "backend/protobuf/util.hpp"
 
 template <typename... T, typename Archive>
-shared_model::interface::Query::QueryVariantType load_query(Archive &&ar) {
+shared_model::interface::Query::QueryVariantType loadQuery(Archive &&ar) {
   if (not ar.has_payload()) {
     throw std::invalid_argument("Query missing payload");
   }
@@ -92,16 +92,7 @@ namespace shared_model {
 
       template <typename QueryType>
       explicit Query(QueryType &&query)
-          : CopyableProto(std::forward<QueryType>(query)),
-            variant_(
-                [this] { return load_query<ProtoQueryListType>(*proto_); }),
-            blob_([this] { return makeBlob(*proto_); }),
-            payload_([this] { return makeBlob(proto_->payload()); }),
-            signatures_([this] {
-              SignatureSetType set;
-              set.emplace(new Signature(proto_->signature()));
-              return set;
-            }) {}
+          : CopyableProto(std::forward<QueryType>(query)) {}
 
       Query(const Query &o) : Query(o.proto_) {}
 
@@ -119,29 +110,34 @@ namespace shared_model {
         return proto_->payload().query_counter();
       }
 
-      const Query::BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
-      const Query::BlobType &payload() const override {
+      const interface::types::BlobType &payload() const override {
         return *payload_;
       }
 
       // ------------------------| Signable override  |-------------------------
-      const Query::SignatureSetType &signatures() const override {
+      const interface::SignatureSetType &signatures() const override {
         return *signatures_;
       }
 
-      bool addSignature(
-          const interface::types::SignatureType &signature) override {
+      bool addSignature(const crypto::Signed &signed_blob,
+                        const crypto::PublicKey &public_key) override {
         if (proto_->has_signature()) {
           return false;
         }
 
         auto sig = proto_->mutable_signature();
-        sig->set_pubkey(crypto::toBinaryString(signature->publicKey()));
-        sig->set_signature(crypto::toBinaryString(signature->signedData()));
+        sig->set_signature(crypto::toBinaryString(signed_blob));
+        sig->set_pubkey(crypto::toBinaryString(public_key));
         return true;
+      }
+
+      bool clearSignatures() override {
+        signatures_->clear();
+        return (signatures_->size() == 0);
       }
 
       interface::types::TimestampType createdTime() const override {
@@ -151,11 +147,22 @@ namespace shared_model {
      private:
       // ------------------------------| fields |-------------------------------
       // lazy
-      const LazyVariantType variant_;
+      const LazyVariantType variant_{
+          [this] { return loadQuery<ProtoQueryListType>(*proto_); }};
 
-      const Lazy<BlobType> blob_;
-      const Lazy<BlobType> payload_;
-      const Lazy<SignatureSetType> signatures_;
+      const Lazy<interface::types::BlobType> blob_{
+          [this] { return makeBlob(*proto_); }};
+
+      const Lazy<interface::types::BlobType> payload_{
+          [this] { return makeBlob(proto_->payload()); }};
+
+      const Lazy<interface::SignatureSetType> signatures_{[this] {
+        interface::SignatureSetType set;
+        if (proto_->has_signature()) {
+          set.emplace(new Signature(proto_->signature()));
+        }
+        return set;
+      }};
     };
   }  // namespace proto
 }  // namespace shared_model

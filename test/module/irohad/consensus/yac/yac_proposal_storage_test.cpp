@@ -16,10 +16,11 @@
  */
 
 #include <gtest/gtest.h>
-#include <nonstd/optional.hpp>
+
+#include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
-#include "module/irohad/consensus/yac/yac_mocks.hpp"
 #include "logger/logger.hpp"
+#include "module/irohad/consensus/yac/yac_mocks.hpp"
 
 using namespace iroha::consensus::yac;
 
@@ -44,62 +45,59 @@ class YacProposalStorageTest : public ::testing::Test {
       return votes;
     }();
   }
-
 };
 
 TEST_F(YacProposalStorageTest, YacProposalStorageWhenCommitCase) {
-  log_->info("Init storage => insert unique votes => "
-                 "expected commit");
+  log_->info(
+      "Init storage => insert unique votes => "
+      "expected commit");
 
   for (auto i = 0u; i < 4; ++i) {
-    ASSERT_EQ(nonstd::nullopt, storage.insert(valid_votes.at(i)));
+    ASSERT_EQ(boost::none, storage.insert(valid_votes.at(i)));
   }
 
   for (auto i = 4u; i < 7; ++i) {
     auto commit = storage.insert(valid_votes.at(i));
     log_->info("Commit: {}", logger::opt_to_string(commit, [](auto answer) {
-      return "value";
-    }));
-    ASSERT_NE(nonstd::nullopt, commit);
-    ASSERT_EQ(i + 1, commit->commit->votes.size());
+                 return "value";
+               }));
+    ASSERT_NE(boost::none, commit);
+    ASSERT_EQ(i + 1, boost::get<CommitMessage>(*commit).votes.size());
   }
-
 }
 
 TEST_F(YacProposalStorageTest, YacProposalStorageWhenInsertNotUnique) {
-  log_->info("Init storage => insert not-unique votes => "
-                 "expected absence of commit");
+  log_->info(
+      "Init storage => insert not-unique votes => "
+      "expected absence of commit");
 
   for (auto i = 0; i < 7; ++i) {
     auto fixed_index = 0;
-    ASSERT_EQ(nonstd::nullopt, storage.insert(valid_votes.at(fixed_index)));
+    ASSERT_EQ(boost::none, storage.insert(valid_votes.at(fixed_index)));
   }
 }
 
 TEST_F(YacProposalStorageTest, YacProposalStorageWhenRejectCase) {
-  log_->info("Init storage => insert votes for reject case => "
-                 "expected absence of commit");
+  log_->info(
+      "Init storage => insert votes for reject case => "
+      "expected absence of commit");
 
   // insert 3 vote for hash 1
   for (auto i = 0; i < 3; ++i) {
-    ASSERT_EQ(nonstd::nullopt, storage.insert(valid_votes.at(i)));
+    ASSERT_EQ(boost::none, storage.insert(valid_votes.at(i)));
   }
 
   // insert 2 for other hash
   auto other_hash = YacHash(hash.proposal_hash, "other_commit");
   for (auto i = 0; i < 2; ++i) {
-    auto answer
-        = storage.insert(create_vote(other_hash,
-                                     std::to_string(valid_votes.size() +
-                                         1 + i)));
-    ASSERT_EQ(nonstd::nullopt, answer);
+    auto answer = storage.insert(
+        create_vote(other_hash, std::to_string(valid_votes.size() + 1 + i)));
+    ASSERT_EQ(boost::none, answer);
   }
 
   // insert more one for other hash
-  auto answer
-      = storage.insert(create_vote(other_hash,
-                                   std::to_string(2 * valid_votes.size() +
-                                       1)));
-  ASSERT_NE(nonstd::nullopt, answer);
-  ASSERT_EQ(6, answer->reject->votes.size());
+  auto answer = storage.insert(
+      create_vote(other_hash, std::to_string(2 * valid_votes.size() + 1)));
+  ASSERT_NE(boost::none, answer);
+  ASSERT_EQ(6, boost::get<RejectMessage>(*answer).votes.size());
 }

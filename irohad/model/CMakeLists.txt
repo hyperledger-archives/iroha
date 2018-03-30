@@ -18,22 +18,12 @@
 add_subdirectory(generators)
 add_subdirectory(converters)
 
-add_library(common_execution
-    execution/impl/common_executor.cpp
+add_library(sha3_hash
+    sha3_hash.cpp
     )
 
-target_link_libraries(common_execution
-    ametsuchi
-    common
-    )
-
-add_library(command_execution
-    execution/impl/command_executor.cpp
-    execution/impl/command_executor_factory.cpp
-    )
-target_link_libraries(command_execution
-    common_execution
-    validator
+target_link_libraries(sha3_hash
+    pb_model_converters
     )
 
 add_library(model
@@ -43,13 +33,13 @@ add_library(model
     )
 target_link_libraries(model
     hash
-    optional
+    sha3_hash
     rxcpp
     logger
     iroha_amount
     common_execution
     schema
-    cryptography
+    ed25519_crypto
     rapidjson
     )
 

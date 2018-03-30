@@ -17,15 +17,48 @@
 
 #include "consensus/yac/cluster_order.hpp"
 #include <gtest/gtest.h>
+#include "module/irohad/consensus/yac/yac_mocks.hpp"
 
-TEST(ClusterOrderTest, ClusterOrderOnNext) {
-  iroha::model::Peer p1;
-  p1.address = "1";
-  iroha::model::Peer p2;
-  p2.address = "2";
-  std::vector<iroha::model::Peer> peers = {p1, p2};
-  iroha::consensus::yac::ClusterOrdering order(peers);
-  ASSERT_EQ("1", order.currentLeader().address);
-  ASSERT_EQ("2", order.switchToNext().currentLeader().address);
-  ASSERT_EQ("1", order.switchToNext().currentLeader().address);
+class ClusterOrderTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    p1 = iroha::consensus::yac::mk_peer("1");
+    p2 = iroha::consensus::yac::mk_peer("2");
+    peers_list = {p1, p2};
+  }
+
+  std::shared_ptr<shared_model::interface::Peer> p1;
+  std::shared_ptr<shared_model::interface::Peer> p2;
+
+  std::vector<std::shared_ptr<shared_model::interface::Peer>> peers_list;
+  std::vector<std::shared_ptr<shared_model::interface::Peer>> empty_peers_list;
+};
+
+/**
+ * @given nonempty peers list
+ * @when cluster order is created
+ * @then create function returns nonempty object
+ */
+TEST_F(ClusterOrderTest, GoodClusterOrderCreation) {
+  auto order = iroha::consensus::yac::ClusterOrdering::create(peers_list);
+  ASSERT_TRUE(order);
+}
+
+/**
+ * @given empty peers list
+ * @when cluster order is created
+ * @then create function returns empty object
+ */
+TEST_F(ClusterOrderTest, BadClusterOrderCreation) {
+  auto empty_order =
+      iroha::consensus::yac::ClusterOrdering::create(empty_peers_list);
+  ASSERT_FALSE(empty_order);
+}
+
+TEST_F(ClusterOrderTest, ClusterOrderOnNext) {
+  auto order = iroha::consensus::yac::ClusterOrdering::create(peers_list);
+  ASSERT_TRUE(order);
+  ASSERT_EQ("1", order->currentLeader().address());
+  ASSERT_EQ("2", order->switchToNext().currentLeader().address());
+  ASSERT_EQ("1", order->switchToNext().currentLeader().address());
 }

@@ -19,8 +19,9 @@
 
 #include <grpc++/grpc++.h>
 
-#include "consensus/yac/transport/yac_pb_converters.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
+#include "consensus/yac/transport/yac_pb_converters.hpp"
 
 using ::testing::_;
 using ::testing::InvokeWithoutArgs;
@@ -30,26 +31,34 @@ namespace iroha {
     namespace yac {
       class YacNetworkTest : public ::testing::Test {
        public:
+        static constexpr auto default_ip = "0.0.0.0";
+        static constexpr auto default_address = "0.0.0.0:0";
         void SetUp() override {
           notifications = std::make_shared<MockYacNetworkNotifications>();
 
-          peer = mk_peer("0.0.0.0:50051");
           network = std::make_shared<NetworkImpl>();
 
           message.hash.proposal_hash = "proposal";
           message.hash.block_hash = "block";
 
+          auto sig = shared_model::proto::SignatureBuilder()
+                         .publicKey(shared_model::crypto::PublicKey("key"))
+                         .signedData(shared_model::crypto::Signed("data"))
+                         .build();
+
+          message.hash.block_signature = clone(sig);
           network->subscribe(notifications);
 
           grpc::ServerBuilder builder;
           int port = 0;
-          builder.AddListeningPort(peer.address,
-                                   grpc::InsecureServerCredentials(),
-                                   &port);
+          builder.AddListeningPort(
+              default_address, grpc::InsecureServerCredentials(), &port);
           builder.RegisterService(network.get());
           server = builder.BuildAndStart();
           ASSERT_TRUE(server);
           ASSERT_NE(port, 0);
+
+          peer = mk_peer(std::string(default_ip) + ":" + std::to_string(port));
         }
 
         void TearDown() override {
@@ -58,7 +67,7 @@ namespace iroha {
 
         std::shared_ptr<MockYacNetworkNotifications> notifications;
         std::shared_ptr<NetworkImpl> network;
-        model::Peer peer;
+        std::shared_ptr<shared_model::interface::Peer> peer;
         VoteMessage message;
         std::unique_ptr<grpc::Server> server;
         std::mutex mtx;
@@ -76,12 +85,12 @@ namespace iroha {
             .WillRepeatedly(
                 InvokeWithoutArgs(&cv, &std::condition_variable::notify_one));
 
-        network->send_vote(peer, message);
+        network->send_vote(*peer, message);
 
         // wait for response reader thread
         std::unique_lock<std::mutex> lock(mtx);
         cv.wait_for(lock, std::chrono::milliseconds(100));
       }
-    } // namespace yac
-  } // namespace consensus
-} // namespace iroha
+    }  // namespace yac
+  }    // namespace consensus
+}  // namespace iroha

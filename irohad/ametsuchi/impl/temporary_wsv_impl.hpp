@@ -22,21 +22,21 @@
 #include <pqxx/nontransaction>
 
 #include "ametsuchi/temporary_wsv.hpp"
-#include "model/execution/command_executor_factory.hpp"
+#include "execution/command_executor.hpp"
+#include "logger/logger.hpp"
 
 namespace iroha {
+
   namespace ametsuchi {
     class TemporaryWsvImpl : public TemporaryWsv {
      public:
-      TemporaryWsvImpl(
-          std::unique_ptr<pqxx::lazyconnection> connection,
-          std::unique_ptr<pqxx::nontransaction> transaction,
-          std::shared_ptr<model::CommandExecutorFactory> command_executors);
+      TemporaryWsvImpl(std::unique_ptr<pqxx::lazyconnection> connection,
+                       std::unique_ptr<pqxx::nontransaction> transaction);
 
-      bool apply(const model::Transaction &transaction,
-                 std::function<bool(const model::Transaction &,
-                                    WsvQuery &)>
-                 function) override;
+      bool apply(
+          const shared_model::interface::Transaction &,
+          std::function<bool(const shared_model::interface::Transaction &,
+                             WsvQuery &)> function) override;
 
       ~TemporaryWsvImpl() override;
 
@@ -45,7 +45,10 @@ namespace iroha {
       std::unique_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
       std::unique_ptr<WsvCommand> executor_;
-      std::shared_ptr<model::CommandExecutorFactory> command_executors_;
+      std::shared_ptr<CommandExecutor> command_executor_;
+      std::shared_ptr<CommandValidator> command_validator_;
+
+      logger::Logger log_;
     };
   }  // namespace ametsuchi
 }  // namespace iroha

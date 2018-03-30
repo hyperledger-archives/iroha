@@ -18,14 +18,12 @@
 #ifndef IROHA_AMETSUCHI_FIXTURE_HPP
 #define IROHA_AMETSUCHI_FIXTURE_HPP
 
+#include <gtest/gtest.h>
+#include <boost/filesystem.hpp>
+#include <pqxx/pqxx>
+#include "ametsuchi/impl/storage_impl.hpp"
 #include "common/files.hpp"
 #include "logger/logger.hpp"
-
-#include <gtest/gtest.h>
-#include <cpp_redis/cpp_redis>
-#include <pqxx/pqxx>
-
-#include "model/generators/command_generator.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -37,13 +35,11 @@ namespace iroha {
       AmetsuchiTest() {
         auto log = logger::testLog("AmetsuchiTest");
 
-        mkdir(block_store_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        boost::filesystem::create_directory(block_store_path);
         auto pg_host = std::getenv("IROHA_POSTGRES_HOST");
         auto pg_port = std::getenv("IROHA_POSTGRES_PORT");
         auto pg_user = std::getenv("IROHA_POSTGRES_USER");
         auto pg_pass = std::getenv("IROHA_POSTGRES_PASSWORD");
-        auto rd_host = std::getenv("IROHA_REDIS_HOST");
-        auto rd_port = std::getenv("IROHA_REDIS_PORT");
         if (not pg_host) {
           return;
         }
@@ -51,27 +47,64 @@ namespace iroha {
         ss << "host=" << pg_host << " port=" << pg_port << " user=" << pg_user
            << " password=" << pg_pass;
         pgopt_ = ss.str();
-        redishost_ = rd_host;
-        redisport_ = std::stoull(rd_port);
-        log->info("host={}, port={}, user={}, password={}", pg_host, pg_port,
-                  pg_user, pg_pass);
+        log->info("host={}, port={}, user={}, password={}",
+                  pg_host,
+                  pg_port,
+                  pg_user,
+                  pg_pass);
       }
+
      protected:
-      virtual void SetUp() {
+      virtual void clear() {
+        pqxx::work txn(*connection);
+        txn.exec(drop_);
+        txn.commit();
+
+        iroha::remove_dir_contents(block_store_path);
+      }
+
+      virtual void disconnect() {
+        connection->disconnect();
+      }
+
+      virtual void connect() {
         connection = std::make_shared<pqxx::lazyconnection>(pgopt_);
         try {
           connection->activate();
         } catch (const pqxx::broken_connection &e) {
           FAIL() << "Connection to PostgreSQL broken: " << e.what();
         }
-        try {
-          client.connect(redishost_, redisport_);
-        } catch (const cpp_redis::redis_error &e) {
-          FAIL() << "Connection to Redis broken: " << e.what();
-        }
+
+        StorageImpl::create(block_store_path, pgopt_)
+            .match([&](iroha::expected::Value<std::shared_ptr<StorageImpl>>
+                           &_storage) { storage = _storage.value; },
+                   [](iroha::expected::Error<std::string> &error) {
+                     FAIL() << "StorageImpl: " << error.error;
+                   });
       }
-      virtual void TearDown() {
-        const auto drop = R"(
+
+      void SetUp() override {
+        connect();
+        storage->dropStorage();
+      }
+
+      void TearDown() override {
+        clear();
+        disconnect();
+      }
+
+      std::shared_ptr<pqxx::lazyconnection> connection;
+
+      std::shared_ptr<StorageImpl> storage;
+
+      std::string pgopt_ =
+          "host=localhost port=5432 user=postgres password=mysecretpassword";
+
+      std::string block_store_path =
+          (boost::filesystem::temp_directory_path() / "block_store").string();
+
+      // TODO(warchant): IR-1019 hide SQLs under some interface
+      const std::string drop_ = R"(
 DROP TABLE IF EXISTS account_has_signatory;
 DROP TABLE IF EXISTS account_has_asset;
 DROP TABLE IF EXISTS role_has_permissions;
@@ -83,33 +116,94 @@ DROP TABLE IF EXISTS domain;
 DROP TABLE IF EXISTS signatory;
 DROP TABLE IF EXISTS peer;
 DROP TABLE IF EXISTS role;
+DROP TABLE IF EXISTS height_by_hash;
+DROP TABLE IF EXISTS height_by_account_set;
+DROP TABLE IF EXISTS index_by_creator_height;
+DROP TABLE IF EXISTS index_by_id_height_asset;
 )";
 
-        pqxx::work txn(*connection);
-        txn.exec(drop);
-        txn.commit();
-        connection->disconnect();
-
-        client.flushall();
-        client.sync_commit();
-        client.disconnect(true);
-
-        iroha::remove_all(block_store_path);
-      }
-
-      std::shared_ptr<pqxx::lazyconnection> connection;
-
-      cpp_redis::client client;
-
-      model::generators::CommandGenerator cmd_gen;
-
-      std::string pgopt_ =
-          "host=localhost port=5432 user=postgres password=mysecretpassword";
-
-      std::string redishost_ = "localhost";
-      size_t redisport_ = 6379;
-
-      std::string block_store_path = "/tmp/block_store";
+      const std::string init_ = R"(
+CREATE TABLE IF NOT EXISTS role (
+    role_id character varying(32),
+    PRIMARY KEY (role_id)
+);
+CREATE TABLE IF NOT EXISTS domain (
+    domain_id character varying(255),
+    default_role character varying(32) NOT NULL REFERENCES role(role_id),
+    PRIMARY KEY (domain_id)
+);
+CREATE TABLE IF NOT EXISTS signatory (
+    public_key bytea NOT NULL,
+    PRIMARY KEY (public_key)
+);
+CREATE TABLE IF NOT EXISTS account (
+    account_id character varying(288),
+    domain_id character varying(255) NOT NULL REFERENCES domain,
+    quorum int NOT NULL,
+    transaction_count int NOT NULL DEFAULT 0,
+    data JSONB,
+    PRIMARY KEY (account_id)
+);
+CREATE TABLE IF NOT EXISTS account_has_signatory (
+    account_id character varying(288) NOT NULL REFERENCES account,
+    public_key bytea NOT NULL REFERENCES signatory,
+    PRIMARY KEY (account_id, public_key)
+);
+CREATE TABLE IF NOT EXISTS peer (
+    public_key bytea NOT NULL,
+    address character varying(261) NOT NULL UNIQUE,
+    PRIMARY KEY (public_key)
+);
+CREATE TABLE IF NOT EXISTS asset (
+    asset_id character varying(288),
+    domain_id character varying(255) NOT NULL REFERENCES domain,
+    precision int NOT NULL,
+    data json,
+    PRIMARY KEY (asset_id)
+);
+CREATE TABLE IF NOT EXISTS account_has_asset (
+    account_id character varying(288) NOT NULL REFERENCES account,
+    asset_id character varying(288) NOT NULL REFERENCES asset,
+    amount decimal NOT NULL,
+    PRIMARY KEY (account_id, asset_id)
+);
+CREATE TABLE IF NOT EXISTS role_has_permissions (
+    role_id character varying(32) NOT NULL REFERENCES role,
+    permission_id character varying(45),
+    PRIMARY KEY (role_id, permission_id)
+);
+CREATE TABLE IF NOT EXISTS account_has_roles (
+    account_id character varying(288) NOT NULL REFERENCES account,
+    role_id character varying(32) NOT NULL REFERENCES role,
+    PRIMARY KEY (account_id, role_id)
+);
+CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
+    permittee_account_id character varying(288) NOT NULL REFERENCES account,
+    account_id character varying(288) NOT NULL REFERENCES account,
+    permission_id character varying(45),
+    PRIMARY KEY (permittee_account_id, account_id, permission_id)
+);
+CREATE TABLE IF NOT EXISTS height_by_hash (
+    hash bytea,
+    height text
+);
+CREATE TABLE IF NOT EXISTS height_by_account_set (
+    account_id text,
+    height text
+);
+CREATE TABLE IF NOT EXISTS index_by_creator_height (
+    id serial,
+    creator_id text,
+    height text,
+    index text
+);
+CREATE TABLE IF NOT EXISTS index_by_id_height_asset (
+    id text,
+    height text,
+    asset_id text,
+    index text
+);
+)";
     };
   }  // namespace ametsuchi
 }  // namespace iroha

@@ -19,13 +19,18 @@
 #define IROHA_ORDERING_INIT_HPP
 
 #include "ametsuchi/peer_query.hpp"
+#include "logger/logger.hpp"
 #include "ordering/impl/ordering_gate_impl.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
+#include "ordering/impl/ordering_service_impl.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 
-#include "ordering/impl/ordering_service_impl.hpp"
-
 namespace iroha {
+
+  namespace ametsuchi {
+    class OrderingServicePersistentState;
+  }
+
   namespace network {
 
     /**
@@ -51,7 +56,9 @@ namespace iroha {
           std::shared_ptr<ametsuchi::PeerQuery> wsv,
           size_t max_size,
           std::chrono::milliseconds delay_milliseconds,
-          std::shared_ptr<network::OrderingServiceTransport> transport);
+          std::shared_ptr<network::OrderingServiceTransport> transport,
+          std::shared_ptr<ametsuchi::OrderingServicePersistentState>
+              persistent_state);
 
      public:
       /**
@@ -65,12 +72,19 @@ namespace iroha {
       std::shared_ptr<ordering::OrderingGateImpl> initOrderingGate(
           std::shared_ptr<ametsuchi::PeerQuery> wsv,
           size_t max_size,
-          std::chrono::milliseconds delay_milliseconds);
+          std::chrono::milliseconds delay_milliseconds,
+          std::shared_ptr<ametsuchi::OrderingServicePersistentState>
+              persistent_state);
 
       std::shared_ptr<ordering::OrderingServiceImpl> ordering_service;
       std::shared_ptr<ordering::OrderingGateImpl> ordering_gate;
-      std::shared_ptr<ordering::OrderingGateTransportGrpc> ordering_gate_transport;
-      std::shared_ptr<ordering::OrderingServiceTransportGrpc> ordering_service_transport;
+      std::shared_ptr<ordering::OrderingGateTransportGrpc>
+          ordering_gate_transport;
+      std::shared_ptr<ordering::OrderingServiceTransportGrpc>
+          ordering_service_transport;
+
+     protected:
+      logger::Logger log_ = logger::log("OrderingInit");
     };
   }  // namespace network
 }  // namespace iroha
