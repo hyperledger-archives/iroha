@@ -93,7 +93,13 @@ pipeline {
           steps {
             script {
               debugBuild = load ".jenkinsci/debug-build.groovy"
-              debugBuild.doDebugBuild(true)
+              coverage = load ".jenkinsci/selected-branches-coverage.groovy"
+              if (coverage.selectedBranchesCoverage(['develop', 'master'])) {
+                debugBuild.doDebugBuild(true)
+              }
+              else {
+                debugBuild.doDebugBuild()
+              }
               if (BRANCH_NAME ==~ /(master|develop)/) {
                 releaseBuild = load ".jenkinsci/release-build.groovy"
                 releaseBuild.doReleaseBuild()
@@ -117,8 +123,9 @@ pipeline {
           agent { label 'armv7' }
           steps {
             script {
-              def debugBuild = load ".jenkinsci/debug-build.groovy"
-              if (!params.Linux && !params.ARMv8 && !params.MacOS) {
+              debugBuild = load ".jenkinsci/debug-build.groovy"
+              coverage = load ".jenkinsci/selected-branches-coverage.groovy"
+              if (!params.Linux && !params.ARMv8 && !params.MacOS && (coverage.selectedBranchesCoverage(['develop', 'master']))) {
                 debugBuild.doDebugBuild(true)
               }              
               else {
@@ -147,8 +154,9 @@ pipeline {
           agent { label 'armv8' }
           steps {
             script {
-              def debugBuild = load ".jenkinsci/debug-build.groovy"
-              if (!params.Linux && !params.MacOS) {
+              debugBuild = load ".jenkinsci/debug-build.groovy"
+              coverage = load ".jenkinsci/selected-branches-coverage.groovy"
+              if (!params.Linux && !params.MacOS && (coverage.selectedBranchesCoverage(['develop', 'master']))) {
                 debugBuild.doDebugBuild(true)
               }
               else {
@@ -179,7 +187,8 @@ pipeline {
             script {
               def coverageEnabled = false
               def cmakeOptions = ""
-              if (!params.Linux) {
+              coverage = load ".jenkinsci/selected-branches-coverage.groovy"
+              if (!params.Linux && (coverage.selectedBranchesCoverage(['develop', 'master']))) {
                 coverageEnabled = true
                 cmakeOptions = " -DCOVERAGE=ON "
               }
