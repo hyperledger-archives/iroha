@@ -23,7 +23,7 @@
 #include "framework/base_tx.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
 #include "interfaces/utils/specified_visitor.hpp"
-#include "model/permissions.hpp"
+#include "validators/permissions.hpp"
 #include "utils/query_error_response_visitor.hpp"
 
 using namespace std::string_literals;
@@ -169,7 +169,7 @@ TEST_F(GetTransactions, HaveGetMyTx) {
  */
 TEST_F(GetTransactions, InvalidSignatures) {
   auto dummy_tx = dummyTx();
-  auto check = [&dummy_tx](auto &status) {
+  auto check = [](auto &status) {
     auto resp = boost::get<shared_model::detail::PolymorphicWrapper<
         interface::ErrorQueryResponse>>(status.get());
     ASSERT_NO_THROW(boost::get<shared_model::detail::PolymorphicWrapper<
