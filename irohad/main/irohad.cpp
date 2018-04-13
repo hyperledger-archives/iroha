@@ -100,11 +100,9 @@ int main(int argc, char *argv[]) {
 
   // Reading public and private key files
   iroha::KeysManagerImpl keysManager(FLAGS_keypair_name);
-  iroha::keypair_t keypair{};
+  auto keypair = keysManager.loadKeys();
   // Check if both keys are read properly
-  if (auto loadedKeypair = keysManager.loadKeys()) {
-    keypair = *loadedKeypair;
-  } else {
+  if (not keypair) {
     // Abort execution if not
     log->error("Failed to load keypair");
     return EXIT_FAILURE;
@@ -119,7 +117,7 @@ int main(int argc, char *argv[]) {
                 std::chrono::milliseconds(config[mbr::ProposalDelay].GetUint()),
                 std::chrono::milliseconds(config[mbr::VoteDelay].GetUint()),
                 std::chrono::milliseconds(config[mbr::LoadDelay].GetUint()),
-                keypair);
+                *keypair);
 
   // Check if iroha daemon storage was successfully initialized
   if (not irohad.storage) {
