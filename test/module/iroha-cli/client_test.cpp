@@ -230,6 +230,9 @@ TEST_F(ClientServerTest, SendQueryWhenValid) {
   EXPECT_CALL(*wsv_query, getAccountDetail("test@test"))
       .WillOnce(Return(boost::make_optional(std::string("value"))));
 
+  EXPECT_CALL(*wsv_query, getAccountRoles("admin@test"))
+      .WillOnce(Return(boost::none));
+
   auto query = QueryBuilder()
                    .createdTime(iroha::time::now())
                    .creatorAccountId("admin@test")
@@ -256,6 +259,9 @@ TEST_F(ClientServerTest, SendQueryWhenStatefulInvalid) {
               hasAccountGrantablePermission(
                   "admin@test", "test@test", can_get_my_acc_detail))
       .WillOnce(Return(false));
+
+  EXPECT_CALL(*wsv_query, getAccountRoles("admin@test"))
+      .WillOnce(Return(boost::none));
 
   auto query = QueryBuilder()
                    .createdTime(iroha::time::now())
