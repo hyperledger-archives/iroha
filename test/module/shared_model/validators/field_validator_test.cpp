@@ -113,11 +113,11 @@ class FieldValidatorTest : public ValidatorsTest {
                                           &FieldValidator::validateDomainId,
                                           &FieldValidatorTest::domain_id,
                                           domain_id_test_cases));
-    for (const auto &field : {"tx_counter", "query_counter"}) {
+    for (const auto &field : {"query_counter"}) {
       field_validators.insert(makeValidator(field,
                                             &FieldValidator::validateCounter,
                                             &FieldValidatorTest::counter,
-                                            tx_counter_test_cases));
+                                            counter_test_cases));
     }
 
     field_validators.insert(makeValidator("quorum",
@@ -466,7 +466,7 @@ class FieldValidatorTest : public ValidatorsTest {
       makeValidCase(&FieldValidatorTest::role_permission,
                     iroha::protocol::RolePermission::can_append_role)};
 
-  std::vector<FieldTestCase> tx_counter_test_cases{
+  std::vector<FieldTestCase> counter_test_cases{
       makeValidCase(&FieldValidatorTest::counter, 5),
       makeTestCase("zero_counter",
                    &FieldValidatorTest::counter,
