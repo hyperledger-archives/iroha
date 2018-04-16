@@ -16,6 +16,8 @@
  */
 
 #include <gflags/gflags.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/rapidjson.h>
 #include <boost/filesystem.hpp>
 #include <fstream>
 #include <iostream>
@@ -56,6 +58,9 @@ DEFINE_string(json_query, "", "Query in json format");
 DEFINE_bool(genesis_block,
             false,
             "Generate genesis block for new Iroha network");
+DEFINE_string(genesis_transaction,
+              "",
+              "File with transaction in json format for the genesis block");
 DEFINE_string(peers_address,
               "",
               "File with peers address for new Iroha network");
@@ -76,19 +81,36 @@ int main(int argc, char *argv[]) {
   // Generate new genesis block now Iroha network
   if (FLAGS_genesis_block) {
     BlockGenerator generator;
-
-    if (FLAGS_peers_address.empty()) {
-      logger->error("--peers_address is empty");
-      return EXIT_FAILURE;
+    iroha::model::Transaction transaction;
+    if (FLAGS_genesis_transaction.empty()) {
+      if (FLAGS_peers_address.empty()) {
+        logger->error("--peers_address is empty");
+        return EXIT_FAILURE;
+      }
+      std::ifstream file(FLAGS_peers_address);
+      std::vector<std::string> peers_address;
+      std::copy(std::istream_iterator<std::string>(file),
+                std::istream_iterator<std::string>(),
+                std::back_inserter(peers_address));
+      // Generate genesis block
+      transaction = TransactionGenerator().generateGenesisTransaction(
+          0, std::move(peers_address));
+    } else {
+      rapidjson::Document doc;
+      std::ifstream file(FLAGS_genesis_transaction);
+      rapidjson::IStreamWrapper isw(file);
+      doc.ParseStream(isw);
+      auto some_tx = JsonTransactionFactory{}.deserialize(doc);
+      if (some_tx) {
+        transaction = *some_tx;
+      } else {
+        logger->error(
+            "Cannot deserialize genesis transaction (problem with file reading "
+            "or illformed json?)");
+        return EXIT_FAILURE;
+      }
     }
-    std::ifstream file(FLAGS_peers_address);
-    std::vector<std::string> peers_address;
-    std::copy(std::istream_iterator<std::string>(file),
-              std::istream_iterator<std::string>(),
-              std::back_inserter(peers_address));
-    // Generate genesis block
-    auto transaction = TransactionGenerator().generateGenesisTransaction(
-        0, std::move(peers_address));
+
     auto block = generator.generateGenesisBlock(0, {transaction});
     // Convert to json
     std::ofstream output_file("genesis.block");
