@@ -1,6 +1,7 @@
 #!/usr/bin/env groovy
 
 def doDebugBuild(coverageEnabled=false) {
+  def dPullOrBuild = load ".jenkinsci/docker-pull-or-build.groovy"
   def parallelism = params.PARALLELISM
   // params are always null unless job is started
   // this is the case for the FIRST build only.
@@ -20,20 +21,7 @@ def doDebugBuild(coverageEnabled=false) {
     + " --name ${env.IROHA_POSTGRES_HOST}"
     + " --network=${env.IROHA_NETWORK}")
 
-  def platform = sh(script: 'uname -m', returnStdout: true).trim()
-  sh "curl -L -o /tmp/${env.GIT_COMMIT}/Dockerfile --create-dirs https://raw.githubusercontent.com/hyperledger/iroha/${env.GIT_COMMIT}/docker/develop/${platform}/Dockerfile"
-  // pull docker image in case we don't have one
-  // speeds up consequent image builds as we simply tag them
-  sh "docker pull ${DOCKER_BASE_IMAGE_DEVELOP}"
-  if (env.BRANCH_NAME == 'develop') {
-    iC = docker.build("hyperledger/iroha:${GIT_COMMIT}-${BUILD_NUMBER}", "--build-arg PARALLELISM=${parallelism} -f /tmp/${env.GIT_COMMIT}/Dockerfile /tmp/${env.GIT_COMMIT}")
-    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-      iC.push("${platform}-develop")
-    }
-  }
-  else {
-    iC = docker.build("hyperledger/iroha-workflow:${GIT_COMMIT}-${BUILD_NUMBER}", "-f /tmp/${env.GIT_COMMIT}/Dockerfile /tmp/${env.GIT_COMMIT} --build-arg PARALLELISM=${parallelism}")
-  }
+  def iC = dPullOrBuild.dockerPullOrUpdate()
   iC.inside(""
     + " -e IROHA_POSTGRES_HOST=${env.IROHA_POSTGRES_HOST}"
     + " -e IROHA_POSTGRES_PORT=${env.IROHA_POSTGRES_PORT}"
@@ -100,4 +88,5 @@ def doDebugBuild(coverageEnabled=false) {
     sh "cp ./build/bin/* /tmp/${GIT_COMMIT}/"
   }
 }
+
 return this
