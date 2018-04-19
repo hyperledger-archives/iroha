@@ -20,7 +20,6 @@
 #include <csignal>
 #include <fstream>
 #include <thread>
-#include "backend/protobuf/from_old_model.hpp"
 #include "common/result.hpp"
 #include "crypto/keys_manager_impl.hpp"
 #include "main/application.hpp"

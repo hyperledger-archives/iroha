@@ -89,8 +89,8 @@ target_link_libraries(create_account_test
 
 addtest(tx_heavy_data tx_heavy_data.cpp)
 target_link_libraries(tx_heavy_data
-        application
-        integration_framework
-        shared_model_proto_builders
-        shared_model_stateless_validation
-        )
+    application
+    integration_framework
+    shared_model_proto_builders
+    shared_model_stateless_validation
+    )
