@@ -32,7 +32,7 @@ AddTest(transport_test transport_test.cpp)
 target_link_libraries(transport_test
     mst_transport
     logger
-    shared_model_ed25519_sha3
+    shared_model_cryptography
     shared_model_stateless_validation
     )
 
@@ -50,4 +50,5 @@ AddTest(gossip_propagation_strategy_test
 target_link_libraries(gossip_propagation_strategy_test
     mst_processor
     logger
+    shared_model_cryptography
     )

@@ -38,8 +38,7 @@ inline auto makeTx(const shared_model::interface::types::CounterType &counter,
       shared_model::proto::TransactionBuilder()
           .createdTime(created_time)
           .creatorAccountId("user@test")
-          .txCounter(counter)
-          .setAccountQuorum("user@test", quorum)
+          .setAccountQuorum("user@test", counter)
           .quorum(quorum)
           .build()
           .signAndAddSignature(keypair));

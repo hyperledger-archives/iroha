@@ -18,16 +18,15 @@
 #ifndef IROHA_SIMULATOR_HPP
 #define IROHA_SIMULATOR_HPP
 
-#include <nonstd/optional.hpp>
+#include <boost/optional.hpp>
 #include "ametsuchi/block_query.hpp"
 #include "ametsuchi/temporary_factory.hpp"
-#include "model/model_crypto_provider.hpp"
+#include "cryptography/crypto_provider/crypto_model_signer.hpp"
+#include "logger/logger.hpp"
 #include "network/ordering_gate.hpp"
 #include "simulator/block_creator.hpp"
 #include "simulator/verified_proposal_creator.hpp"
 #include "validation/stateful_validator.hpp"
-
-#include "logger/logger.hpp"
 
 namespace iroha {
   namespace simulator {
@@ -39,25 +38,33 @@ namespace iroha {
           std::shared_ptr<validation::StatefulValidator> statefulValidator,
           std::shared_ptr<ametsuchi::TemporaryFactory> factory,
           std::shared_ptr<ametsuchi::BlockQuery> blockQuery,
-          std::shared_ptr<model::ModelCryptoProvider> crypto_provider);
+          std::shared_ptr<shared_model::crypto::CryptoModelSigner<>>
+              crypto_signer);
 
       Simulator(const Simulator &) = delete;
       Simulator &operator=(const Simulator &) = delete;
 
       ~Simulator();
 
-      void process_proposal(model::Proposal proposal) override;
+      void process_proposal(
+          const shared_model::interface::Proposal &proposal) override;
 
-      rxcpp::observable<model::Proposal> on_verified_proposal() override;
+      rxcpp::observable<std::shared_ptr<shared_model::interface::Proposal>>
+      on_verified_proposal() override;
 
-      void process_verified_proposal(model::Proposal proposal) override;
+      void process_verified_proposal(
+          const shared_model::interface::Proposal &proposal) override;
 
-      rxcpp::observable<model::Block> on_block() override;
+      rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
+      on_block() override;
 
      private:
       // internal
-      rxcpp::subjects::subject<model::Proposal> notifier_;
-      rxcpp::subjects::subject<model::Block> block_notifier_;
+      rxcpp::subjects::subject<
+          std::shared_ptr<shared_model::interface::Proposal>>
+          notifier_;
+      rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
+          block_notifier_;
 
       rxcpp::composite_subscription proposal_subscription_;
       rxcpp::composite_subscription verified_proposal_subscription_;
@@ -65,12 +72,13 @@ namespace iroha {
       std::shared_ptr<validation::StatefulValidator> validator_;
       std::shared_ptr<ametsuchi::TemporaryFactory> ametsuchi_factory_;
       std::shared_ptr<ametsuchi::BlockQuery> block_queries_;
-      std::shared_ptr<model::ModelCryptoProvider> crypto_provider_;
+      std::shared_ptr<shared_model::crypto::CryptoModelSigner<>> crypto_signer_;
 
       logger::Logger log_;
 
       // last block
-      nonstd::optional<model::Block> last_block;
+      boost::optional<std::shared_ptr<shared_model::interface::Block>>
+          last_block;
     };
   }  // namespace simulator
 }  // namespace iroha

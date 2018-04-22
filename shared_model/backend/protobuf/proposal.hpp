@@ -23,7 +23,6 @@
 
 #include <boost/range/numeric.hpp>
 #include "common_objects/trivial_proto.hpp"
-#include "model/proposal.hpp"
 
 #include "block.pb.h"
 #include "interfaces/common_objects/types.hpp"
@@ -54,16 +53,12 @@ namespace shared_model {
         return *transactions_;
       }
 
-      interface::types::TimestampType created_time() const override {
+      interface::types::TimestampType createdTime() const override {
         return proto_->created_time();
       }
 
       interface::types::HeightType height() const override {
         return proto_->height();
-      }
-
-      const interface::types::BlobType &blob() const override {
-        return *blob_;
       }
 
      private:
@@ -79,9 +74,6 @@ namespace shared_model {
                                    return std::forward<decltype(vec)>(vec);
                                  });
       }};
-
-      const Lazy<interface::types::BlobType> blob_{
-          [this] { return makeBlob(*proto_); }};
     };
   }  // namespace proto
 }  // namespace shared_model

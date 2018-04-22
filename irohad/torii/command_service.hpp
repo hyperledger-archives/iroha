@@ -21,13 +21,13 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+
 #include "ametsuchi/block_query.hpp"
 #include "cache/cache.hpp"
 #include "cryptography/hash.hpp"
 #include "endpoint.grpc.pb.h"
 #include "endpoint.pb.h"
-#include "model/converters/pb_transaction_factory.hpp"
-#include "model/transaction_response.hpp"
+#include "logger/logger.hpp"
 #include "torii/processor/transaction_processor.hpp"
 
 namespace torii {
@@ -130,9 +130,6 @@ namespace torii {
         grpc::ServerWriter<iroha::protocol::ToriiResponse> &response_writer)
         const;
 
-    iroha::protocol::TxStatus convertStatusToProto(
-        const iroha::model::TransactionResponse::Status &status);
-
     bool isFinalStatus(const iroha::protocol::TxStatus &status) const;
 
    private:
@@ -140,12 +137,12 @@ namespace torii {
                                           iroha::protocol::ToriiResponse,
                                           shared_model::crypto::Hash::Hasher>;
 
-    std::shared_ptr<iroha::model::converters::PbTransactionFactory> pb_factory_;
     std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
     std::shared_ptr<iroha::ametsuchi::BlockQuery> block_query_;
     std::chrono::milliseconds proposal_delay_;
     std::chrono::milliseconds start_tx_processing_duration_;
     std::shared_ptr<CacheType> cache_;
+    logger::Logger log_;
   };
 
 }  // namespace torii

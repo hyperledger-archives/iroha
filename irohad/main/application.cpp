@@ -19,18 +19,16 @@
 #include <algorithm>
 #include <memory>
 #include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
-#include "consensus/yac/impl/supermajority_checker_impl.hpp"
 #include "ametsuchi/impl/wsv_restorer_impl.hpp"
+#include "consensus/yac/impl/supermajority_checker_impl.hpp"
 
 using namespace iroha;
 using namespace iroha::ametsuchi;
 using namespace iroha::simulator;
 using namespace iroha::validation;
 using namespace iroha::network;
-using namespace iroha::model;
 using namespace iroha::synchronizer;
 using namespace iroha::torii;
-using namespace iroha::model::converters;
 using namespace iroha::consensus::yac;
 
 using namespace std::chrono_literals;
@@ -46,7 +44,7 @@ Irohad::Irohad(const std::string &block_store_dir,
                std::chrono::milliseconds proposal_delay,
                std::chrono::milliseconds vote_delay,
                std::chrono::milliseconds load_delay,
-               const keypair_t &keypair)
+               const shared_model::crypto::Keypair &keypair)
     : block_store_dir_(block_store_dir),
       pg_conn_(pg_conn),
       torii_port_(torii_port),
@@ -121,12 +119,12 @@ void Irohad::resetOrderingService() {
 }
 
 bool Irohad::restoreWsv() {
-  return wsv_restorer_->restoreWsv(*storage)
-      .match([](iroha::expected::Value<void> v) -> bool { return true; },
-             [&](iroha::expected::Error<std::string> &error) -> bool {
-               log_->error(error.error);
-               return false;
-             });
+  return wsv_restorer_->restoreWsv(*storage).match(
+      [](iroha::expected::Value<void> v) { return true; },
+      [&](iroha::expected::Error<std::string> &error) {
+        log_->error(error.error);
+        return false;
+      });
 }
 
 /**
@@ -142,7 +140,8 @@ void Irohad::initPeerQuery() {
  * Initializing crypto provider
  */
 void Irohad::initCryptoProvider() {
-  crypto_verifier = std::make_shared<ModelCryptoProviderImpl>(keypair);
+  crypto_signer_ =
+      std::make_shared<shared_model::crypto::CryptoModelSigner<>>(keypair);
 
   log_->info("[Init] => crypto provider");
 }
@@ -176,7 +175,7 @@ void Irohad::initSimulator() {
                                           stateful_validator,
                                           storage,
                                           storage->getBlockQuery(),
-                                          crypto_verifier);
+                                          crypto_signer_);
 
   log_->info("[Init] => init simulator");
 }
@@ -185,8 +184,7 @@ void Irohad::initSimulator() {
  * Initializing block loader
  */
 void Irohad::initBlockLoader() {
-  block_loader = loader_init.initBlockLoader(
-      wsv, storage->getBlockQuery(), crypto_verifier);
+  block_loader = loader_init.initBlockLoader(wsv, storage->getBlockQuery());
 
   log_->info("[Init] => block loader");
 }
@@ -261,11 +259,7 @@ void Irohad::initTransactionCommandService() {
  * Initializing query command service
  */
 void Irohad::initQueryService() {
-  auto query_processing_factory = std::make_unique<QueryProcessingFactory>(
-      storage->getWsvQuery(), storage->getBlockQuery());
-
-  auto query_processor =
-      std::make_shared<QueryProcessorImpl>(std::move(query_processing_factory));
+  auto query_processor = std::make_shared<QueryProcessorImpl>(storage);
 
   query_service = std::make_shared<::torii::QueryService>(query_processor);
 

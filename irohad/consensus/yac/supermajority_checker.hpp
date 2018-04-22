@@ -29,10 +29,6 @@ namespace shared_model {
 
 namespace iroha {
 
-  namespace model {
-    struct Peer;
-  }
-
   namespace consensus {
     namespace yac {
 
@@ -50,7 +46,7 @@ namespace iroha {
          * @return true on supermajority is achieved or false otherwise
          */
         virtual bool hasSupermajority(
-            const std::vector<model::Signature> &signatures,
+            const shared_model::interface::SignatureSetType &signatures,
             const std::vector<std::shared_ptr<shared_model::interface::Peer>>
                 &peers) const = 0;
 
@@ -69,7 +65,7 @@ namespace iroha {
          * @return true if is subset or false otherwise
          */
         virtual bool peersSubset(
-            const std::vector<model::Signature> &signatures,
+            const shared_model::interface::SignatureSetType &signatures,
             const std::vector<std::shared_ptr<shared_model::interface::Peer>>
                 &peers) const = 0;
 

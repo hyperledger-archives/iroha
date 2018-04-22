@@ -44,11 +44,6 @@ namespace shared_model {
        */
       virtual const types::AccountIdType &creatorAccountId() const = 0;
 
-      /**
-       * @return actual number of transaction of this user
-       */
-      virtual types::CounterType transactionCounter() const = 0;
-
       /// Type of quorum
       using QuorumType = uint8_t;
 
@@ -74,7 +69,6 @@ namespace shared_model {
             new iroha::model::Transaction();
         oldStyleTransaction->created_ts = createdTime();
         oldStyleTransaction->creator_account_id = creatorAccountId();
-        oldStyleTransaction->tx_counter = transactionCounter();
         oldStyleTransaction->quorum = quorum();
 
         std::for_each(commands().begin(),
@@ -100,7 +94,6 @@ namespace shared_model {
         return detail::PrettyStringBuilder()
             .init("Transaction")
             .append("hash", hash().hex())
-            .append("txCounter", std::to_string(transactionCounter()))
             .append("creatorAccountId", creatorAccountId())
             .append("createdTime", std::to_string(createdTime()))
             .append("quorum", std::to_string(quorum()))

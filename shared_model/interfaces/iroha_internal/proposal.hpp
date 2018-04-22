@@ -32,7 +32,7 @@
 namespace shared_model {
   namespace interface {
 
-    class Proposal : public HASHABLE(Proposal) {
+    class Proposal : public PRIMITIVE(Proposal) {
      public:
       template <class T>
       using w = detail::PolymorphicWrapper<T>;
@@ -51,7 +51,7 @@ namespace shared_model {
       /**
        * @return created time
        */
-      virtual types::TimestampType created_time() const = 0;
+      virtual types::TimestampType createdTime() const = 0;
 
 #ifndef DISABLE_BACKWARD
       iroha::model::Proposal *makeOldModel() const override {
@@ -67,9 +67,15 @@ namespace shared_model {
 
         auto oldModel = new iroha::model::Proposal(txs);
         oldModel->height = height();
+        oldModel->created_time = createdTime();
         return oldModel;
       }
 #endif
+
+      bool operator==(const Proposal &rhs) const override {
+        return transactions() == rhs.transactions() and height() == rhs.height()
+            and createdTime() == rhs.createdTime();
+      }
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()

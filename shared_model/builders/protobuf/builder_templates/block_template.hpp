@@ -23,7 +23,6 @@
 #include "block.pb.h"
 
 #include "builders/protobuf/unsigned_proto.hpp"
-#include "interfaces/base/hashable.hpp"
 #include "interfaces/base/signable.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/iroha_internal/block.hpp"
@@ -53,7 +52,6 @@ namespace shared_model {
 
       enum RequiredFields {
         Transactions,
-        TxNumber,
         Height,
         PrevHash,
         CreatedTime,
@@ -97,12 +95,6 @@ namespace shared_model {
         });
       }
 
-      auto txNumber(interface::Block::TransactionsNumberType tx_number) const {
-        return transform<TxNumber>([&](auto &block) {
-          block.mutable_payload()->set_tx_number(tx_number);
-        });
-      }
-
       auto height(interface::types::HeightType height) const {
         return transform<Height>(
             [&](auto &block) { block.mutable_payload()->set_height(height); });
@@ -123,6 +115,10 @@ namespace shared_model {
 
       BT build() {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
+
+        auto tx_number = block_.payload().transactions().size();
+        block_.mutable_payload()->set_tx_number(tx_number);
+
         auto result = Block(iroha::protocol::Block(block_));
         auto answer = stateless_validator_.validate(result);
         if (answer.hasErrors()) {

@@ -22,7 +22,7 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <vector>
 #include "amount/amount.hpp"
-#include "interfaces/base/hashable.hpp"
+#include "interfaces/base/primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "utils/string_builder.hpp"
 
@@ -32,7 +32,7 @@ namespace shared_model {
     /**
      * Representation of fixed point number
      */
-    class Amount : public HASHABLE_WITH_OLD(Amount, iroha::Amount) {
+    class Amount : public PRIMITIVE_WITH_OLD(Amount, iroha::Amount) {
      public:
       /**
        * Gets integer representation value, which ignores precision
@@ -53,6 +53,19 @@ namespace shared_model {
        */
       bool operator==(const ModelType &rhs) const override {
         return intValue() == rhs.intValue() and precision() == rhs.precision();
+      }
+
+      /**
+       * String representation.
+       * @return string representation of the asset.
+       */
+      std::string toStringRepr() const {
+        if (precision() > 0) {
+          boost::multiprecision::cpp_dec_float_50 float50(intValue());
+          float50 /= pow(10, precision());
+          return float50.str(precision(), std::ios_base::fixed);
+        }
+        return intValue().str(0, std::ios_base::fixed);
       }
 
       /**

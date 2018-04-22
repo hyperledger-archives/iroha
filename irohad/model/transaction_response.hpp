@@ -44,8 +44,6 @@ namespace iroha {
         STATEFUL_VALIDATION_SUCCESS,
         /// tx pipeline succeeded, tx is committed
         COMMITTED,
-        /// transaction is received, but not validated
-        IN_PROGRESS,
         /// transaction is not in handler map
         NOT_RECEIVED,
         /// tx is expired in mst validation

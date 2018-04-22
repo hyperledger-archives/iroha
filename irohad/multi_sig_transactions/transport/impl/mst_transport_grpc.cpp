@@ -23,7 +23,8 @@
 
 using namespace iroha::network;
 
-MstTransportGrpc::MstTransportGrpc() : log_(logger::log("MstTransport")) {}
+MstTransportGrpc::MstTransportGrpc()
+    : AsyncGrpcClient<google::protobuf::Empty>(logger::log("MstTransport")) {}
 
 grpc::Status MstTransportGrpc::SendState(
     ::grpc::ServerContext *context,

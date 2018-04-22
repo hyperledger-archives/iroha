@@ -54,7 +54,6 @@ namespace iroha {
      private:
       std::weak_ptr<MstTransportNotification> subscriber_;
       model::converters::PbTransactionFactory factory_;
-      logger::Logger log_;
     };
   }  // namespace network
 }  // namespace iroha

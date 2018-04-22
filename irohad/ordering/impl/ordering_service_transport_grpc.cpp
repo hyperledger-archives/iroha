@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
-#include "backend/protobuf/from_old_model.hpp"
+
 #include "backend/protobuf/transaction.hpp"
 #include "builders/protobuf/proposal.hpp"
+#include "network/impl/grpc_channel_builder.hpp"
 
 using namespace iroha::ordering;
 
@@ -30,6 +31,7 @@ grpc::Status OrderingServiceTransportGrpc::onTransaction(
     ::grpc::ServerContext *context,
     const iroha::protocol::Transaction *request,
     ::google::protobuf::Empty *response) {
+  log_->info("OrderingServiceTransportGrpc::onTransaction");
   if (subscriber_.expired()) {
     log_->error("No subscriber");
   } else {
@@ -44,19 +46,20 @@ grpc::Status OrderingServiceTransportGrpc::onTransaction(
 void OrderingServiceTransportGrpc::publishProposal(
     std::unique_ptr<shared_model::interface::Proposal> proposal,
     const std::vector<std::string> &peers) {
+  log_->info("OrderingServiceTransportGrpc::publishProposal");
   std::unordered_map<std::string,
                      std::unique_ptr<proto::OrderingGateTransportGrpc::Stub>>
       peers_map;
-
   for (const auto &peer : peers) {
-    peers_map[peer] = proto::OrderingGateTransportGrpc::NewStub(
-        grpc::CreateChannel(peer, grpc::InsecureChannelCredentials()));
+    peers_map[peer] =
+        network::createClient<proto::OrderingGateTransportGrpc>(peer);
   }
 
   for (const auto &peer : peers_map) {
     auto call = new AsyncClientCall;
-
     auto proto = static_cast<shared_model::proto::Proposal *>(proposal.get());
+    log_->debug("Publishing proposal: '{}'",
+                proto->getTransport().DebugString());
     call->response_reader = peer.second->AsynconProposal(
         &call->context, proto->getTransport(), &cq_);
 
@@ -65,4 +68,5 @@ void OrderingServiceTransportGrpc::publishProposal(
 }
 
 OrderingServiceTransportGrpc::OrderingServiceTransportGrpc()
-    : log_(logger::testLog("OrderingServiceTransportGrpc")) {}
+    : network::AsyncGrpcClient<google::protobuf::Empty>(
+          logger::log("OrderingServiceTransportGrpc")) {}

@@ -19,8 +19,8 @@
 #define IROHA_SHARED_MODEL_TRANSFER_ASSET_HPP
 
 #include "interfaces/base/primitive.hpp"
-#include "interfaces/common_objects/types.hpp"
 #include "interfaces/common_objects/amount.hpp"
+#include "interfaces/common_objects/types.hpp"
 #ifndef DISABLE_BACKWARD
 #include "model/commands/transfer_asset.hpp"
 #endif
@@ -48,13 +48,10 @@ namespace shared_model {
        * @return asset amount to transfer
        */
       virtual const Amount &amount() const = 0;
-
-      /// Type of the transfer message
-      using MessageType = std::string;
       /**
        * @return message of the transfer
        */
-      virtual const MessageType &message() const = 0;
+      virtual const types::DescriptionType &description() const = 0;
 
       std::string toString() const override {
         return detail::PrettyStringBuilder()
@@ -62,7 +59,7 @@ namespace shared_model {
             .append("src_account_id", srcAccountId())
             .append("dest_account_id", destAccountId())
             .append("asset_id", assetId())
-            .append("message", message())
+            .append("description", description())
             .append("amount", amount().toString())
             .finalize();
       }
@@ -78,7 +75,7 @@ namespace shared_model {
         auto p = std::shared_ptr<OldAmountType>(amount().makeOldModel());
         new (&oldModel->amount) OldAmountType(*p);
         oldModel->asset_id = assetId();
-        oldModel->description = message();
+        oldModel->description = description();
         return oldModel;
       }
 
@@ -88,7 +85,7 @@ namespace shared_model {
         return srcAccountId() == rhs.srcAccountId()
             and destAccountId() == rhs.destAccountId()
             and assetId() == rhs.assetId() and amount() == rhs.amount()
-            and message() == rhs.message();
+            and description() == rhs.description();
       }
     };
   }  // namespace interface

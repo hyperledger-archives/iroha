@@ -21,13 +21,13 @@
 #include "ametsuchi/impl/peer_query_wsv.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/ordering_service_persistent_state.hpp"
+#include "cryptography/crypto_provider/crypto_model_signer.hpp"
+#include "cryptography/keypair.hpp"
 #include "logger/logger.hpp"
 #include "main/impl/block_loader_init.hpp"
 #include "main/impl/consensus_init.hpp"
 #include "main/impl/ordering_init.hpp"
 #include "main/server_runner.hpp"
-#include "model/converters/pb_query_factory.hpp"
-#include "model/model_crypto_provider_impl.hpp"
 #include "multi_sig_transactions/gossip_propagation_strategy.hpp"
 #include "multi_sig_transactions/mst_processor_impl.hpp"
 #include "multi_sig_transactions/mst_time_provider_impl.hpp"
@@ -49,7 +49,6 @@
 #include "validation/chain_validator.hpp"
 #include "validation/impl/chain_validator_impl.hpp"
 #include "validation/impl/stateful_validator_impl.hpp"
-#include "validation/impl/stateless_validator_impl.hpp"
 #include "validation/stateful_validator.hpp"
 
 namespace iroha {
@@ -73,7 +72,7 @@ class Irohad {
    * @param vote_delay - waiting time before sending vote to next peer
    * @param load_delay - waiting time before loading committed block from next
    * peer
-   * @param keypair - public and private keys for crypto provider
+   * @param keypair - public and private keys for crypto signer
    */
   Irohad(const std::string &block_store_dir,
          const std::string &pg_conn,
@@ -83,7 +82,7 @@ class Irohad {
          std::chrono::milliseconds proposal_delay,
          std::chrono::milliseconds vote_delay,
          std::chrono::milliseconds load_delay,
-         const iroha::keypair_t &keypair);
+         const shared_model::crypto::Keypair &keypair);
 
   /**
    * Initialization of whole objects in system
@@ -160,7 +159,7 @@ class Irohad {
   // ------------------------| internal dependencies |-------------------------
 
   // crypto provider
-  std::shared_ptr<iroha::model::ModelCryptoProvider> crypto_verifier;
+  std::shared_ptr<shared_model::crypto::CryptoModelSigner<>> crypto_signer_;
 
   // validators
   std::shared_ptr<iroha::validation::StatefulValidator> stateful_validator;
@@ -216,7 +215,7 @@ class Irohad {
  public:
   std::shared_ptr<iroha::ametsuchi::Storage> storage;
 
-  iroha::keypair_t keypair;
+  shared_model::crypto::Keypair keypair;
   grpc::ServerBuilder builder;
 };
 

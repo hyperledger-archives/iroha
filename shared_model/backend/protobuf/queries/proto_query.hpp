@@ -52,9 +52,9 @@ shared_model::interface::Query::QueryVariantType loadQuery(Archive &&ar) {
                   .GetDescriptor()
                   ->FindFieldByNumber(ar.payload().query_case())
                   ->index_in_oneof();
-  return shared_model::detail::variant_impl<T...>::
-      template load<shared_model::interface::Query::QueryVariantType>(
-          std::forward<Archive>(ar), which);
+  return shared_model::detail::variant_impl<T...>::template load<
+      shared_model::interface::Query::QueryVariantType>(
+      std::forward<Archive>(ar), which);
 }
 
 namespace shared_model {
@@ -118,28 +118,26 @@ namespace shared_model {
         return *payload_;
       }
 
-      const interface::types::HashType &hash() const override {
-        if (hash_ == boost::none) {
-          hash_.emplace(HashProviderType::makeHash(payload()));
-        }
-        return *hash_;
-      }
-
       // ------------------------| Signable override  |-------------------------
       const interface::SignatureSetType &signatures() const override {
         return *signatures_;
       }
 
-      bool addSignature(
-          const interface::types::SignatureType &signature) override {
+      bool addSignature(const crypto::Signed &signed_blob,
+                        const crypto::PublicKey &public_key) override {
         if (proto_->has_signature()) {
           return false;
         }
 
         auto sig = proto_->mutable_signature();
-        sig->set_pubkey(crypto::toBinaryString(signature->publicKey()));
-        sig->set_signature(crypto::toBinaryString(signature->signedData()));
+        sig->set_signature(crypto::toBinaryString(signed_blob));
+        sig->set_pubkey(crypto::toBinaryString(public_key));
         return true;
+      }
+
+      bool clearSignatures() override {
+        signatures_->clear();
+        return (signatures_->size() == 0);
       }
 
       interface::types::TimestampType createdTime() const override {

@@ -21,17 +21,30 @@
 #include "network/ordering_gate.hpp"
 
 #include <atomic>
+#include <tbb/concurrent_priority_queue.h>
 
-#include <tbb/concurrent_queue.h>
-
-#include "model/converters/pb_transaction_factory.hpp"
+#include "logger/logger.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_gate_transport.hpp"
 
-#include "logger/logger.hpp"
+namespace shared_model {
+  namespace interface {
+    class Transaction;
+    class Proposal;
+  }  // namespace interface
+}  // namespace shared_model
 
 namespace iroha {
   namespace ordering {
+
+    /**
+     * Compare proposals by height
+     */
+    struct ProposalComparator {
+      bool operator()(
+          const std::shared_ptr<shared_model::interface::Proposal> &lhs,
+          const std::shared_ptr<shared_model::interface::Proposal> &rhs) const;
+    };
 
     /**
      * OrderingGate implementation with gRPC asynchronous client
@@ -46,13 +59,16 @@ namespace iroha {
           std::shared_ptr<iroha::network::OrderingGateTransport> transport);
 
       void propagateTransaction(
-          std::shared_ptr<const model::Transaction> transaction) override;
+          std::shared_ptr<const shared_model::interface::Transaction>
+              transaction) override;
 
-      rxcpp::observable<model::Proposal> on_proposal() override;
+      rxcpp::observable<std::shared_ptr<shared_model::interface::Proposal>>
+      on_proposal() override;
 
       void setPcs(const iroha::network::PeerCommunicationService &pcs) override;
 
-      void onProposal(model::Proposal proposal) override;
+      void onProposal(
+          std::shared_ptr<shared_model::interface::Proposal> proposal) override;
 
       ~OrderingGateImpl() override;
 
@@ -62,14 +78,19 @@ namespace iroha {
        */
       void tryNextRound();
 
-      rxcpp::subjects::subject<model::Proposal> proposals_;
+      rxcpp::subjects::subject<
+          std::shared_ptr<shared_model::interface::Proposal>>
+          proposals_;
       std::shared_ptr<iroha::network::OrderingGateTransport> transport_;
 
       /// invariant: true if proposal can be pushed to subscribers
       std::atomic_bool unlock_next_{true};
 
       /// queue with all proposals received from ordering service
-      tbb::concurrent_queue<std::shared_ptr<model::Proposal>> proposal_queue_;
+      tbb::concurrent_priority_queue<
+          std::shared_ptr<shared_model::interface::Proposal>,
+          ProposalComparator>
+          proposal_queue_;
 
       /// subscription of pcs::on_commit
       rxcpp::composite_subscription pcs_subscriber_;

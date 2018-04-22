@@ -20,10 +20,6 @@
 
 #include <rxcpp/rx.hpp>
 
-#include "model/client.hpp"
-#include "model/query.hpp"
-#include "model/query_response.hpp"
-
 #include "interfaces/queries/query.hpp"
 #include "interfaces/query_responses/query_response.hpp"
 
@@ -40,8 +36,8 @@ namespace iroha {
        * @param client - query emitter
        * @param query - client intent
        */
-      virtual void queryHandle(std::shared_ptr<
-                               shared_model::interface::Query> qry) = 0;
+      virtual void queryHandle(
+          std::shared_ptr<shared_model::interface::Query> qry) = 0;
 
       /**
        * Subscribe for query responses

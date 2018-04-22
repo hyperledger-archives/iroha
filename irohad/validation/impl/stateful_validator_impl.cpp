@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-#include <numeric>
-#include <set>
-
-#include "backend/protobuf/from_old_model.hpp"
-#include "builders/protobuf/proposal.hpp"
-#include "model/account.hpp"
 #include "validation/impl/stateful_validator_impl.hpp"
+
+#include <boost/range/adaptor/transformed.hpp>
+
+#include "builders/protobuf/proposal.hpp"
 
 namespace iroha {
   namespace validation {
@@ -37,28 +35,28 @@ namespace iroha {
       log_->info("transactions in proposal: {}",
                  proposal.transactions().size());
       auto checking_transaction = [this](const auto &tx, auto &queries) {
-        return (queries.getAccount(tx.creatorAccountId()) |
-                [&](const auto &account) {
-                  // Check if tx creator has account and has quorum to execute
-                  // transaction
-                  return tx.signatures().size() >= account->quorum()
-                      ? queries.getSignatories(tx.creatorAccountId())
-                      : nonstd::nullopt;
-                }
-                |
-                [&](const auto &signatories) {
-                  // Check if signatures in transaction are account signatory
-                  return this->signaturesSubset(tx.signatures(), signatories)
-                      ? nonstd::make_optional(signatories)
-                      : nonstd::nullopt;
-                })
-            .has_value();
+        return bool(queries.getAccount(tx.creatorAccountId()) |
+                    [&](const auto &account) {
+                      // Check if tx creator has account and has quorum to
+                      // execute transaction
+                      return tx.signatures().size() >= account->quorum()
+                          ? queries.getSignatories(tx.creatorAccountId())
+                          : boost::none;
+                    }
+                    |
+                    [&](const auto &signatories) {
+                      // Check if signatures in transaction are account
+                      // signatory
+                      return this->signaturesSubset(tx.signatures(),
+                                                    signatories)
+                          ? boost::make_optional(signatories)
+                          : boost::none;
+                    });
       };
 
       // Filter only valid transactions
       auto filter = [&temporaryWsv, checking_transaction](auto &acc,
                                                           const auto &tx) {
-        std::unique_ptr<model::Transaction> old_tx(tx->makeOldModel());
         auto answer =
             temporaryWsv.apply(*(tx.operator->()), checking_transaction);
         if (answer) {
@@ -82,10 +80,10 @@ namespace iroha {
                   *polymorphic_tx.operator->());
             });
       auto validated_proposal = shared_model::proto::ProposalBuilder()
-                                    .createdTime(proposal.created_time())
+                                    .createdTime(proposal.createdTime())
                                     .height(proposal.height())
                                     .transactions(valid_proto_txs)
-                                    .createdTime(proposal.created_time())
+                                    .createdTime(proposal.createdTime())
                                     .build();
 
       log_->info("transactions in verified proposal: {}",

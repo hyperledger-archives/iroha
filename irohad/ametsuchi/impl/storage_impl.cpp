@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,8 +22,7 @@
 #include "ametsuchi/impl/postgres_block_query.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
-#include "model/converters/json_common.hpp"
-#include "model/execution/command_executor_factory.hpp"  // for CommandExecutorFactory
+#include "converters/protobuf/json_proto_converter.hpp"
 #include "postgres_ordering_service_persistent_state.hpp"
 
 namespace iroha {
@@ -70,11 +69,6 @@ namespace iroha {
 
     expected::Result<std::unique_ptr<TemporaryWsv>, std::string>
     StorageImpl::createTemporaryWsv() {
-      auto command_executors = model::CommandExecutorFactory::create();
-      if (not command_executors.has_value()) {
-        return expected::makeError(kCommandExecutorError);
-      }
-
       auto postgres_connection =
           std::make_unique<pqxx::lazyconnection>(postgres_options_);
       try {
@@ -87,19 +81,12 @@ namespace iroha {
           std::make_unique<pqxx::nontransaction>(*postgres_connection, kTmpWsv);
 
       return expected::makeValue<std::unique_ptr<TemporaryWsv>>(
-          std::make_unique<TemporaryWsvImpl>(
-              std::move(postgres_connection),
-              std::move(wsv_transaction),
-              std::move(command_executors.value())));
+          std::make_unique<TemporaryWsvImpl>(std::move(postgres_connection),
+                                             std::move(wsv_transaction)));
     }
 
     expected::Result<std::unique_ptr<MutableStorage>, std::string>
     StorageImpl::createMutableStorage() {
-      auto command_executors = model::CommandExecutorFactory::create();
-      if (not command_executors.has_value()) {
-        return expected::makeError(kCommandExecutorError);
-      }
-
       auto postgres_connection =
           std::make_unique<pqxx::lazyconnection>(postgres_options_);
       try {
@@ -111,24 +98,21 @@ namespace iroha {
       auto wsv_transaction =
           std::make_unique<pqxx::nontransaction>(*postgres_connection, kTmpWsv);
 
-      nonstd::optional<hash256_t> top_hash;
+      boost::optional<shared_model::interface::types::HashType> top_hash;
 
       blocks_->getTopBlocks(1)
           .subscribe_on(rxcpp::observe_on_new_thread())
           .as_blocking()
-          .subscribe([&top_hash](auto block) {
-            top_hash = hash256_t::from_string(toBinaryString(block->hash()));
-          });
+          .subscribe([&top_hash](auto block) { top_hash = block->hash(); });
 
       return expected::makeValue<std::unique_ptr<MutableStorage>>(
           std::make_unique<MutableStorageImpl>(
-              top_hash.value_or(hash256_t{}),
+              top_hash.value_or(shared_model::interface::types::HashType("")),
               std::move(postgres_connection),
-              std::move(wsv_transaction),
-              std::move(command_executors.value())));
+              std::move(wsv_transaction)));
     }
 
-    bool StorageImpl::insertBlock(model::Block block) {
+    bool StorageImpl::insertBlock(const shared_model::interface::Block &block) {
       log_->info("create mutable storage");
       auto storageResult = createMutableStorage();
       bool inserted = false;
@@ -150,7 +134,9 @@ namespace iroha {
       return inserted;
     }
 
-    bool StorageImpl::insertBlocks(const std::vector<model::Block> &blocks) {
+    bool StorageImpl::insertBlocks(
+        const std::vector<std::shared_ptr<shared_model::interface::Block>>
+            &blocks) {
       log_->info("create mutable storage");
       bool inserted = true;
       auto storageResult = createMutableStorage();
@@ -159,7 +145,7 @@ namespace iroha {
                   &mutableStorage) {
             std::for_each(blocks.begin(), blocks.end(), [&](auto block) {
               inserted &= mutableStorage.value->apply(
-                  block, [](const auto &block, auto &query, const auto &hash) {
+                  *block, [](const auto &block, auto &query, const auto &hash) {
                     return true;
                   });
             });
@@ -267,9 +253,11 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
       auto storage_ptr = std::move(mutableStorage);  // get ownership of storage
       auto storage = static_cast<MutableStorageImpl *>(storage_ptr.get());
       for (const auto &block : storage->block_store_) {
-        block_store_->add(block.first,
-                          stringToBytes(model::converters::jsonToString(
-                              serializer_.serialize(block.second))));
+        block_store_->add(
+            block.first,
+            stringToBytes(shared_model::converters::protobuf::modelToJson(
+                *std::static_pointer_cast<shared_model::proto::Block>(
+                    block.second))));
       }
 
       storage->transaction_->exec("COMMIT;");
@@ -277,7 +265,19 @@ DROP TABLE IF EXISTS index_by_id_height_asset;
     }
 
     std::shared_ptr<WsvQuery> StorageImpl::getWsvQuery() const {
-      return wsv_;
+      auto postgres_connection =
+          std::make_unique<pqxx::lazyconnection>(postgres_options_);
+      try {
+        postgres_connection->activate();
+      } catch (const pqxx::broken_connection &e) {
+        // TODO 29.03.2018 vdrobny IR-1184 Handle this exception
+        throw pqxx::broken_connection(e);
+      }
+      auto wsv_transaction =
+          std::make_unique<pqxx::nontransaction>(*postgres_connection);
+
+      return std::make_shared<PostgresWsvQuery>(std::move(postgres_connection),
+                                                std::move(wsv_transaction));
     }
 
     std::shared_ptr<BlockQuery> StorageImpl::getBlockQuery() const {

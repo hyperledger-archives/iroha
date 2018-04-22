@@ -19,28 +19,29 @@
 #define IROHA_IROHA_INSTANCE_HPP
 
 #include <chrono>
+#include <memory>
 #include <string>
 
-#include "common/types.hpp"
-#include "framework/config_helper.hpp"
-#include "integration/pipeline/test_irohad.hpp"
-
-namespace iroha {
-  namespace model {
-    struct Block;
-  }
-}  // namespace iroha
+namespace shared_model {
+  namespace interface {
+    class Block;
+  }  // namespace interface
+  namespace crypto {
+    class Keypair;
+  }  // namespace crypto
+}  // namespace shared_model
 
 namespace integration_framework {
+  class TestIrohad;
 
   class IrohaInstance {
    public:
     IrohaInstance();
 
-    void makeGenesis(const iroha::model::Block &block);
+    void makeGenesis(const shared_model::interface::Block &block);
 
-    void rawInsertBlock(const iroha::model::Block &block);
-    void initPipeline(const iroha::keypair_t &key_pair,
+    void rawInsertBlock(const shared_model::interface::Block &block);
+    void initPipeline(const shared_model::crypto::Keypair &key_pair,
                       size_t max_proposal_size = 10);
 
     void run();
@@ -62,7 +63,6 @@ namespace integration_framework {
     const std::chrono::milliseconds proposal_delay_;
     const std::chrono::milliseconds vote_delay_;
     const std::chrono::milliseconds load_delay_;
-    iroha::keypair_t keypair_;
   };
 }  // namespace integration_framework
 #endif  // IROHA_IROHA_INSTANCE_HPP

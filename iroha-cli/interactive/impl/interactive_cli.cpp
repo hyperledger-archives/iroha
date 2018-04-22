@@ -44,12 +44,11 @@ namespace iroha_cli {
         const std::string &account_name,
         const std::string &default_peer_ip,
         int default_port,
-        uint64_t tx_counter,
         uint64_t qry_counter,
         const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
         : creator_(account_name),
           tx_cli_(
-              creator_, default_peer_ip, default_port, tx_counter, provider),
+              creator_, default_peer_ip, default_port, provider),
           query_cli_(
               creator_, default_peer_ip, default_port, qry_counter, provider),
           statusCli_(default_peer_ip, default_port) {
@@ -58,14 +57,14 @@ namespace iroha_cli {
 
     void InteractiveCli::parseMain(std::string line) {
       auto raw_command = parser::parseFirstCommand(std::move(line));
-      if (not raw_command.has_value()) {
+      if (not raw_command) {
         handleEmptyCommand();
         return;
       }
-      auto command_name = raw_command.value();
+      auto command_name = *raw_command;
 
       auto val = findInHandlerMap(command_name, main_handler_map_);
-      if (val.has_value()) {
+      if (val) {
         (this->*val.value())();
       }
     }

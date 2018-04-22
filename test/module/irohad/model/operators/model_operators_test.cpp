@@ -321,8 +321,8 @@ TEST(ModelOperatorTest, SignatureTest) {
 Transaction createTransaction() {
   Transaction transaction;
   transaction.created_ts = 1;
+  transaction.quorum = 1;
   transaction.creator_account_id = "132";
-  transaction.tx_counter = 5;
   transaction.signatures.push_back(createSignature());
 
   // commands
@@ -352,7 +352,7 @@ TEST(ModelOperatorTest, TransactionTest) {
 
   ASSERT_EQ(tx1, tx2);
   tx1.signatures.push_back(createSignature());
-  ASSERT_EQ(tx1, tx2); // signatures not affect on equality
+  ASSERT_EQ(tx1, tx2);  // signatures not affect on equality
 }
 
 // -----|Block|-----

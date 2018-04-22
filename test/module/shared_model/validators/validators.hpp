@@ -27,23 +27,10 @@ namespace shared_model {
     // TODO: kamilsa 01.02.2018 IR-873 Replace all these validators with mock
     // classes
 
-    /**
-     * Tx validator which always returns answer with no errors.
-     */
-    class TransactionAlwaysValidValidator {
-     public:
-      Answer validate(const interface::Transaction &) const {
-        return Answer();
-      }
-    };
-
-    /**
-     * Query validator which always returns answer with no errors.
-     */
-    class QueryAlwaysValidValidator {
-     public:
-      Answer validate(const interface::Query &) const {
-        return Answer();
+    struct AlwaysValidValidator {
+      template <typename T>
+      Answer validate(const T &) const {
+        return {};
       }
     };
 

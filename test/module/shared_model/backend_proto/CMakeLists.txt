@@ -34,9 +34,8 @@ addtest(shared_proto_transaction_test
     )
 target_link_libraries(shared_proto_transaction_test
     shared_model_proto_backend
-    shared_model_ed25519_sha3
+    shared_model_cryptography
     shared_model_stateless_validation
-    iroha_amount
     )
 
 addtest(shared_proto_queries_test
@@ -44,7 +43,7 @@ addtest(shared_proto_queries_test
     )
 target_link_libraries(shared_proto_queries_test
     shared_model_proto_backend
-    shared_model_ed25519_sha3
+    shared_model_cryptography
     shared_model_stateless_validation
     )
 
@@ -53,7 +52,8 @@ addtest(shared_proto_query_responses_test
     )
 target_link_libraries(shared_proto_query_responses_test
     shared_model_proto_backend
-    shared_model_ed25519_sha3
+    shared_model_stateless_validation
+    shared_model_cryptography
     )
 
 addtest(shared_proto_util_test

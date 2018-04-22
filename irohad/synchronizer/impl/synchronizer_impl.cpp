@@ -17,6 +17,7 @@
 
 #include <utility>
 
+#include "ametsuchi/mutable_storage.hpp"
 #include "synchronizer/impl/synchronizer_impl.hpp"
 
 namespace iroha {
@@ -33,14 +34,17 @@ namespace iroha {
       log_ = logger::log("synchronizer");
       consensus_gate->on_commit().subscribe(
           subscription_,
-          [&](model::Block block) { this->process_commit(block); });
+          [&](std::shared_ptr<shared_model::interface::Block> block) {
+            this->process_commit(block);
+          });
     }
 
     SynchronizerImpl::~SynchronizerImpl() {
       subscription_.unsubscribe();
     }
 
-    void SynchronizerImpl::process_commit(iroha::model::Block commit_message) {
+    void SynchronizerImpl::process_commit(
+        std::shared_ptr<shared_model::interface::Block> commit_message) {
       log_->info("processing commit");
       auto storageResult = mutableFactory_->createMutableStorage();
       std::unique_ptr<ametsuchi::MutableStorage> storage;
@@ -54,7 +58,8 @@ namespace iroha {
       if (not storage) {
         return;
       }
-      if (validator_->validateBlock(commit_message, *storage)) {
+
+      if (validator_->validateBlock(*commit_message, *storage)) {
         // Block can be applied to current storage
         // Commit to main Ametsuchi
         mutableFactory_->commit(std::move(storage));
@@ -65,7 +70,7 @@ namespace iroha {
       } else {
         // Block can't be applied to current storage
         // Download all missing blocks
-        for (auto signature : commit_message.sigs) {
+        for (const auto &signature : commit_message->signatures()) {
           auto storageResult = mutableFactory_->createMutableStorage();
           std::unique_ptr<ametsuchi::MutableStorage> storage;
           storageResult.match(
@@ -78,16 +83,14 @@ namespace iroha {
           if (not storage) {
             return;
           }
-          auto chain =
-              blockLoader_
-                  ->retrieveBlocks(shared_model::crypto::PublicKey(
-                      {signature.pubkey.begin(), signature.pubkey.end()}))
-                  .map([](auto block) {
-                    std::unique_ptr<iroha::model::Block> old_block(
-                        block->makeOldModel());
-                    return *old_block;
-                  });
-          if (validator_->validateChain(chain, *storage)) {
+          auto chain = blockLoader_->retrieveBlocks(
+              shared_model::crypto::PublicKey(signature->publicKey()));
+          // Check chain last commit
+          auto is_chain_end_expected =
+              chain.as_blocking().last()->hash() == commit_message->hash();
+
+          if (validator_->validateChain(chain, *storage)
+              and is_chain_end_expected) {
             // Peer send valid chain
             mutableFactory_->commit(std::move(storage));
             notifier_.get_subscriber().on_next(chain);
@@ -98,7 +101,7 @@ namespace iroha {
       }
     }
 
-    rxcpp::observable<OldCommit> SynchronizerImpl::on_commit_chain() {
+    rxcpp::observable<Commit> SynchronizerImpl::on_commit_chain() {
       return notifier_.get_observable();
     }
   }  // namespace synchronizer

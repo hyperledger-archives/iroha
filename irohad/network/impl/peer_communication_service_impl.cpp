@@ -1,5 +1,5 @@
 /*
-Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
+Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 #include "network/impl/peer_communication_service_impl.hpp"
-#include "backend/protobuf/from_old_model.hpp"
 
 namespace iroha {
   namespace network {
@@ -31,27 +30,16 @@ namespace iroha {
         std::shared_ptr<const shared_model::interface::Transaction>
             transaction) {
       log_->info("propagate tx");
-      ordering_gate_->propagateTransaction(
-          std::shared_ptr<model::Transaction>(transaction->makeOldModel()));
+      ordering_gate_->propagateTransaction(transaction);
     }
 
     rxcpp::observable<std::shared_ptr<shared_model::interface::Proposal>>
     PeerCommunicationServiceImpl::on_proposal() const {
-      return ordering_gate_->on_proposal().map(
-          [](auto prop) -> std::shared_ptr<shared_model::interface::Proposal> {
-            return std::make_shared<shared_model::proto::Proposal>(
-                shared_model::proto::from_old(prop));
-          });
+      return ordering_gate_->on_proposal();
     }
 
     rxcpp::observable<Commit> PeerCommunicationServiceImpl::on_commit() const {
-      return synchronizer_->on_commit_chain().map([](auto commit) -> Commit {
-        return commit.map(
-            [](auto block) -> std::shared_ptr<shared_model::interface::Block> {
-              return std::make_shared<shared_model::proto::Block>(
-                  shared_model::proto::from_old(block));
-            });
-      });
+      return synchronizer_->on_commit_chain();
     }
   }  // namespace network
 }  // namespace iroha

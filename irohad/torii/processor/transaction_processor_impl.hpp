@@ -18,13 +18,12 @@
 #ifndef IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 #define IROHA_TRANSACTION_PROCESSOR_STUB_HPP
 
+#include "builders/default_builders.hpp"
+#include "interfaces/transaction_responses/tx_response.hpp"
 #include "logger/logger.hpp"
-#include "model/transaction_response.hpp"
-#include "model/types.hpp"
 #include "multi_sig_transactions/mst_processor.hpp"
 #include "network/peer_communication_service.hpp"
 #include "torii/processor/transaction_processor.hpp"
-#include "validation/stateless_validator.hpp"
 
 namespace iroha {
   namespace torii {
@@ -39,9 +38,11 @@ namespace iroha {
           std::shared_ptr<MstProcessor> mst_processor);
 
       void transactionHandle(
-          std::shared_ptr<model::Transaction> transaction) override;
+          std::shared_ptr<shared_model::interface::Transaction> transaction)
+          override;
 
-      rxcpp::observable<std::shared_ptr<model::TransactionResponse>>
+      rxcpp::observable<
+          std::shared_ptr<shared_model::interface::TransactionResponse>>
       transactionNotifier() override;
 
      private:
@@ -50,18 +51,21 @@ namespace iroha {
 
       // processing
       std::shared_ptr<MstProcessor> mst_processor_;
-      std::unordered_set<std::string> proposal_set_;
-      std::unordered_set<std::string> candidate_set_;
+      std::unordered_set<shared_model::crypto::Hash,
+                         shared_model::crypto::Hash::Hasher>
+          proposal_set_;
+      std::unordered_set<shared_model::crypto::Hash,
+                         shared_model::crypto::Hash::Hasher>
+          candidate_set_;
 
       // internal
-      rxcpp::subjects::subject<std::shared_ptr<model::TransactionResponse>>
+      rxcpp::subjects::subject<
+          std::shared_ptr<shared_model::interface::TransactionResponse>>
           notifier_;
 
-      logger::Logger log_;
+      shared_model::builder::DefaultTransactionStatusBuilder status_builder_;
 
-      /// Wrapper on notifying on some hash
-      void notify(const std::string &hash,
-                  model::TransactionResponse::Status s);
+      logger::Logger log_;
     };
   }  // namespace torii
 }  // namespace iroha

@@ -112,7 +112,7 @@ namespace iroha {
     // Append new signatures to the existing state
     for (auto &sig : rhs_tx->signatures()) {
       if (found->signatures().find(sig) == found->signatures().end()) {
-        found->addSignature(sig);
+        found->addSignature(sig->signedData(), sig->publicKey());
       }
     }
 

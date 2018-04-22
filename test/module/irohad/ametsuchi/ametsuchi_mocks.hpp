@@ -30,46 +30,45 @@
 #include "ametsuchi/wsv_query.hpp"
 #include "common/result.hpp"
 #include "interfaces/common_objects/peer.hpp"
-#include "model/account.hpp"
-#include "model/account_asset.hpp"
-#include "model/asset.hpp"
-#include "model/block.hpp"
-#include "model/domain.hpp"
-#include "model/peer.hpp"
-#include "model/transaction.hpp"
 
 namespace iroha {
   namespace ametsuchi {
     class MockWsvQuery : public WsvQuery {
      public:
       MOCK_METHOD1(getAccountRoles,
-                   nonstd::optional<std::vector<std::string>>(
+                   boost::optional<std::vector<std::string>>(
                        const std::string &account_id));
-      MOCK_METHOD3(
-          getAccountDetail,
-          nonstd::optional<std::string>(const std::string &account_id,
-                                        const std::string &creator_account_id,
-                                        const std::string &detail));
+      MOCK_METHOD1(getAccountDetail,
+                   boost::optional<std::string>(const std::string &account_id));
       MOCK_METHOD1(getRolePermissions,
-                   nonstd::optional<std::vector<std::string>>(
+                   boost::optional<std::vector<std::string>>(
                        const std::string &role_name));
-      MOCK_METHOD0(getRoles, nonstd::optional<std::vector<std::string>>());
+      MOCK_METHOD0(getRoles, boost::optional<std::vector<std::string>>());
       MOCK_METHOD1(
           getAccount,
-          nonstd::optional<std::shared_ptr<shared_model::interface::Account>>(const std::string &account_id));
+          boost::optional<std::shared_ptr<shared_model::interface::Account>>(
+              const std::string &account_id));
       MOCK_METHOD1(getSignatories,
-                   nonstd::optional<std::vector<shared_model::interface::types::PubkeyType>>(
+                   boost::optional<
+                       std::vector<shared_model::interface::types::PubkeyType>>(
                        const std::string &account_id));
-      MOCK_METHOD1(getAsset,
-                   nonstd::optional<std::shared_ptr<shared_model::interface::Asset>>(const std::string &asset_id));
-      MOCK_METHOD2(
-          getAccountAsset,
-          nonstd::optional<std::shared_ptr<shared_model::interface::AccountAsset>>(const std::string &account_id,
-                                                const std::string &asset_id));
-      MOCK_METHOD0(getPeers, nonstd::optional<std::vector<std::shared_ptr<shared_model::interface::Peer>>>());
+      MOCK_METHOD1(
+          getAsset,
+          boost::optional<std::shared_ptr<shared_model::interface::Asset>>(
+              const std::string &asset_id));
+      MOCK_METHOD2(getAccountAsset,
+                   boost::optional<
+                       std::shared_ptr<shared_model::interface::AccountAsset>>(
+                       const std::string &account_id,
+                       const std::string &asset_id));
+      MOCK_METHOD0(
+          getPeers,
+          boost::optional<
+              std::vector<std::shared_ptr<shared_model::interface::Peer>>>());
       MOCK_METHOD1(
           getDomain,
-          nonstd::optional<std::shared_ptr<shared_model::interface::Domain>>(const std::string &domain_id));
+          boost::optional<std::shared_ptr<shared_model::interface::Domain>>(
+              const std::string &domain_id));
       MOCK_METHOD3(hasAccountGrantablePermission,
                    bool(const std::string &permitee_account_id,
                         const std::string &account_id,
@@ -98,25 +97,40 @@ namespace iroha {
                    WsvCommandResult(const std::string &permittee_account_id,
                                     const std::string &account_id,
                                     const std::string &permission_id));
-      MOCK_METHOD1(insertAccount, WsvCommandResult(const model::Account &));
-      MOCK_METHOD1(updateAccount, WsvCommandResult(const model::Account &));
-      MOCK_METHOD1(insertAsset, WsvCommandResult(const model::Asset &));
-      MOCK_METHOD1(upsertAccountAsset,
-                   WsvCommandResult(const model::AccountAsset &));
-      MOCK_METHOD1(insertSignatory, WsvCommandResult(const pubkey_t &));
-      MOCK_METHOD1(deleteSignatory, WsvCommandResult(const pubkey_t &));
+      MOCK_METHOD1(insertAccount,
+                   WsvCommandResult(const shared_model::interface::Account &));
+      MOCK_METHOD1(updateAccount,
+                   WsvCommandResult(const shared_model::interface::Account &));
+      MOCK_METHOD1(insertAsset,
+                   WsvCommandResult(const shared_model::interface::Asset &));
+      MOCK_METHOD1(
+          upsertAccountAsset,
+          WsvCommandResult(const shared_model::interface::AccountAsset &));
+      MOCK_METHOD1(
+          insertSignatory,
+          WsvCommandResult(const shared_model::interface::types::PubkeyType &));
+      MOCK_METHOD1(
+          deleteSignatory,
+          WsvCommandResult(const shared_model::interface::types::PubkeyType &));
 
-      MOCK_METHOD2(insertAccountSignatory,
-                   WsvCommandResult(const std::string &, const pubkey_t &));
+      MOCK_METHOD2(
+          insertAccountSignatory,
+          WsvCommandResult(const std::string &,
+                           const shared_model::interface::types::PubkeyType &));
 
-      MOCK_METHOD2(deleteAccountSignatory,
-                   WsvCommandResult(const std::string &, const pubkey_t &));
+      MOCK_METHOD2(
+          deleteAccountSignatory,
+          WsvCommandResult(const std::string &,
+                           const shared_model::interface::types::PubkeyType &));
 
-      MOCK_METHOD1(insertPeer, WsvCommandResult(const model::Peer &));
+      MOCK_METHOD1(insertPeer,
+                   WsvCommandResult(const shared_model::interface::Peer &));
 
-      MOCK_METHOD1(deletePeer, WsvCommandResult(const model::Peer &));
+      MOCK_METHOD1(deletePeer,
+                   WsvCommandResult(const shared_model::interface::Peer &));
 
-      MOCK_METHOD1(insertDomain, WsvCommandResult(const model::Domain &));
+      MOCK_METHOD1(insertDomain,
+                   WsvCommandResult(const shared_model::interface::Domain &));
       MOCK_METHOD4(setAccountKV,
                    WsvCommandResult(const std::string &,
                                     const std::string &,
@@ -142,8 +156,12 @@ namespace iroha {
           getTransactions,
           rxcpp::observable<boost::optional<wTransaction>>(
               const std::vector<shared_model::crypto::Hash> &tx_hashes));
-      MOCK_METHOD2(getBlocks, rxcpp::observable<wBlock>(shared_model::interface::types::HeightType, uint32_t));
-      MOCK_METHOD1(getBlocksFrom, rxcpp::observable<wBlock>(shared_model::interface::types::HeightType));
+      MOCK_METHOD2(getBlocks,
+                   rxcpp::observable<wBlock>(
+                       shared_model::interface::types::HeightType, uint32_t));
+      MOCK_METHOD1(getBlocksFrom,
+                   rxcpp::observable<wBlock>(
+                       shared_model::interface::types::HeightType));
       MOCK_METHOD1(getTopBlocks, rxcpp::observable<wBlock>(uint32_t));
     };
 
@@ -158,9 +176,11 @@ namespace iroha {
      public:
       MOCK_METHOD2(
           apply,
-          bool(const model::Block &,
+          bool(const shared_model::interface::Block &,
                std::function<
-                   bool(const model::Block &, WsvQuery &, const hash256_t &)>));
+                   bool(const shared_model::interface::Block &,
+                        WsvQuery &,
+                        const shared_model::interface::types::HashType &)>));
     };
 
     /**
@@ -206,8 +226,10 @@ namespace iroha {
           createMutableStorage,
           expected::Result<std::unique_ptr<MutableStorage>, std::string>(void));
       MOCK_METHOD1(doCommit, void(MutableStorage *storage));
-      MOCK_METHOD1(insertBlock, bool(model::Block block));
-      MOCK_METHOD1(insertBlocks, bool(const std::vector<model::Block> &blocks));
+      MOCK_METHOD1(insertBlock, bool(const shared_model::interface::Block &));
+      MOCK_METHOD1(insertBlocks,
+                   bool(const std::vector<
+                        std::shared_ptr<shared_model::interface::Block>> &));
       MOCK_METHOD0(dropStorage, void(void));
 
       void commit(std::unique_ptr<MutableStorage> storage) override {

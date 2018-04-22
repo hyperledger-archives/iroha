@@ -6,9 +6,8 @@ add_library(processors
 target_link_libraries(processors PUBLIC
     model
     rxcpp
-    stateless_validator
     logger
     endpoint
     mst_processor
-    ${BOOST_LIBRARIES}
+    shared_model_proto_builders
     )

@@ -44,7 +44,6 @@ class TransportBuilderTest : public ::testing::Test {
   auto createTransaction() {
     return TestUnsignedTransactionBuilder()
         .createdTime(created_time)
-        .txCounter(counter)
         .creatorAccountId(account_id)
         .setAccountQuorum(account_id, quorum)
         .build()
@@ -54,7 +53,6 @@ class TransportBuilderTest : public ::testing::Test {
   auto createInvalidTransaction() {
     return TestUnsignedTransactionBuilder()
         .createdTime(created_time)
-        .txCounter(counter)
         .creatorAccountId(invalid_account_id)
         .setAccountQuorum(account_id, quorum)
         .build()
@@ -84,7 +82,6 @@ class TransportBuilderTest : public ::testing::Test {
   auto createBlock() {
     return TestBlockBuilder()
         .transactions(std::vector<Transaction>({createTransaction()}))
-        .txNumber(1)
         .height(1)
         .prevHash(crypto::Hash("asd"))
         .createdTime(created_time)
@@ -94,7 +91,6 @@ class TransportBuilderTest : public ::testing::Test {
   auto createInvalidBlock() {
     return TestBlockBuilder()
         .transactions(std::vector<Transaction>({createTransaction()}))
-        .txNumber(1)
         .height(1)
         .prevHash(crypto::Hash("asd"))
         .createdTime(123)  // invalid time

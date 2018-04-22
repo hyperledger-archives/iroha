@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'application'
 
-def BUILD_DIR = "./ build/shared_model/bindings"
+def BUILD_DIR = "./build/shared_model/bindings"
 def SCHEMA_DIR = "../../schema"
 
 buildscript {
@@ -57,6 +57,16 @@ protobuf {
             grpc {}
         }
     }
+}
+
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
 }
 
 project.buildDir = BUILD_DIR

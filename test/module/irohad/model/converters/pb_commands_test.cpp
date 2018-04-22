@@ -34,9 +34,10 @@
 #include "model/commands/transfer_asset.hpp"
 
 #include "model/converters/pb_command_factory.hpp"
-#include "model/permissions.hpp"
+#include "validators/permissions.hpp"
 
 using namespace iroha::model;
+using namespace shared_model::permissions;
 
 void command_converter_test(iroha::model::Command &abstract_command) {
   auto factory = iroha::model::converters::PbCommandFactory();
@@ -215,7 +216,7 @@ class TestablePbCommandFactory
 TEST(CommandTest, create_role) {
   auto factory = iroha::model::converters::PbCommandFactory();
   std::set<std::string> perms;
-  perms.insert(all_perm_group.begin(), all_perm_group.end());
+  perms.insert(role_perm_group.begin(), role_perm_group.end());
 
   for (auto perm : perms) {
     TestablePbCommandFactory test_factory;

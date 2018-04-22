@@ -53,7 +53,6 @@ namespace shared_model {
       enum RequiredFields {
         Command,
         CreatorAccountId,
-        TxCounter,
         CreatedTime,
         Quorum,
         TOTAL
@@ -105,12 +104,6 @@ namespace shared_model {
           const interface::types::AccountIdType &account_id) const {
         return transform<CreatorAccountId>([&](auto &tx) {
           tx.mutable_payload()->set_creator_account_id(account_id);
-        });
-      }
-
-      auto txCounter(interface::types::CounterType tx_counter) const {
-        return transform<TxCounter>([&](auto &tx) {
-          tx.mutable_payload()->set_tx_counter(tx_counter);
         });
       }
 
@@ -269,9 +262,8 @@ namespace shared_model {
 
       auto setAccountDetail(
           const interface::types::AccountIdType &account_id,
-          const interface::SetAccountDetail::AccountDetailKeyType &key,
-          const interface::SetAccountDetail::AccountDetailValueType &value)
-          const {
+          const interface::types::AccountDetailKeyType &key,
+          const interface::types::AccountDetailValueType &value) const {
         return addCommand([&](auto proto_command) {
           auto command = proto_command->mutable_set_account_detail();
           command->set_account_id(account_id);
@@ -301,12 +293,11 @@ namespace shared_model {
         });
       }
 
-      auto transferAsset(
-          const interface::types::AccountIdType &src_account_id,
-          const interface::types::AccountIdType &dest_account_id,
-          const interface::types::AssetIdType &asset_id,
-          const interface::TransferAsset::MessageType &description,
-          const std::string &amount) const {
+      auto transferAsset(const interface::types::AccountIdType &src_account_id,
+                         const interface::types::AccountIdType &dest_account_id,
+                         const interface::types::AssetIdType &asset_id,
+                         const interface::types::DescriptionType &description,
+                         const std::string &amount) const {
         return addCommand([&](auto proto_command) {
           auto command = proto_command->mutable_transfer_asset();
           command->set_src_account_id(src_account_id);

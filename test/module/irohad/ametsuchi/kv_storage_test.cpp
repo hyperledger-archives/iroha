@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,22 +16,18 @@
  */
 
 #include <gtest/gtest.h>
+#include <boost/property_tree/json_parser.hpp>
 
 #include "ametsuchi/block_query.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/mutable_storage.hpp"
-#include "model/account.hpp"
-#include "model/commands/create_account.hpp"
-#include "model/commands/create_domain.hpp"
-#include "model/commands/create_role.hpp"
-#include "model/commands/set_account_detail.hpp"
-#include "model/permissions.hpp"
-#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
+#include "validators/permissions.hpp"
 
 using namespace iroha::ametsuchi;
-using namespace iroha::model;
 
 /**
  * Fixture for kv storage test. Creates two accounts: one has predefined json
@@ -54,49 +50,34 @@ class KVTest : public AmetsuchiTest {
     blocks = storage->getBlockQuery();
     wsv_query = storage->getWsvQuery();
 
-    // First transaction in block1
-    Transaction txn1_1;
-    txn1_1.creator_account_id = "userone@ru";
-
-    CreateRole createRole;
-    createRole.role_name = "user";
-    createRole.permissions = {
-        can_add_peer, can_create_asset, can_get_my_account};
-
-    // Create domain ru
-    txn1_1.commands.push_back(std::make_shared<CreateRole>(createRole));
-    CreateDomain createDomain;
-    createDomain.domain_id = "ru";
-    createDomain.user_default_role = "user";
-    txn1_1.commands.push_back(std::make_shared<CreateDomain>(createDomain));
-
-    // Create account user1
-    CreateAccount createAccount1;
-    createAccount1.account_name = account_name1;
-    createAccount1.domain_id = domain_id;
-    txn1_1.commands.push_back(std::make_shared<CreateAccount>(createAccount1));
-
-    // Create account user2
-    CreateAccount createAccount2;
-    createAccount2.account_name = account_name2;
-    createAccount2.domain_id = domain_id;
-    txn1_1.commands.push_back(std::make_shared<CreateAccount>(createAccount2));
-
-    // Set age for user2
-    SetAccountDetail setAccount2Age;
-    setAccount2Age.account_id = account_name2 + "@" + domain_id;
-    setAccount2Age.key = "age";
-    setAccount2Age.value = "24";
-    txn1_1.commands.push_back(
-        std::make_shared<SetAccountDetail>(setAccount2Age));
-
-    Block block1;
-    block1.height = 1;
-    block1.transactions.push_back(txn1_1);
-    block1.prev_hash.fill(0);
-    auto block1hash = iroha::hash(block1);
-    block1.hash = block1hash;
-    block1.txs_number = block1.transactions.size();
+    std::string empty_key(32, '0');
+    // transaction for block 1
+    auto txn =
+        TestTransactionBuilder()
+            .creatorAccountId("userone@ru")
+            .createRole(
+                "user",
+                std::vector<shared_model::interface::types::PermissionNameType>{
+                    shared_model::permissions::can_add_peer,
+                    shared_model::permissions::can_create_asset,
+                    shared_model::permissions::can_get_my_account})
+            .createDomain("ru", "user")
+            .createAccount(
+                account_name1,
+                domain_id,
+                shared_model::crypto::PublicKey(empty_key))
+            .createAccount(
+                account_name2,
+                domain_id,
+                shared_model::crypto::PublicKey(empty_key))
+            .setAccountDetail(account_name2 + "@" + domain_id, "age", "24")
+            .build();
+    auto block1 =
+        TestBlockBuilder()
+            .height(1)
+            .prevHash(shared_model::crypto::Hash(empty_key))
+            .transactions(std::vector<shared_model::proto::Transaction>{txn})
+            .build();
 
     {
       std::unique_ptr<MutableStorage> ms;
@@ -107,6 +88,7 @@ class KVTest : public AmetsuchiTest {
           [](iroha::expected::Error<std::string> &error) {
             FAIL() << "MutableStorage: " << error.error;
           });
+
       ms->apply(block1, [](const auto &blk, auto &query, const auto &top_hash) {
         return true;
       });
@@ -124,17 +106,18 @@ class KVTest : public AmetsuchiTest {
 };
 
 /**
- * @given empty in account1
- * @when non existing detail is queried using GetAccountDetail
+ * @given no details is set in account1
+ * @when detail of account1 is queried using GetAccountDetail
  * @then nullopt is returned
  */
-TEST_F(KVTest, GetNonexistingDetail) {
+TEST_F(KVTest, GetNonexistingUserDetail) {
   auto account_id1 = account_name1 + "@" + domain_id;
-  auto account = wsv_query->getAccount(account_id1);
+  auto ss =
+      std::istringstream(wsv_query->getAccountDetail(account_id1).value());
 
-  auto age =
-      wsv_query->getAccountDetail(account_id1, "userone@ru", "nonexisting-field");
-  ASSERT_FALSE(age);
+  boost::property_tree::ptree root;
+  boost::property_tree::read_json(ss, root);
+  ASSERT_TRUE(root.empty());
 }
 
 /**
@@ -143,9 +126,16 @@ TEST_F(KVTest, GetNonexistingDetail) {
  * @then correct age of user2 is returned
  */
 TEST_F(KVTest, SetAccountDetail) {
+  auto account_id1 = account_name1 + "@" + domain_id;
   auto account_id2 = account_name2 + "@" + domain_id;
-  auto age = wsv_query->getAccountDetail(account_id2, "userone@ru", "age");
+  auto ss =
+      std::istringstream(wsv_query->getAccountDetail(account_id2).value());
 
-  ASSERT_TRUE(age);
-  ASSERT_EQ(age.value(), "24");
+  boost::property_tree::ptree root;
+  boost::property_tree::read_json(ss, root);
+
+  auto record = root.get_child(account_id1);
+  ASSERT_EQ(record.size(), 1);
+  ASSERT_EQ(record.front().first, "age");
+  ASSERT_EQ(record.front().second.data(), "24");
 }

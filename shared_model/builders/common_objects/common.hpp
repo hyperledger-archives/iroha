@@ -53,7 +53,8 @@ namespace shared_model {
        * why object construction is unsuccessful.
        */
       BuilderResult<ModelType> build() {
-        auto model_impl = std::shared_ptr<ModelType>(builder_.build().copy());
+        std::shared_ptr<ModelType> model_impl =
+            std::move(clone(builder_.build()));
 
         auto reasons = validate(*model_impl);
         reasons.first = builderName();
@@ -64,7 +65,10 @@ namespace shared_model {
         }
 
         if (answer) {
-          return iroha::expected::makeError(std::make_shared<std::string>(answer.reason()));
+          // TODO 15.04.2018 x3medima17 IR-1240: rework with std::string instead
+          // of pointer to string
+          return iroha::expected::makeError(
+              std::make_shared<std::string>(answer.reason()));
         }
 
         return iroha::expected::makeValue(std::move(model_impl));
