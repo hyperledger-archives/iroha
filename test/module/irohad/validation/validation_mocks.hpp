@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,31 +19,31 @@
 #define IROHA_VALIDATION_MOCKS_HPP
 
 #include <gmock/gmock.h>
+
+#include "interfaces/iroha_internal/proposal.hpp"
 #include "validation/chain_validator.hpp"
 #include "validation/stateful_validator.hpp"
-#include "validation/stateless_validator.hpp"
 
 namespace iroha {
   namespace validation {
-    class MockStatelessValidator : public StatelessValidator {
-     public:
-      MOCK_CONST_METHOD1(validate, bool(const model::Transaction &));
-      MOCK_CONST_METHOD1(validate, bool(const model::Query &));
-    };
-
     class MockStatefulValidator : public validation::StatefulValidator {
      public:
       MOCK_METHOD2(validate,
-                   model::Proposal(const model::Proposal &,
-                                   ametsuchi::TemporaryWsv &));
+                   std::shared_ptr<shared_model::interface::Proposal>(
+                       const shared_model::interface::Proposal &,
+                       ametsuchi::TemporaryWsv &));
     };
 
     class MockChainValidator : public ChainValidator {
      public:
-      MOCK_METHOD2(validateChain, bool(Commit, ametsuchi::MutableStorage &));
+      MOCK_METHOD2(validateChain,
+                   bool(rxcpp::observable<
+                            std::shared_ptr<shared_model::interface::Block>>,
+                        ametsuchi::MutableStorage &));
 
       MOCK_METHOD2(validateBlock,
-                   bool(const model::Block &, ametsuchi::MutableStorage &));
+                   bool(const shared_model::interface::Block &,
+                        ametsuchi::MutableStorage &));
     };
   }  // namespace validation
 }  // namespace iroha

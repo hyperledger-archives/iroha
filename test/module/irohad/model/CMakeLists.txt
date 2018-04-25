@@ -19,7 +19,7 @@ addtest(model_crypto_provider_test model_crypto_provider_test.cpp)
 target_link_libraries(model_crypto_provider_test
     model
     hash
-    cryptography
+    ed25519_crypto
     model_generators
     )
 
@@ -52,6 +52,7 @@ addtest(command_validate_execute_test command_validate_execute_test.cpp)
 target_link_libraries(command_validate_execute_test
     model
     command_execution
+    shared_model_stateless_validation
     )
 
 addtest(json_command_converter_test converters/json_commands_test.cpp)

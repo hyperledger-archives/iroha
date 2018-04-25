@@ -18,15 +18,33 @@
 #ifndef IROHA_ORDERING_GATE_IMPL_HPP
 #define IROHA_ORDERING_GATE_IMPL_HPP
 
-#include "model/converters/pb_transaction_factory.hpp"
-#include "network/impl/async_grpc_client.hpp"
 #include "network/ordering_gate.hpp"
-#include "network/ordering_gate_transport.hpp"
+
+#include <atomic>
+#include <tbb/concurrent_priority_queue.h>
 
 #include "logger/logger.hpp"
+#include "network/impl/async_grpc_client.hpp"
+#include "network/ordering_gate_transport.hpp"
+
+namespace shared_model {
+  namespace interface {
+    class Transaction;
+    class Proposal;
+  }  // namespace interface
+}  // namespace shared_model
 
 namespace iroha {
   namespace ordering {
+
+    /**
+     * Compare proposals by height
+     */
+    struct ProposalComparator {
+      bool operator()(
+          const std::shared_ptr<shared_model::interface::Proposal> &lhs,
+          const std::shared_ptr<shared_model::interface::Proposal> &rhs) const;
+    };
 
     /**
      * OrderingGate implementation with gRPC asynchronous client
@@ -40,16 +58,43 @@ namespace iroha {
       explicit OrderingGateImpl(
           std::shared_ptr<iroha::network::OrderingGateTransport> transport);
 
-      void propagate_transaction(
-          std::shared_ptr<const model::Transaction> transaction) override;
+      void propagateTransaction(
+          std::shared_ptr<const shared_model::interface::Transaction>
+              transaction) override;
 
-      rxcpp::observable<model::Proposal> on_proposal() override;
+      rxcpp::observable<std::shared_ptr<shared_model::interface::Proposal>>
+      on_proposal() override;
 
-      void onProposal(model::Proposal proposal) override;
+      void setPcs(const iroha::network::PeerCommunicationService &pcs) override;
+
+      void onProposal(
+          std::shared_ptr<shared_model::interface::Proposal> proposal) override;
+
+      ~OrderingGateImpl() override;
 
      private:
-      rxcpp::subjects::subject<model::Proposal> proposals_;
+      /**
+       * Try to push proposal for next consensus round
+       */
+      void tryNextRound();
+
+      rxcpp::subjects::subject<
+          std::shared_ptr<shared_model::interface::Proposal>>
+          proposals_;
       std::shared_ptr<iroha::network::OrderingGateTransport> transport_;
+
+      /// invariant: true if proposal can be pushed to subscribers
+      std::atomic_bool unlock_next_{true};
+
+      /// queue with all proposals received from ordering service
+      tbb::concurrent_priority_queue<
+          std::shared_ptr<shared_model::interface::Proposal>,
+          ProposalComparator>
+          proposal_queue_;
+
+      /// subscription of pcs::on_commit
+      rxcpp::composite_subscription pcs_subscriber_;
+
       logger::Logger log_;
     };
   }  // namespace ordering

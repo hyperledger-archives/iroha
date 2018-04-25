@@ -18,11 +18,13 @@
 #ifndef IROHA_BLOCK_VALIDATOR_HPP
 #define IROHA_BLOCK_VALIDATOR_HPP
 
+#include <boost/format.hpp>
 #include "datetime/time.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "interfaces/iroha_internal/block.hpp"
 #include "utils/polymorphic_wrapper.hpp"
 #include "validators/answer.hpp"
-#include "interfaces/iroha_internal/block.hpp"
+#include "validators/container_validator.hpp"
 
 // TODO 22/01/2018 x3medima17: write stateless validator IR-837
 
@@ -32,19 +34,24 @@ namespace shared_model {
     /**
      * Class that validates block
      */
-    class BlockValidator {
+    template <typename FieldValidator, typename TransactionValidator>
+    class BlockValidator : public ContainerValidator<interface::Block,
+                                                     FieldValidator,
+                                                     TransactionValidator> {
      public:
+      // TODO 05-03-2018 Alexey Chernyshov: remove polymorphic wrapper in IR-872
+
       /**
        * Applies validation on block
        * @param block
        * @return Answer containing found error if any
        */
-      Answer validate(
-          detail::PolymorphicWrapper<interface::Block> block) const {
-        return Answer();
+      Answer validate(const interface::Block &block) const {
+        return ContainerValidator<interface::Block,
+                                  FieldValidator,
+                                  TransactionValidator>::validate(block,
+                                                                  "Block");
       }
-
-      Answer answer_;
     };
 
   }  // namespace validation

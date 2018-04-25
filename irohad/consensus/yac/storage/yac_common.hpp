@@ -18,7 +18,6 @@
 #ifndef IROHA_YAC_COMMON_HPP
 #define IROHA_YAC_COMMON_HPP
 
-#include <nonstd/optional.hpp>
 #include <vector>
 
 #include "consensus/yac/yac_hash_provider.hpp"  // for YacHash::proposal_hash
@@ -34,17 +33,6 @@ namespace iroha {
       using BlockHash = decltype(YacHash::block_hash);
 
       /**
-       * Check if there is available reject proof.
-       * Reject proof is proof that in current round
-       * no one hash doesn't achieve supermajority.
-       * @param frequent - number of times, that appears most frequent element
-       * @param voted - all number of voted peers
-       * @param all - number of peers in round
-       * @return true, if reject
-       */
-      bool hasReject(uint64_t frequent, uint64_t voted, uint64_t all);
-
-      /**
        * Check that all votes in collection has same proposal hash
        * @param votes - collection of votes
        * @return true, if proposals same
@@ -56,7 +44,7 @@ namespace iroha {
        * @param votes - collection with votes
        * @return hash, if collection has same proposal hash, otherwise nullopt
        */
-      nonstd::optional<ProposalHash> getProposalHash(
+      boost::optional<ProposalHash> getProposalHash(
           const std::vector<VoteMessage> &votes);
 
       /**
@@ -64,7 +52,7 @@ namespace iroha {
        * @param votes - collection with votes
        * @return hash, if collection elements have same hash, otherwise nullopt
        */
-      nonstd::optional<YacHash> getHash(const std::vector<VoteMessage> &votes);
+      boost::optional<YacHash> getHash(const std::vector<VoteMessage> &votes);
     }  // namespace yac
   }    // namespace consensus
 }  // namespace iroha

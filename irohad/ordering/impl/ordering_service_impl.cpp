@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +16,14 @@
  */
 
 #include "ordering/impl/ordering_service_impl.hpp"
+#include <algorithm>
+#include <iterator>
+#include "ametsuchi/ordering_service_persistent_state.hpp"
+#include "ametsuchi/peer_query.hpp"
+#include "backend/protobuf/proposal.hpp"
 #include "backend/protobuf/transaction.hpp"
-#include "builders/protobuf/proposal.hpp"
+#include "datetime/time.hpp"
+#include "network/ordering_service_transport.hpp"
 
 namespace iroha {
   namespace ordering {
@@ -25,18 +31,26 @@ namespace iroha {
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
         size_t max_size,
         size_t delay_milliseconds,
-        std::shared_ptr<network::OrderingServiceTransport> transport)
+        std::shared_ptr<network::OrderingServiceTransport> transport,
+        std::shared_ptr<ametsuchi::OrderingServicePersistentState>
+            persistent_state)
         : wsv_(wsv),
           max_size_(max_size),
           delay_milliseconds_(delay_milliseconds),
           transport_(transport),
-          proposal_height(2) {
+          persistent_state_(persistent_state),
+          is_finished(false) {
       updateTimer();
+      log_ = logger::log("OrderingServiceImpl");
+
+      // restore state of ordering service from persistent storage
+      proposal_height = persistent_state_->loadProposalHeight().value();
     }
 
     void OrderingServiceImpl::onTransaction(
         std::shared_ptr<shared_model::interface::Transaction> transaction) {
       queue_.push(transaction);
+      log_->info("Queue size is {}", queue_.unsafe_size());
 
       if (queue_.unsafe_size() >= max_size_) {
         handle.unsubscribe();
@@ -45,34 +59,55 @@ namespace iroha {
     }
 
     void OrderingServiceImpl::generateProposal() {
-      std::vector<shared_model::proto::Transaction> fetched_txs;
+      // TODO 05/03/2018 andrei IR-1046 Server-side shared model object
+      // factories with move semantics
+      iroha::protocol::Proposal proto_proposal;
+      proto_proposal.set_height(proposal_height++);
+      proto_proposal.set_created_time(iroha::time::now());
+      log_->info("Start proposal generation");
       for (std::shared_ptr<shared_model::interface::Transaction> tx;
-           fetched_txs.size() < max_size_ and queue_.try_pop(tx);) {
-        fetched_txs.emplace_back(
-            std::move(static_cast<shared_model::proto::Transaction &>(*tx)));
+           static_cast<size_t>(proto_proposal.transactions_size()) < max_size_
+           and queue_.try_pop(tx);) {
+        *proto_proposal.add_transactions() = std::move(
+            std::static_pointer_cast<shared_model::proto::Transaction>(tx)
+                ->getTransport());
       }
 
       auto proposal = std::make_unique<shared_model::proto::Proposal>(
-          shared_model::proto::ProposalBuilder()
-              .height(proposal_height++)
-              .createdTime(iroha::time::now())
-              .transactions(fetched_txs)
-              .build());
-      publishProposal(std::move(proposal));
+          std::move(proto_proposal));
+
+      // Save proposal height to the persistent storage.
+      // In case of restart it reloads state.
+      if (persistent_state_->saveProposalHeight(proposal_height)) {
+        publishProposal(std::move(proposal));
+      } else {
+        // TODO(@l4l) 23/03/18: publish proposal independant of psql status
+        // IR-1162
+        log_->warn(
+            "Proposal height cannot be saved. Skipping proposal publish");
+      }
     }
 
     void OrderingServiceImpl::publishProposal(
         std::unique_ptr<shared_model::interface::Proposal> proposal) {
-      std::vector<std::string> peers;
-
-      auto lst = wsv_->getLedgerPeers().value();
-      for (const auto &peer : lst) {
-        peers.push_back(peer.address);
+      auto peers = wsv_->getLedgerPeers();
+      if (peers) {
+        std::vector<std::string> addresses;
+        std::transform(peers->begin(),
+                       peers->end(),
+                       std::back_inserter(addresses),
+                       [](auto &p) { return p->address(); });
+        transport_->publishProposal(std::move(proposal), addresses);
+      } else {
+        log_->error("Cannot get the peer list");
       }
-      transport_->publishProposal(std::move(proposal), peers);
     }
 
     void OrderingServiceImpl::updateTimer() {
+      std::lock_guard<std::mutex> lock(m);
+      if (is_finished) {
+        return;
+      }
       if (not queue_.empty()) {
         this->generateProposal();
       }
@@ -83,6 +118,8 @@ namespace iroha {
     }
 
     OrderingServiceImpl::~OrderingServiceImpl() {
+      std::lock_guard<std::mutex> lock(m);
+      is_finished = true;
       handle.unsubscribe();
     }
   }  // namespace ordering

@@ -14,67 +14,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
+
+#include <boost/variant/apply_visitor.hpp>
+
 #include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
-
-#include "model/execution/command_executor_factory.hpp"
-
 #include "ametsuchi/wsv_command.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include "model/sha3_hash.hpp"
 
 namespace iroha {
   namespace ametsuchi {
     MutableStorageImpl::MutableStorageImpl(
-        hash256_t top_hash,
+        shared_model::interface::types::HashType top_hash,
         std::unique_ptr<pqxx::lazyconnection> connection,
-        std::unique_ptr<pqxx::nontransaction> transaction,
-        std::shared_ptr<model::CommandExecutorFactory> command_executors)
+        std::unique_ptr<pqxx::nontransaction> transaction)
         : top_hash_(top_hash),
           connection_(std::move(connection)),
           transaction_(std::move(transaction)),
           wsv_(std::make_unique<PostgresWsvQuery>(*transaction_)),
           executor_(std::make_unique<PostgresWsvCommand>(*transaction_)),
           block_index_(std::make_unique<PostgresBlockIndex>(*transaction_)),
-          command_executors_(std::move(command_executors)),
           committed(false),
           log_(logger::log("MutableStorage")) {
+      auto query = std::make_shared<PostgresWsvQuery>(*transaction_);
+      auto command = std::make_shared<PostgresWsvCommand>(*transaction_);
+      command_executor_ =
+          std::make_shared<CommandExecutor>(CommandExecutor(query, command));
       transaction_->exec("BEGIN;");
     }
 
     bool MutableStorageImpl::apply(
-        const model::Block &block,
-        std::function<bool(const model::Block &, WsvQuery &, const hash256_t &)>
+        const shared_model::interface::Block &block,
+        std::function<bool(const shared_model::interface::Block &,
+                           WsvQuery &,
+                           const shared_model::interface::types::HashType &)>
             function) {
       auto execute_transaction = [this](auto &transaction) {
-        auto execute_command = [this, &transaction](auto command) {
+        command_executor_->setCreatorAccountId(transaction->creatorAccountId());
+        auto execute_command = [this](auto command) {
           auto result =
-              command_executors_->getCommandExecutor(command)->execute(
-                  *command, *wsv_, *executor_, transaction.creator_account_id);
-          return result.match(
-              [](expected::Value<void> v) { return true; },
-              [&](expected::Error<iroha::model::ExecutionError> e) {
-                log_->error(e.error.toString());
-                return false;
-              });
+              boost::apply_visitor(*command_executor_, command->get());
+          return result.match([](expected::Value<void> &v) { return true; },
+                              [&](expected::Error<ExecutionError> &e) {
+                                log_->error(e.error.toString());
+                                return false;
+                              });
         };
-        return std::all_of(transaction.commands.begin(),
-                           transaction.commands.end(),
+        return std::all_of(transaction->commands().begin(),
+                           transaction->commands().end(),
                            execute_command);
       };
 
       transaction_->exec("SAVEPOINT savepoint_;");
       auto result = function(block, *wsv_, top_hash_)
-          and std::all_of(block.transactions.begin(),
-                          block.transactions.end(),
+          and std::all_of(block.transactions().begin(),
+                          block.transactions().end(),
                           execute_transaction);
 
       if (result) {
-        block_store_.insert(std::make_pair(block.height, block));
+        block_store_.insert(std::make_pair(block.height(), clone(block)));
         block_index_->index(block);
 
-        top_hash_ = block.hash;
+        top_hash_ = block.hash();
         transaction_->exec("RELEASE SAVEPOINT savepoint_;");
       } else {
         transaction_->exec("ROLLBACK TO SAVEPOINT savepoint_;");

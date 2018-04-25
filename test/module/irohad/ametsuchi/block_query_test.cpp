@@ -19,12 +19,13 @@
 #include <boost/optional.hpp>
 #include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_block_query.hpp"
+#include "converters/protobuf/json_proto_converter.hpp"
 #include "framework/test_subscriber.hpp"
-#include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
+#include "module/shared_model/builders/protobuf/test_block_builder.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 using namespace iroha::ametsuchi;
-using namespace iroha::model;
 using namespace framework::test_subscriber;
 
 class BlockQueryTest : public AmetsuchiTest {
@@ -50,56 +51,56 @@ class BlockQueryTest : public AmetsuchiTest {
     transaction->exec(init_);
 
     // First transaction in block1
-    Transaction txn1_1;
-    txn1_1.creator_account_id = creator1;
-    tx_hashes.push_back(iroha::hash(txn1_1));
+    auto txn1_1 = TestTransactionBuilder().creatorAccountId(creator1).build();
+    tx_hashes.push_back(txn1_1.hash());
 
     // Second transaction in block1
-    Transaction txn1_2;
-    txn1_2.creator_account_id = creator1;
-    tx_hashes.push_back(iroha::hash(txn1_2));
+    auto txn1_2 = TestTransactionBuilder().creatorAccountId(creator1).build();
+    tx_hashes.push_back(txn1_2.hash());
 
-    Block block1;
-    block1.height = 1;
-    block1.transactions.push_back(txn1_1);
-    block1.transactions.push_back(txn1_2);
-    auto block1hash = iroha::hash(block1);
+    auto block1 =
+        TestBlockBuilder()
+            .height(1)
+            .transactions(
+                std::vector<shared_model::proto::Transaction>({txn1_1, txn1_2}))
+            .prevHash(shared_model::crypto::Hash(zero_string))
+            .build();
 
     // First tx in block 1
-    Transaction txn2_1;
-    txn2_1.creator_account_id = creator1;
-    tx_hashes.push_back(iroha::hash(txn2_1));
+    auto txn2_1 = TestTransactionBuilder().creatorAccountId(creator1).build();
+    tx_hashes.push_back(txn2_1.hash());
 
     // Second tx in block 2
-    Transaction txn2_2;
-    // this tx has another creator
-    txn2_2.creator_account_id = creator2;
-    tx_hashes.push_back(iroha::hash(txn2_2));
+    auto txn2_2 = TestTransactionBuilder().creatorAccountId(creator2).build();
+    tx_hashes.push_back(txn2_2.hash());
 
-    Block block2;
-    block2.height = 2;
-    block2.prev_hash = block1hash;
-    block2.transactions.push_back(txn2_1);
-    block2.transactions.push_back(txn2_2);
+    auto block2 =
+        TestBlockBuilder()
+            .height(2)
+            .transactions(
+                std::vector<shared_model::proto::Transaction>({txn2_1, txn2_2}))
+            .prevHash(block1.hash())
+            .build();
 
     for (const auto &b : {block1, block2}) {
-      file->add(b.height,
-                iroha::stringToBytes(converters::jsonToString(
-                    converters::JsonBlockFactory().serialize(b))));
+      file->add(b.height(),
+                iroha::stringToBytes(
+                    shared_model::converters::protobuf::modelToJson(b)));
       index->index(b);
       blocks_total++;
     }
   }
 
-  std::unique_ptr<pqxx::nontransaction> transaction;
   std::unique_ptr<pqxx::lazyconnection> postgres_connection;
-  std::vector<iroha::hash256_t> tx_hashes;
+  std::unique_ptr<pqxx::nontransaction> transaction;
+  std::vector<shared_model::crypto::Hash> tx_hashes;
   std::shared_ptr<BlockQuery> blocks;
   std::shared_ptr<BlockIndex> index;
   std::unique_ptr<FlatFile> file;
   std::string creator1 = "user1@test";
   std::string creator2 = "user2@test";
   std::size_t blocks_total{0};
+  std::string zero_string = std::string(32, '0');
 };
 
 /**
@@ -114,7 +115,7 @@ TEST_F(BlockQueryTest, GetAccountTransactionsFromSeveralBlocks) {
   auto getCreator1TxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions(creator1), 3);
   getCreator1TxWrapper.subscribe(
-      [this](auto val) { EXPECT_EQ(val.creator_account_id, creator1); });
+      [this](auto val) { EXPECT_EQ(val->creatorAccountId(), creator1); });
   ASSERT_TRUE(getCreator1TxWrapper.validate());
 }
 
@@ -130,7 +131,7 @@ TEST_F(BlockQueryTest, GetAccountTransactionsFromSingleBlock) {
   auto getCreator2TxWrapper = make_test_subscriber<CallExact>(
       blocks->getAccountTransactions(creator2), 1);
   getCreator2TxWrapper.subscribe(
-      [this](auto val) { EXPECT_EQ(val.creator_account_id, creator2); });
+      [this](auto val) { EXPECT_EQ(val->creatorAccountId(), creator2); });
   ASSERT_TRUE(getCreator2TxWrapper.validate());
 }
 
@@ -162,11 +163,11 @@ TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
     static auto subs_cnt = 0;
     subs_cnt++;
     if (subs_cnt == 1) {
-      EXPECT_TRUE(tx);
-      EXPECT_EQ(tx_hashes[1], iroha::hash(*tx));
+      ASSERT_TRUE(tx);
+      EXPECT_EQ(tx_hashes[1], (*tx)->hash());
     } else {
-      EXPECT_TRUE(tx);
-      EXPECT_EQ(tx_hashes[3], iroha::hash(*tx));
+      ASSERT_TRUE(tx);
+      EXPECT_EQ(tx_hashes[3], (*tx)->hash());
     }
   });
   ASSERT_TRUE(wrapper.validate());
@@ -180,9 +181,8 @@ TEST_F(BlockQueryTest, GetTransactionsExistingTxHashes) {
  * @then nullopt values are retrieved
  */
 TEST_F(BlockQueryTest, GetTransactionsIncludesNonExistingTxHashes) {
-  iroha::hash256_t invalid_tx_hash_1, invalid_tx_hash_2;
-  invalid_tx_hash_1[0] = 1;
-  invalid_tx_hash_2[0] = 2;
+  shared_model::crypto::Hash invalid_tx_hash_1(zero_string),
+      invalid_tx_hash_2(std::string(32, '9'));
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, invalid_tx_hash_2}), 2);
   wrapper.subscribe(
@@ -214,8 +214,7 @@ TEST_F(BlockQueryTest, GetTransactionsWithEmpty) {
  */
 TEST_F(BlockQueryTest, GetTransactionsWithInvalidTxAndValidTx) {
   // TODO 15/11/17 motxx - Use EqualList VerificationStrategy
-  iroha::hash256_t invalid_tx_hash_1;
-  invalid_tx_hash_1[0] = 1;
+  shared_model::crypto::Hash invalid_tx_hash_1(zero_string);
   auto wrapper = make_test_subscriber<CallExact>(
       blocks->getTransactions({invalid_tx_hash_1, tx_hashes[0]}), 2);
   wrapper.subscribe([this](auto tx) {
@@ -225,7 +224,7 @@ TEST_F(BlockQueryTest, GetTransactionsWithInvalidTxAndValidTx) {
       EXPECT_EQ(boost::none, tx);
     } else {
       EXPECT_TRUE(tx);
-      EXPECT_EQ(tx_hashes[0], iroha::hash(*tx));
+      EXPECT_EQ(tx_hashes[0], (*tx)->hash());
     }
   });
   ASSERT_TRUE(wrapper.validate());
@@ -289,10 +288,10 @@ TEST_F(BlockQueryTest, GetBlocksFrom1) {
   auto wrapper =
       make_test_subscriber<CallExact>(blocks->getBlocksFrom(1), blocks_total);
   size_t counter = 1;
-  wrapper.subscribe([&counter](Block b) {
+  wrapper.subscribe([&counter](const auto &b) {
     // wrapper returns blocks 1 and 2
-    ASSERT_EQ(b.height, counter++)
-        << "block height: " << b.height << "counter: " << counter;
+    ASSERT_EQ(b->height(), counter++)
+        << "block height: " << b->height() << "counter: " << counter;
   });
   ASSERT_TRUE(wrapper.validate());
 }
@@ -362,7 +361,8 @@ TEST_F(BlockQueryTest, GetTop2Blocks) {
       make_test_subscriber<CallExact>(blocks->getTopBlocks(blocks_n), blocks_n);
 
   size_t counter = blocks_total - blocks_n + 1;
-  wrapper.subscribe([&counter](Block b) { ASSERT_EQ(b.height, counter++); });
+  wrapper.subscribe(
+      [&counter](const auto &b) { ASSERT_EQ(b->height(), counter++); });
 
   ASSERT_TRUE(wrapper.validate());
 }

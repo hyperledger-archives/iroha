@@ -20,7 +20,8 @@
 namespace iroha {
   // ------------------------------| private API |------------------------------
 
-  auto MstStorageStateImpl::getState(const model::Peer &target_peer) {
+  auto MstStorageStateImpl::getState(
+      const std::shared_ptr<shared_model::interface::Peer> target_peer) {
     auto target_state_iter = peer_states_.find(target_peer);
     if (target_state_iter == peer_states_.end()) {
       return peer_states_.insert({target_peer, MstState::empty(completer_)})
@@ -30,15 +31,14 @@ namespace iroha {
   }
   // -----------------------------| interface API |-----------------------------
 
-  MstStorageStateImpl::MstStorageStateImpl(
-      const CompleterType &completer)
+  MstStorageStateImpl::MstStorageStateImpl(const CompleterType &completer)
       : MstStorage(),
         completer_(completer),
         own_state_(MstState::empty(completer_)) {}
 
-  auto MstStorageStateImpl::applyImpl(const model::Peer &target_peer,
-                                      const MstState &new_state)
-      -> decltype(apply(target_peer, new_state)) {
+  auto MstStorageStateImpl::applyImpl(
+      const std::shared_ptr<shared_model::interface::Peer> target_peer,
+      const MstState &new_state) -> decltype(apply(target_peer, new_state)) {
     auto target_state_iter = getState(target_peer);
     target_state_iter->second += new_state;
     return own_state_ += new_state;
@@ -55,8 +55,9 @@ namespace iroha {
     return own_state_.eraseByTime(current_time);
   }
 
-  auto MstStorageStateImpl::getDiffStateImpl(const model::Peer &target_peer,
-                                             const TimeType &current_time)
+  auto MstStorageStateImpl::getDiffStateImpl(
+      const std::shared_ptr<shared_model::interface::Peer> target_peer,
+      const TimeType &current_time)
       -> decltype(getDiffState(target_peer, current_time)) {
     auto target_current_state_iter = getState(target_peer);
     auto new_diff_state = own_state_ - target_current_state_iter->second;

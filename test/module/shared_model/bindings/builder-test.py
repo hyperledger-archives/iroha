@@ -6,12 +6,15 @@ import sys
 from google.protobuf.message import DecodeError
 import block_pb2 as blk
 
+# TODO luckychess 8.08.2018 add test for number of methods
+# in interface and proto implementation IR-1080
+
 class BuilderTest(unittest.TestCase):
   def test_empty_tx(self):
     with self.assertRaises(ValueError):
       iroha.ModelTransactionBuilder().build()
   def generate_base(self):
-    return iroha.ModelTransactionBuilder().txCounter(123)\
+    return iroha.ModelTransactionBuilder()\
                                .createdTime(int(time.time() * 1000))\
                                .creatorAccountId("admin@test")\
 
@@ -89,6 +92,10 @@ class BuilderTest(unittest.TestCase):
 
   def test_transfer_asset(self):
     tx = self.builder.transferAsset("from@test", "to@test", "asset#test", "description", "123.456").build()
+    self.assertTrue(self.check_proto_tx(self.proto(tx)))
+
+  def test_set_account_detail(self):
+    tx = self.builder.setAccountDetail("admin@test", "fyodor", "kek").build()
     self.assertTrue(self.check_proto_tx(self.proto(tx)))
 
 if __name__ == '__main__':

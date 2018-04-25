@@ -28,31 +28,32 @@ using namespace iroha;
 class StorageTestCompleter : public DefaultCompleter {
  public:
   bool operator()(const DataType &tx, const TimeType &time) const override {
-    return tx->created_ts < time;
+    return tx->createdTime() < time;
   }
 };
 
 class StorageTest : public testing::Test {
  public:
-  StorageTest() : absent_peer(makePeer("absent", "absent")) {}
+  StorageTest() : absent_peer(makePeer("localhost:50051", "absent")) {}
 
   void SetUp() override {
-    storage = make_shared<MstStorageStateImpl>(
+    storage = std::make_shared<MstStorageStateImpl>(
         std::make_shared<StorageTestCompleter>());
     fillOwnState();
   }
 
   void fillOwnState() {
-    storage->updateOwnState(makeTx("1", "1", quorum, creation_time));
-    storage->updateOwnState(makeTx("2", "2", quorum, creation_time));
-    storage->updateOwnState(makeTx("3", "3", quorum, creation_time));
+    storage->updateOwnState(makeTx(1, creation_time));
+    storage->updateOwnState(makeTx(2, creation_time));
+    storage->updateOwnState(makeTx(3, creation_time));
   }
 
-  shared_ptr<MstStorage> storage;
-  iroha::model::Peer absent_peer;
+  std::shared_ptr<MstStorage> storage;
+  std::shared_ptr<shared_model::interface::Peer> absent_peer;
 
-  static const auto quorum = 3u;
-  static const auto creation_time = 1u;
+  const unsigned quorum = 3u;
+  const shared_model::interface::types::TimestampType creation_time =
+      iroha::time::now();
 };
 
 TEST_F(StorageTest, StorageWhenApplyOtherState) {
@@ -61,11 +62,11 @@ TEST_F(StorageTest, StorageWhenApplyOtherState) {
       "apply state");
 
   auto new_state = MstState::empty(std::make_shared<StorageTestCompleter>());
-  new_state += makeTx("5", "5", quorum, creation_time);
-  new_state += makeTx("6", "6", quorum, creation_time);
-  new_state += makeTx("7", "7", quorum, creation_time);
+  new_state += makeTx(5, creation_time);
+  new_state += makeTx(6, creation_time);
+  new_state += makeTx(7, creation_time);
 
-  storage->apply(makePeer("another", "another"), new_state);
+  storage->apply(makePeer("localhost:50052", "another"), new_state);
 
   ASSERT_EQ(6,
             storage->getDiffState(absent_peer, creation_time)

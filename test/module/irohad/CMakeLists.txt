@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(CMAKE_BUILD_TYPE Debug)
-
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/test_bin)
-
 # Reusable tests
 add_subdirectory(common)
 add_subdirectory(ametsuchi)
@@ -23,6 +19,7 @@ add_subdirectory(consensus)
 add_subdirectory(logger)
 add_subdirectory(validation)
 add_subdirectory(torii)
+add_subdirectory(main)
 add_subdirectory(model)
 add_subdirectory(multi_sig_transactions)
 add_subdirectory(synchronizer)

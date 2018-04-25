@@ -20,6 +20,7 @@
 
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "backend/protobuf/transaction.hpp"
+#include "interfaces/common_objects/types.hpp"
 #include "interfaces/query_responses/transactions_response.hpp"
 #include "responses.pb.h"
 #include "utils/lazy_initializer.hpp"
@@ -34,16 +35,7 @@ namespace shared_model {
      public:
       template <typename QueryResponseType>
       explicit TransactionsResponse(QueryResponseType &&queryResponse)
-          : CopyableProto(std::forward<QueryResponseType>(queryResponse)),
-            transactionResponse_(proto_->transactions_response()),
-            transactions_([this] {
-              return boost::accumulate(transactionResponse_.transactions(),
-                                       TransactionsCollectionType{},
-                                       [](auto &&txs, const auto &tx) {
-                                         txs.emplace_back(new Transaction(tx));
-                                         return std::move(txs);
-                                       });
-            }) {}
+          : CopyableProto(std::forward<QueryResponseType>(queryResponse)) {}
 
       TransactionsResponse(const TransactionsResponse &o)
           : TransactionsResponse(o.proto_) {}
@@ -51,7 +43,8 @@ namespace shared_model {
       TransactionsResponse(TransactionsResponse &&o)
           : TransactionsResponse(std::move(o.proto_)) {}
 
-      TransactionsCollectionType transactions() const override {
+      interface::types::TransactionsCollectionType transactions()
+          const override {
         return *transactions_;
       }
 
@@ -59,8 +52,19 @@ namespace shared_model {
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
 
-      const iroha::protocol::TransactionsResponse &transactionResponse_;
-      const Lazy<TransactionsCollectionType> transactions_;
+      const iroha::protocol::TransactionsResponse &transactionResponse_{
+          proto_->transactions_response()};
+
+      const Lazy<interface::types::TransactionsCollectionType> transactions_{
+          [this] {
+            return boost::accumulate(
+                transactionResponse_.transactions(),
+                interface::types::TransactionsCollectionType{},
+                [](auto &&txs, const auto &tx) {
+                  txs.emplace_back(new Transaction(tx));
+                  return std::move(txs);
+                });
+          }};
     };
   }  // namespace proto
 }  // namespace shared_model

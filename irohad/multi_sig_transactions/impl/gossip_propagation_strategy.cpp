@@ -20,7 +20,6 @@
 #include <boost/range/irange.hpp>
 #include <numeric>
 #include <random>
-#include <vector>
 
 namespace iroha {
 

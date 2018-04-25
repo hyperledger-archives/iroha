@@ -92,6 +92,7 @@ namespace shared_model {
 
         validator_.validatePubkey(reason, ca->pubkey());
         validator_.validateAccountName(reason, ca->accountName());
+        validator_.validateDomainId(reason, ca->domainId());
 
         return reason;
       }
@@ -114,6 +115,7 @@ namespace shared_model {
         addInvalidCommand(reason, "CreateDomain");
 
         validator_.validateDomainId(reason, cd->domainId());
+        validator_.validateRoleId(reason, cd->userDefaultRole());
 
         return reason;
       }
@@ -147,6 +149,7 @@ namespace shared_model {
         addInvalidCommand(reason, "GrantPermission");
 
         validator_.validateAccountId(reason, gp->accountId());
+        validator_.validatePermission(reason, gp->permissionName());
 
         return reason;
       }
@@ -182,6 +185,7 @@ namespace shared_model {
 
         validator_.validateAccountId(reason, sad->accountId());
         validator_.validateAccountDetailKey(reason, sad->key());
+        validator_.validateAccountDetailValue(reason, sad->value());
 
         return reason;
       }
@@ -216,10 +220,16 @@ namespace shared_model {
         ReasonsGroupType reason;
         addInvalidCommand(reason, "TransferAsset");
 
+        if (ta->srcAccountId() == ta->destAccountId()) {
+          reason.second.push_back(
+              "Source and destination accounts cannot be the same");
+        }
+
         validator_.validateAccountId(reason, ta->srcAccountId());
         validator_.validateAccountId(reason, ta->destAccountId());
         validator_.validateAssetId(reason, ta->assetId());
         validator_.validateAmount(reason, ta->amount());
+        validator_.validateDescription(reason, ta->description());
 
         return reason;
       }
@@ -256,27 +266,25 @@ namespace shared_model {
        * @param tx - transaction to validate
        * @return Answer containing found error if any
        */
-      Answer validate(
-          detail::PolymorphicWrapper<interface::Transaction> tx) const {
+      Answer validate(const interface::Transaction &tx) const {
         Answer answer;
         std::string tx_reason_name = "Transaction";
         ReasonsGroupType tx_reason(tx_reason_name, GroupedReasons());
 
-        if (tx->commands().empty()) {
+        if (tx.commands().empty()) {
           tx_reason.second.push_back(
               "Transaction should contain at least one command");
         }
 
         field_validator_.validateCreatorAccountId(tx_reason,
-                                                  tx->creatorAccountId());
-        field_validator_.validateCreatedTime(tx_reason, tx->createdTime());
-        field_validator_.validateCounter(tx_reason, tx->transactionCounter());
+                                                  tx.creatorAccountId());
+        field_validator_.validateCreatedTime(tx_reason, tx.createdTime());
 
         if (not tx_reason.second.empty()) {
           answer.addReason(std::move(tx_reason));
         }
 
-        for (const auto &command : tx->commands()) {
+        for (const auto &command : tx.commands()) {
           auto reason =
               boost::apply_visitor(command_validator_, command->get());
           if (not reason.second.empty()) {

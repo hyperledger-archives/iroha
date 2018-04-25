@@ -18,15 +18,21 @@
 #ifndef IROHA_SIGNABLE_HPP
 #define IROHA_SIGNABLE_HPP
 
-#include <boost/functional/hash.hpp>
-#include "interfaces/base/hashable.hpp"
+#include <boost/optional.hpp>
+
+#include "cryptography/default_hash_provider.hpp"
+#include "interfaces/common_objects/signable_hash.hpp"
 #include "interfaces/common_objects/signature.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "utils/polymorphic_wrapper.hpp"
 #include "utils/string_builder.hpp"
-#include "interfaces/common_objects/signable_hash.hpp"
 
 namespace shared_model {
+
+  namespace crypto {
+    class Signed;
+    class PublicKey;
+  }  // namespace crypto
+
   namespace interface {
 
 #ifdef DISABLE_BACKWARD
@@ -36,21 +42,21 @@ namespace shared_model {
 #endif
 
 /**
- * Interface provides signatures and adding them to model object
+ * Interface provides signatures and adds them to model object
  * @tparam Model - your new style model
- * Architecture note: we inherit Signable from Hashable with following
- * assumption - all Signable objects are signed by hash value.
  */
-
 #ifndef DISABLE_BACKWARD
-    template <typename Model, typename OldModel>
-    class Signable : public Hashable<Model, OldModel> {
+    template <typename Model,
+              typename OldModel,
+              typename HashProvider = crypto::DefaultHashProvider>
+    class Signable : public Primitive<Model, OldModel> {
 #else
-    template <typename Model>
-    class Signable : public Hashable<Model> {
+    template <typename Model,
+              typename HashProvider = shared_model::crypto::Sha3_256>
+    class Signable : public ModelPrimitive<Model> {
 #endif
-     public:
 
+     public:
       /**
        * @return attached signatures
        */
@@ -61,31 +67,46 @@ namespace shared_model {
        * @param signature - signature object for insertion
        * @return true, if signature was added
        */
-      virtual bool addSignature(const types::SignatureType &signature) = 0;
+      virtual bool addSignature(const crypto::Signed &signed_blob,
+                                const crypto::PublicKey &public_key) = 0;
+
+      /**
+       * Clear object's signatures
+       * @return true, if signatures were cleared
+       */
+      virtual bool clearSignatures() = 0;
 
       /**
        * @return time of creation
        */
       virtual types::TimestampType createdTime() const = 0;
 
-/**
- * @return object payload (everything except signatures)
- */
-#ifndef DISABLE_BACKWARD
-      virtual const typename Hashable<Model, OldModel>::BlobType &payload()
-#else
-      virtual const typename Hashable<Model>::BlobType &payload()
-#endif
-          const = 0;
+      /**
+       * @return object payload (everything except signatures)
+       */
+      virtual const types::BlobType &payload() const = 0;
+
+      /**
+       * @return blob representation of object include signatures
+       */
+      virtual const types::BlobType &blob() const = 0;
 
       /**
        * Provides comparison based on equality of objects and signatures.
        * @param rhs - another model object
        * @return true, if objects totally equal
        */
-      virtual bool equals(const Model &rhs) const {
-        return *this == rhs and this->signatures() == rhs.signatures()
+      bool operator==(const Model &rhs) const override {
+        return this->hash() == rhs.hash()
+            and this->signatures() == rhs.signatures()
             and this->createdTime() == rhs.createdTime();
+      }
+
+      const types::HashType &hash() const {
+        if (hash_ == boost::none) {
+          hash_.emplace(HashProvider::makeHash(payload()));
+        }
+        return *hash_;
       }
 
       // ------------------------| Primitive override |-------------------------
@@ -98,6 +119,9 @@ namespace shared_model {
                        [](auto &signature) { return signature->toString(); })
             .finalize();
       }
+
+     private:
+      mutable boost::optional<types::HashType> hash_;
     };
 
   }  // namespace interface

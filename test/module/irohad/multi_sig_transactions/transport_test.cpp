@@ -17,7 +17,6 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
 #include "module/irohad/multi_sig_transactions/mst_test_helpers.hpp"
 #include "multi_sig_transactions/state/mst_state.hpp"
@@ -26,9 +25,10 @@
 using namespace iroha::network;
 using namespace iroha::model;
 
-using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+using ::testing::_;
 
 /**
  * @brief Sends data over MstTransportGrpc (MstState and Peer objects) and
@@ -42,7 +42,7 @@ using ::testing::InvokeWithoutArgs;
  */
 TEST(TransportTest, SendAndReceive) {
   auto transport = std::make_shared<MstTransportGrpc>();
-  auto notifications = std::make_shared<MockMstTransportNotification>();
+  auto notifications = std::make_shared<iroha::MockMstTransportNotification>();
   transport->subscribe(notifications);
 
   std::mutex mtx;
@@ -51,30 +51,32 @@ TEST(TransportTest, SendAndReceive) {
       .WillByDefault(
           InvokeWithoutArgs(&cv, &std::condition_variable::notify_one));
 
-  auto peer = makePeer("localhost:50051", "abcdabcdabcdabcdabcdabcdabcdabcd");
+  std::shared_ptr<shared_model::interface::Peer> peer =
+      makePeer("localhost:50051", "abcdabcdabcdabcdabcdabcdabcdabcd");
 
-  MstState state = MstState::empty();
-  state += makeTxWithCorrectHash("5", 3);
-  state += makeTxWithCorrectHash("6", 4);
-  state += makeTxWithCorrectHash("7", 5);
-  state += makeTxWithCorrectHash("8", 5);
+  auto state = iroha::MstState::empty();
+  state += makeTx(1, iroha::time::now(), makeKey(), 3);
+  state += makeTx(1, iroha::time::now(), makeKey(), 4);
+  state += makeTx(1, iroha::time::now(), makeKey(), 5);
+  state += makeTx(1, iroha::time::now(), makeKey(), 5);
 
   // we want to ensure that server side will call onNewState()
   // with same parameters as on the client side
-  EXPECT_CALL(*notifications, onNewState(peer, state)).Times(1);
+  EXPECT_CALL(*notifications, onNewState(_, state))
+      .WillOnce(Invoke([&peer](auto &p, auto) { EXPECT_EQ(*p, *peer); }));
 
   std::unique_ptr<grpc::Server> server;
 
   grpc::ServerBuilder builder;
   int port = 0;
   builder.AddListeningPort(
-      peer.address, grpc::InsecureServerCredentials(), &port);
+      peer->address(), grpc::InsecureServerCredentials(), &port);
   builder.RegisterService(transport.get());
   server = builder.BuildAndStart();
   ASSERT_TRUE(server);
   ASSERT_NE(port, 0);
 
-  transport->sendState(peer, state);
+  transport->sendState(*peer, state);
   std::unique_lock<std::mutex> lock(mtx);
   cv.wait_for(lock, std::chrono::milliseconds(100));
 

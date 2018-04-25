@@ -1,5 +1,5 @@
 #
-# Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+# Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
 # http://soramitsu.co.jp
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,27 +15,17 @@
 # limitations under the License.
 #
 
-addtest(tx_pipeline_integration_test tx_pipeline_integration_test.cpp)
-target_link_libraries(tx_pipeline_integration_test
-    application
-    raw_block_insertion
-    model_generators
+addtest(pipeline_test pipeline_test.cpp)
+target_link_libraries(pipeline_test
     integration_framework
-    shared_model_ed25519_sha3
     shared_model_stateless_validation
+    shared_model_proto_builders
     )
 
-addtest(transfer_asset_inter_domain_test transfer_asset_inter_domain_test.cpp)
-target_link_libraries(transfer_asset_inter_domain_test
-  application
-  raw_block_insertion
-  model_generators
-  )
-
-
-addtest(multisig_tx_pipeline_test multisig_tx_pipeline_test.cpp)
-target_link_libraries(multisig_tx_pipeline_test
-  application
-  raw_block_insertion
-  model_generators
-  )
+# addtest(multisig_tx_pipeline_test multisig_tx_pipeline_test.cpp)
+# target_link_libraries(multisig_tx_pipeline_test
+#     application
+#     raw_block_insertion
+#     model_generators
+#     tx_pipeline_integration_test_fixture
+#     )

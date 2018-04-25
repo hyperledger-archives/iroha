@@ -19,16 +19,14 @@
 #define IROHA_TEST_PROPOSAL_BUILDER_HPP
 
 #include "builders/protobuf/builder_templates/proposal_template.hpp"
-
-using namespace shared_model::proto;
-using namespace shared_model::validation;
+#include "module/shared_model/validators/validators.hpp"
 
 /**
  * Builder alias, to build shared model proto proposal object avoiding "required
  * fields" check
  */
-using TestProposalBuilder =
-    TemplateProposalBuilder<(1 << TemplateProposalBuilder<>::total) - 1,
-                            DefaultProposalValidator>;
+using TestProposalBuilder = shared_model::proto::TemplateProposalBuilder<
+    (1 << shared_model::proto::TemplateProposalBuilder<>::total) - 1,
+    shared_model::validation::AlwaysValidValidator>;
 
 #endif  // IROHA_TEST_PROPOSAL_BUILDER_HPP

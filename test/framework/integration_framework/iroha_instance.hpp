@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,76 +18,51 @@
 #ifndef IROHA_IROHA_INSTANCE_HPP
 #define IROHA_IROHA_INSTANCE_HPP
 
-#include <cstdlib>
+#include <chrono>
+#include <memory>
+#include <string>
 
-#include "integration/pipeline/test_irohad.hpp"
+namespace shared_model {
+  namespace interface {
+    class Block;
+  }  // namespace interface
+  namespace crypto {
+    class Keypair;
+  }  // namespace crypto
+}  // namespace shared_model
 
 namespace integration_framework {
-
-  using namespace std::chrono_literals;
+  class TestIrohad;
 
   class IrohaInstance {
    public:
-    void makeGenesis(const iroha::model::Block &block) {
-      instance_->storage->dropStorage();
-      rawInsertBlock(block);
-      instance_->init();
-    }
+    IrohaInstance();
 
-    void rawInsertBlock(const iroha::model::Block &block) {
-      instance_->storage->insertBlock({block});
-    }
-    void initPipeline(const iroha::keypair_t &key_pair,
-                      size_t max_proposal_size = 10) {
-      keypair_ = key_pair;
-      instance_ = std::make_shared<TestIrohad>(block_store_dir_,
-                                               pg_conn_,
-                                               torii_port_,
-                                               internal_port_,
-                                               max_proposal_size,
-                                               proposal_delay_,
-                                               vote_delay_,
-                                               load_delay_,
-                                               keypair_);
-    }
+    void makeGenesis(const shared_model::interface::Block &block);
 
-    void run() {
-      instance_->run();
-    }
+    void rawInsertBlock(const shared_model::interface::Block &block);
+    void initPipeline(const shared_model::crypto::Keypair &key_pair,
+                      size_t max_proposal_size = 10);
 
-    auto &getIrohaInstance() {
-      return instance_;
-    }
+    void run();
 
-    std::shared_ptr<TestIrohad> instance_;
+    std::shared_ptr<TestIrohad> &getIrohaInstance();
 
     std::string getPostgreCredsOrDefault(const std::string &default_conn =
                                              "host=localhost port=5432 "
                                              "user=postgres "
-                                             "password=mysecretpassword") {
-      auto pg_host = std::getenv("IROHA_POSTGRES_HOST");
-      auto pg_port = std::getenv("IROHA_POSTGRES_PORT");
-      auto pg_user = std::getenv("IROHA_POSTGRES_USER");
-      auto pg_pass = std::getenv("IROHA_POSTGRES_PASSWORD");
-      if (not pg_host) {
-        return default_conn;
-      } else {
-        std::stringstream ss;
-        ss << "host=" << pg_host << " port=" << pg_port << " user=" << pg_user
-           << " password=" << pg_pass;
-        return ss.str();
-      }
-    }
+                                             "password=mysecretpassword");
+
+    std::shared_ptr<TestIrohad> instance_;
 
     // config area
-    const std::string block_store_dir_ = "/tmp/block_store";
-    const std::string pg_conn_ = getPostgreCredsOrDefault();
-    const size_t torii_port_ = 11501;
-    const size_t internal_port_ = 10001;
-    const std::chrono::milliseconds proposal_delay_ = 5000ms;
-    const std::chrono::milliseconds vote_delay_ = 5000ms;
-    const std::chrono::milliseconds load_delay_ = 5000ms;
-    iroha::keypair_t keypair_;
+    const std::string block_store_dir_;
+    const std::string pg_conn_;
+    const size_t torii_port_;
+    const size_t internal_port_;
+    const std::chrono::milliseconds proposal_delay_;
+    const std::chrono::milliseconds vote_delay_;
+    const std::chrono::milliseconds load_delay_;
   };
 }  // namespace integration_framework
 #endif  // IROHA_IROHA_INSTANCE_HPP

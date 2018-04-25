@@ -16,6 +16,11 @@
  */
 #include "ordering_gate_transport_grpc.hpp"
 
+#include "backend/protobuf/transaction.hpp"
+#include "builders/protobuf/proposal.hpp"
+#include "interfaces/common_objects/types.hpp"
+#include "network/impl/grpc_channel_builder.hpp"
+
 using namespace iroha::ordering;
 
 grpc::Status OrderingGateTransportGrpc::onProposal(
@@ -24,15 +29,19 @@ grpc::Status OrderingGateTransportGrpc::onProposal(
     ::google::protobuf::Empty *response) {
   log_->info("receive proposal");
 
-  auto transactions = decltype(std::declval<model::Proposal>().transactions)();
+  std::vector<shared_model::proto::Transaction> transactions;
   for (const auto &tx : request->transactions()) {
-    transactions.push_back(*factory_.deserialize(tx));
+    transactions.emplace_back(tx);
   }
   log_->info("transactions in proposal: {}", transactions.size());
 
-  model::Proposal proposal(transactions);
-  proposal.height = request->height();
-  proposal.created_time = request->created_time();
+  auto proposal = std::make_shared<shared_model::proto::Proposal>(
+      shared_model::proto::ProposalBuilder()
+          .transactions(transactions)
+          .height(request->height())
+          .createdTime(request->created_time())
+          .build());
+
   if (not subscriber_.expired()) {
     subscriber_.lock()->onProposal(std::move(proposal));
   } else {
@@ -44,17 +53,22 @@ grpc::Status OrderingGateTransportGrpc::onProposal(
 
 OrderingGateTransportGrpc::OrderingGateTransportGrpc(
     const std::string &server_address)
-    : client_(proto::OrderingServiceTransportGrpc::NewStub(grpc::CreateChannel(
-          server_address, grpc::InsecureChannelCredentials()))),
-      log_(logger::log("OrderingGate")) {}
+    : network::AsyncGrpcClient<google::protobuf::Empty>(
+          logger::log("OrderingGate")),
+      client_(network::createClient<proto::OrderingServiceTransportGrpc>(
+          server_address)) {}
 
-void OrderingGateTransportGrpc::propagate_transaction(
-    std::shared_ptr<const model::Transaction> transaction) {
+void OrderingGateTransportGrpc::propagateTransaction(
+    std::shared_ptr<const shared_model::interface::Transaction> transaction) {
   log_->info("Propagate tx (on transport)");
   auto call = new AsyncClientCall;
 
-  call->response_reader = client_->AsynconTransaction(
-      &call->context, factory_.serialize(*transaction), &cq_);
+  auto transaction_transport =
+      static_cast<const shared_model::proto::Transaction &>(*transaction)
+          .getTransport();
+  log_->debug("Propagating: '{}'", transaction_transport.DebugString());
+  call->response_reader =
+      client_->AsynconTransaction(&call->context, transaction_transport, &cq_);
 
   call->response_reader->Finish(&call->reply, &call->status, call);
 }

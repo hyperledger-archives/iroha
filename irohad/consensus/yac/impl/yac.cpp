@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@
 #include "consensus/yac/timer.hpp"
 #include "consensus/yac/yac.hpp"
 #include "consensus/yac/yac_crypto_provider.hpp"
+#include "interfaces/common_objects/peer.hpp"
 
 namespace iroha {
   namespace consensus {
@@ -34,9 +35,9 @@ namespace iroha {
             "Crypto verification failed for message.\n Votes: ";
         result += logger::to_string(votes, [](const auto &vote) {
           std::string result = "(Public key: ";
-          result += vote.signature.pubkey.to_hexstring();
+          result += vote.signature->publicKey().hex();
           result += ", Signature: ";
-          result += vote.signature.signature.to_hexstring();
+          result += vote.signature->signedData().hex();
           result += ")\n";
           return result;
         });
@@ -79,7 +80,7 @@ namespace iroha {
       void Yac::vote(YacHash hash, ClusterOrdering order) {
         log_->info("Order for voting: {}",
                    logger::to_string(order.getPeers(),
-                                     [](auto val) { return val.address; }));
+                                     [](auto val) { return val->address(); }));
 
         cluster_order_ = order;
         auto vote = crypto_->getVote(hash);
@@ -105,7 +106,7 @@ namespace iroha {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(commit)) {
           // Commit does not contain data about peer which sent the message
-          applyCommit(nonstd::nullopt, commit);
+          applyCommit(boost::none, commit);
         } else {
           log_->warn(cryptoError(commit.votes));
         }
@@ -115,7 +116,7 @@ namespace iroha {
         std::lock_guard<std::mutex> guard(mutex_);
         if (crypto_->verify(reject)) {
           // Reject does not contain data about peer which sent the message
-          applyReject(nonstd::nullopt, reject);
+          applyReject(boost::none, reject);
         } else {
           log_->warn(cryptoError(reject.votes));
         }
@@ -145,13 +146,15 @@ namespace iroha {
         timer_->deny();
       }
 
-      nonstd::optional<model::Peer> Yac::findPeer(const VoteMessage &vote) {
+      boost::optional<std::shared_ptr<shared_model::interface::Peer>>
+      Yac::findPeer(const VoteMessage &vote) {
         auto peers = cluster_order_.getPeers();
         auto it =
             std::find_if(peers.begin(), peers.end(), [&](const auto &peer) {
-              return peer.pubkey == vote.signature.pubkey;
+              return peer->pubkey() == vote.signature->publicKey();
             });
-        return it != peers.end() ? nonstd::make_optional(*it) : nonstd::nullopt;
+        return it != peers.end() ? boost::make_optional(std::move(*it))
+                                 : boost::none;
       }
 
       // ------|Apply data|------
@@ -159,8 +162,9 @@ namespace iroha {
       const char *kRejectMsg = "reject case";
       const char *kRejectOnHashMsg = "Reject case on hash {} achieved";
 
-      void Yac::applyCommit(nonstd::optional<model::Peer> from,
-                            CommitMessage commit) {
+      void Yac::applyCommit(
+          boost::optional<std::shared_ptr<shared_model::interface::Peer>> from,
+          const CommitMessage &commit) {
         auto answer =
             vote_storage_.store(commit, cluster_order_.getNumberOfPeers());
         answer | [&](const auto &answer) {
@@ -183,8 +187,9 @@ namespace iroha {
         };
       }
 
-      void Yac::applyReject(nonstd::optional<model::Peer> from,
-                            RejectMessage reject) {
+      void Yac::applyReject(
+          boost::optional<std::shared_ptr<shared_model::interface::Peer>> from,
+          const RejectMessage &reject) {
         auto answer =
             vote_storage_.store(reject, cluster_order_.getNumberOfPeers());
         answer | [&](const auto &answer) {
@@ -201,24 +206,25 @@ namespace iroha {
                              // IR-497
                            },
                            [&](const CommitMessage &commit) {
-                             notifier_.get_subscriber().on_next(commit);
                              this->propagateCommit(commit);
+                             notifier_.get_subscriber().on_next(commit);
                            });
           }
           this->closeRound();
         };
       }
 
-      void Yac::applyVote(nonstd::optional<model::Peer> from,
-                          VoteMessage vote) {
-        if (from.has_value()) {
+      void Yac::applyVote(
+          boost::optional<std::shared_ptr<shared_model::interface::Peer>> from,
+          const VoteMessage &vote) {
+        if (from) {
           log_->info("Apply vote: {} from ledger peer {}",
                      vote.hash.block_hash,
-                     from.value().address);
+                     (*from)->address());
         } else {
           log_->info("Apply vote: {} from unknown peer {}",
                      vote.hash.block_hash,
-                     vote.signature.pubkey.to_hexstring());
+                     vote.signature->publicKey().hex());
         }
 
         auto answer =
@@ -236,8 +242,8 @@ namespace iroha {
                              // propagate for all
                              log_->info("Propagate commit {} to whole network",
                                         vote.hash.block_hash);
-                             notifier_.get_subscriber().on_next(commit);
                              this->propagateCommit(commit);
+                             notifier_.get_subscriber().on_next(commit);
                            },
                            [&](const RejectMessage &reject) {
                              // propagate reject for all
@@ -250,12 +256,12 @@ namespace iroha {
                              [&](const CommitMessage &commit) {
                                log_->info("Propagate commit {} directly to {}",
                                           vote.hash.block_hash,
-                                          from.address);
-                               this->propagateCommitDirectly(from, commit);
+                                          from->address());
+                               this->propagateCommitDirectly(*from, commit);
                              },
                              [&](const RejectMessage &reject) {
                                log_->info(kRejectOnHashMsg, proposal_hash);
-                               this->propagateRejectDirectly(from, reject);
+                               this->propagateRejectDirectly(*from, reject);
                              });
             };
           }
@@ -264,23 +270,25 @@ namespace iroha {
 
       // ------|Propagation|------
 
-      void Yac::propagateCommit(CommitMessage msg) {
+      void Yac::propagateCommit(const CommitMessage &msg) {
         for (const auto &peer : cluster_order_.getPeers()) {
-          propagateCommitDirectly(peer, msg);
+          propagateCommitDirectly(*peer, msg);
         }
       }
 
-      void Yac::propagateCommitDirectly(model::Peer to, CommitMessage msg) {
-        network_->send_commit(std::move(to), std::move(msg));
+      void Yac::propagateCommitDirectly(const shared_model::interface::Peer &to,
+                                        const CommitMessage &msg) {
+        network_->send_commit(to, msg);
       }
 
-      void Yac::propagateReject(RejectMessage msg) {
+      void Yac::propagateReject(const RejectMessage &msg) {
         for (const auto &peer : cluster_order_.getPeers()) {
-          propagateRejectDirectly(peer, msg);
+          propagateRejectDirectly(*peer, msg);
         }
       }
 
-      void Yac::propagateRejectDirectly(model::Peer to, RejectMessage msg) {
+      void Yac::propagateRejectDirectly(const shared_model::interface::Peer &to,
+                                        const RejectMessage &msg) {
         network_->send_reject(std::move(to), std::move(msg));
       }
 

@@ -19,17 +19,11 @@
 
 #include <algorithm>
 
-#include "consensus/consensus_common.hpp"
 #include "consensus/yac/messages.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
-
-      bool hasReject(uint64_t frequent, uint64_t voted, uint64_t all) {
-        auto not_voted = all - voted;
-        return not hasSupermajority(frequent + not_voted, all);
-      }
 
       bool sameProposals(const std::vector<VoteMessage> &votes) {
         if (votes.empty()) {
@@ -43,18 +37,18 @@ namespace iroha {
             });
       }
 
-      nonstd::optional<ProposalHash> getProposalHash(
+      boost::optional<ProposalHash> getProposalHash(
           const std::vector<VoteMessage> &votes) {
         auto &&hash = getHash(votes);
-        if (hash.has_value()) {
-          return hash.value().proposal_hash;
+        if (hash) {
+          return (*hash).proposal_hash;
         }
-        return nonstd::nullopt;
+        return boost::none;
       }
 
-      nonstd::optional<YacHash> getHash(const std::vector<VoteMessage> &votes) {
+      boost::optional<YacHash> getHash(const std::vector<VoteMessage> &votes) {
         if (not sameProposals(votes)) {
-          return nonstd::nullopt;
+          return boost::none;
         }
 
         return votes.at(0).hash;

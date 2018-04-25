@@ -17,8 +17,10 @@
 
 #include <gflags/gflags.h>
 #include <grpc++/grpc++.h>
+#include <csignal>
 #include <fstream>
 #include <thread>
+#include "common/result.hpp"
 #include "crypto/keys_manager_impl.hpp"
 #include "main/application.hpp"
 #include "main/iroha_conf_loader.hpp"
@@ -71,6 +73,8 @@ DEFINE_string(keypair_name, "", "Specify name of .pub and .priv files");
  */
 DEFINE_validator(keypair_name, &validate_keypair_name);
 
+std::promise<void> exit_requested;
+
 int main(int argc, char *argv[]) {
   auto log = logger::log("MAIN");
   log->info("start");
@@ -95,11 +99,9 @@ int main(int argc, char *argv[]) {
 
   // Reading public and private key files
   iroha::KeysManagerImpl keysManager(FLAGS_keypair_name);
-  iroha::keypair_t keypair{};
+  auto keypair = keysManager.loadKeys();
   // Check if both keys are read properly
-  if (auto loadedKeypair = keysManager.loadKeys()) {
-    keypair = *loadedKeypair;
-  } else {
+  if (not keypair) {
     // Abort execution if not
     log->error("Failed to load keypair");
     return EXIT_FAILURE;
@@ -114,7 +116,7 @@ int main(int argc, char *argv[]) {
                 std::chrono::milliseconds(config[mbr::ProposalDelay].GetUint()),
                 std::chrono::milliseconds(config[mbr::VoteDelay].GetUint()),
                 std::chrono::milliseconds(config[mbr::LoadDelay].GetUint()),
-                keypair);
+                *keypair);
 
   // Check if iroha daemon storage was successfully initialized
   if (not irohad.storage) {
@@ -131,7 +133,7 @@ int main(int argc, char *argv[]) {
     auto block = loader.parseBlock(file.value());
 
     // Check that provided genesis block file was correct
-    if (not block.has_value()) {
+    if (not block) {
       // Abort execution if not
       log->error("Failed to parse genesis block");
       return EXIT_FAILURE;
@@ -140,19 +142,44 @@ int main(int argc, char *argv[]) {
     // clear previous storage if any
     irohad.dropStorage();
 
+    // reset ordering service persistent counter
+    irohad.resetOrderingService();
+
     log->info("Block is parsed");
 
     // Applying transactions from genesis block to iroha storage
-    irohad.storage->insertBlock(block.value());
+    irohad.storage->insertBlock(*block.value());
     log->info("Genesis block inserted, number of transactions: {}",
-              block.value().transactions.size());
+              block.value()->transactions().size());
   }
+
+  // check if at least one block is available in the ledger
+  auto blocks_exist = false;
+  irohad.storage->getBlockQuery()->getTopBlocks(1).subscribe(
+      [&blocks_exist](auto block) { blocks_exist = true; });
+
+  if (not blocks_exist) {
+    log->error(
+        "There are no blocks in the ledger. Use --genesis_block parameter.");
+    return EXIT_FAILURE;
+  }
+
   // init pipeline components
   irohad.init();
+
+  auto handler = [](int s) { exit_requested.set_value(); };
+  std::signal(SIGINT, handler);
+  std::signal(SIGTERM, handler);
+  std::signal(SIGQUIT, handler);
 
   // runs iroha
   log->info("Running iroha");
   irohad.run();
+  exit_requested.get_future().wait();
+
+  // We do not care about shutting down grpc servers
+  // They do all necessary work in their destructors
+  log->info("shutting down...");
 
   return 0;
 }

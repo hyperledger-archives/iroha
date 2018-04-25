@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
+#include "multi_sig_transactions/state/mst_state.hpp"
+
 #include <utility>
 
+#include "backend/protobuf/transaction.hpp"
 #include "common/set.hpp"
-#include "multi_sig_transactions/state/mst_state.hpp"
 
 namespace iroha {
 
@@ -49,19 +51,24 @@ namespace iroha {
 
   bool MstState::operator==(const MstState &rhs) const {
     return std::is_permutation(
-        internal_state_.begin(), internal_state_.end(),
-        rhs.internal_state_.begin(), [](auto tx1, auto tx2) {
+        internal_state_.begin(),
+        internal_state_.end(),
+        rhs.internal_state_.begin(),
+        [](auto tx1, auto tx2) {
           if (*tx1 == *tx2) {
             return std::is_permutation(
-                tx1->signatures.begin(), tx1->signatures.end(),
-                tx2->signatures.begin(),
+                tx1->signatures().begin(),
+                tx1->signatures().end(),
+                tx2->signatures().begin(),
                 [](auto sig1, auto sig2) { return sig1 == sig2; });
           }
           return false;
         });
   }
 
-  bool MstState::isEmpty() const { return internal_state_.empty(); }
+  bool MstState::isEmpty() const {
+    return internal_state_.empty();
+  }
 
   std::vector<DataType> MstState::getTransactions() const {
     return std::vector<DataType>(internal_state_.begin(),
@@ -101,15 +108,19 @@ namespace iroha {
       return;
     }
 
-    auto &tx = *corresponding;
-    tx->signatures = merge_unique<iroha::model::SignatureHasher>(
-        tx->signatures, rhs_tx->signatures);
+    auto &found = *corresponding;
+    // Append new signatures to the existing state
+    for (auto &sig : rhs_tx->signatures()) {
+      if (found->signatures().find(sig) == found->signatures().end()) {
+        found->addSignature(sig->signedData(), sig->publicKey());
+      }
+    }
 
-    if ((*completer_)(tx)) {
+    if ((*completer_)(found)) {
       // state already has completed transaction,
       // remove from state and return it
-      out_state += tx;
-      internal_state_.erase(corresponding);
+      out_state += found;
+      internal_state_.erase(internal_state_.find(found));
     }
   }
 

@@ -29,16 +29,16 @@
 #include <vector>
 #include "ametsuchi/peer_query.hpp"
 #include "model/peer.hpp"
+#include "module/irohad/multi_sig_transactions/mst_test_helpers.hpp"
 
 using namespace iroha;
 
 using namespace std::chrono_literals;
 using PropagationData = GossipPropagationStrategy::PropagationData;
-using Peers = std::vector<model::Peer>;
 
 class MockPeerQuery : public ametsuchi::PeerQuery {
  public:
-  MOCK_METHOD0(getLedgerPeers, nonstd::optional<PropagationData>());
+  MOCK_METHOD0(getLedgerPeers, boost::optional<PropagationData>());
 };
 
 /**
@@ -53,7 +53,7 @@ PropagationData generate(std::vector<std::string> &ids, size_t num) {
   PropagationData peers;
   std::transform(
       ids.begin(), ids.end(), std::back_inserter(peers), [](auto &s) {
-        return model::Peer(s, pubkey_t{});
+        return makePeer(s, "");
       });
   return peers;
 }
@@ -67,7 +67,7 @@ PropagationData generate(std::vector<std::string> &ids, size_t num) {
 PropagationData subscribeAndEmit(GossipPropagationStrategy &strategy,
                                  uint32_t take) {
   PropagationData emitted;
-  auto subscriber = rxcpp::make_subscriber<Peers>([&emitted](auto v) {
+  auto subscriber = rxcpp::make_subscriber<PropagationData>([&emitted](auto v) {
     std::copy(v.begin(), v.end(), std::back_inserter(emitted));
   });
   strategy.emitter().take(take).as_blocking().subscribe(subscriber);
@@ -83,7 +83,7 @@ PropagationData subscribeAndEmit(GossipPropagationStrategy &strategy,
  * @param take is amount taken from the strategy emitter
  * @return emitted data
  */
-PropagationData subscribeAndEmit(nonstd::optional<PropagationData> data,
+PropagationData subscribeAndEmit(boost::optional<PropagationData> data,
                                  std::chrono::milliseconds period,
                                  uint32_t amount,
                                  uint32_t take) {
@@ -106,7 +106,7 @@ bool validateEmitted(const PropagationData &emitted,
              emitted.end(),
              [&peersId, flag = true ](const auto &v) mutable {
                if (flag
-                   and std::find(peersId.begin(), peersId.end(), v.address)
+                   and std::find(peersId.begin(), peersId.end(), v->address())
                        == peersId.end())
                  flag = false;
                return flag;
@@ -168,7 +168,7 @@ TEST(GossipPropagationStrategyTest, EmptyEmitting) {
  * @then ensure that empty peer list is emitted
  */
 TEST(GossipPropagationStrategyTest, ErrorEmitting) {
-  auto emitted = subscribeAndEmit(nonstd::nullopt, 1ms, 1, 13);
+  auto emitted = subscribeAndEmit(boost::none, 1ms, 1, 13);
   ASSERT_EQ(emitted.size(), 0);
 }
 

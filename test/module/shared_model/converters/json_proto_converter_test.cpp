@@ -22,6 +22,7 @@
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
+using namespace shared_model::proto;
 using namespace shared_model::converters::protobuf;
 using namespace shared_model;
 
@@ -34,11 +35,9 @@ using namespace shared_model;
 TEST(JsonProtoConverterTest, JsonToProtoTxTest) {
   TestTransactionBuilder builder;
 
-  shared_model::interface::types::CounterType tx_counter = 1;
   std::string creator_account_id = "admin@test";
 
-  auto orig_tx = builder.txCounter(tx_counter)
-                     .creatorAccountId(creator_account_id)
+  auto orig_tx = builder.creatorAccountId(creator_account_id)
                      .createdTime(123)
                      .build();
 
@@ -79,7 +78,6 @@ TEST(JsonProtoConverterTest, JsonToProtoBlockTest) {
   auto orig_block =
       block_builder.transactions(std::vector<Transaction>({tx_builder.build()}))
           .createdTime(123)
-          .txNumber(1)
           .build();
 
   auto json = modelToJson(orig_block);

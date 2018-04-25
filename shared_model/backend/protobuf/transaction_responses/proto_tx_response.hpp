@@ -58,18 +58,14 @@ namespace shared_model {
                                             StatefulFailedTxResponse,
                                             StatefulValidTxResponse,
                                             CommittedTxResponse,
-                                            UnknownTxResponse>;
+                                            NotReceivedTxResponse>;
 
       /// Type with list of types in ResponseVariantType
       using ProtoResponseListType = ProtoResponseVariantType::types;
 
       template <typename TxResponse>
       explicit TransactionResponse(TxResponse &&ref)
-          : CopyableProto(std::forward<TxResponse>(ref)),
-            variant_(detail::makeLazyInitializer([this] {
-              return loadTxResponse<ProtoResponseListType>(*proto_);
-            })),
-            hash_([this] { return crypto::Hash(this->proto_->tx_hash()); }) {}
+          : CopyableProto(std::forward<TxResponse>(ref)) {}
 
       TransactionResponse(const TransactionResponse &r)
           : TransactionResponse(r.proto_) {}
@@ -80,9 +76,9 @@ namespace shared_model {
       /**
        * @return hash of corresponding transaction
        */
-      const interface::Transaction::HashType &transactionHash() const override {
+      const interface::types::HashType &transactionHash() const override {
         return *hash_;
-      };
+      }
 
       /**
        * @return attached concrete tx response
@@ -99,10 +95,12 @@ namespace shared_model {
       using LazyVariantType = Lazy<ResponseVariantType>;
 
       // lazy
-      const LazyVariantType variant_;
+      const LazyVariantType variant_{detail::makeLazyInitializer(
+          [this] { return loadTxResponse<ProtoResponseListType>(*proto_); })};
 
       // stub hash
-      const Lazy<crypto::Hash> hash_;
+      const Lazy<crypto::Hash> hash_{
+          [this] { return crypto::Hash(this->proto_->tx_hash()); }};
     };
   }  // namespace  proto
 }  // namespace shared_model

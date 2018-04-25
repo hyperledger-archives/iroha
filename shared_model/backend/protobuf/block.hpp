@@ -25,7 +25,7 @@
 #include "backend/protobuf/transaction.hpp"
 #include "backend/protobuf/util.hpp"
 #include "common_objects/trivial_proto.hpp"
-#include "model/block.hpp"
+#include "interfaces/common_objects/types.hpp"
 
 #include "block.pb.h"
 #include "utils/lazy_initializer.hpp"
@@ -41,37 +41,14 @@ namespace shared_model {
      public:
       template <class BlockType>
       explicit Block(BlockType &&block)
-          : CopyableProto(std::forward<BlockType>(block)),
-            payload_(proto_->payload()),
-            transactions_([this] {
-              std::vector<w<interface::Transaction>> txs;
-              for (const auto &tx : payload_.transactions()) {
-                auto tmp = detail::makePolymorphic<proto::Transaction>(tx);
-                txs.emplace_back(tmp);
-              }
-              return txs;
-            }),
-            blob_([this] { return makeBlob(*proto_); }),
-            prev_hash_([this] {
-              return HashType(proto_->payload().prev_block_hash());
-            }),
-            signatures_([this] {
-              interface::SignatureSetType sigs;
-              for (const auto &sig : proto_->signatures()) {
-                auto curr = detail::makePolymorphic<proto::Signature>(sig);
-                sigs.insert(curr);
-              }
-              return sigs;
-            }),
-            payload_blob_([this] { return makeBlob(payload_); })
-
-      {}
+          : CopyableProto(std::forward<BlockType>(block)) {}
 
       Block(const Block &o) : Block(o.proto_) {}
 
       Block(Block &&o) noexcept : Block(std::move(o.proto_)) {}
 
-      const TransactionsCollectionType &transactions() const override {
+      const interface::types::TransactionsCollectionType &transactions()
+          const override {
         return *transactions_;
       }
 
@@ -79,11 +56,11 @@ namespace shared_model {
         return payload_.height();
       }
 
-      const HashType &prevHash() const override {
+      const interface::types::HashType &prevHash() const override {
         return *prev_hash_;
       }
 
-      const BlobType &blob() const override {
+      const interface::types::BlobType &blob() const override {
         return *blob_;
       }
 
@@ -91,29 +68,43 @@ namespace shared_model {
         return *signatures_;
       }
 
-      bool addSignature(
-          const interface::types::SignatureType &signature) override {
-        if (signatures_->count(signature) > 0) {
+      // TODO Alexey Chernyshov - 2018-03-28 -
+      // rework code duplication after fix protobuf
+      // https://soramitsu.atlassian.net/browse/IR-1175
+      bool addSignature(const crypto::Signed &signed_blob,
+                        const crypto::PublicKey &public_key) override {
+        // if already has such signature
+        if (std::find_if(signatures_->begin(),
+                     signatures_->end(),
+                     [&signed_blob, &public_key](auto signature) {
+                       return signature->signedData() == signed_blob
+                           and signature->publicKey() == public_key;
+                     }) != signatures_->end()) {
           return false;
         }
 
         auto sig = proto_->add_signatures();
-        sig->set_pubkey(crypto::toBinaryString(signature->publicKey()));
-        sig->set_signature(crypto::toBinaryString(signature->signedData()));
+        sig->set_signature(crypto::toBinaryString(signed_blob));
+        sig->set_pubkey(crypto::toBinaryString(public_key));
+
         signatures_.invalidate();
         return true;
+      }
+
+      bool clearSignatures() override {
+        signatures_->clear();
+        return (signatures_->size() == 0);
       }
 
       interface::types::TimestampType createdTime() const override {
         return payload_.created_time();
       }
 
-      TransactionsNumberType txsNumber() const override {
+      interface::types::TransactionsNumberType txsNumber() const override {
         return payload_.tx_number();
       }
 
-      const typename Hashable<Block, iroha::model::Block>::BlobType &payload()
-          const override {
+      const interface::types::BlobType &payload() const override {
         return *payload_blob_;
       }
 
@@ -121,12 +112,36 @@ namespace shared_model {
       // lazy
       template <typename T>
       using Lazy = detail::LazyInitializer<T>;
-      const iroha::protocol::Block::Payload &payload_;
-      const Lazy<std::vector<w<interface::Transaction>>> transactions_;
-      const Lazy<BlobType> blob_;
-      const Lazy<HashType> prev_hash_;
-      const Lazy<interface::SignatureSetType> signatures_;
-      const Lazy<BlobType> payload_blob_;
+
+      const iroha::protocol::Block::Payload &payload_{proto_->payload()};
+
+      const Lazy<std::vector<w<interface::Transaction>>> transactions_{[this] {
+        std::vector<w<interface::Transaction>> txs;
+        for (const auto &tx : payload_.transactions()) {
+          auto tmp = detail::makePolymorphic<proto::Transaction>(tx);
+          txs.emplace_back(tmp);
+        }
+        return txs;
+      }};
+
+      const Lazy<interface::types::BlobType> blob_{
+          [this] { return makeBlob(*proto_); }};
+
+      const Lazy<interface::types::HashType> prev_hash_{[this] {
+        return interface::types::HashType(proto_->payload().prev_block_hash());
+      }};
+
+      const Lazy<interface::SignatureSetType> signatures_{[this] {
+        interface::SignatureSetType sigs;
+        for (const auto &sig : proto_->signatures()) {
+          auto curr = detail::makePolymorphic<proto::Signature>(sig);
+          sigs.insert(curr);
+        }
+        return sigs;
+      }};
+
+      const Lazy<interface::types::BlobType> payload_blob_{
+          [this] { return makeBlob(payload_); }};
     };
   }  // namespace proto
 }  // namespace shared_model

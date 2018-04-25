@@ -44,7 +44,7 @@ class ValidatorsTest : public ::testing::Test {
     auto addEnum = setField(&google::protobuf::Reflection::AddEnumValue);
     auto setEnum = setField(&google::protobuf::Reflection::SetEnumValue);
 
-    for (const auto &id : {"account_id", "src_account_id", "dest_account_id"}) {
+    for (const auto &id : {"account_id", "src_account_id"}) {
       field_setters[id] = setString(account_id);
     }
     for (const auto &id : {"public_key", "main_pubkey"}) {
@@ -53,6 +53,7 @@ class ValidatorsTest : public ::testing::Test {
     for (const auto &id : {"role_name", "default_role", "role_id"}) {
       field_setters[id] = setString(role_name);
     }
+    field_setters["dest_account_id"] = setString(dest_id);
     field_setters["asset_id"] = setString(asset_id);
     field_setters["account_name"] = setString(account_name);
     field_setters["domain_id"] = setString(domain_id);
@@ -125,6 +126,7 @@ class ValidatorsTest : public ::testing::Test {
     hash_size = 32;
     counter = 1048576;
     account_id = "account@domain";
+    dest_id = "dest@domain";
     asset_name = "asset";
     asset_id = "asset#domain";
     address_localhost = "localhost:65535";
@@ -148,6 +150,7 @@ class ValidatorsTest : public ::testing::Test {
   size_t hash_size{0};
   uint64_t counter{0};
   std::string account_id;
+  std::string dest_id;
   std::string asset_name;
   std::string asset_id;
   std::string address_localhost;
@@ -157,8 +160,11 @@ class ValidatorsTest : public ::testing::Test {
   std::string account_name;
   std::string domain_id;
   std::string detail_key;
+  std::string detail_value;
+  std::string description;
   std::string public_key;
   std::string hash;
+  std::string permission;
   iroha::protocol::RolePermission role_permission;
   iroha::protocol::GrantablePermission grantable_permission;
   uint8_t quorum;

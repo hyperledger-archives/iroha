@@ -35,8 +35,7 @@ add_library(client
     )
 target_link_libraries(client
     interactive_cli
-    cryptography
-    optional
+    ed25519_crypto
     logger
     rapidjson
     pb_model_converters

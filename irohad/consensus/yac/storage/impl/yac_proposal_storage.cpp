@@ -17,11 +17,6 @@
 
 #include "consensus/yac/storage/yac_proposal_storage.hpp"
 
-#include <algorithm>
-#include <numeric>
-
-#include "consensus/yac/storage/yac_common.hpp"
-
 using namespace logger;
 
 namespace iroha {
@@ -45,22 +40,27 @@ namespace iroha {
           return iter;
         }
         // insert and return new
-        return block_storages_.emplace(block_storages_.end(),
-                                       YacHash(proposal_hash, block_hash),
-                                       peers_in_round_);
+        return block_storages_.emplace(
+            block_storages_.end(),
+            YacHash(proposal_hash, block_hash),
+            peers_in_round_,
+            supermajority_checker_);
       }
 
       // --------| public api |--------
 
-      YacProposalStorage::YacProposalStorage(ProposalHash hash,
-                                             uint64_t peers_in_round)
-          : current_state_(nonstd::nullopt),
+      YacProposalStorage::YacProposalStorage(
+          ProposalHash hash,
+          uint64_t peers_in_round,
+          std::shared_ptr<SupermajorityChecker> supermajority_checker)
+          : current_state_(boost::none),
             hash_(std::move(hash)),
-            peers_in_round_(peers_in_round) {
+            peers_in_round_(peers_in_round),
+            supermajority_checker_(supermajority_checker) {
         log_ = log("ProposalStorage");
       }
 
-      nonstd::optional<Answer> YacProposalStorage::insert(VoteMessage msg) {
+      boost::optional<Answer> YacProposalStorage::insert(VoteMessage msg) {
         if (shouldInsert(msg)) {
           // insert to block store
 
@@ -73,13 +73,13 @@ namespace iroha {
 
           // Single BlockStorage always returns CommitMessage because it
           // aggregates votes for a single hash.
-          if (block_state.has_value()) {
+          if (block_state) {
             // supermajority on block achieved
             current_state_ = std::move(block_state);
           } else {
             // try to find reject case
             auto reject_state = findRejectProof();
-            if (reject_state.has_value()) {
+            if (reject_state) {
               log_->info("Found reject proof");
               current_state_ = std::move(reject_state);
             }
@@ -88,7 +88,7 @@ namespace iroha {
         return getState();
       }
 
-      nonstd::optional<Answer> YacProposalStorage::insert(
+      boost::optional<Answer> YacProposalStorage::insert(
           std::vector<VoteMessage> messages) {
         std::for_each(messages.begin(), messages.end(), [this](auto vote) {
           this->insert(std::move(vote));
@@ -99,7 +99,7 @@ namespace iroha {
         return hash_;
       }
 
-      nonstd::optional<Answer> YacProposalStorage::getState() const {
+      boost::optional<Answer> YacProposalStorage::getState() const {
         return current_state_;
       }
 
@@ -125,7 +125,7 @@ namespace iroha {
                            });
       }
 
-      nonstd::optional<Answer> YacProposalStorage::findRejectProof() {
+      boost::optional<Answer> YacProposalStorage::findRejectProof() {
         auto max_vote = std::max_element(block_storages_.begin(),
                                          block_storages_.end(),
                                          [](auto &left, auto &right) {
@@ -142,7 +142,8 @@ namespace iroha {
                               return acc + storage.getNumberOfVotes();
                             });
 
-        auto is_reject = hasReject(max_vote, all_votes, peers_in_round_);
+        auto is_reject = supermajority_checker_->hasReject(
+            max_vote, all_votes, peers_in_round_);
 
         if (is_reject) {
           std::vector<VoteMessage> result;
@@ -159,7 +160,7 @@ namespace iroha {
           return Answer(RejectMessage(std::move(result)));
         }
 
-        return nonstd::nullopt;
+        return boost::none;
       }
 
     }  // namespace yac

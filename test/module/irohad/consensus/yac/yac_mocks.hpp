@@ -1,5 +1,5 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
+ * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
  * http://soramitsu.co.jp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,33 +20,59 @@
 
 #include <gmock/gmock.h>
 
+#include "builders/protobuf/common_objects/proto_peer_builder.hpp"
 #include "common/byteutils.hpp"
 #include "consensus/yac/cluster_order.hpp"
 #include "consensus/yac/messages.hpp"
+#include "consensus/yac/storage/yac_proposal_storage.hpp"
+#include "consensus/yac/supermajority_checker.hpp"
 #include "consensus/yac/timer.hpp"
 #include "consensus/yac/yac.hpp"
 #include "consensus/yac/yac_crypto_provider.hpp"
 #include "consensus/yac/yac_gate.hpp"
 #include "consensus/yac/yac_hash_provider.hpp"
 #include "consensus/yac/yac_peer_orderer.hpp"
+#include "cryptography/crypto_provider/crypto_defaults.hpp"
+#include "interfaces/iroha_internal/block.hpp"
+#include "module/shared_model/builders/protobuf/test_signature_builder.hpp"
 
 namespace iroha {
   namespace consensus {
     namespace yac {
-      model::Peer mk_peer(std::string address) {
-        model::Peer peer;
-        peer.address = address;
-        // TODO: 19.01.2019 kamil substitute with function, IR-813
-        std::copy(address.begin(), address.end(), peer.pubkey.begin());
-        return peer;
+      std::shared_ptr<shared_model::interface::Peer> mk_peer(
+          const std::string &address) {
+        auto key = std::string(32, '0');
+        std::copy(address.begin(), address.end(), key.begin());
+        auto ptr = shared_model::proto::PeerBuilder()
+                       .address(address)
+                       .pubkey(shared_model::interface::types::PubkeyType(key))
+                       .build();
+
+        return clone(ptr);
+      }
+
+      /**
+       * Creates test signature with empty signed data, and provided pubkey
+       * @param pub_key - public key to put in the signature
+       * @return new signature
+       */
+      std::shared_ptr<shared_model::interface::Signature> createSig(
+          const std::string &pub_key) {
+        auto tmp =
+            shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair()
+                .publicKey();
+        std::string key(tmp.blob().size(), 0);
+        std::copy(pub_key.begin(), pub_key.end(), key.begin());
+
+        return clone(TestSignatureBuilder()
+                         .publicKey(shared_model::crypto::PublicKey(key))
+                         .build());
       }
 
       VoteMessage create_vote(YacHash hash, std::string pub_key) {
         VoteMessage vote;
         vote.hash = hash;
-        // TODO: 19.01.2019 kamil substitute with function, IR-813
-        std::copy(
-            pub_key.begin(), pub_key.end(), vote.signature.pubkey.begin());
+        vote.signature = createSig(pub_key);
         return vote;
       }
 
@@ -59,6 +85,7 @@ namespace iroha {
         VoteMessage getVote(YacHash hash) override {
           VoteMessage vote;
           vote.hash = hash;
+          vote.signature = createSig("");
           return vote;
         }
 
@@ -100,9 +127,14 @@ namespace iroha {
           notification.reset();
         }
 
-        MOCK_METHOD2(send_commit, void(model::Peer, CommitMessage));
-        MOCK_METHOD2(send_reject, void(model::Peer, RejectMessage));
-        MOCK_METHOD2(send_vote, void(model::Peer, VoteMessage));
+        MOCK_METHOD2(send_commit,
+                     void(const shared_model::interface::Peer &,
+                          const CommitMessage &));
+        MOCK_METHOD2(send_reject,
+                     void(const shared_model::interface::Peer &,
+                          RejectMessage));
+        MOCK_METHOD2(send_vote,
+                     void(const shared_model::interface::Peer &, VoteMessage));
 
         MockYacNetwork() = default;
 
@@ -145,10 +177,10 @@ namespace iroha {
 
       class MockYacPeerOrderer : public YacPeerOrderer {
        public:
-        MOCK_METHOD0(getInitialOrdering, nonstd::optional<ClusterOrdering>());
+        MOCK_METHOD0(getInitialOrdering, boost::optional<ClusterOrdering>());
 
         MOCK_METHOD1(getOrdering,
-                     nonstd::optional<ClusterOrdering>(const YacHash &));
+                     boost::optional<ClusterOrdering>(const YacHash &));
 
         MockYacPeerOrderer() = default;
 
@@ -163,10 +195,12 @@ namespace iroha {
 
       class MockYacHashProvider : public YacHashProvider {
        public:
-        MOCK_CONST_METHOD1(makeHash, YacHash(const model::Block &));
+        MOCK_CONST_METHOD1(makeHash,
+                           YacHash(const shared_model::interface::Block &));
 
-        MOCK_CONST_METHOD1(toModelHash,
-                           model::Block::HashType(const YacHash &));
+        MOCK_CONST_METHOD1(
+            toModelHash,
+            shared_model::interface::types::HashType(const YacHash &));
 
         MockYacHashProvider() = default;
 
@@ -186,6 +220,23 @@ namespace iroha {
         MOCK_METHOD1(on_vote, void(VoteMessage));
       };
 
+      class MockSupermajorityChecker : public SupermajorityChecker {
+       public:
+        MOCK_CONST_METHOD2(
+            hasSupermajority,
+            bool(const shared_model::interface::SignatureSetType &signatures,
+                 const std::vector<
+                     std::shared_ptr<shared_model::interface::Peer>> &peers));
+        MOCK_CONST_METHOD2(checkSize, bool(uint64_t current, uint64_t all));
+        MOCK_CONST_METHOD2(
+            peersSubset,
+            bool(const shared_model::interface::SignatureSetType &signatures,
+                 const std::vector<
+                     std::shared_ptr<shared_model::interface::Peer>> &peers));
+        MOCK_CONST_METHOD3(
+            hasReject, bool(uint64_t frequent, uint64_t voted, uint64_t all));
+      };
+
       class YacTest : public ::testing::Test {
        public:
         // ------|Network|------
@@ -196,20 +247,22 @@ namespace iroha {
         std::shared_ptr<Yac> yac;
 
         // ------|Round|------
-        std::vector<model::Peer> default_peers = [] {
-          std::vector<model::Peer> result;
-          for (size_t i = 1; i <= 7; ++i) {
-            result.push_back(mk_peer(std::to_string(i)));
-          }
-          return result;
-        }();
+        std::vector<std::shared_ptr<shared_model::interface::Peer>>
+            default_peers = [] {
+              std::vector<std::shared_ptr<shared_model::interface::Peer>>
+                  result;
+              for (size_t i = 1; i <= 7; ++i) {
+                result.push_back(mk_peer(std::to_string(i)));
+              }
+              return result;
+            }();
 
         void SetUp() override {
           network = std::make_shared<MockYacNetwork>();
           crypto = std::make_shared<MockYacCryptoProvider>();
           timer = std::make_shared<MockTimer>();
           auto ordering = ClusterOrdering::create(default_peers);
-          ASSERT_TRUE(ordering.has_value());
+          ASSERT_TRUE(ordering);
           yac = Yac::create(YacVoteStorage(),
                             network,
                             crypto,

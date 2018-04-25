@@ -47,14 +47,6 @@ namespace shared_model {
           const interface::types::AccountIdType &account_id);
 
       /**
-       * Sets transaction counter field
-       * @param tx_counter - transaction counter
-       * @return builder with tx_counter field appended
-       */
-      ModelTransactionBuilder txCounter(
-          interface::types::CounterType tx_counter);
-
-      /**
        * Sets time of creation
        * @param created_time - time of creation
        * @return builder with created_time field appended
@@ -180,7 +172,7 @@ namespace shared_model {
 
       /**
        * Revokes permission
-       * @param account_id - accound id to revoke permission
+       * @param account_id - account id to revoke permission
        * @param permission - permission to revoke
        * @return builder with revoke permission command appended
        */
@@ -197,8 +189,8 @@ namespace shared_model {
        */
       ModelTransactionBuilder setAccountDetail(
           const interface::types::AccountIdType &account_id,
-          const interface::SetAccountDetail::AccountDetailKeyType &key,
-          const interface::SetAccountDetail::AccountDetailValueType &value);
+          const interface::types::AccountDetailKeyType &key,
+          const interface::types::AccountDetailValueType &value);
 
       /**
        * Sets account quorum

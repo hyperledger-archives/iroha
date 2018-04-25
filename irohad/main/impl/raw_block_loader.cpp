@@ -16,30 +16,34 @@
  */
 
 #include "main/raw_block_loader.hpp"
+
 #include <fstream>
-#include <utility>
-#include "common/types.hpp"
-#include "model/converters/json_common.hpp"
+
+#include "converters/protobuf/json_proto_converter.hpp"
+#include "backend/protobuf/block.hpp"
 
 namespace iroha {
   namespace main {
 
+    using shared_model::converters::protobuf::jsonToProto;
+    using shared_model::interface::Block;
+
     BlockLoader::BlockLoader() : log_(logger::log("BlockLoader")) {}
 
-    nonstd::optional<model::Block> BlockLoader::parseBlock(std::string data) {
-      auto document = model::converters::stringToJson(data);
-      if (not document.has_value()) {
-        log_->error("Blob parsing failed");
-        return nonstd::nullopt;
-      }
-      return block_factory_.deserialize(document.value());
+    boost::optional<std::shared_ptr<Block>> BlockLoader::parseBlock(
+        const std::string &data) {
+      return jsonToProto<iroha::protocol::Block>(data) | [](auto &&block) {
+        return boost::optional<std::shared_ptr<Block>>(
+            std::make_shared<shared_model::proto::Block>(std::move(block)));
+      };
     }
 
-    nonstd::optional<std::string> BlockLoader::loadFile(std::string path) {
+    boost::optional<std::string> BlockLoader::loadFile(
+        const std::string &path) {
       std::ifstream file(path);
       if (not file) {
         log_->error("Cannot read '" + path + "'");
-        return nonstd::nullopt;
+        return boost::none;
       }
       std::string str((std::istreambuf_iterator<char>(file)),
                       std::istreambuf_iterator<char>());

@@ -33,8 +33,7 @@ namespace shared_model {
      public:
       template <typename QueryType>
       explicit GetAccountDetail(QueryType &&query)
-          : CopyableProto(std::forward<QueryType>(query)),
-            account_detail_(proto_->payload().get_account_detail()) {}
+          : CopyableProto(std::forward<QueryType>(query)) {}
 
       GetAccountDetail(const GetAccountDetail &o)
           : GetAccountDetail(o.proto_) {}
@@ -46,14 +45,11 @@ namespace shared_model {
         return account_detail_.account_id();
       }
 
-      const interface::types::DetailType &detail() const override {
-        return account_detail_.detail();
-      }
-
      private:
       // ------------------------------| fields |-------------------------------
 
-      const iroha::protocol::GetAccountDetail &account_detail_;
+      const iroha::protocol::GetAccountDetail &account_detail_{
+          proto_->payload().get_account_detail()};
     };
 
   }  // namespace proto

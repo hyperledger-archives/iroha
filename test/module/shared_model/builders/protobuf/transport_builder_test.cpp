@@ -25,6 +25,7 @@
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 using namespace shared_model;
+using namespace shared_model::proto;
 using namespace iroha::expected;
 
 class TransportBuilderTest : public ::testing::Test {
@@ -43,7 +44,6 @@ class TransportBuilderTest : public ::testing::Test {
   auto createTransaction() {
     return TestUnsignedTransactionBuilder()
         .createdTime(created_time)
-        .txCounter(counter)
         .creatorAccountId(account_id)
         .setAccountQuorum(account_id, quorum)
         .build()
@@ -53,7 +53,6 @@ class TransportBuilderTest : public ::testing::Test {
   auto createInvalidTransaction() {
     return TestUnsignedTransactionBuilder()
         .createdTime(created_time)
-        .txCounter(counter)
         .creatorAccountId(invalid_account_id)
         .setAccountQuorum(account_id, quorum)
         .build()
@@ -83,7 +82,6 @@ class TransportBuilderTest : public ::testing::Test {
   auto createBlock() {
     return TestBlockBuilder()
         .transactions(std::vector<Transaction>({createTransaction()}))
-        .txNumber(1)
         .height(1)
         .prevHash(crypto::Hash("asd"))
         .createdTime(created_time)
@@ -93,7 +91,6 @@ class TransportBuilderTest : public ::testing::Test {
   auto createInvalidBlock() {
     return TestBlockBuilder()
         .transactions(std::vector<Transaction>({createTransaction()}))
-        .txNumber(1)
         .height(1)
         .prevHash(crypto::Hash("asd"))
         .createdTime(123)  // invalid time
@@ -165,7 +162,10 @@ TEST_F(TransportBuilderTest, TransactionCreationTest) {
         ASSERT_EQ(model.value.getTransport().SerializeAsString(),
                   orig_model.getTransport().SerializeAsString());
       },
-      [](const Error<std::string> &msg) { std::cout << msg.error << std::endl; FAIL(); });
+      [](const Error<std::string> &msg) {
+        std::cout << msg.error << std::endl;
+        FAIL();
+      });
 }
 
 /**

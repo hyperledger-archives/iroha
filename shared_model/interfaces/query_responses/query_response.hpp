@@ -19,7 +19,6 @@
 #define IROHA_SHARED_MODEL_QUERY_RESPONSE_HPP
 
 #include <boost/variant.hpp>
-#include "interfaces/base/hashable.hpp"
 #include "interfaces/base/primitive.hpp"
 #include "interfaces/query_responses/account_asset_response.hpp"
 #include "interfaces/query_responses/account_detail_response.hpp"
@@ -71,7 +70,7 @@ namespace shared_model {
       /**
        * @return hash of corresponding query
        */
-      virtual const Query::HashType &queryHash() const = 0;
+      virtual const interface::types::HashType &queryHash() const = 0;
 
       // ------------------------| Primitive override |-------------------------
 

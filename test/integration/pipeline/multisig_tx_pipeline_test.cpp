@@ -22,7 +22,11 @@
 #include "integration/pipeline/tx_pipeline_integration_test_fixture.hpp"
 #include "model/generators/command_generator.hpp"
 #include "model/generators/query_generator.hpp"
+#include "model/generators/transaction_generator.hpp"
 #include "model/model_crypto_provider_impl.hpp"
+
+using namespace std::literals;
+using namespace iroha::model;
 
 const std::chrono::milliseconds kProposalDelay = 1000ms;
 const std::chrono::milliseconds kVoteDelay = 1000ms;
@@ -34,11 +38,11 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
     iroha::ametsuchi::AmetsuchiTest::SetUp();
 
     auto genesis_tx =
-        TransactionGenerator().generateGenesisTransaction(0, {"0.0.0.0:10001"});
+        generators::TransactionGenerator().generateGenesisTransaction(
+            0, {"0.0.0.0:10001"});
     genesis_tx.quorum = 1;
     genesis_block =
-        iroha::model::generators::BlockGenerator().generateGenesisBlock(
-            0, {genesis_tx});
+        generators::BlockGenerator().generateGenesisBlock(0, {genesis_tx});
 
     manager = std::make_shared<iroha::KeysManagerImpl>("node0");
     auto keypair = manager->loadKeys().value();
@@ -56,6 +60,7 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
     ASSERT_TRUE(irohad->storage);
 
     irohad->storage->insertBlock(genesis_block);
+    irohad->resetOrderingService();
     irohad->init();
     irohad->run();
   }
@@ -82,23 +87,22 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
   bool createMultiQuorumAccount(std::string account,
                                 std::initializer_list<std::string> signers,
                                 uint32_t quorum) {
-    CommandGenerator gen;
+    generators::CommandGenerator gen;
     auto domain = "@test";
     auto keypair = createNewAccountKeypair(account + domain);
     iroha::KeysManagerImpl manager("admin@test");
-    Transaction tx =
-        iroha::model::generators::TransactionGenerator().generateTransaction(
-            "admin@test",
-            1,
-            {gen.generateCreateAccount(account, "test", keypair.pubkey),
-             gen.generateSetQuorum(account, quorum)});
+    Transaction tx = generators::TransactionGenerator().generateTransaction(
+        "admin@test",
+        1,
+        {gen.generateCreateAccount(account, "test", keypair.pubkey),
+         gen.generateSetQuorum(account + domain, quorum)});
     for (auto s : signers) {
       auto key = createNewAccountKeypair(s);
       tx.commands.push_back(gen.generateAddSignatory(s, key.pubkey));
     }
 
     auto admin_keypair = manager.loadKeys().value();
-    iroha::model::ModelCryptoProviderImpl(admin_keypair).sign(tx);
+    ModelCryptoProviderImpl(admin_keypair).sign(tx);
     return sendForCommit(tx);
   }
 
@@ -128,7 +132,7 @@ class MstPipelineTest : public TxPipelineIntegrationTestFixture {
    * @param tx is transaction to be sent
    */
   void send(const Transaction &tx) {
-    auto pb_tx = iroha::model::converters::PbTransactionFactory().serialize(tx);
+    auto pb_tx = converters::PbTransactionFactory().serialize(tx);
 
     google::protobuf::Empty response;
     irohad->getCommandService()->Torii(pb_tx);
@@ -145,7 +149,7 @@ Transaction sign(const Transaction &tx, const std::string &account) {
   iroha::KeysManagerImpl manager(account);
   EXPECT_TRUE(manager.loadKeys().has_value());
   auto keypair = manager.loadKeys().value();
-  iroha::model::ModelCryptoProviderImpl provider(keypair);
+  ModelCryptoProviderImpl provider(keypair);
   provider.sign(tmp);
   return tmp;
 }
@@ -158,12 +162,10 @@ Transaction sign(const Transaction &tx, const std::string &account) {
  */
 TEST_F(MstPipelineTest, OnePeerSendsTest) {
   ASSERT_TRUE(createMultiQuorumAccount("multi", {signer}, 2));
-  auto cmd =
-      iroha::model::generators::CommandGenerator().generateAddAssetQuantity(
-          account, asset, iroha::Amount().createFromString("20.00").value());
+  auto cmd = generators::CommandGenerator().generateAddAssetQuantity(
+      account, asset, iroha::Amount().createFromString("20.00").value());
   auto tx =
-      iroha::model::generators::TransactionGenerator().generateTransaction(
-          account, 2, {cmd});
+      generators::TransactionGenerator().generateTransaction(account, 2, {cmd});
   tx.quorum = 2;
 
   ASSERT_FALSE(sendForCommit(sign(tx, account)));

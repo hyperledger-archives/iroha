@@ -18,18 +18,15 @@
 #ifndef IROHA_MUTABLE_STORAGE_IMPL_HPP
 #define IROHA_MUTABLE_STORAGE_IMPL_HPP
 
+#include <map>
 #include <pqxx/connection>
 #include <pqxx/nontransaction>
-#include <unordered_map>
 
 #include "ametsuchi/mutable_storage.hpp"
+#include "execution/command_executor.hpp"
 #include "logger/logger.hpp"
 
 namespace iroha {
-
-  namespace model {
-    class CommandExecutorFactory;
-  }
 
   namespace ametsuchi {
 
@@ -41,30 +38,32 @@ namespace iroha {
 
      public:
       MutableStorageImpl(
-          hash256_t top_hash,
+          shared_model::interface::types::HashType top_hash,
           std::unique_ptr<pqxx::lazyconnection> connection,
-          std::unique_ptr<pqxx::nontransaction> transaction,
-          std::shared_ptr<model::CommandExecutorFactory> command_executors);
+          std::unique_ptr<pqxx::nontransaction> transaction);
 
-      bool apply(const model::Block &block,
-                 std::function<bool(const model::Block &,
-                                    WsvQuery &,
-                                    const hash256_t &)> function) override;
+      bool apply(
+          const shared_model::interface::Block &block,
+          std::function<bool(const shared_model::interface::Block &,
+                             WsvQuery &,
+                             const shared_model::interface::types::HashType &)>
+              function) override;
 
       ~MutableStorageImpl() override;
 
      private:
-      hash256_t top_hash_;
+      shared_model::interface::types::HashType top_hash_;
       // ordered collection is used to enforce block insertion order in
       // StorageImpl::commit
-      std::map<uint32_t, model::Block> block_store_;
+      std::map<uint32_t, std::shared_ptr<shared_model::interface::Block>>
+          block_store_;
 
       std::unique_ptr<pqxx::lazyconnection> connection_;
       std::unique_ptr<pqxx::nontransaction> transaction_;
       std::unique_ptr<WsvQuery> wsv_;
       std::unique_ptr<WsvCommand> executor_;
       std::unique_ptr<BlockIndex> block_index_;
-      std::shared_ptr<model::CommandExecutorFactory> command_executors_;
+      std::shared_ptr<CommandExecutor> command_executor_;
 
       bool committed;
 

@@ -53,8 +53,8 @@ namespace shared_model {
       enum RequiredFields {
         Command,
         CreatorAccountId,
-        TxCounter,
         CreatedTime,
+        Quorum,
         TOTAL
       };
 
@@ -65,7 +65,8 @@ namespace shared_model {
       using ProtoCommand = iroha::protocol::Command;
 
       template <int Sp>
-      TemplateTransactionBuilder(const TemplateTransactionBuilder<Sp, SV, BT> &o)
+      TemplateTransactionBuilder(
+          const TemplateTransactionBuilder<Sp, SV, BT> &o)
           : transaction_(o.transaction_),
             stateless_validator_(o.stateless_validator_) {}
 
@@ -106,16 +107,15 @@ namespace shared_model {
         });
       }
 
-      auto txCounter(interface::types::CounterType tx_counter) const {
-        return transform<TxCounter>([&](auto &tx) {
-          tx.mutable_payload()->set_tx_counter(tx_counter);
-        });
-      }
-
       auto createdTime(interface::types::TimestampType created_time) const {
         return transform<CreatedTime>([&](auto &tx) {
           tx.mutable_payload()->set_created_time(created_time);
         });
+      }
+
+      auto quorum(interface::types::QuorumType quorum) const {
+        return transform<Quorum>(
+            [&](auto &tx) { tx.mutable_payload()->set_quorum(quorum); });
       }
 
       auto addAssetQuantity(const interface::types::AccountIdType &account_id,
@@ -262,9 +262,8 @@ namespace shared_model {
 
       auto setAccountDetail(
           const interface::types::AccountIdType &account_id,
-          const interface::SetAccountDetail::AccountDetailKeyType &key,
-          const interface::SetAccountDetail::AccountDetailValueType &value)
-          const {
+          const interface::types::AccountDetailKeyType &key,
+          const interface::types::AccountDetailValueType &value) const {
         return addCommand([&](auto proto_command) {
           auto command = proto_command->mutable_set_account_detail();
           command->set_account_id(account_id);
@@ -294,12 +293,11 @@ namespace shared_model {
         });
       }
 
-      auto transferAsset(
-          const interface::types::AccountIdType &src_account_id,
-          const interface::types::AccountIdType &dest_account_id,
-          const interface::types::AssetIdType &asset_id,
-          const interface::TransferAsset::MessageType &description,
-          const std::string &amount) const {
+      auto transferAsset(const interface::types::AccountIdType &src_account_id,
+                         const interface::types::AccountIdType &dest_account_id,
+                         const interface::types::AssetIdType &asset_id,
+                         const interface::types::DescriptionType &description,
+                         const std::string &amount) const {
         return addCommand([&](auto proto_command) {
           auto command = proto_command->mutable_transfer_asset();
           command->set_src_account_id(src_account_id);
@@ -312,13 +310,12 @@ namespace shared_model {
 
       auto build() const {
         static_assert(S == (1 << TOTAL) - 1, "Required fields are not set");
-
-        auto answer = stateless_validator_.validate(
-            detail::makePolymorphic<Transaction>(transaction_));
+        auto result = Transaction(iroha::protocol::Transaction(transaction_));
+        auto answer = stateless_validator_.validate(result);
         if (answer.hasErrors()) {
           throw std::invalid_argument(answer.reason());
         }
-        return BT(Transaction(iroha::protocol::Transaction(transaction_)));
+        return BT(std::move(result));
       }
 
       static const int total = RequiredFields::TOTAL;

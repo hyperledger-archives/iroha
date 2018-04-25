@@ -17,12 +17,13 @@
 
 #include "ametsuchi/impl/postgres_wsv_command.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
+#include "framework/result_fixture.hpp"
+#include "backend/protobuf/from_old_model.hpp"
 #include "model/account.hpp"
+#include "model/asset.hpp"
 #include "model/domain.hpp"
 #include "model/peer.hpp"
-#include "model/asset.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
-#include "framework/result_fixture.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -56,8 +57,6 @@ namespace iroha {
 
         wsv_transaction->exec(init_);
       }
-
-
 
       std::string role = "role", permission = "permission";
       model::Account account;
@@ -120,7 +119,8 @@ namespace iroha {
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
         ASSERT_NO_THROW(checkValueCase(command->insertRole(role)));
-        ASSERT_NO_THROW(checkValueCase(command->insertDomain(domain)));
+        ASSERT_NO_THROW(checkValueCase(
+            command->insertDomain(shared_model::proto::from_old(domain))));
       }
     };
 
@@ -130,10 +130,11 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, InsertAccountWithJSONData) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(account)));
+      ASSERT_NO_THROW(checkValueCase(
+          command->insertAccount(shared_model::proto::from_old(account))));
       auto acc = query->getAccount(account.account_id);
-      ASSERT_TRUE(acc.has_value());
-      ASSERT_EQ(account.json_data, acc.value().json_data);
+      ASSERT_TRUE(acc);
+      ASSERT_EQ(account.json_data, acc.value()->jsonData());
     }
 
     /**
@@ -142,13 +143,14 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, InsertNewJSONDataAccount) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(account)));
+      ASSERT_NO_THROW(checkValueCase(
+          command->insertAccount(shared_model::proto::from_old(account))));
       ASSERT_NO_THROW(checkValueCase(command->setAccountKV(
           account.account_id, account.account_id, "id", "val")));
       auto acc = query->getAccount(account.account_id);
-      ASSERT_TRUE(acc.has_value());
+      ASSERT_TRUE(acc);
       ASSERT_EQ(R"({"id@domain": {"id": "val", "key": "value"}})",
-                acc.value().json_data);
+                acc.value()->jsonData());
     }
 
     /**
@@ -157,13 +159,14 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, InsertNewJSONDataToOtherAccount) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(account)));
+      ASSERT_NO_THROW(checkValueCase(
+          command->insertAccount(shared_model::proto::from_old(account))));
       ASSERT_NO_THROW(checkValueCase(
           command->setAccountKV(account.account_id, "admin", "id", "val")));
       auto acc = query->getAccount(account.account_id);
-      ASSERT_TRUE(acc.has_value());
+      ASSERT_TRUE(acc);
       ASSERT_EQ(R"({"admin": {"id": "val"}, "id@domain": {"key": "value"}})",
-                acc.value().json_data);
+                acc.value()->jsonData());
     }
 
     /**
@@ -172,13 +175,14 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, InsertNewComplexJSONDataAccount) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(account)));
+      ASSERT_NO_THROW(checkValueCase(
+          command->insertAccount(shared_model::proto::from_old(account))));
       ASSERT_NO_THROW(checkValueCase(command->setAccountKV(
           account.account_id, account.account_id, "id", "[val1, val2]")));
       auto acc = query->getAccount(account.account_id);
-      ASSERT_TRUE(acc.has_value());
+      ASSERT_TRUE(acc);
       ASSERT_EQ(R"({"id@domain": {"id": "[val1, val2]", "key": "value"}})",
-                acc.value().json_data);
+                acc.value()->jsonData());
     }
 
     /**
@@ -187,12 +191,13 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, UpdateAccountJSONData) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(account)));
+      ASSERT_NO_THROW(checkValueCase(
+          command->insertAccount(shared_model::proto::from_old(account))));
       ASSERT_NO_THROW(checkValueCase(command->setAccountKV(
           account.account_id, account.account_id, "key", "val2")));
       auto acc = query->getAccount(account.account_id);
-      ASSERT_TRUE(acc.has_value());
-      ASSERT_EQ(R"({"id@domain": {"key": "val2"}})", acc.value().json_data);
+      ASSERT_TRUE(acc);
+      ASSERT_EQ(R"({"id@domain": {"key": "val2"}})", acc.value()->jsonData());
     }
 
     /**
@@ -210,16 +215,17 @@ namespace iroha {
      * @then getAccountDetail will return nullopt
      */
     TEST_F(AccountTest, GetAccountDetailInvalidWhenNotFound) {
-      EXPECT_FALSE(query->getAccountDetail(
-          "invalid account id", "invalid_creator", "invalid_detail"));
+      EXPECT_FALSE(query->getAccountDetail("invalid account id"));
     }
 
     class AccountRoleTest : public WsvQueryCommandTest {
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
         ASSERT_NO_THROW(checkValueCase(command->insertRole(role)));
-        ASSERT_NO_THROW(checkValueCase(command->insertDomain(domain)));
-        ASSERT_NO_THROW(checkValueCase(command->insertAccount(account)));
+        ASSERT_NO_THROW(checkValueCase(
+            command->insertDomain(shared_model::proto::from_old(domain))));
+        ASSERT_NO_THROW(checkValueCase(
+            command->insertAccount(shared_model::proto::from_old(account))));
       }
     };
 
@@ -308,10 +314,12 @@ namespace iroha {
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
         ASSERT_NO_THROW(checkValueCase(command->insertRole(role)));
-        ASSERT_NO_THROW(checkValueCase(command->insertDomain(domain)));
-        ASSERT_NO_THROW(checkValueCase(command->insertAccount(account)));
-        ASSERT_NO_THROW(
-            checkValueCase(command->insertAccount(permittee_account)));
+        ASSERT_NO_THROW(checkValueCase(
+            command->insertDomain(shared_model::proto::from_old(domain))));
+        ASSERT_NO_THROW(checkValueCase(
+            command->insertAccount(shared_model::proto::from_old(account))));
+        ASSERT_NO_THROW(checkValueCase(command->insertAccount(
+            shared_model::proto::from_old(permittee_account))));
       }
 
       model::Account permittee_account;
@@ -322,7 +330,7 @@ namespace iroha {
       ASSERT_NO_THROW(checkValueCase(command->insertAccountGrantablePermission(
           permittee_account.account_id, account.account_id, permission)));
 
-          ASSERT_TRUE(query->hasAccountGrantablePermission(
+      ASSERT_TRUE(query->hasAccountGrantablePermission(
           permittee_account.account_id, account.account_id, permission));
     }
 
@@ -348,7 +356,7 @@ namespace iroha {
 
     TEST_F(AccountGrantablePermissionTest,
            DeleteAccountGrantablePermissionWhenAccountsPermissionExist) {
-ASSERT_NO_THROW(checkValueCase(command->deleteAccountGrantablePermission(
+      ASSERT_NO_THROW(checkValueCase(command->deleteAccountGrantablePermission(
           permittee_account.account_id, account.account_id, permission)));
 
       ASSERT_FALSE(query->hasAccountGrantablePermission(
@@ -358,7 +366,7 @@ ASSERT_NO_THROW(checkValueCase(command->deleteAccountGrantablePermission(
     class DeletePeerTest : public WsvQueryCommandTest {
      public:
       DeletePeerTest() {
-        peer = model::Peer{"1337", {}};
+        peer = model::Peer();
       }
 
       void SetUp() override {
@@ -373,9 +381,11 @@ ASSERT_NO_THROW(checkValueCase(command->deleteAccountGrantablePermission(
      * @then peer is successfully deleted
      */
     TEST_F(DeletePeerTest, DeletePeerValidWhenPeerExists) {
-      ASSERT_NO_THROW(checkValueCase(command->insertPeer(peer)));
+      ASSERT_NO_THROW(checkValueCase(
+          command->insertPeer(shared_model::proto::from_old(peer))));
 
-      ASSERT_NO_THROW(checkValueCase(command->deletePeer(peer)));
+      ASSERT_NO_THROW(checkValueCase(
+          command->deletePeer(shared_model::proto::from_old(peer))));
     }
 
     class GetAssetTest : public WsvQueryCommandTest {};
