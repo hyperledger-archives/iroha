@@ -78,7 +78,7 @@ namespace iroha {
      * @then role is successfully inserted
      */
     TEST_F(RoleTest, InsertRoleWhenValidName) {
-      ASSERT_NO_THROW(checkValueCase(command->insertRole(role)));
+      ASSERT_TRUE(val(command->insertRole(role)));
       auto roles = query->getRoles();
       ASSERT_TRUE(roles);
       ASSERT_EQ(1, roles->size());
@@ -91,8 +91,7 @@ namespace iroha {
      * @then role is failed
      */
     TEST_F(RoleTest, InsertRoleWhenInvalidName) {
-      ASSERT_NO_THROW(
-          checkErrorCase(command->insertRole(std::string(46, 'a'))));
+      ASSERT_TRUE(err(command->insertRole(std::string(46, 'a'))));
 
       auto roles = query->getRoles();
       ASSERT_TRUE(roles);
@@ -102,7 +101,7 @@ namespace iroha {
     class RolePermissionsTest : public WsvQueryCommandTest {
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
-        ASSERT_NO_THROW(checkValueCase(command->insertRole(role)));
+        ASSERT_TRUE(val(command->insertRole(role)));
       }
     };
 
@@ -112,8 +111,7 @@ namespace iroha {
      * @then RolePermissions are inserted
      */
     TEST_F(RolePermissionsTest, InsertRolePermissionsWhenRoleExists) {
-      ASSERT_NO_THROW(
-          checkValueCase(command->insertRolePermissions(role, {permission})));
+      ASSERT_TRUE(val(command->insertRolePermissions(role, {permission})));
 
       auto permissions = query->getRolePermissions(role);
       ASSERT_TRUE(permissions);
@@ -128,8 +126,7 @@ namespace iroha {
      */
     TEST_F(RolePermissionsTest, InsertRolePermissionsWhenNoRole) {
       auto new_role = role + " ";
-      ASSERT_NO_THROW(checkErrorCase(
-          command->insertRolePermissions(new_role, {permission})));
+      ASSERT_TRUE(err(command->insertRolePermissions(new_role, {permission})));
 
       auto permissions = query->getRolePermissions(new_role);
       ASSERT_TRUE(permissions);
@@ -139,8 +136,8 @@ namespace iroha {
     class AccountTest : public WsvQueryCommandTest {
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
-        ASSERT_NO_THROW(checkValueCase(command->insertRole(role)));
-        ASSERT_NO_THROW(checkValueCase(command->insertDomain(*domain)));
+        ASSERT_TRUE(val(command->insertRole(role)));
+        ASSERT_TRUE(val(command->insertDomain(*domain)));
       }
     };
 
@@ -150,7 +147,7 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, InsertAccountWithJSONData) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(*account)));
+      ASSERT_TRUE(val(command->insertAccount(*account)));
       auto acc = query->getAccount(account->accountId());
       ASSERT_TRUE(acc);
       ASSERT_EQ(account->jsonData(), acc.value()->jsonData());
@@ -162,8 +159,8 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, InsertNewJSONDataAccount) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(*account)));
-      ASSERT_NO_THROW(checkValueCase(command->setAccountKV(
+      ASSERT_TRUE(val(command->insertAccount(*account)));
+      ASSERT_TRUE(val(command->setAccountKV(
           account->accountId(), account->accountId(), "id", "val")));
       auto acc = query->getAccount(account->accountId());
       ASSERT_TRUE(acc);
@@ -177,8 +174,8 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, InsertNewJSONDataToOtherAccount) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(*account)));
-      ASSERT_NO_THROW(checkValueCase(
+      ASSERT_TRUE(val(command->insertAccount(*account)));
+      ASSERT_TRUE(val(
           command->setAccountKV(account->accountId(), "admin", "id", "val")));
       auto acc = query->getAccount(account->accountId());
       ASSERT_TRUE(acc);
@@ -192,8 +189,8 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, InsertNewComplexJSONDataAccount) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(*account)));
-      ASSERT_NO_THROW(checkValueCase(command->setAccountKV(
+      ASSERT_TRUE(val(command->insertAccount(*account)));
+      ASSERT_TRUE(val(command->setAccountKV(
           account->accountId(), account->accountId(), "id", "[val1, val2]")));
       auto acc = query->getAccount(account->accountId());
       ASSERT_TRUE(acc);
@@ -207,8 +204,8 @@ namespace iroha {
      * @then get account and check json data is the same
      */
     TEST_F(AccountTest, UpdateAccountJSONData) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccount(*account)));
-      ASSERT_NO_THROW(checkValueCase(command->setAccountKV(
+      ASSERT_TRUE(val(command->insertAccount(*account)));
+      ASSERT_TRUE(val(command->setAccountKV(
           account->accountId(), account->accountId(), "key", "val2")));
       auto acc = query->getAccount(account->accountId());
       ASSERT_TRUE(acc);
@@ -236,9 +233,9 @@ namespace iroha {
     class AccountRoleTest : public WsvQueryCommandTest {
       void SetUp() override {
         WsvQueryCommandTest::SetUp();
-        ASSERT_NO_THROW(checkValueCase(command->insertRole(role)));
-        ASSERT_NO_THROW(checkValueCase(command->insertDomain(*domain)));
-        ASSERT_NO_THROW(checkValueCase(command->insertAccount(*account)));
+        ASSERT_TRUE(val(command->insertRole(role)));
+        ASSERT_TRUE(val(command->insertDomain(*domain)));
+        ASSERT_TRUE(val(command->insertAccount(*account)));
       }
     };
 
@@ -248,8 +245,7 @@ namespace iroha {
      * @then account role is inserted
      */
     TEST_F(AccountRoleTest, InsertAccountRoleWhenAccountRoleExist) {
-      ASSERT_NO_THROW(checkValueCase(
-          command->insertAccountRole(account->accountId(), role)));
+      ASSERT_TRUE(val(command->insertAccountRole(account->accountId(), role)));
 
       auto roles = query->getAccountRoles(account->accountId());
       ASSERT_TRUE(roles);
@@ -264,8 +260,7 @@ namespace iroha {
      */
     TEST_F(AccountRoleTest, InsertAccountRoleWhenNoAccount) {
       auto account_id = account->accountId() + " ";
-      ASSERT_NO_THROW(
-          checkErrorCase(command->insertAccountRole(account_id, role)));
+      ASSERT_TRUE(err(command->insertAccountRole(account_id, role)));
 
       auto roles = query->getAccountRoles(account_id);
       ASSERT_TRUE(roles);
@@ -279,8 +274,8 @@ namespace iroha {
      */
     TEST_F(AccountRoleTest, InsertAccountRoleWhenNoRole) {
       auto new_role = role + " ";
-      ASSERT_NO_THROW(checkErrorCase(
-          command->insertAccountRole(account->accountId(), new_role)));
+      ASSERT_TRUE(
+          err(command->insertAccountRole(account->accountId(), new_role)));
 
       auto roles = query->getAccountRoles(account->accountId());
       ASSERT_TRUE(roles);
@@ -293,10 +288,8 @@ namespace iroha {
      * @then role is detached
      */
     TEST_F(AccountRoleTest, DeleteAccountRoleWhenExist) {
-      ASSERT_NO_THROW(checkValueCase(
-          command->insertAccountRole(account->accountId(), role)));
-      ASSERT_NO_THROW(checkValueCase(
-          command->deleteAccountRole(account->accountId(), role)));
+      ASSERT_TRUE(val(command->insertAccountRole(account->accountId(), role)));
+      ASSERT_TRUE(val(command->deleteAccountRole(account->accountId(), role)));
       auto roles = query->getAccountRoles(account->accountId());
       ASSERT_TRUE(roles);
       ASSERT_EQ(0, roles->size());
@@ -308,9 +301,8 @@ namespace iroha {
      * @then nothing is deleted
      */
     TEST_F(AccountRoleTest, DeleteAccountRoleWhenNoAccount) {
-      ASSERT_NO_THROW(checkValueCase(
-          command->insertAccountRole(account->accountId(), role)));
-      ASSERT_NO_THROW(checkValueCase(command->deleteAccountRole("no", role)));
+      ASSERT_TRUE(val(command->insertAccountRole(account->accountId(), role)));
+      ASSERT_TRUE(val(command->deleteAccountRole("no", role)));
       auto roles = query->getAccountRoles(account->accountId());
       ASSERT_TRUE(roles);
       ASSERT_EQ(1, roles->size());
@@ -322,10 +314,8 @@ namespace iroha {
      * @then nothing is deleted
      */
     TEST_F(AccountRoleTest, DeleteAccountRoleWhenNoRole) {
-      ASSERT_NO_THROW(checkValueCase(
-          command->insertAccountRole(account->accountId(), role)));
-      ASSERT_NO_THROW(checkValueCase(
-          command->deleteAccountRole(account->accountId(), "no")));
+      ASSERT_TRUE(val(command->insertAccountRole(account->accountId(), role)));
+      ASSERT_TRUE(val(command->deleteAccountRole(account->accountId(), "no")));
       auto roles = query->getAccountRoles(account->accountId());
       ASSERT_TRUE(roles);
       ASSERT_EQ(1, roles->size());
@@ -344,11 +334,10 @@ namespace iroha {
                       .jsonData(R"({"id@domain": {"key": "value"}})")
                       .build());
 
-        ASSERT_NO_THROW(checkValueCase(command->insertRole(role)));
-        ASSERT_NO_THROW(checkValueCase(command->insertDomain(*domain)));
-        ASSERT_NO_THROW(checkValueCase(command->insertAccount(*account)));
-        ASSERT_NO_THROW(
-            checkValueCase(command->insertAccount(*permittee_account)));
+        ASSERT_TRUE(val(command->insertRole(role)));
+        ASSERT_TRUE(val(command->insertDomain(*domain)));
+        ASSERT_TRUE(val(command->insertAccount(*account)));
+        ASSERT_TRUE(val(command->insertAccount(*permittee_account)));
       }
 
       std::shared_ptr<shared_model::interface::Account> permittee_account;
@@ -361,7 +350,7 @@ namespace iroha {
      */
     TEST_F(AccountGrantablePermissionTest,
            InsertAccountGrantablePermissionWhenAccountsExist) {
-      ASSERT_NO_THROW(checkValueCase(command->insertAccountGrantablePermission(
+      ASSERT_TRUE(val(command->insertAccountGrantablePermission(
           permittee_account->accountId(), account->accountId(), permission)));
 
       ASSERT_TRUE(query->hasAccountGrantablePermission(
@@ -376,7 +365,7 @@ namespace iroha {
     TEST_F(AccountGrantablePermissionTest,
            InsertAccountGrantablePermissionWhenNoPermitteeAccount) {
       auto permittee_account_id = permittee_account->accountId() + " ";
-      ASSERT_NO_THROW(checkErrorCase(command->insertAccountGrantablePermission(
+      ASSERT_TRUE(err(command->insertAccountGrantablePermission(
           permittee_account_id, account->accountId(), permission)));
 
       ASSERT_FALSE(query->hasAccountGrantablePermission(
@@ -386,7 +375,7 @@ namespace iroha {
     TEST_F(AccountGrantablePermissionTest,
            InsertAccountGrantablePermissionWhenNoAccount) {
       auto account_id = account->accountId() + " ";
-      ASSERT_NO_THROW(checkErrorCase(command->insertAccountGrantablePermission(
+      ASSERT_TRUE(err(command->insertAccountGrantablePermission(
           permittee_account->accountId(), account_id, permission)));
 
       ASSERT_FALSE(query->hasAccountGrantablePermission(
@@ -400,7 +389,7 @@ namespace iroha {
      */
     TEST_F(AccountGrantablePermissionTest,
            DeleteAccountGrantablePermissionWhenAccountsPermissionExist) {
-      ASSERT_NO_THROW(checkValueCase(command->deleteAccountGrantablePermission(
+      ASSERT_TRUE(val(command->deleteAccountGrantablePermission(
           permittee_account->accountId(), account->accountId(), permission)));
 
       ASSERT_FALSE(query->hasAccountGrantablePermission(
@@ -423,9 +412,9 @@ namespace iroha {
      * @then peer is successfully deleted
      */
     TEST_F(DeletePeerTest, DeletePeerValidWhenPeerExists) {
-      ASSERT_NO_THROW(checkValueCase(command->insertPeer(*peer)));
+      ASSERT_TRUE(val(command->insertPeer(*peer)));
 
-      ASSERT_NO_THROW(checkValueCase(command->deletePeer(*peer)));
+      ASSERT_TRUE(val(command->deletePeer(*peer)));
     }
 
     class GetAssetTest : public WsvQueryCommandTest {};
