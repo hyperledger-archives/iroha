@@ -1,18 +1,6 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "ordering/impl/ordering_service_impl.hpp"
@@ -30,14 +18,13 @@ namespace iroha {
     OrderingServiceImpl::OrderingServiceImpl(
         std::shared_ptr<ametsuchi::PeerQuery> wsv,
         size_t max_size,
-        size_t delay_milliseconds,
+        rxcpp::observable<TimeoutType> proposal_timeout,
         std::shared_ptr<network::OrderingServiceTransport> transport,
         std::shared_ptr<ametsuchi::OrderingServicePersistentState>
             persistent_state,
         bool is_async)
         : wsv_(wsv),
           max_size_(max_size),
-          delay_milliseconds_(delay_milliseconds),
           transport_(transport),
           persistent_state_(persistent_state) {
       log_ = logger::log("OrderingServiceImpl");
@@ -46,10 +33,7 @@ namespace iroha {
       proposal_height_ = persistent_state_->loadProposalHeight().value();
 
       rxcpp::observable<ProposalEvent> timer =
-          rxcpp::observable<>::interval(
-              std::chrono::milliseconds(delay_milliseconds_),
-              rxcpp::observe_on_new_thread())
-              .map([](auto) { return ProposalEvent::kTimerEvent; });
+          proposal_timeout.map([](auto) { return ProposalEvent::kTimerEvent; });
 
       auto subscribe = [&](auto merge_strategy) {
         handle_ = merge_strategy(rxcpp::observable<>::from(
