@@ -308,7 +308,7 @@ TEST_F(TransferAsset, LongDesc) {
       .skipProposal()
       .skipBlock()
       .sendTx(invalid_tx,
-              [](shared_model::proto::TransactionResponse &status) {
+              [](const shared_model::proto::TransactionResponse &status) {
                 // check if returned status is as expected
                 ASSERT_NO_THROW(boost::get<ExpectedStatusType>(status.get()));
               })

@@ -1,4 +1,4 @@
-# Copyright 2017 Soramitsu Co., Ltd.
+# Copyright 2018 Soramitsu Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
 # limitations under the License.
 
 # Reusable tests
-add_subdirectory(common)
 add_subdirectory(ametsuchi)
+add_subdirectory(common)
 add_subdirectory(consensus)
+add_subdirectory(execution)
 add_subdirectory(logger)
-add_subdirectory(validation)
-add_subdirectory(torii)
 add_subdirectory(main)
 add_subdirectory(model)
 add_subdirectory(multi_sig_transactions)
-add_subdirectory(synchronizer)
-add_subdirectory(simulator)
-add_subdirectory(ordering)
 add_subdirectory(network)
+add_subdirectory(ordering)
+add_subdirectory(simulator)
+add_subdirectory(synchronizer)
+add_subdirectory(torii)
+add_subdirectory(validation)

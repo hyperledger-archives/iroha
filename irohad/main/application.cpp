@@ -161,8 +161,11 @@ void Irohad::initValidators() {
  * Initializing ordering gate
  */
 void Irohad::initOrderingGate() {
-  ordering_gate = ordering_init.initOrderingGate(
-      wsv, max_proposal_size_, proposal_delay_, ordering_service_storage_);
+  ordering_gate = ordering_init.initOrderingGate(wsv,
+                                                 max_proposal_size_,
+                                                 proposal_delay_,
+                                                 ordering_service_storage_,
+                                                 storage->getBlockQuery());
   log_->info("[Init] => init ordering gate - [{}]",
              logger::logBool(ordering_gate));
 }
