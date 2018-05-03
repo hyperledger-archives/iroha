@@ -30,8 +30,8 @@ auto log_ = logger::log("MstProcessorTest");
 using namespace iroha;
 using namespace framework::test_subscriber;
 
-using testing::Return;
 using testing::_;
+using testing::Return;
 
 class TestCompleter : public Completer {
   bool operator()(const DataType transaction) const override {

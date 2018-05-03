@@ -83,8 +83,6 @@ namespace iroha {
     std::shared_ptr<PropagationStrategy> strategy_;
     std::shared_ptr<MstTimeProvider> time_provider_;
 
-    logger::Logger log_;
-
     // rx subjects
 
     /// use for share new states from other peers
