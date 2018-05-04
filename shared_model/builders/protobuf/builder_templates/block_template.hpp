@@ -121,6 +121,7 @@ namespace shared_model {
 
         auto result = Block(iroha::protocol::Block(block_));
         auto answer = stateless_validator_.validate(result);
+
         if (answer.hasErrors()) {
           throw std::invalid_argument(answer.reason());
         }

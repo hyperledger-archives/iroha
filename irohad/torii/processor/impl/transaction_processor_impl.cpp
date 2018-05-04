@@ -16,8 +16,6 @@
  */
 
 #include "torii/processor/transaction_processor_impl.hpp"
-#include <boost/range/adaptor/filtered.hpp>
-#include <boost/range/algorithm/for_each.hpp>
 
 #include "backend/protobuf/transaction.hpp"
 #include "interfaces/iroha_internal/block.hpp"

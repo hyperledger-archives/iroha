@@ -34,9 +34,9 @@ using namespace iroha::ametsuchi;
 using namespace iroha::validation;
 using namespace framework::test_subscriber;
 
-using ::testing::_;
 using ::testing::A;
 using ::testing::Return;
+using ::testing::_;
 
 class QueryProcessorTest : public ::testing::Test {
  public:

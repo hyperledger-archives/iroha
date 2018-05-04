@@ -39,8 +39,6 @@ namespace shared_model {
                                                      FieldValidator,
                                                      TransactionValidator> {
      public:
-      // TODO 05-03-2018 Alexey Chernyshov: remove polymorphic wrapper in IR-872
-
       /**
        * Applies validation on block
        * @param block

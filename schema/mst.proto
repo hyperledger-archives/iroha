@@ -4,6 +4,7 @@ package iroha.network.transport;
 import "block.proto";
 import "google/protobuf/empty.proto";
 
+// TODO: @l4l (04/05/18) remove in favor of primitive.proto IR-1321
 message Peer {
     bytes pubkey = 1;
     string address = 2;

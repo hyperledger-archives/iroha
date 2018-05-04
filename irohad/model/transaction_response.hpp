@@ -42,8 +42,8 @@ namespace iroha {
 
       virtual ~TransactionResponse() = default;
 
-      TransactionResponse(std::string tx_hash, Status stauts)
-          : tx_hash(tx_hash), current_status(stauts) {}
+      TransactionResponse(std::string tx_hash, Status status)
+          : tx_hash(tx_hash), current_status(status) {}
     };
   }  // namespace model
 }  // namespace iroha

@@ -15,13 +15,7 @@
  * limitations under the License.
  */
 
-// #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
-// #include "module/irohad/network/network_mocks.hpp"
-// #include "module/irohad/torii/torii_mocks.hpp"
-// #include "module/irohad/validation/validation_mocks.hpp"
-
 #include <boost/range/join.hpp>
-
 #include "builders/protobuf/common_objects/proto_signature_builder.hpp"
 #include "builders/protobuf/proposal.hpp"
 #include "builders/protobuf/transaction.hpp"

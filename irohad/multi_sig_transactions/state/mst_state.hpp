@@ -23,7 +23,7 @@
 #include <vector>
 #include "logger/logger.hpp"
 
-#include "model/hash.hpp"
+#include "multi_sig_transactions/hash.hpp"
 #include "multi_sig_transactions/mst_types.hpp"
 
 namespace iroha {

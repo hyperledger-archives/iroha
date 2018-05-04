@@ -18,9 +18,26 @@
 #ifndef IROHA_MST_TYPES_HPP
 #define IROHA_MST_TYPES_HPP
 
-#include "model/types.hpp"
+#include <memory>
+#include "interfaces/common_objects/peer.hpp"
+#include "interfaces/common_objects/types.hpp"
+#include "interfaces/transaction.hpp"
+#include "interfaces/transaction_responses/tx_response.hpp"
 
 namespace iroha {
+  using SharedTx = std::shared_ptr<shared_model::interface::Transaction>;
+  using ConstPeer = const shared_model::interface::Peer;
+  using TimeType = shared_model::interface::types::TimestampType;
+  using TxResponse =
+      std::shared_ptr<shared_model::interface::TransactionResponse>;
+
+  template <typename T>
+  using ConstRefT = const T &;
+
+  using ConstRefTransaction = ConstRefT<SharedTx>;
+  using ConstRefPeer = ConstRefT<shared_model::interface::Peer>;
+  using ConstRefTime = ConstRefT<TimeType>;
+
   class MstState;
 
   using ConstRefState = ConstRefT<MstState>;

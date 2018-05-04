@@ -21,7 +21,7 @@
 #include <functional>
 #include <string>
 #include "interfaces/common_objects/peer.hpp"
-#include "model/types.hpp"
+#include "multi_sig_transactions/mst_types.hpp"
 
 namespace iroha {
   namespace model {

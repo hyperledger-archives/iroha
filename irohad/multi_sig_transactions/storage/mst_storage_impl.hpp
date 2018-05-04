@@ -19,7 +19,7 @@
 #define IROHA_MST_STORAGE_IMPL_HPP
 
 #include <unordered_map>
-#include "model/hash.hpp"
+#include "multi_sig_transactions/hash.hpp"
 #include "multi_sig_transactions/storage/mst_storage.hpp"
 
 namespace iroha {
