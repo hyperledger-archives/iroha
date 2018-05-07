@@ -127,7 +127,7 @@ namespace shared_model {
       }};
 
       const Lazy<SignatureSetType<proto::Signature>> signatures_{[this] {
-          SignatureSetType<proto::Signature> sigs;
+        SignatureSetType<proto::Signature> sigs;
         for (const auto &sig : proto_->signatures()) {
           sigs.emplace(sig);
         }
