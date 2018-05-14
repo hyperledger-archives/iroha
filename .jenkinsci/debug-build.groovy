@@ -2,24 +2,26 @@
 
 def doDebugBuild(coverageEnabled=false) {
   def dPullOrBuild = load ".jenkinsci/docker-pull-or-build.groovy"
+  def pCommit = load ".jenkinsci/previous-commit.groovy"
   def parallelism = params.PARALLELISM
   def platform = sh(script: 'uname -m', returnStdout: true).trim()
+  def previousCommit = pCommit.previousCommitOrCurrent()
   // params are always null unless job is started
   // this is the case for the FIRST build only.
   // So just set this to same value as default. 
   // This is a known bug. See https://issues.jenkins-ci.org/browse/JENKINS-41929
-  if (parallelism == null) {
+  if (!parallelism) {
     parallelism = 4
   }
-  if ("arm7" in env.NODE_NAME) {
+  if (env.NODE_NAME.contains('arm7')) {
     parallelism = 1
   }
   sh "docker network create ${env.IROHA_NETWORK}"
   def iC = dPullOrBuild.dockerPullOrUpdate("${platform}-develop-build",
                                            "${env.GIT_RAW_BASE_URL}/${env.GIT_COMMIT}/docker/develop/Dockerfile",
-                                           "${env.GIT_RAW_BASE_URL}/${env.GIT_PREVIOUS_COMMIT}/docker/develop/Dockerfile",
+                                           "${env.GIT_RAW_BASE_URL}/${previousCommit}/docker/develop/Dockerfile",
                                            "${env.GIT_RAW_BASE_URL}/develop/docker/develop/Dockerfile",
-                                           ['PARALLELISM': parallelism])  
+                                           ['PARALLELISM': parallelism])
   docker.image('postgres:9.5').withRun(""
     + " -e POSTGRES_USER=${env.IROHA_POSTGRES_USER}"
     + " -e POSTGRES_PASSWORD=${env.IROHA_POSTGRES_PASSWORD}"
@@ -82,10 +84,10 @@ def doDebugBuild(coverageEnabled=false) {
               -Dsonar.github.pullRequest=${CHANGE_ID}
           """
         }
+        sh "cmake --build build --target coverage.info"
+        sh "python /tmp/lcov_cobertura.py build/reports/coverage.info -o build/reports/coverage.xml"
+        cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/build/reports/coverage.xml', conditionalCoverageTargets: '75, 50, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '75, 50, 0', maxNumberOfBuilds: 50, methodCoverageTargets: '75, 50, 0', onlyStable: false, zoomCoverageChart: false
       }
-      sh "cmake --build build --target coverage.info"
-      sh "python /tmp/lcov_cobertura.py build/reports/coverage.info -o build/reports/coverage.xml"
-      cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/build/reports/coverage.xml', conditionalCoverageTargets: '75, 50, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '75, 50, 0', maxNumberOfBuilds: 50, methodCoverageTargets: '75, 50, 0', onlyStable: false, zoomCoverageChart: false
     }
   }
 }
