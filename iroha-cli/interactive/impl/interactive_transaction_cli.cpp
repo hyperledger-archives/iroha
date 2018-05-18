@@ -19,6 +19,8 @@
 
 #include <fstream>
 #include <utility>
+
+#include "backend/protobuf/transaction.hpp"
 #include "client.hpp"
 #include "grpc_response_handler.hpp"
 #include "model/commands/append_role.hpp"
@@ -30,12 +32,14 @@
 #include "model/converters/json_common.hpp"
 #include "model/converters/json_transaction_factory.hpp"
 #include "model/converters/pb_common.hpp"
+#include "model/converters/pb_transaction_factory.hpp"
 #include "model/model_crypto_provider.hpp"  // for ModelCryptoProvider
-#include "validators/permissions.hpp"
 #include "model/sha3_hash.hpp"
 #include "parser/parser.hpp"  // for parser::ParseValue
+#include "validators/permissions.hpp"
 
 using namespace iroha::model;
+using namespace shared_model::permissions;
 
 namespace iroha_cli {
   namespace interactive {
@@ -177,13 +181,11 @@ namespace iroha_cli {
         const std::string &creator_account,
         const std::string &default_peer_ip,
         int default_port,
-        uint64_t tx_counter,
         const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
         : current_context_(MAIN),
           creator_(creator_account),
           default_peer_ip_(default_peer_ip),
           default_port_(default_port),
-          tx_counter_(tx_counter),
           provider_(provider) {
       log_ = logger::log("InteractiveTransactionCli");
       createCommandMenu();
@@ -195,8 +197,7 @@ namespace iroha_cli {
       current_context_ = MAIN;
       printMenu("Forming a new transactions, choose command to add: ",
                 commands_menu_);
-      // Creating a new transaction, increment local tx_counter
-      ++tx_counter_;
+      // Creating a new transaction
       while (is_parsing) {
         auto line = promptString("> ");
         if (not line) {
@@ -253,9 +254,7 @@ namespace iroha_cli {
       auto create_account = parser::parseValue<bool>(params[8]);
 
       if (not(read_self and edit_self and read_all and transfer_receive
-              and asset_create
-              and create_domain
-              and roles
+              and asset_create and create_domain and roles
               and create_account)) {
         std::cout << "Wrong format for permission" << std::endl;
         return nullptr;
@@ -473,17 +472,18 @@ namespace iroha_cli {
 
       // Forming a transaction
 
-      auto tx =
-          tx_generator_.generateTransaction(creator_, tx_counter_, commands_);
+      auto tx = tx_generator_.generateTransaction(creator_, commands_);
       // clear commands so that we can start creating new tx
       commands_.clear();
 
       provider_->sign(tx);
 
       GrpcResponseHandler response_handler;
-
+      auto shared_tx = shared_model::proto::Transaction(
+          iroha::model::converters::PbTransactionFactory().serialize(tx));
       response_handler.handle(
-          CliClient(address.value().first, address.value().second).sendTx(tx));
+          CliClient(address.value().first, address.value().second)
+              .sendTx(shared_tx));
 
       printTxHash(tx);
       printEnd();
@@ -502,8 +502,7 @@ namespace iroha_cli {
       }
 
       // Forming a transaction
-      auto tx =
-          tx_generator_.generateTransaction(creator_, tx_counter_, commands_);
+      auto tx = tx_generator_.generateTransaction(creator_, commands_);
 
       // clear commands so that we can start creating new tx
       commands_.clear();
