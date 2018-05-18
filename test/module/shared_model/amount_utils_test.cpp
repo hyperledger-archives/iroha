@@ -17,6 +17,7 @@
 
 #include <gtest/gtest.h>
 
+#include "builders/default_builders.hpp"
 #include "utils/amount_utils.hpp"
 
 using namespace shared_model::detail;

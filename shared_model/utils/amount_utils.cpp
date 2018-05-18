@@ -16,7 +16,11 @@
  */
 
 #include "utils/amount_utils.hpp"
+
 #include <boost/format.hpp>
+
+#include "builders/default_builders.hpp"
+#include "builders/protobuf/common_objects/proto_amount_builder.hpp"
 
 namespace shared_model {
   namespace detail {

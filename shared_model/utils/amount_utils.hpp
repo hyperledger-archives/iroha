@@ -20,11 +20,13 @@
 
 #include <boost/multiprecision/cpp_int.hpp>
 
-#include "builders/default_builders.hpp"
-#include "builders/protobuf/common_objects/proto_amount_builder.hpp"
 #include "common/result.hpp"
 
 namespace shared_model {
+  namespace interface {
+    class Amount;
+  }  // namespace interface
+
   namespace detail {
     boost::multiprecision::uint256_t increaseValuePrecision(
         boost::multiprecision::uint256_t value, int degree);
