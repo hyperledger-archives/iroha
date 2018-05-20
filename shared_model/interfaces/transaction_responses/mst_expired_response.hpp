@@ -19,14 +19,6 @@ namespace shared_model {
       std::string className() const override {
         return "MstExpiredResponse";
       }
-
-#ifndef DISABLE_BACKWARD
-      iroha::model::TransactionResponse::Status oldModelStatus()
-          const override {
-        return iroha::model::TransactionResponse::Status::MST_EXPIRED;
-      }
-
-#endif
     };
 
   }  // namespace interface
