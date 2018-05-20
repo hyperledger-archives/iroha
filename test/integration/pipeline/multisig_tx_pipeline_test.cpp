@@ -16,19 +16,16 @@
  */
 
 #include <gtest/gtest.h>
-#include "builders/protobuf/transaction.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
-#include "datetime/time.hpp"
-#include "framework/base_tx.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
-#include "interfaces/utils/specified_visitor.hpp"
+#include "integration/acceptance/acceptance_fixture.hpp"
 #include "validators/permissions.hpp"
 
 using namespace std::string_literals;
 using namespace integration_framework;
 using namespace shared_model;
 
-class MstPipelineTest : public testing::Test {
+class MstPipelineTest : public AcceptanceFixture {
  public:
   /**
    * @param tx pre-built transaction
@@ -41,29 +38,18 @@ class MstPipelineTest : public testing::Test {
   }
 
   /**
-   * Create valid base pre-built transaction
-   * @return pre-built tx
-   */
-  auto baseTx() const {
-    return proto::TransactionBuilder()
-        .createdTime(iroha::time::now())
-        .creatorAccountId(kUserId)
-        .addAssetQuantity(kUserId, kAsset, "1.0");
-  }
-
-  /**
    * Creates the transaction with the user creation commands
    * @param perms are the permissions of the user
    * @return built tx and a hash of its payload
    */
   auto makeMstUser(size_t sigs = kSignatories) {
-    auto tx = framework::createUserWithPerms(
-                  kUser,
-                  kUserKeypair.publicKey(),
-                  kNewRole,
-                  std::vector<std::string>{
-                      shared_model::permissions::can_add_asset_qty})
-                  .setAccountQuorum(kUserId, sigs + 1);
+    auto tx =
+        createUserWithPerms(kUser,
+                            kUserKeypair.publicKey(),
+                            kNewRole,
+                            std::vector<std::string>{
+                                shared_model::permissions::can_add_asset_qty})
+            .setAccountQuorum(kUserId, sigs + 1);
 
     for (size_t i = 0; i < sigs; ++i) {
       signatories.emplace_back(
@@ -74,16 +60,9 @@ class MstPipelineTest : public testing::Test {
     return tx.build().signAndAddSignature(kAdminKeypair);
   }
 
-  const std::string kUser = "user"s;
   const std::string kNewRole = "rl"s;
-  const std::string kUserId = kUser + "@test";
-  const std::string kAsset = "asset#domain";
   static const size_t kSignatories = 2;
   std::vector<crypto::Keypair> signatories;
-  const crypto::Keypair kAdminKeypair =
-      crypto::DefaultCryptoAlgorithmType::generateKeypair();
-  const crypto::Keypair kUserKeypair =
-      crypto::DefaultCryptoAlgorithmType::generateKeypair();
 };
 
 /**

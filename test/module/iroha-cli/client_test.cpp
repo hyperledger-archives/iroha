@@ -141,8 +141,7 @@ TEST_F(ClientServerTest, SendTxWhenValid) {
                         shared_model::crypto::DefaultCryptoAlgorithmType::
                             generateKeypair());
 
-  std::unique_ptr<iroha::model::Transaction> old_model(shm_tx.makeOldModel());
-  auto status = client.sendTx(*old_model);
+  auto status = client.sendTx(shm_tx);
   ASSERT_EQ(status.answer, iroha_cli::CliClient::OK);
 }
 
@@ -174,9 +173,8 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
                     .createdTime(iroha::time::now())
                     .setAccountQuorum("some@@account", 2)
                     .build();
-  std::unique_ptr<iroha::model::Transaction> old_tx(shm_tx.makeOldModel());
 
-  ASSERT_EQ(iroha_cli::CliClient(Ip, Port).sendTx(*old_tx).answer,
+  ASSERT_EQ(iroha_cli::CliClient(Ip, Port).sendTx(shm_tx).answer,
             iroha_cli::CliClient::OK);
   auto tx_hash = shm_tx.hash();
   auto res = iroha_cli::CliClient(Ip, Port).getTxStatus(
@@ -217,12 +215,11 @@ TEST_F(ClientServerTest, SendQueryWhenStatelessInvalid) {
                                          .build();
   auto proto_query = query.getTransport();
 
-  auto res = client.sendQuery(
-      std::shared_ptr<iroha::model::Query>(query.makeOldModel()));
+  auto res = client.sendQuery(query);
   ASSERT_TRUE(res.status.ok());
   ASSERT_TRUE(res.answer.has_error_response());
   ASSERT_EQ(res.answer.error_response().reason(),
-            iroha::model::ErrorResponse::STATELESS_INVALID);
+            iroha::protocol::ErrorResponse::STATELESS_INVALID);
   ASSERT_NE(res.answer.error_response().message().size(), 0);
 }
 
@@ -255,16 +252,12 @@ TEST_F(ClientServerTest, SendQueryWhenValid) {
                    .build()
                    .signAndAddSignature(pair);
 
-  auto res = client.sendQuery(
-      std::shared_ptr<iroha::model::Query>(query.makeOldModel()));
+  auto res = client.sendQuery(query);
   ASSERT_EQ(res.answer.account_detail_response().detail(), "value");
 }
 
 TEST_F(ClientServerTest, SendQueryWhenStatefulInvalid) {
   iroha_cli::CliClient client(Ip, Port);
-
-  auto account_test = iroha::model::Account();
-  account_test.account_id = "test@test";
 
   EXPECT_CALL(*wsv_query, getSignatories("admin@test"))
       .WillRepeatedly(Return(signatories));
@@ -285,8 +278,7 @@ TEST_F(ClientServerTest, SendQueryWhenStatefulInvalid) {
                    .build()
                    .signAndAddSignature(pair);
 
-  auto res = client.sendQuery(
-      std::shared_ptr<iroha::model::Query>(query.makeOldModel()));
+  auto res = client.sendQuery(query);
   ASSERT_EQ(res.answer.error_response().reason(),
             iroha::protocol::ErrorResponse::STATEFUL_INVALID);
 }

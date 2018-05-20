@@ -16,7 +16,6 @@
  */
 
 #include "framework/integration_framework/iroha_instance.hpp"
-#include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <sstream>
 #include "cryptography/keypair.hpp"
@@ -26,16 +25,18 @@ using namespace std::chrono_literals;
 
 namespace integration_framework {
 
-  IrohaInstance::IrohaInstance(bool mst_support)
-      : block_store_dir_(
-            (boost::filesystem::temp_directory_path() / "block_store")
-                .string()),
+  IrohaInstance::IrohaInstance(bool mst_support, const std::string &block_store_path)
+      : block_store_dir_(block_store_path),
         pg_conn_(getPostgreCredsOrDefault()),
         torii_port_(11501),
         internal_port_(50541),
-        proposal_delay_(5000ms),
-        vote_delay_(5000ms),
-        load_delay_(5000ms),
+        // proposal_timeout results in non-deterministic behavior due
+        // to thread scheduling and network
+        proposal_delay_(1h),
+        // not required due to solo consensus
+        vote_delay_(0ms),
+        // same as above
+        load_delay_(0ms),
         is_mst_supported_(mst_support) {}
 
   void IrohaInstance::makeGenesis(const shared_model::interface::Block &block) {

@@ -44,7 +44,7 @@ TEST(StateTest, UpdateExistingState) {
   state += makeTx(1, time);
   state += makeTx(1, time);
   ASSERT_EQ(1, state.getTransactions().size());
-  ASSERT_EQ(2, state.getTransactions().begin()->get()->signatures().size());
+  ASSERT_EQ(2, boost::size(state.getTransactions().begin()->get()->signatures()));
 }
 
 TEST(StateTest, UpdateStateWhenTransacionsSame) {
@@ -58,7 +58,7 @@ TEST(StateTest, UpdateStateWhenTransacionsSame) {
   state += makeTx(1, time, keypair);
 
   ASSERT_EQ(1, state.getTransactions().size());
-  ASSERT_EQ(1, state.getTransactions().begin()->get()->signatures().size());
+  ASSERT_EQ(1, boost::size(state.getTransactions().begin()->get()->signatures()));
 }
 
 TEST(StateTest, DifferentSignaturesUnionTest) {
@@ -117,7 +117,7 @@ TEST(StateTest, UnionStateWhenSameTransactionHaveDifferentSignatures) {
 
   state1 += state2;
   ASSERT_EQ(1, state1.getTransactions().size());
-  ASSERT_EQ(2, state1.getTransactions().begin()->get()->signatures().size());
+  ASSERT_EQ(2, boost::size(state1.getTransactions().begin()->get()->signatures()));
 }
 
 TEST(StateTest, DifferenceTest) {

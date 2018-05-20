@@ -17,6 +17,7 @@
 
 #include "multi_sig_transactions/state/mst_state.hpp"
 
+#include <boost/range/algorithm/find.hpp>
 #include <utility>
 
 #include "backend/protobuf/transaction.hpp"
@@ -60,7 +61,7 @@ namespace iroha {
                 tx1->signatures().begin(),
                 tx1->signatures().end(),
                 tx2->signatures().begin(),
-                [](auto sig1, auto sig2) { return sig1 == sig2; });
+                [](const auto &sig1, const auto &sig2) { return sig1 == sig2; });
           }
           return false;
         });
@@ -111,8 +112,8 @@ namespace iroha {
     auto &found = *corresponding;
     // Append new signatures to the existing state
     for (auto &sig : rhs_tx->signatures()) {
-      if (found->signatures().find(sig) == found->signatures().end()) {
-        found->addSignature(sig->signedData(), sig->publicKey());
+      if (boost::find(found->signatures(), sig) == boost::end(found->signatures())) {
+        found->addSignature(sig.signedData(), sig.publicKey());
       }
     }
 

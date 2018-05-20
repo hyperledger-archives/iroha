@@ -20,6 +20,7 @@
 
 #include <array>
 #include <boost/optional.hpp>
+#include <ciso646>
 #include <cstdio>
 #include <iomanip>
 #include <sstream>

@@ -35,7 +35,7 @@ using testing::Return;
 
 class TestCompleter : public Completer {
   bool operator()(const DataType transaction) const override {
-    return transaction->signatures().size() >= transaction->quorum();
+    return boost::size(transaction->signatures()) >= transaction->quorum();
   }
 
   bool operator()(const DataType &tx, const TimeType &time) const override {

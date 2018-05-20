@@ -18,6 +18,7 @@
 #ifndef IROHA_AMETSUCHI_H
 #define IROHA_AMETSUCHI_H
 
+#include <rxcpp/rx-observable.hpp>
 #include <vector>
 #include "ametsuchi/mutable_factory.hpp"
 #include "ametsuchi/temporary_factory.hpp"
@@ -61,6 +62,13 @@ namespace iroha {
       virtual bool insertBlocks(
           const std::vector<std::shared_ptr<shared_model::interface::Block>>
               &blocks) = 0;
+
+      /**
+       * method called when block is written to the storage
+       * @return observable with the Block committed
+       */
+      virtual rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
+      on_commit() = 0;
 
       /**
        * Remove all information from ledger
