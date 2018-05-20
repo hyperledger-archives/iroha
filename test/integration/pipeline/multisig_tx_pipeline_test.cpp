@@ -72,18 +72,18 @@ class MstPipelineTest : public AcceptanceFixture {
  * @then firstly there's no commit then it is
  */
 TEST_F(MstPipelineTest, OnePeerSendsTest) {
-  const size_t kProposalSize = 10;
-  auto tx = baseTx().quorum(kSignatories + 1);
+  auto tx =
+      baseTx().setAccountQuorum(kUserId, kSignatories).quorum(kSignatories + 1);
+  auto user_tx = makeMstUser();
 
-  IntegrationTestFramework itf(kProposalSize, [](auto &i) { i.done(); }, true);
-  itf.setInitialState(kAdminKeypair)
-      .sendTx(makeMstUser())
-      .skipProposal()
+  IntegrationTestFramework(1, [](auto &i) { i.done(); }, true)
+      .setInitialState(kAdminKeypair)
+      .sendTx(user_tx)
       .skipBlock()
-      .sendTx(signTx(tx, kUserKeypair));
-  ASSERT_ANY_THROW(itf.skipProposal());
-  itf.sendTx(signTx(tx, signatories.at(0)))
+      .sendTx(signTx(tx, kUserKeypair))
+      // TODO(@l4l) 21/05/18 IR-1339
+      // tx should be checked for MST_AWAIT status
+      .sendTx(signTx(tx, signatories.at(0)))
       .sendTx(signTx(tx, signatories.at(1)))
-      .skipProposal()
       .skipBlock();
 }
