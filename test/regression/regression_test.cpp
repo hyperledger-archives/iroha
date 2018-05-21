@@ -36,6 +36,7 @@ TEST(RegressionTest, SequentialInitialization) {
                 .createdTime(iroha::time::now())
                 .creatorAccountId(kUser)
                 .addAssetQuantity(kUser, kAsset, "1.0")
+                .quorum(1)
                 .build()
                 .signAndAddSignature(
                     shared_model::crypto::DefaultCryptoAlgorithmType::
