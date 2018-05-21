@@ -52,6 +52,7 @@ inline rapidjson::Document parse_iroha_config(const std::string &conf_path) {
   rapidjson::IStreamWrapper isw(ifs_iroha);
   const std::string kStrType = "string";
   const std::string kUintType = "uint";
+  const std::string kBoolType = "bool";
   doc.ParseStream(isw);
   ac::assert_fatal(
       not doc.HasParseError(),
@@ -100,7 +101,7 @@ inline rapidjson::Document parse_iroha_config(const std::string &conf_path) {
   ac::assert_fatal(doc.HasMember(mbr::MstSupport),
                    ac::no_member_error(mbr::MstSupport));
   ac::assert_fatal(doc[mbr::MstSupport].IsBool(),
-                   ac::type_error(mbr::MstSupport, kUintType));
+                   ac::type_error(mbr::MstSupport, kBoolType));
   return doc;
 }
 

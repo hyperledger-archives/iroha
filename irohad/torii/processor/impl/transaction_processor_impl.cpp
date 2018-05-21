@@ -101,6 +101,7 @@ namespace iroha {
       });
       mst_processor_->onExpiredTransactions().subscribe([this](auto &&tx) {
         log_->info("MST tx expired");
+        std::lock_guard<std::mutex> lock(notifier_mutex_);
         this->notifier_.get_subscriber().on_next(
             shared_model::builder::DefaultTransactionStatusBuilder()
                 .mstExpired()
