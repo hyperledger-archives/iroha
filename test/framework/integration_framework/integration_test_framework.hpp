@@ -28,6 +28,7 @@
 #include <vector>
 
 #include <tbb/concurrent_queue.h>
+#include <boost/filesystem.hpp>
 #include "framework/integration_framework/iroha_instance.hpp"
 #include "framework/integration_framework/test_irohad.hpp"
 #include "logger/logger.hpp"
@@ -63,12 +64,16 @@ namespace integration_framework {
      * receives pointer to constructed instance of Integration Test Framework.
      * If specified, then will be called instead of default destructor's code
      * @param mst_support enables multisignature tx support
+     * @param block_store_path specifies path where blocks will be stored
      */
     explicit IntegrationTestFramework(
         size_t maximum_proposal_size,
         std::function<void(IntegrationTestFramework &)> deleter =
             [](IntegrationTestFramework &itf) { itf.done(); },
-        bool mst_support = false);
+        bool mst_support = false,
+        const std::string &block_store_path =
+        (boost::filesystem::temp_directory_path()
+            / boost::filesystem::unique_path()).string());
 
     ~IntegrationTestFramework();
 
@@ -102,6 +107,14 @@ namespace integration_framework {
     IntegrationTestFramework &setInitialState(
         const shared_model::crypto::Keypair &keypair,
         const shared_model::interface::Block &block);
+
+    /**
+     * Initialize Iroha instance using the data left in block store from
+     * previous launch of Iroha
+     * @param keypair - signing key used for initialization of previous instance
+     */
+    IntegrationTestFramework &recoverState(
+        const shared_model::crypto::Keypair &keypair);
 
     /**
      * Send transaction to Iroha and validate its status
@@ -213,6 +226,9 @@ namespace integration_framework {
     tbb::concurrent_queue<ProposalType> proposal_queue_;
     tbb::concurrent_queue<BlockType> block_queue_;
     std::shared_ptr<IrohaInstance> iroha_instance_;
+
+    void initPipeline(const shared_model::crypto::Keypair &keypair);
+    void subscribeQueuesAndRun();
 
     // config area
 
