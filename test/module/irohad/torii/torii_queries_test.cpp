@@ -34,9 +34,6 @@ limitations under the License.
 #include "utils/query_error_response_visitor.hpp"
 #include "validators/permissions.hpp"
 
-constexpr const char *Ip = "0.0.0.0";
-constexpr int Port = 50051;
-
 constexpr size_t TimesFind = 1;
 
 using ::testing::_;
@@ -49,11 +46,10 @@ using namespace iroha::torii;
 
 using wTransaction = std::shared_ptr<shared_model::interface::Transaction>;
 
-// TODO: allow dynamic port binding in ServerRunner IR-741
 class ToriiQueriesTest : public testing::Test {
  public:
   virtual void SetUp() {
-    runner = new ServerRunner(std::string(Ip) + ":" + std::to_string(Port));
+    runner = std::make_unique<ServerRunner>(ip + ":0");
     wsv_query = std::make_shared<MockWsvQuery>();
     block_query = std::make_shared<MockBlockQuery>();
     storage = std::make_shared<MockStorage>();
@@ -66,16 +62,20 @@ class ToriiQueriesTest : public testing::Test {
     EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_query));
 
     //----------- Server run ----------------
-    runner->append(std::make_unique<torii::QueryService>(qpi)).run();
+    runner->append(std::make_unique<torii::QueryService>(qpi))
+        .run()
+        .match(
+            [this](iroha::expected::Value<int> port) {
+              this->port = port.value;
+            },
+            [](iroha::expected::Error<std::string> err) {
+              FAIL() << err.error;
+            });
 
     runner->waitForServersReady();
   }
 
-  virtual void TearDown() {
-    delete runner;
-  }
-
-  ServerRunner *runner;
+  std::unique_ptr<ServerRunner> runner;
   shared_model::crypto::Keypair pair =
       shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair();
   std::vector<shared_model::interface::types::PubkeyType> signatories = {
@@ -84,6 +84,9 @@ class ToriiQueriesTest : public testing::Test {
   std::shared_ptr<MockWsvQuery> wsv_query;
   std::shared_ptr<MockBlockQuery> block_query;
   std::shared_ptr<MockStorage> storage;
+
+  const std::string ip = "127.0.0.1";
+  int port;
 };
 
 /**
@@ -99,7 +102,7 @@ TEST_F(ToriiQueriesTest, QueryClient) {
                    .build()
                    .signAndAddSignature(pair);
 
-  auto client1 = torii_utils::QuerySyncClient(Ip, Port);
+  auto client1 = torii_utils::QuerySyncClient(ip, port);
   // Copy ctor
   torii_utils::QuerySyncClient client2(client1);
   // copy assignment
@@ -124,7 +127,7 @@ TEST_F(ToriiQueriesTest, FindWhenResponseInvalid) {
                    .build()
                    .signAndAddSignature(pair);
 
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(query.getTransport(),
+  auto stat = torii_utils::QuerySyncClient(ip, port).Find(query.getTransport(),
                                                           response);
   auto resp = shared_model::proto::QueryResponse(response);
   ASSERT_TRUE(stat.ok());
@@ -168,7 +171,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenNoGrantPermissions) {
                          .build()
                          .signAndAddSignature(pair);
 
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
+  auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
 
   ASSERT_TRUE(stat.ok());
@@ -215,7 +218,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasReadPermissions) {
                          .build()
                          .signAndAddSignature(pair);
 
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
+  auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
   auto resp = shared_model::proto::QueryResponse(response);
 
@@ -256,7 +259,7 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasRolePermission) {
                          .build()
                          .signAndAddSignature(pair);
 
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
+  auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
   auto resp = shared_model::proto::QueryResponse(response);
   ASSERT_TRUE(stat.ok());
@@ -302,7 +305,7 @@ TEST_F(ToriiQueriesTest, FindAccountAssetWhenNoGrantPermissions) {
                          .build()
                          .signAndAddSignature(pair);
 
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
+  auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
   auto resp = shared_model::proto::QueryResponse(response);
   ASSERT_TRUE(stat.ok());
@@ -357,7 +360,7 @@ TEST_F(ToriiQueriesTest, FindAccountAssetWhenHasRolePermissions) {
                          .build()
                          .signAndAddSignature(pair);
 
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
+  auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
 
   auto hash = response.query_hash();
@@ -410,7 +413,7 @@ TEST_F(ToriiQueriesTest, FindSignatoriesWhenNoGrantPermissions) {
                          .build()
                          .signAndAddSignature(pair);
 
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
+  auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
   ASSERT_TRUE(stat.ok());
   // Must be invalid due to failed stateful validation caused by no permission
@@ -451,7 +454,7 @@ TEST_F(ToriiQueriesTest, FindSignatoriesHasRolePermissions) {
                          .build()
                          .signAndAddSignature(pair);
 
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
+  auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
   auto shared_response = shared_model::proto::QueryResponse(response);
   auto resp_pubkey = *boost::get<shared_model::detail::PolymorphicWrapper<
@@ -508,7 +511,7 @@ TEST_F(ToriiQueriesTest, FindTransactionsWhenValid) {
                          .build()
                          .signAndAddSignature(pair);
 
-  auto stat = torii_utils::QuerySyncClient(Ip, Port).Find(
+  auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
   ASSERT_TRUE(stat.ok());
   // Should not return Error Response because tx is stateless and stateful valid
@@ -525,7 +528,7 @@ TEST_F(ToriiQueriesTest, FindTransactionsWhenValid) {
 }
 
 TEST_F(ToriiQueriesTest, FindManyTimesWhereQueryServiceSync) {
-  auto client = torii_utils::QuerySyncClient(Ip, Port);
+  auto client = torii_utils::QuerySyncClient(ip, port);
 
   for (size_t i = 0; i < TimesFind; ++i) {
     iroha::protocol::QueryResponse response;
