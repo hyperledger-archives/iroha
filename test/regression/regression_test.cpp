@@ -55,15 +55,17 @@ TEST(RegressionTest, SequentialInitialization) {
   auto checkBlock = [](auto &block) {
     ASSERT_EQ(block->transactions().size(), 0);
   };
+
+  const std::string dbname = "dbseqinit";
   {
-    integration_framework::IntegrationTestFramework(1, [](auto &) {})
+    integration_framework::IntegrationTestFramework(1, dbname, [](auto &) {})
         .setInitialState(kAdminKeypair)
         .sendTx(tx, checkStatelessValid)
         .skipProposal()
         .skipBlock();
   }
   {
-    integration_framework::IntegrationTestFramework(1)
+    integration_framework::IntegrationTestFramework(1, dbname)
         .setInitialState(kAdminKeypair)
         .sendTx(tx, checkStatelessValid)
         .checkProposal(checkProposal)
@@ -114,9 +116,10 @@ TEST(RegressionTest, StateRecovery) {
   auto path =
       (boost::filesystem::temp_directory_path() / "iroha-state-recovery-test")
           .string();
+  const std::string dbname = "dbstatereq";
   {
     integration_framework::IntegrationTestFramework(
-        1, [](auto &) {}, false, path)
+        1, dbname, [](auto &) {}, false, path)
         .setInitialState(kAdminKeypair)
         .sendTx(tx)
         .checkProposal(checkOne)
@@ -125,7 +128,7 @@ TEST(RegressionTest, StateRecovery) {
   }
   {
     integration_framework::IntegrationTestFramework(
-        1, [](auto &itf) { itf.done(); }, false, path)
+        1, dbname, [](auto &itf) { itf.done(); }, false, path)
         .recoverState(kAdminKeypair)
         .sendQuery(makeQuery(2, kAdminKeypair), checkQuery)
         .done();
@@ -150,5 +153,5 @@ TEST(RegressionTest, DoubleCallOfDone) {
  */
 TEST(RegressionTest, DestructionOfNonInitializedItf) {
   integration_framework::IntegrationTestFramework itf(
-      1, [](auto &itf) { itf.done(); });
+      1, {}, [](auto &itf) { itf.done(); });
 }
