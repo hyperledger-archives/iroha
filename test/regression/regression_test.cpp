@@ -41,7 +41,8 @@ TEST(RegressionTest, SequentialInitialization) {
                 .build()
                 .signAndAddSignature(
                     shared_model::crypto::DefaultCryptoAlgorithmType::
-                        generateKeypair());
+                        generateKeypair())
+                .finish();
 
   auto checkStatelessValid = [](auto &status) {
     ASSERT_NO_THROW(boost::apply_visitor(
@@ -91,7 +92,8 @@ TEST(RegressionTest, StateRecovery) {
                     "admin@test", "user@test", "coin#test", "descrs", "97.8")
                 .quorum(1)
                 .build()
-                .signAndAddSignature(kAdminKeypair);
+                .signAndAddSignature(kAdminKeypair)
+                .finish();
   auto hash = tx.hash();
   auto makeQuery = [&hash](int query_counter, auto kAdminKeypair) {
     return shared_model::proto::QueryBuilder()
@@ -100,7 +102,8 @@ TEST(RegressionTest, StateRecovery) {
         .queryCounter(query_counter)
         .getTransactions(std::vector<shared_model::crypto::Hash>{hash})
         .build()
-        .signAndAddSignature(kAdminKeypair);
+        .signAndAddSignature(kAdminKeypair)
+        .finish();
   };
   auto checkOne = [](auto &res) { ASSERT_EQ(res->transactions().size(), 1); };
   auto checkQuery = [&tx](auto &status) {

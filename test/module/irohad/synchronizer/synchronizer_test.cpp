@@ -83,7 +83,8 @@ class SynchronizerTest : public ::testing::Test {
                      .build()
                      .signAndAddSignature(
                          shared_model::crypto::DefaultCryptoAlgorithmType::
-                             generateKeypair());
+                             generateKeypair())
+                     .finish();
     return std::make_shared<shared_model::proto::Block>(std::move(block));
   }
 

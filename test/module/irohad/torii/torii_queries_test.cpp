@@ -101,7 +101,8 @@ TEST_F(ToriiQueriesTest, QueryClient) {
                    .creatorAccountId("accountA")
                    .getAccount("accountB")
                    .build()
-                   .signAndAddSignature(pair);
+                   .signAndAddSignature(pair)
+                   .finish();
 
   auto client1 = torii_utils::QuerySyncClient(ip, port);
   // Copy ctor
@@ -126,7 +127,8 @@ TEST_F(ToriiQueriesTest, FindWhenResponseInvalid) {
                    .creatorAccountId("accountA")
                    .getAccount("accountB")
                    .build()
-                   .signAndAddSignature(pair);
+                   .signAndAddSignature(pair)
+                   .finish();
 
   auto stat = torii_utils::QuerySyncClient(ip, port).Find(query.getTransport(),
                                                           response);
@@ -170,7 +172,8 @@ TEST_F(ToriiQueriesTest, FindAccountWhenNoGrantPermissions) {
                          .createdTime(iroha::time::now())
                          .getAccount(account.accountId())
                          .build()
-                         .signAndAddSignature(pair);
+                         .signAndAddSignature(pair)
+                         .finish();
 
   auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
@@ -217,7 +220,8 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasReadPermissions) {
                          .createdTime(iroha::time::now())
                          .getAccount(accountB->accountId())
                          .build()
-                         .signAndAddSignature(pair);
+                         .signAndAddSignature(pair)
+                         .finish();
 
   auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
@@ -262,7 +266,8 @@ TEST_F(ToriiQueriesTest, FindAccountWhenHasRolePermission) {
                          .createdTime(iroha::time::now())
                          .getAccount(creator)
                          .build()
-                         .signAndAddSignature(pair);
+                         .signAndAddSignature(pair)
+                         .finish();
 
   auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
@@ -312,7 +317,8 @@ TEST_F(ToriiQueriesTest, FindAccountAssetWhenNoGrantPermissions) {
                          .createdTime(iroha::time::now())
                          .getAccountAssets(accountb_id, "usd#domain")
                          .build()
-                         .signAndAddSignature(pair);
+                         .signAndAddSignature(pair)
+                         .finish();
 
   auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
@@ -367,7 +373,8 @@ TEST_F(ToriiQueriesTest, FindAccountAssetWhenHasRolePermissions) {
                          .createdTime(iroha::time::now())
                          .getAccountAssets(creator, "usd#domain")
                          .build()
-                         .signAndAddSignature(pair);
+                         .signAndAddSignature(pair)
+                         .finish();
 
   auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
@@ -425,7 +432,8 @@ TEST_F(ToriiQueriesTest, FindSignatoriesWhenNoGrantPermissions) {
                          .createdTime(iroha::time::now())
                          .getSignatories("b@domain")
                          .build()
-                         .signAndAddSignature(pair);
+                         .signAndAddSignature(pair)
+                         .finish();
 
   auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
@@ -466,7 +474,8 @@ TEST_F(ToriiQueriesTest, FindSignatoriesHasRolePermissions) {
                          .createdTime(iroha::time::now())
                          .getSignatories(creator)
                          .build()
-                         .signAndAddSignature(pair);
+                         .signAndAddSignature(pair)
+                         .finish();
 
   auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);
@@ -527,7 +536,8 @@ TEST_F(ToriiQueriesTest, FindTransactionsWhenValid) {
                          .createdTime(iroha::time::now())
                          .getAccountTransactions(creator)
                          .build()
-                         .signAndAddSignature(pair);
+                         .signAndAddSignature(pair)
+                         .finish();
 
   auto stat = torii_utils::QuerySyncClient(ip, port).Find(
       model_query.getTransport(), response);

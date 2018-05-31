@@ -88,7 +88,8 @@ namespace integration_framework {
             .createAsset(kAssetName, kDefaultDomain, 1)
             .quorum(1)
             .build()
-            .signAndAddSignature(key);
+            .signAndAddSignature(key)
+            .finish();
     auto genesis_block =
         shared_model::proto::BlockBuilder()
             .transactions(
@@ -97,7 +98,8 @@ namespace integration_framework {
             .prevHash(DefaultHashProvider::makeHash(Blob("")))
             .createdTime(iroha::time::now())
             .build()
-            .signAndAddSignature(key);
+            .signAndAddSignature(key)
+            .finish();
     return genesis_block;
   }
 
