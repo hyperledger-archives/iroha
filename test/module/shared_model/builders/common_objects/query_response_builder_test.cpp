@@ -19,6 +19,7 @@
 
 #include "datetime/time.hpp"
 
+#include "builders/default_builders.hpp"
 #include "builders/protobuf/builder_templates/query_response_template.hpp"
 #include "builders/protobuf/common_objects/proto_account_builder.hpp"
 #include "builders/protobuf/common_objects/proto_amount_builder.hpp"
@@ -55,15 +56,18 @@ TEST(QueryResponseBuilderTest, AccountAssetResponse) {
   shared_model::proto::TemplateQueryResponseBuilder<> builder;
   shared_model::proto::QueryResponse query_response =
       builder.queryHash(query_hash)
-          .accountAssetResponse(asset_id, account_id, proto_amount)
+          .accountAssetResponse({shared_model::proto::AccountAssetBuilder()
+                                     .accountId(account_id)
+                                     .assetId(asset_id)
+                                     .balance(proto_amount)
+                                     .build()})
           .build();
-
   ASSERT_NO_THROW({
     const auto &tmp = boost::apply_visitor(
         framework::SpecifiedVisitor<
             shared_model::interface::AccountAssetResponse>(),
         query_response.get());
-    const auto &asset_response = tmp.accountAsset();
+    const auto &asset_response = tmp.accountAssets()[0];
 
     ASSERT_EQ(asset_response.assetId(), asset_id);
     ASSERT_EQ(asset_response.accountId(), account_id);
