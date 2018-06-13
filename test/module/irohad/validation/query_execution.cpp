@@ -25,6 +25,8 @@
 #include "builders/protobuf/common_objects/proto_account_builder.hpp"
 #include "builders/protobuf/common_objects/proto_amount_builder.hpp"
 #include "builders/protobuf/common_objects/proto_asset_builder.hpp"
+#include "builders/protobuf/queries.hpp"
+#include "builders/query_responses/block_query_response_builder.hpp"
 #include "execution/query_execution.hpp"
 #include "framework/specified_visitor.hpp"
 #include "framework/test_subscriber.hpp"
@@ -71,7 +73,6 @@ class QueryValidateExecuteTest : public ::testing::Test {
                         .quorum(1)
                         .build());
   }
-
   std::shared_ptr<shared_model::interface::QueryResponse> validateAndExecute(
       const shared_model::interface::Query &query) {
     return factory->validateAndExecute(query);
@@ -149,10 +150,9 @@ TEST_F(GetAccountTest, MyAccountValidCase) {
   EXPECT_CALL(*wsv_query, getAccount(admin_id)).WillOnce(Return(creator));
   auto response = validateAndExecute(query);
   ASSERT_NO_THROW({
-    const auto &cast_resp =
-        boost::apply_visitor(framework::SpecifiedVisitor<
-                                 shared_model::interface::AccountResponse>(),
-                             response->get());
+    const auto &cast_resp = boost::apply_visitor(
+        framework::SpecifiedVisitor<shared_model::interface::AccountResponse>(),
+        response->get());
     ASSERT_EQ(cast_resp.account().accountId(), admin_id);
   });
 }
@@ -179,10 +179,9 @@ TEST_F(GetAccountTest, AllAccountValidCase) {
       .WillOnce(Return(admin_roles));
   auto response = validateAndExecute(query);
   ASSERT_NO_THROW({
-    const auto &cast_resp =
-        boost::apply_visitor(framework::SpecifiedVisitor<
-                                 shared_model::interface::AccountResponse>(),
-                             response->get());
+    const auto &cast_resp = boost::apply_visitor(
+        framework::SpecifiedVisitor<shared_model::interface::AccountResponse>(),
+        response->get());
     ASSERT_EQ(cast_resp.account().accountId(), account_id);
   });
 }
@@ -209,10 +208,9 @@ TEST_F(GetAccountTest, DomainAccountValidCase) {
       .WillOnce(Return(admin_roles));
   auto response = validateAndExecute(query);
   ASSERT_NO_THROW({
-    const auto &cast_resp =
-        boost::apply_visitor(framework::SpecifiedVisitor<
-                                 shared_model::interface::AccountResponse>(),
-                             response->get());
+    const auto &cast_resp = boost::apply_visitor(
+        framework::SpecifiedVisitor<shared_model::interface::AccountResponse>(),
+        response->get());
     ASSERT_EQ(cast_resp.account().accountId(), account_id);
   });
 }
@@ -244,10 +242,9 @@ TEST_F(GetAccountTest, GrantAccountValidCase) {
       .WillOnce(Return(admin_roles));
   auto response = validateAndExecute(query);
   ASSERT_NO_THROW({
-    const auto &cast_resp =
-        boost::apply_visitor(framework::SpecifiedVisitor<
-                                 shared_model::interface::AccountResponse>(),
-                             response->get());
+    const auto &cast_resp = boost::apply_visitor(
+        framework::SpecifiedVisitor<shared_model::interface::AccountResponse>(),
+        response->get());
     ASSERT_EQ(cast_resp.account().accountId(), account_id);
   });
 }
@@ -1290,10 +1287,9 @@ TEST_F(GetAssetInfoTest, MyAccountValidCase) {
 
   auto response = validateAndExecute(query);
   ASSERT_NO_THROW({
-    const auto &cast_resp =
-        boost::apply_visitor(framework::SpecifiedVisitor<
-                                 shared_model::interface::AssetResponse>(),
-                             response->get());
+    const auto &cast_resp = boost::apply_visitor(
+        framework::SpecifiedVisitor<shared_model::interface::AssetResponse>(),
+        response->get());
 
     ASSERT_EQ(cast_resp.asset().assetId(), asset_id);
   });
@@ -1376,10 +1372,9 @@ TEST_F(GetRolesTest, ValidCase) {
 
   auto response = validateAndExecute(query);
   ASSERT_NO_THROW({
-    const auto &cast_resp =
-        boost::apply_visitor(framework::SpecifiedVisitor<
-                                 shared_model::interface::RolesResponse>(),
-                             response->get());
+    const auto &cast_resp = boost::apply_visitor(
+        framework::SpecifiedVisitor<shared_model::interface::RolesResponse>(),
+        response->get());
 
     ASSERT_EQ(cast_resp.roles().size(), roles.size());
 
