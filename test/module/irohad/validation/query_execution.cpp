@@ -1432,10 +1432,11 @@ class GetRolePermissionsTest : public QueryValidateExecuteTest {
   void SetUp() override {
     QueryValidateExecuteTest::SetUp();
     role_permissions = {can_get_roles};
-    perms = {can_get_my_account, can_get_my_signatories};
+    perms = {shared_model::interface::permissions::Role::kGetMyAccount,
+             shared_model::interface::permissions::Role::kGetMySignatories};
   }
   std::string role_id = "user";
-  std::vector<std::string> perms;
+  shared_model::interface::RolePermissionSet perms;
 };
 
 /**
@@ -1453,7 +1454,8 @@ TEST_F(GetRolePermissionsTest, ValidCase) {
       .WillOnce(Return(admin_roles));
   EXPECT_CALL(*wsv_query, getRolePermissions(admin_role))
       .WillOnce(Return(role_permissions));
-  EXPECT_CALL(*wsv_query, getRolePermissions(role_id)).WillOnce(Return(perms));
+  EXPECT_CALL(*wsv_query, getRolePermissions(role_id))
+      .WillOnce(Return(shared_model::proto::permissions::toString(perms)));
 
   auto response = validateAndExecute(query);
   ASSERT_NO_THROW({
@@ -1464,7 +1466,7 @@ TEST_F(GetRolePermissionsTest, ValidCase) {
 
     ASSERT_EQ(cast_resp.rolePermissions().size(), perms.size());
     for (size_t i = 0; i < perms.size(); ++i) {
-      ASSERT_EQ(cast_resp.rolePermissions().at(i), perms.at(i));
+      ASSERT_EQ(cast_resp.rolePermissions(), perms);
     }
   });
 }

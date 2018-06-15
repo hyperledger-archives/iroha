@@ -20,6 +20,7 @@
 
 #include "interfaces/base/model_primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
+#include "interfaces/permissions.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -29,16 +30,16 @@ namespace shared_model {
     class RolePermissionsResponse
         : public ModelPrimitive<RolePermissionsResponse> {
      public:
-      /// type of role permissions collection
-      using PermissionNameCollectionType =
-          std::vector<types::PermissionNameType>;
-
       /**
        * @return role permissions
        */
-      virtual const PermissionNameCollectionType &rolePermissions() const = 0;
+      virtual const RolePermissionSet &rolePermissions() const = 0;
 
-      std::string toString() const override;
+      /**
+       * Stringify the data.
+       * @return string representation of data.
+       */
+      std::string toString() const override = 0;
 
       bool operator==(const ModelType &rhs) const override;
     };

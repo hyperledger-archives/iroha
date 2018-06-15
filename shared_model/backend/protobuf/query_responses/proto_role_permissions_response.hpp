@@ -37,7 +37,9 @@ namespace shared_model {
 
       RolePermissionsResponse(RolePermissionsResponse &&o);
 
-      const PermissionNameCollectionType &rolePermissions() const override;
+      const interface::RolePermissionSet &rolePermissions() const override;
+
+      std::string toString() const override;
 
      private:
       template <typename T>
@@ -45,7 +47,7 @@ namespace shared_model {
 
       const iroha::protocol::RolePermissionsResponse &rolePermissionsResponse_;
 
-      const Lazy<PermissionNameCollectionType> rolePermissions_;
+      const Lazy<interface::RolePermissionSet> rolePermissions_;
     };
   }  // namespace proto
 }  // namespace shared_model

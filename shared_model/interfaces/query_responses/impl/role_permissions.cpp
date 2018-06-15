@@ -9,13 +9,6 @@
 namespace shared_model {
   namespace interface {
 
-    std::string RolePermissionsResponse::toString() const {
-      return detail::PrettyStringBuilder()
-          .init("RolePermissionsResponse")
-          .appendAll(rolePermissions(), [](auto perm) { return perm; })
-          .finalize();
-    }
-
     bool RolePermissionsResponse::operator==(const ModelType &rhs) const {
       return rolePermissions() == rhs.rolePermissions();
     }

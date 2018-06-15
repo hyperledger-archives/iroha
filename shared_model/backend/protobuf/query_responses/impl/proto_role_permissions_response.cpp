@@ -5,6 +5,9 @@
 
 #include "backend/protobuf/query_responses/proto_role_permissions_response.hpp"
 #include <boost/range/numeric.hpp>
+#include "backend/protobuf/from_old.hpp"
+#include "backend/protobuf/permissions.hpp"
+#include "utils/string_builder.hpp"
 
 namespace shared_model {
   namespace proto {
@@ -17,10 +20,10 @@ namespace shared_model {
           rolePermissions_{[this] {
             return boost::accumulate(
                 rolePermissionsResponse_.permissions(),
-                PermissionNameCollectionType{},
+                interface::RolePermissionSet{},
                 [](auto &&permissions, const auto &permission) {
-                  permissions.emplace_back(permission);
-                  return std::move(permissions);
+                  permissions.set(interface::permissions::fromOldR(permission));
+                  return std::forward<decltype(permissions)>(permissions);
                 });
           }} {}
 
@@ -39,9 +42,17 @@ namespace shared_model {
         RolePermissionsResponse &&o)
         : RolePermissionsResponse(std::move(o.proto_)) {}
 
-    const RolePermissionsResponse::PermissionNameCollectionType &
+    const interface::RolePermissionSet &
     RolePermissionsResponse::rolePermissions() const {
       return *rolePermissions_;
+    }
+
+    std::string RolePermissionsResponse::toString() const {
+      return detail::PrettyStringBuilder()
+          .init("RolePermissionsResponse")
+          .appendAll(permissions::toString(rolePermissions()),
+                     [](auto p) { return p; })
+          .finalize();
     }
 
   }  // namespace proto
