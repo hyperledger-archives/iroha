@@ -59,6 +59,8 @@ class QueryProcessorTest : public ::testing::Test {
 
   std::vector<shared_model::interface::types::PubkeyType> signatories = {
       keypair.publicKey()};
+  shared_model::interface::RolePermissionSet perms;
+  std::vector<std::string> roles;
 };
 
 /**
@@ -88,9 +90,8 @@ TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
       shared_model::proto::AccountBuilder().accountId(account_id).build());
 
   auto role = "admin";
-  std::vector<std::string> roles = {role};
-  std::vector<std::string> perms = {
-      shared_model::permissions::can_get_my_account};
+  roles = {role};
+  perms = {shared_model::interface::permissions::Role::kGetMyAccount};
 
   EXPECT_CALL(*storage, getWsvQuery()).WillRepeatedly(Return(wsv_queries));
   EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_queries));
@@ -142,9 +143,8 @@ TEST_F(QueryProcessorTest, QueryProcessorWithWrongKey) {
   std::shared_ptr<shared_model::interface::Account> shared_account = clone(
       shared_model::proto::AccountBuilder().accountId(account_id).build());
   auto role = "admin";
-  std::vector<std::string> roles = {role};
-  std::vector<std::string> perms = {
-      shared_model::permissions::can_get_my_account};
+  roles = {role};
+  perms = {shared_model::interface::permissions::Role::kGetMyAccount};
 
   EXPECT_CALL(*storage, getWsvQuery()).WillRepeatedly(Return(wsv_queries));
   EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_queries));
@@ -166,7 +166,8 @@ TEST_F(QueryProcessorTest, QueryProcessorWithWrongKey) {
 /**
  * @given account, ametsuchi queries and query processing factory
  * @when valid block query is send
- * @then Query Processor should start emitting BlockQueryRespones to the observable
+ * @then Query Processor should start emitting BlockQueryRespones to the
+ * observable
  */
 TEST_F(QueryProcessorTest, GetBlocksQuery) {
   auto wsv_queries = std::make_shared<MockWsvQuery>();
@@ -191,9 +192,8 @@ TEST_F(QueryProcessorTest, GetBlocksQuery) {
 
   auto role = "admin";
   std::vector<std::string> roles = {role};
-  std::vector<std::string> perms = {
-      shared_model::permissions::can_get_my_account,
-      shared_model::permissions::can_get_blocks};
+  perms = {shared_model::interface::permissions::Role::kGetMyAccount,
+           shared_model::interface::permissions::Role::kGetBlocks};
   EXPECT_CALL(*storage, getWsvQuery()).WillRepeatedly(Return(wsv_queries));
   EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_queries));
   EXPECT_CALL(*wsv_queries, getAccountRoles(account_id))
@@ -251,8 +251,7 @@ TEST_F(QueryProcessorTest, GetBlocksQueryNoPerms) {
 
   auto role = "admin";
   std::vector<std::string> roles = {role};
-  std::vector<std::string> perms = {
-      shared_model::permissions::can_get_my_account};
+  perms = {shared_model::interface::permissions::Role::kGetMyAccount};
   EXPECT_CALL(*storage, getWsvQuery()).WillRepeatedly(Return(wsv_queries));
   EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_queries));
   EXPECT_CALL(*wsv_queries, getAccountRoles(account_id))
