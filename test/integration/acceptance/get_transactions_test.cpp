@@ -8,10 +8,9 @@
 #include "builders/protobuf/queries.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
+#include "framework/specified_visitor.hpp"
 #include "integration/acceptance/acceptance_fixture.hpp"
-#include "interfaces/utils/specified_visitor.hpp"
 #include "utils/query_error_response_visitor.hpp"
-#include "validators/permissions.hpp"
 
 using namespace integration_framework;
 using namespace shared_model;
@@ -23,10 +22,10 @@ class GetTransactions : public AcceptanceFixture {
    * @param perms are the permissions of the user
    * @return built tx and a hash of its payload
    */
-  auto makeUserWithPerms(const std::vector<std::string> &perms = {
-                             shared_model::permissions::can_get_my_txs}) {
+  auto makeUserWithPerms(const interface::RolePermissionSet &perms = {
+                             interface::permissions::Role::kGetMyTxs}) {
     auto new_perms = perms;
-    new_perms.push_back(shared_model::permissions::can_set_quorum);
+    new_perms.set(interface::permissions::Role::kSetQuorum);
     return AcceptanceFixture::makeUserWithPerms(kNewRole, new_perms);
   }
 
@@ -66,12 +65,14 @@ TEST_F(GetTransactions, HaveNoGetPerms) {
   };
 
   auto dummy_tx = dummyTx();
-  IntegrationTestFramework(2)
+  IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
-      .sendTx(makeUserWithPerms({shared_model::permissions::can_read_assets}))
+      .sendTx(makeUserWithPerms({interface::permissions::Role::kReadAssets}))
+      .skipProposal()
+      .skipBlock()
       .sendTx(dummy_tx)
       .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 2); })
+          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); })
       .sendQuery(makeQuery(dummy_tx.hash()), check)
       .done();
 }
@@ -84,20 +85,23 @@ TEST_F(GetTransactions, HaveNoGetPerms) {
 TEST_F(GetTransactions, HaveGetAllTx) {
   auto dummy_tx = dummyTx();
   auto check = [&dummy_tx](auto &status) {
-    auto resp = boost::apply_visitor(
-        interface::SpecifiedVisitor<interface::TransactionsResponse>(),
-        status.get());
-    ASSERT_TRUE(resp);
-    ASSERT_EQ(resp.value()->transactions().size(), 1);
-    ASSERT_EQ(*resp.value()->transactions()[0].operator->(), dummy_tx);
+    ASSERT_NO_THROW({
+      const auto &resp = boost::apply_visitor(
+          framework::SpecifiedVisitor<interface::TransactionsResponse>(),
+          status.get());
+      ASSERT_EQ(resp.transactions().size(), 1);
+      ASSERT_EQ(resp.transactions().front(), dummy_tx);
+    });
   };
 
-  IntegrationTestFramework(2)
+  IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
-      .sendTx(makeUserWithPerms({shared_model::permissions::can_get_all_txs}))
+      .sendTx(makeUserWithPerms({interface::permissions::Role::kGetAllTxs}))
+      .skipProposal()
+      .skipBlock()
       .sendTx(dummy_tx)
       .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 2); })
+          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); })
       .sendQuery(makeQuery(dummy_tx.hash()), check)
       .done();
 }
@@ -110,20 +114,23 @@ TEST_F(GetTransactions, HaveGetAllTx) {
 TEST_F(GetTransactions, HaveGetMyTx) {
   auto dummy_tx = dummyTx();
   auto check = [&dummy_tx](auto &status) {
-    auto resp = boost::apply_visitor(
-        interface::SpecifiedVisitor<interface::TransactionsResponse>(),
-        status.get());
-    ASSERT_TRUE(resp);
-    ASSERT_EQ(resp.value()->transactions().size(), 1);
-    ASSERT_EQ(*resp.value()->transactions()[0].operator->(), dummy_tx);
+    ASSERT_NO_THROW({
+      const auto &resp = boost::apply_visitor(
+          framework::SpecifiedVisitor<interface::TransactionsResponse>(),
+          status.get());
+      ASSERT_EQ(resp.transactions().size(), 1);
+      ASSERT_EQ(resp.transactions().front(), dummy_tx);
+    });
   };
 
-  IntegrationTestFramework(2)
+  IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms())
+      .skipProposal()
+      .skipBlock()
       .sendTx(dummy_tx)
       .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 2); })
+          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); })
       .sendQuery(makeQuery(dummy_tx.hash()), check)
       .done();
 }
@@ -137,10 +144,10 @@ TEST_F(GetTransactions, HaveGetMyTx) {
 TEST_F(GetTransactions, InvalidSignatures) {
   auto dummy_tx = dummyTx();
   auto check = [](auto &status) {
-    auto resp = boost::get<shared_model::detail::PolymorphicWrapper<
-        interface::ErrorQueryResponse>>(status.get());
-    ASSERT_NO_THROW(boost::get<shared_model::detail::PolymorphicWrapper<
-                        interface::StatefulFailedErrorResponse>>(resp->get()));
+    ASSERT_TRUE(boost::apply_visitor(
+        shared_model::interface::QueryErrorResponseChecker<
+            shared_model::interface::StatefulFailedErrorResponse>(),
+        status.get()));
   };
 
   auto query = baseQry()
@@ -148,7 +155,8 @@ TEST_F(GetTransactions, InvalidSignatures) {
                    .getTransactions(std::vector<crypto::Hash>{dummy_tx.hash()})
                    .build()
                    .signAndAddSignature(
-                       crypto::DefaultCryptoAlgorithmType::generateKeypair());
+                       crypto::DefaultCryptoAlgorithmType::generateKeypair())
+                   .finish();
 
   IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
@@ -165,11 +173,12 @@ TEST_F(GetTransactions, InvalidSignatures) {
  */
 TEST_F(GetTransactions, NonexistentHash) {
   auto check = [](auto &status) {
-    auto resp = boost::apply_visitor(
-        interface::SpecifiedVisitor<interface::TransactionsResponse>(),
-        status.get());
-    ASSERT_TRUE(resp);
-    ASSERT_EQ(resp.value()->transactions().size(), 0);
+    ASSERT_NO_THROW({
+      const auto &resp = boost::apply_visitor(
+          framework::SpecifiedVisitor<interface::TransactionsResponse>(),
+          status.get());
+      ASSERT_EQ(resp.transactions().size(), 0);
+    });
   };
 
   IntegrationTestFramework(1)
@@ -177,7 +186,9 @@ TEST_F(GetTransactions, NonexistentHash) {
       .sendTx(makeUserWithPerms())
       .checkBlock(
           [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); })
-      .sendQuery(makeQuery(crypto::Hash(std::string(32, '0'))), check)
+      .sendQuery(makeQuery(crypto::Hash(std::string(
+                     crypto::DefaultCryptoAlgorithmType::kHashLength, '0'))),
+                 check)
       .done();
 }
 
@@ -188,11 +199,12 @@ TEST_F(GetTransactions, NonexistentHash) {
  */
 TEST_F(GetTransactions, OtherUserTx) {
   auto check = [](auto &status) {
-    auto resp = boost::apply_visitor(
-        interface::SpecifiedVisitor<interface::TransactionsResponse>(),
-        status.get());
-    ASSERT_TRUE(resp);
-    ASSERT_EQ(resp.value()->transactions().size(), 0);
+    ASSERT_NO_THROW({
+      const auto &resp = boost::apply_visitor(
+          framework::SpecifiedVisitor<interface::TransactionsResponse>(),
+          status.get());
+      ASSERT_EQ(resp.transactions().size(), 0);
+    });
   };
 
   auto tx = makeUserWithPerms();

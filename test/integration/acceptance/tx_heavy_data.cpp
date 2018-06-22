@@ -8,9 +8,8 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include "framework/integration_framework/integration_test_framework.hpp"
+#include "framework/specified_visitor.hpp"
 #include "integration/acceptance/acceptance_fixture.hpp"
-#include "interfaces/utils/specified_visitor.hpp"
-#include "validators/permissions.hpp"
 
 using namespace integration_framework;
 using namespace shared_model;
@@ -22,10 +21,8 @@ class HeavyTransactionTest : public AcceptanceFixture {
    * @param perms are the permissions of the user
    * @return built tx and a hash of its payload
    */
-  auto makeUserWithPerms(
-      const std::vector<std::string> &perms = {
-          shared_model::permissions::role_perm_group.begin(),
-          shared_model::permissions::role_perm_group.end()}) {
+  auto makeUserWithPerms(const interface::RolePermissionSet &perms = {
+                             interface::permissions::Role::kSetDetail}) {
     return AcceptanceFixture::makeUserWithPerms(perms);
   }
 
@@ -122,19 +119,21 @@ TEST_F(HeavyTransactionTest, DISABLED_QueryLargeData) {
   auto name_generator = [](auto val) { return "foo_" + std::to_string(val); };
 
   auto query_checker = [&](auto &status) {
-    auto response = *boost::apply_visitor(
-        interface::SpecifiedVisitor<interface::AccountResponse>(),
-        status.get());
+    ASSERT_NO_THROW({
+      auto &&response = boost::apply_visitor(
+          framework::SpecifiedVisitor<const interface::AccountResponse &>(),
+          status.get());
 
-    boost::property_tree::ptree root;
-    boost::property_tree::read_json(response->account().jsonData(), root);
-    auto user = root.get_child(kUserId);
+      boost::property_tree::ptree root;
+      boost::property_tree::read_json(response.account().jsonData(), root);
+      auto user = root.get_child(kUserId);
 
-    ASSERT_EQ(number_of_times, user.size());
+      ASSERT_EQ(number_of_times, user.size());
 
-    for (auto i = 0u; i < number_of_times; ++i) {
-      ASSERT_EQ(data, user.get<std::string>(name_generator(i)));
-    }
+      for (auto i = 0u; i < number_of_times; ++i) {
+        ASSERT_EQ(data, user.get<std::string>(name_generator(i)));
+      }
+    });
   };
 
   IntegrationTestFramework itf(1);

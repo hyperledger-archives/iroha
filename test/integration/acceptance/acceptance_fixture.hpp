@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include "cryptography/keypair.hpp"
+#include "interfaces/permissions.hpp"
 #include "module/shared_model/builders/protobuf/test_query_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
@@ -49,7 +50,7 @@ class AcceptanceFixture : public ::testing::Test {
       const std::string &user,
       const shared_model::crypto::PublicKey &key,
       const std::string &role_id,
-      std::vector<std::string> perms);
+      const shared_model::interface::RolePermissionSet &perms);
 
   /**
    * Creates the transaction with the user creation commands
@@ -58,7 +59,8 @@ class AcceptanceFixture : public ::testing::Test {
    * @return built tx and a hash of its payload
    */
   shared_model::proto::Transaction makeUserWithPerms(
-      const std::string &role_name, const std::vector<std::string> &perms);
+      const std::string &role_name,
+      const shared_model::interface::RolePermissionSet &perms);
 
   /**
    * Creates the transaction with the user creation commands
@@ -66,7 +68,7 @@ class AcceptanceFixture : public ::testing::Test {
    * @return built tx and a hash of its payload
    */
   shared_model::proto::Transaction makeUserWithPerms(
-      const std::vector<std::string> &perms);
+      const shared_model::interface::RolePermissionSet &perms);
 
   /**
    * Add default user creator account id and current created time to builder
@@ -96,9 +98,15 @@ class AcceptanceFixture : public ::testing::Test {
    * @return built object
    */
   template <typename Builder>
-  auto complete(Builder builder)
-      -> decltype(builder.build().signAndAddSignature(
-          std::declval<shared_model::crypto::Keypair>()));
+  auto complete(Builder builder) -> decltype(
+      builder.build()
+          .signAndAddSignature(std::declval<shared_model::crypto::Keypair>())
+          .finish());
+
+  /**
+   * @return unique time for this fixture
+   */
+  iroha::time::time_t getUniqueTime();
 
   const std::string kUser;
   const std::string kRole;
@@ -110,6 +118,11 @@ class AcceptanceFixture : public ::testing::Test {
 
   const std::function<void(const shared_model::proto::TransactionResponse &)>
       checkStatelessInvalid;
+
+ private:
+  iroha::time::time_t initial_time;
+  /// number of created transactions, used to provide unique time
+  int tx_counter;
 };
 
 #endif  // IROHA_ACCEPTANCE_FIXTURE_HPP

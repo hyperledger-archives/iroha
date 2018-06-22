@@ -9,7 +9,6 @@
 #include "framework/integration_framework/integration_test_framework.hpp"
 #include "integration/acceptance/acceptance_fixture.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
-#include "validators/permissions.hpp"
 
 using namespace integration_framework;
 using namespace shared_model;
@@ -21,9 +20,9 @@ class SubtractAssetQuantity : public AcceptanceFixture {
    * @param perms are the permissions of the user
    * @return built tx and a hash of its payload
    */
-  auto makeUserWithPerms(const std::vector<std::string> &perms = {
-                             shared_model::permissions::can_subtract_asset_qty,
-                             shared_model::permissions::can_add_asset_qty}) {
+  auto makeUserWithPerms(const interface::RolePermissionSet &perms = {
+                             interface::permissions::Role::kSubtractAssetQty,
+                             interface::permissions::Role::kAddAssetQty}) {
     return AcceptanceFixture::makeUserWithPerms(perms);
   }
 
@@ -89,7 +88,7 @@ TEST_F(SubtractAssetQuantity, Overdraft) {
 TEST_F(SubtractAssetQuantity, NoPermissions) {
   IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
-      .sendTx(makeUserWithPerms({shared_model::permissions::can_add_asset_qty}))
+      .sendTx(makeUserWithPerms({interface::permissions::Role::kAddAssetQty}))
       .skipProposal()
       .skipBlock()
       .sendTx(replenish())
@@ -110,9 +109,11 @@ TEST_F(SubtractAssetQuantity, NoPermissions) {
  *       (aka skipProposal throws)
  */
 TEST_F(SubtractAssetQuantity, NegativeAmount) {
-  IntegrationTestFramework(2)
+  IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms())
+      .skipProposal()
+      .skipBlock()
       .sendTx(replenish())
       .skipProposal()
       .skipBlock()
@@ -127,9 +128,11 @@ TEST_F(SubtractAssetQuantity, NegativeAmount) {
  *       (aka skipProposal throws)
  */
 TEST_F(SubtractAssetQuantity, ZeroAmount) {
-  IntegrationTestFramework(2)
+  IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms())
+      .skipProposal()
+      .skipBlock()
       .sendTx(replenish())
       .skipProposal()
       .skipBlock()

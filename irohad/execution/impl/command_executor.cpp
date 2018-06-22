@@ -19,12 +19,15 @@
 
 #include "execution/command_executor.hpp"
 
+#include "backend/protobuf/permissions.hpp"
 #include "execution/common_executor.hpp"
 #include "interfaces/commands/command.hpp"
 #include "utils/amount_utils.hpp"
 #include "validators/permissions.hpp"
 
 using namespace shared_model::detail;
+using namespace shared_model::interface::permissions;
+using namespace shared_model::proto::permissions;
 
 namespace iroha {
 
@@ -55,34 +58,33 @@ namespace iroha {
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::AddAssetQuantity> &command) {
+      const shared_model::interface::AddAssetQuantity &command) {
     std::string command_name = "AddAssetQuantity";
-    auto asset = queries->getAsset(command->assetId());
+    auto asset = queries->getAsset(command.assetId());
     if (not asset) {
       return makeExecutionError(
-          (boost::format("asset %s is absent") % command->assetId()).str(),
+          (boost::format("asset %s is absent") % command.assetId()).str(),
           command_name);
     }
 
     auto precision = asset.value()->precision();
-    if (command->amount().precision() > precision) {
+    if (command.amount().precision() > precision) {
       return makeExecutionError(
           (boost::format("command precision is greater than asset precision: "
                          "expected %d, but got %d")
-           % precision % command->amount().precision())
+           % precision % command.amount().precision())
               .str(),
           command_name);
     }
     auto command_amount =
-        makeAmountWithPrecision(command->amount(), asset.value()->precision());
-    if (not queries->getAccount(command->accountId())) {
+        makeAmountWithPrecision(command.amount(), asset.value()->precision());
+    if (not queries->getAccount(command.accountId())) {
       return makeExecutionError(
-          (boost::format("account %s is absent") % command->accountId()).str(),
+          (boost::format("account %s is absent") % command.accountId()).str(),
           command_name);
     }
     auto account_asset =
-        queries->getAccountAsset(command->accountId(), command->assetId());
+        queries->getAccountAsset(command.accountId(), command.assetId());
 
     auto new_balance = command_amount | [this](const auto &amount) {
       return amount_builder_.precision(amount->precision())
@@ -104,14 +106,14 @@ namespace iroha {
             result = (*new_balance_val.value + account_asset.value()->balance())
                 | [this, &command](const auto &balance) {
                     return account_asset_builder_.balance(*balance)
-                        .accountId(command->accountId())
-                        .assetId(command->assetId())
+                        .accountId(command.accountId())
+                        .assetId(command.assetId())
                         .build();
                   };
           } else {
             result = account_asset_builder_.balance(*new_balance_val.value)
-                         .accountId(command->accountId())
-                         .assetId(command->assetId())
+                         .accountId(command.accountId())
+                         .assetId(command.assetId())
                          .build();
           }
           return result.match(
@@ -145,38 +147,33 @@ namespace iroha {
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::AddPeer> &command) {
-    return makeExecutionResult(commands->insertPeer(command->peer()),
-                               "AddPeer");
+      const shared_model::interface::AddPeer &command) {
+    return makeExecutionResult(commands->insertPeer(command.peer()), "AddPeer");
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::AddSignatory> &command) {
-    auto result = commands->insertSignatory(command->pubkey()) | [&] {
-      return commands->insertAccountSignatory(command->accountId(),
-                                              command->pubkey());
+      const shared_model::interface::AddSignatory &command) {
+    auto result = commands->insertSignatory(command.pubkey()) | [&] {
+      return commands->insertAccountSignatory(command.accountId(),
+                                              command.pubkey());
     };
     return makeExecutionResult(result, "AddSignatory");
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::AppendRole> &command) {
+      const shared_model::interface::AppendRole &command) {
     return makeExecutionResult(
-        commands->insertAccountRole(command->accountId(), command->roleName()),
+        commands->insertAccountRole(command.accountId(), command.roleName()),
         "AppendRole");
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::CreateAccount> &command) {
+      const shared_model::interface::CreateAccount &command) {
     std::string command_name = "CreateAccount";
     auto account =
         account_builder_
-            .accountId(command->accountName() + "@" + command->domainId())
-            .domainId(command->domainId())
+            .accountId(command.accountName() + "@" + command.domainId())
+            .domainId(command.domainId())
             .quorum(1)
             .jsonData("{}")
             .build();
@@ -184,20 +181,20 @@ namespace iroha {
         [&](const expected::Value<
             std::shared_ptr<shared_model::interface::Account>> &account_val)
             -> ExecutionResult {
-          auto domain = queries->getDomain(command->domainId());
+          auto domain = queries->getDomain(command.domainId());
           if (not domain) {
             return makeExecutionError(
-                (boost::format("Domain %s not found") % command->domainId())
+                (boost::format("Domain %s not found") % command.domainId())
                     .str(),
                 command_name);
           }
           std::string domain_default_role = domain.value()->defaultRole();
           // Account must have unique initial pubkey
-          auto result = commands->insertSignatory(command->pubkey()) | [&] {
+          auto result = commands->insertSignatory(command.pubkey()) | [&] {
             return commands->insertAccount(*account_val.value);
           } | [&] {
             return commands->insertAccountSignatory(
-                (*account_val.value).accountId(), command->pubkey());
+                (*account_val.value).accountId(), command.pubkey());
           } | [&] {
             return commands->insertAccountRole((*account_val.value).accountId(),
                                                domain_default_role);
@@ -211,13 +208,12 @@ namespace iroha {
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::CreateAsset> &command) {
+      const shared_model::interface::CreateAsset &command) {
     std::string command_name = "CreateAsset";
     auto new_asset =
-        asset_builder_.assetId(command->assetName() + "#" + command->domainId())
-            .domainId(command->domainId())
-            .precision(command->precision())
+        asset_builder_.assetId(command.assetName() + "#" + command.domainId())
+            .domainId(command.domainId())
+            .precision(command.precision())
             .build();
     return new_asset.match(
         [&](const expected::Value<
@@ -234,11 +230,10 @@ namespace iroha {
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::CreateDomain> &command) {
+      const shared_model::interface::CreateDomain &command) {
     std::string command_name = "CreateDomain";
-    auto new_domain = domain_builder_.domainId(command->domainId())
-                          .defaultRole(command->userDefaultRole())
+    auto new_domain = domain_builder_.domainId(command.domainId())
+                          .defaultRole(command.userDefaultRole())
                           .build();
     return new_domain.match(
         [&](const expected::Value<
@@ -255,59 +250,51 @@ namespace iroha {
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::CreateRole> &command) {
+      const shared_model::interface::CreateRole &command) {
     std::string command_name = "CreateRole";
-    auto result = commands->insertRole(command->roleName()) | [&] {
-      return commands->insertRolePermissions(command->roleName(),
-                                             command->rolePermissions());
+    auto result = commands->insertRole(command.roleName()) | [&] {
+      return commands->insertRolePermissions(command.roleName(),
+                                             command.rolePermissions());
     };
     return makeExecutionResult(result, command_name);
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::DetachRole> &command) {
+      const shared_model::interface::DetachRole &command) {
     return makeExecutionResult(
-        commands->deleteAccountRole(command->accountId(), command->roleName()),
+        commands->deleteAccountRole(command.accountId(), command.roleName()),
         "DetachRole");
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::GrantPermission> &command) {
+      const shared_model::interface::GrantPermission &command) {
     return makeExecutionResult(
-        commands->insertAccountGrantablePermission(command->accountId(),
-                                                   creator_account_id,
-                                                   command->permissionName()),
+        commands->insertAccountGrantablePermission(
+            command.accountId(), creator_account_id, command.permissionName()),
         "GrantPermission");
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::RemoveSignatory> &command) {
+      const shared_model::interface::RemoveSignatory &command) {
     std::string command_name = "RemoveSignatory";
 
     // Delete will fail if account signatory doesn't exist
-    auto result = commands->deleteAccountSignatory(command->accountId(),
-                                                   command->pubkey())
-        | [&] { return commands->deleteSignatory(command->pubkey()); };
+    auto result =
+        commands->deleteAccountSignatory(command.accountId(), command.pubkey())
+        | [&] { return commands->deleteSignatory(command.pubkey()); };
     return makeExecutionResult(result, command_name);
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::RevokePermission> &command) {
+      const shared_model::interface::RevokePermission &command) {
     return makeExecutionResult(
-        commands->deleteAccountGrantablePermission(command->accountId(),
-                                                   creator_account_id,
-                                                   command->permissionName()),
+        commands->deleteAccountGrantablePermission(
+            command.accountId(), creator_account_id, command.permissionName()),
         "RevokePermission");
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::SetAccountDetail> &command) {
+      const shared_model::interface::SetAccountDetail &command) {
     auto creator = creator_account_id;
     if (creator_account_id.empty()) {
       // When creator is not known, it is genesis block
@@ -315,25 +302,24 @@ namespace iroha {
     }
     return makeExecutionResult(
         commands->setAccountKV(
-            command->accountId(), creator, command->key(), command->value()),
+            command.accountId(), creator, command.key(), command.value()),
         "SetAccountDetail");
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::SetQuorum> &command) {
+      const shared_model::interface::SetQuorum &command) {
     std::string command_name = "SetQuorum";
 
-    auto account = queries->getAccount(command->accountId());
+    auto account = queries->getAccount(command.accountId());
     if (not account) {
       return makeExecutionError(
-          (boost::format("absent account %s") % command->accountId()).str(),
+          (boost::format("absent account %s") % command.accountId()).str(),
           command_name);
     }
     auto account_new = account_builder_.domainId(account.value()->domainId())
                            .accountId(account.value()->accountId())
                            .jsonData(account.value()->jsonData())
-                           .quorum(command->newQuorum())
+                           .quorum(command.newQuorum())
                            .build();
 
     return account_new.match(
@@ -350,31 +336,30 @@ namespace iroha {
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::SubtractAssetQuantity> &command) {
+      const shared_model::interface::SubtractAssetQuantity &command) {
     std::string command_name = "SubtractAssetQuantity";
-    auto asset = queries->getAsset(command->assetId());
+    auto asset = queries->getAsset(command.assetId());
     if (not asset) {
       return makeExecutionError(
-          (boost::format("asset %s is absent") % command->assetId()).str(),
+          (boost::format("asset %s is absent") % command.assetId()).str(),
           command_name);
     }
     auto precision = asset.value()->precision();
-    if (command->amount().precision() > precision) {
+    if (command.amount().precision() > precision) {
       return makeExecutionError(
           (boost::format("command precision is greater than asset precision: "
                          "expected %d, but got %d")
-           % precision % command->amount().precision())
+           % precision % command.amount().precision())
               .str(),
           command_name);
     }
     auto command_amount =
-        makeAmountWithPrecision(command->amount(), asset.value()->precision());
+        makeAmountWithPrecision(command.amount(), asset.value()->precision());
     auto account_asset =
-        queries->getAccountAsset(command->accountId(), command->assetId());
+        queries->getAccountAsset(command.accountId(), command.assetId());
     if (not account_asset) {
       return makeExecutionError((boost::format("%s do not have %s")
-                                 % command->accountId() % command->assetId())
+                                 % command.accountId() % command.assetId())
                                     .str(),
                                 command_name);
     }
@@ -405,39 +390,37 @@ namespace iroha {
   }
 
   ExecutionResult CommandExecutor::operator()(
-      const shared_model::detail::PolymorphicWrapper<
-          shared_model::interface::TransferAsset> &command) {
+      const shared_model::interface::TransferAsset &command) {
     std::string command_name = "TransferAsset";
 
     auto src_account_asset =
-        queries->getAccountAsset(command->srcAccountId(), command->assetId());
+        queries->getAccountAsset(command.srcAccountId(), command.assetId());
     if (not src_account_asset) {
       return makeExecutionError((boost::format("asset %s is absent of %s")
-                                 % command->assetId() % command->srcAccountId())
+                                 % command.assetId() % command.srcAccountId())
                                     .str(),
                                 command_name);
     }
     auto dest_account_asset =
-        queries->getAccountAsset(command->destAccountId(), command->assetId());
-    auto asset = queries->getAsset(command->assetId());
+        queries->getAccountAsset(command.destAccountId(), command.assetId());
+    auto asset = queries->getAsset(command.assetId());
     if (not asset) {
-      return makeExecutionError(
-          (boost::format("asset %s is absent of %s") % command->assetId()
-           % command->destAccountId())
-              .str(),
-          command_name);
+      return makeExecutionError((boost::format("asset %s is absent of %s")
+                                 % command.assetId() % command.destAccountId())
+                                    .str(),
+                                command_name);
     }
     auto precision = asset.value()->precision();
-    if (command->amount().precision() > precision) {
+    if (command.amount().precision() > precision) {
       return makeExecutionError(
           (boost::format("command precision is greater than asset precision: "
                          "expected %d, but got %d")
-           % precision % command->amount().precision())
+           % precision % command.amount().precision())
               .str(),
           command_name);
     }
     auto command_amount =
-        makeAmountWithPrecision(command->amount(), asset.value()->precision());
+        makeAmountWithPrecision(command.amount(), asset.value()->precision());
     // Set new balance for source account
     auto src_account_asset_new = command_amount |
         [&src_account_asset](const auto &amount) {
@@ -450,54 +433,48 @@ namespace iroha {
                 .balance(*new_src_balance)
                 .build();
           };
-    return src_account_asset_new.match(
-        [&](const expected::Value<
-            std::shared_ptr<shared_model::interface::AccountAsset>>
-                &src_account_asset_new_val) -> ExecutionResult {
-          expected::PolymorphicResult<shared_model::interface::AccountAsset,
-                                      std::string>
-              dest_account_asset_new;
-          if (not dest_account_asset) {
-            // This assert is new for this account - create new AccountAsset
-            dest_account_asset_new =
-                account_asset_builder_.assetId(command->assetId())
-                    .accountId(command->destAccountId())
-                    .balance(command->amount())
-                    .build();
 
-          } else {
-            dest_account_asset_new =
-                (dest_account_asset.value()->balance() + command->amount()) |
-                [this, &command](const auto &new_dest_balance) {
-                  return account_asset_builder_.assetId(command->assetId())
-                      .accountId(command->destAccountId())
-                      .balance(*new_dest_balance)
-                      .build();
-                };
-          }
-          return dest_account_asset_new.match(
-              [&](const expected::Value<
-                  std::shared_ptr<shared_model::interface::AccountAsset>>
-                      &dest_account_asset_new_val) -> ExecutionResult {
-                auto result = commands->upsertAccountAsset(
-                                  *dest_account_asset_new_val.value)
-                    | [&] {
-                        return commands->upsertAccountAsset(
-                            *src_account_asset_new_val.value);
-                      };
-                return makeExecutionResult(result, command_name);
-              },
-              [&command_name](const auto &error) -> ExecutionResult {
-                return makeExecutionError(
-                    "account asset builder failed. reason " + *error.error,
-                    command_name);
-              });
-        },
-        [&command_name](const auto &error) -> ExecutionResult {
-          return makeExecutionError(
-              "account asset builder failed. reason " + *error.error,
-              command_name);
-        });
+    auto dest_account_asset_new = command_amount | [&](const auto &amount) {
+      const auto kZero = boost::get<
+          expected::Value<std::shared_ptr<shared_model::interface::Amount>>>(
+          amount_builder_.precision(asset.value()->precision())
+              .intValue(0)
+              .build());
+      auto new_amount =
+          (dest_account_asset | [](const auto &ast)
+               -> boost::optional<const shared_model::interface::Amount &> {
+            return {ast->balance()};
+          })
+              .get_value_or(*kZero.value)
+          + *amount;
+      return new_amount | [this, &command](const auto &new_dest_balance) {
+        return account_asset_builder_.assetId(command.assetId())
+            .accountId(command.destAccountId())
+            .balance(*new_dest_balance)
+            .build();
+      };
+    };
+
+    auto map_error = [&command_name](const auto &t) {
+      return expected::map_error<ExecutionError>(
+          t, [&command_name](const auto &error) -> ExecutionError {
+            return {"account asset builder failed. reason " + *error,
+                    command_name};
+          });
+    };
+
+    return (map_error(src_account_asset_new) |
+                [&](std::shared_ptr<shared_model::interface::AccountAsset>
+                        src_amount) -> ExecutionResult {
+      return map_error(dest_account_asset_new) |
+                 [&](std::shared_ptr<shared_model::interface::AccountAsset>
+                         dst_amount) -> ExecutionResult {
+        return makeExecutionResult(
+            commands->upsertAccountAsset(*src_amount) |
+                [&] { return commands->upsertAccountAsset(*dst_amount); },
+            command_name);
+      };
+    });
   }
 
   // ----------------------| Validator |----------------------
@@ -522,9 +499,7 @@ namespace iroha {
     // any asset
     return creator_account_id == command.accountId()
         and checkAccountRolePermission(
-                creator_account_id,
-                queries,
-                shared_model::permissions::can_add_asset_qty);
+                creator_account_id, queries, Role::kAddAssetQty);
   }
 
   bool CommandValidator::hasPermissions(
@@ -532,7 +507,7 @@ namespace iroha {
       ametsuchi::WsvQuery &queries,
       const shared_model::interface::types::AccountIdType &creator_account_id) {
     return checkAccountRolePermission(
-        creator_account_id, queries, shared_model::permissions::can_add_peer);
+        creator_account_id, queries, Role::kAddPeer);
   }
 
   bool CommandValidator::hasPermissions(
@@ -544,15 +519,12 @@ namespace iroha {
         // account and he has permission CanAddSignatory
         (command.accountId() == creator_account_id
          and checkAccountRolePermission(
-                 creator_account_id,
-                 queries,
-                 shared_model::permissions::can_add_signatory))
+                 creator_account_id, queries, Role::kAddSignatory))
         or
         // Case 2. Creator has granted permission for it
-        (queries.hasAccountGrantablePermission(
-            creator_account_id,
-            command.accountId(),
-            shared_model::permissions::can_add_my_signatory));
+        (queries.hasAccountGrantablePermission(creator_account_id,
+                                               command.accountId(),
+                                               Grantable::kAddMySignatory));
   }
 
   bool CommandValidator::hasPermissions(
@@ -560,9 +532,7 @@ namespace iroha {
       ametsuchi::WsvQuery &queries,
       const shared_model::interface::types::AccountIdType &creator_account_id) {
     return checkAccountRolePermission(
-        creator_account_id,
-        queries,
-        shared_model::permissions::can_append_role);
+        creator_account_id, queries, Role::kAppendRole);
   }
 
   bool CommandValidator::hasPermissions(
@@ -570,9 +540,7 @@ namespace iroha {
       ametsuchi::WsvQuery &queries,
       const shared_model::interface::types::AccountIdType &creator_account_id) {
     return checkAccountRolePermission(
-        creator_account_id,
-        queries,
-        shared_model::permissions::can_create_account);
+        creator_account_id, queries, Role::kCreateAccount);
   }
 
   bool CommandValidator::hasPermissions(
@@ -580,9 +548,7 @@ namespace iroha {
       ametsuchi::WsvQuery &queries,
       const shared_model::interface::types::AccountIdType &creator_account_id) {
     return checkAccountRolePermission(
-        creator_account_id,
-        queries,
-        shared_model::permissions::can_create_asset);
+        creator_account_id, queries, Role::kCreateAsset);
   }
 
   bool CommandValidator::hasPermissions(
@@ -590,9 +556,7 @@ namespace iroha {
       ametsuchi::WsvQuery &queries,
       const shared_model::interface::types::AccountIdType &creator_account_id) {
     return checkAccountRolePermission(
-        creator_account_id,
-        queries,
-        shared_model::permissions::can_create_domain);
+        creator_account_id, queries, Role::kCreateDomain);
   }
 
   bool CommandValidator::hasPermissions(
@@ -600,9 +564,7 @@ namespace iroha {
       ametsuchi::WsvQuery &queries,
       const shared_model::interface::types::AccountIdType &creator_account_id) {
     return checkAccountRolePermission(
-        creator_account_id,
-        queries,
-        shared_model::permissions::can_create_role);
+        creator_account_id, queries, Role::kCreateRole);
   }
 
   bool CommandValidator::hasPermissions(
@@ -610,9 +572,7 @@ namespace iroha {
       ametsuchi::WsvQuery &queries,
       const shared_model::interface::types::AccountIdType &creator_account_id) {
     return checkAccountRolePermission(
-        creator_account_id,
-        queries,
-        shared_model::permissions::can_detach_role);
+        creator_account_id, queries, Role::kDetachRole);
   }
 
   bool CommandValidator::hasPermissions(
@@ -622,7 +582,8 @@ namespace iroha {
     return checkAccountRolePermission(
         creator_account_id,
         queries,
-        shared_model::permissions::can_grant + command.permissionName());
+        shared_model::interface::permissions::permissionFor(
+            command.permissionName()));
   }
 
   bool CommandValidator::hasPermissions(
@@ -634,14 +595,12 @@ namespace iroha {
         // permission on it
         (creator_account_id == command.accountId()
          and checkAccountRolePermission(
-                 creator_account_id,
-                 queries,
-                 shared_model::permissions::can_remove_signatory))
+                 creator_account_id, queries, Role::kRemoveSignatory))
         // 2. Creator has granted permission on removal
         or (queries.hasAccountGrantablePermission(
                creator_account_id,
                command.accountId(),
-               shared_model::permissions::can_remove_my_signatory));
+               Grantable::kRemoveMySignatory));
   }
 
   bool CommandValidator::hasPermissions(
@@ -658,12 +617,14 @@ namespace iroha {
       const shared_model::interface::types::AccountIdType &creator_account_id) {
     return
         // Case 1. Creator set details for his account
-        creator_account_id == command.accountId() or
+        creator_account_id == command.accountId()
+        or checkAccountRolePermission(
+               creator_account_id, queries, Role::kSetDetail)
+        or
         // Case 2. Creator has grantable permission to set account key/value
-        queries.hasAccountGrantablePermission(
-            creator_account_id,
-            command.accountId(),
-            shared_model::permissions::can_set_my_account_detail);
+        queries.hasAccountGrantablePermission(creator_account_id,
+                                              command.accountId(),
+                                              Grantable::kSetMyAccountDetail);
   }
 
   bool CommandValidator::hasPermissions(
@@ -674,14 +635,11 @@ namespace iroha {
         // 1. Creator set quorum for his account -> must have permission
         (creator_account_id == command.accountId()
          and checkAccountRolePermission(
-                 creator_account_id,
-                 queries,
-                 shared_model::permissions::can_set_quorum))
+                 creator_account_id, queries, Role::kSetQuorum))
         // 2. Creator has granted permission on it
-        or (queries.hasAccountGrantablePermission(
-               creator_account_id,
-               command.accountId(),
-               shared_model::permissions::can_set_my_quorum));
+        or (queries.hasAccountGrantablePermission(creator_account_id,
+                                                  command.accountId(),
+                                                  Grantable::kSetMyQuorum));
   }
 
   bool CommandValidator::hasPermissions(
@@ -690,9 +648,7 @@ namespace iroha {
       const shared_model::interface::types::AccountIdType &creator_account_id) {
     return creator_account_id == command.accountId()
         and checkAccountRolePermission(
-                creator_account_id,
-                queries,
-                shared_model::permissions::can_subtract_asset_qty);
+                creator_account_id, queries, Role::kSubtractAssetQty);
   }
 
   bool CommandValidator::hasPermissions(
@@ -705,18 +661,15 @@ namespace iroha {
                 and queries.hasAccountGrantablePermission(
                         creator_account_id,
                         command.srcAccountId(),
-                        shared_model::permissions::can_transfer_my_assets))
+                        Grantable::kTransferMyAssets))
                or
                // 2. Creator transfer from their account
                (creator_account_id == command.srcAccountId()
                 and checkAccountRolePermission(
-                        creator_account_id,
-                        queries,
-                        shared_model::permissions::can_transfer)))
+                        creator_account_id, queries, Role::kTransfer)))
         // For both cases, dest_account must have can_receive
-        and checkAccountRolePermission(command.destAccountId(),
-                                       queries,
-                                       shared_model::permissions::can_receive);
+        and checkAccountRolePermission(
+                command.destAccountId(), queries, Role::kReceive);
   }
 
   bool CommandValidator::isValid(
@@ -751,21 +704,15 @@ namespace iroha {
       return false;
     }
 
-    std::set<std::string> account_permissions;
+    shared_model::interface::RolePermissionSet account_permissions{};
     for (const auto &role : *account_roles) {
       auto permissions = queries.getRolePermissions(role);
       if (not permissions)
         continue;
-      for (const auto &permission : *permissions)
-        account_permissions.insert(permission);
+      account_permissions |= *permissions;
     }
 
-    return std::none_of((*role_permissions).begin(),
-                        (*role_permissions).end(),
-                        [&account_permissions](const auto &perm) {
-                          return account_permissions.find(perm)
-                              == account_permissions.end();
-                        });
+    return role_permissions->isSubsetOf(account_permissions);
   }
 
   bool CommandValidator::isValid(
@@ -793,12 +740,16 @@ namespace iroha {
       const shared_model::interface::CreateRole &command,
       ametsuchi::WsvQuery &queries,
       const shared_model::interface::types::AccountIdType &creator_account_id) {
-    return std::all_of(command.rolePermissions().begin(),
-                       command.rolePermissions().end(),
-                       [&queries, &creator_account_id](auto perm) {
-                         return checkAccountRolePermission(
-                             creator_account_id, queries, perm);
-                       });
+    auto set = command.rolePermissions();
+    for (size_t i = 0; i < set.size(); ++i) {
+      auto perm = static_cast<shared_model::interface::permissions::Role>(i);
+      if (set.test(perm)
+          && not checkAccountRolePermission(
+                 creator_account_id, queries, perm)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   bool CommandValidator::isValid(

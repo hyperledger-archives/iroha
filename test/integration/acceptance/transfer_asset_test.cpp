@@ -10,8 +10,8 @@
 #include "builders/protobuf/transaction.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
+#include "framework/specified_visitor.hpp"
 #include "utils/query_error_response_visitor.hpp"
-#include "validators/permissions.hpp"
 
 using namespace integration_framework;
 using namespace shared_model;
@@ -25,11 +25,12 @@ class TransferAsset : public AcceptanceFixture {
    */
   auto makeUserWithPerms(const std::string &user,
                          const crypto::Keypair &key,
-                         const std::vector<std::string> &perms,
+                         const interface::RolePermissionSet &perms,
                          const std::string &role) {
     return createUserWithPerms(user, key.publicKey(), role, perms)
         .build()
-        .signAndAddSignature(kAdminKeypair);
+        .signAndAddSignature(kAdminKeypair)
+        .finish();
   }
 
   proto::Transaction addAssets(const std::string &user,
@@ -43,10 +44,12 @@ class TransferAsset : public AcceptanceFixture {
     const std::string kUserId = user + "@test";
     return proto::TransactionBuilder()
         .creatorAccountId(kUserId)
-        .createdTime(iroha::time::now())
+        .createdTime(getUniqueTime())
         .addAssetQuantity(kUserId, kAsset, amount)
+        .quorum(1)
         .build()
-        .signAndAddSignature(key);
+        .signAndAddSignature(key)
+        .finish();
   }
 
   /**
@@ -56,7 +59,8 @@ class TransferAsset : public AcceptanceFixture {
   auto baseTx() {
     return TestUnsignedTransactionBuilder()
         .creatorAccountId(kUser1 + "@test")
-        .createdTime(iroha::time::now());
+        .createdTime(getUniqueTime())
+        .quorum(1);
   }
 
   /**
@@ -66,7 +70,7 @@ class TransferAsset : public AcceptanceFixture {
    */
   template <typename TestTransactionBuilder>
   auto completeTx(TestTransactionBuilder builder) {
-    return builder.build().signAndAddSignature(kUser1Keypair);
+    return builder.build().signAndAddSignature(kUser1Keypair).finish();
   }
 
   const std::string kAmount = "1.0";
@@ -81,10 +85,10 @@ class TransferAsset : public AcceptanceFixture {
       crypto::DefaultCryptoAlgorithmType::generateKeypair();
   const crypto::Keypair kUser2Keypair =
       crypto::DefaultCryptoAlgorithmType::generateKeypair();
-  const std::vector<std::string> kPerms{
-      shared_model::permissions::can_add_asset_qty,
-      shared_model::permissions::can_transfer,
-      shared_model::permissions::can_receive};
+  const interface::RolePermissionSet kPerms{
+      interface::permissions::Role::kAddAssetQty,
+      interface::permissions::Role::kTransfer,
+      interface::permissions::Role::kReceive};
 };
 
 /**
@@ -93,15 +97,21 @@ class TransferAsset : public AcceptanceFixture {
  * @then there is the tx in proposal
  */
 TEST_F(TransferAsset, Basic) {
-  IntegrationTestFramework(4)
+  IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms(kUser1, kUser1Keypair, kPerms, kRole1))
+      .skipProposal()
+      .skipBlock()
       .sendTx(makeUserWithPerms(kUser2, kUser2Keypair, kPerms, kRole2))
+      .skipProposal()
+      .skipBlock()
       .sendTx(addAssets(kUser1, kUser1Keypair))
+      .skipProposal()
+      .skipBlock()
       .sendTx(completeTx(
           baseTx().transferAsset(kUser1Id, kUser2Id, kAsset, kDesc, kAmount)))
       .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 4); })
+          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); })
       .done();
 }
 
@@ -115,7 +125,7 @@ TEST_F(TransferAsset, WithOnlyCanTransferPerm) {
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms(kUser1,
                                 kUser1Keypair,
-                                {shared_model::permissions::can_transfer},
+                                {interface::permissions::Role::kTransfer},
                                 kRole1))
       .skipProposal()
       .skipBlock()
@@ -128,7 +138,8 @@ TEST_F(TransferAsset, WithOnlyCanTransferPerm) {
       .sendTx(baseTx()
                   .transferAsset(kUser1Id, kUser2Id, kAsset, kDesc, kAmount)
                   .build()
-                  .signAndAddSignature(kUser1Keypair))
+                  .signAndAddSignature(kUser1Keypair)
+                  .finish())
       .checkBlock(
           [](auto &block) { ASSERT_EQ(block->transactions().size(), 0); })
       .done();
@@ -144,7 +155,7 @@ TEST_F(TransferAsset, WithOnlyCanReceivePerm) {
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms(kUser1,
                                 kUser1Keypair,
-                                {shared_model::permissions::can_receive},
+                                {interface::permissions::Role::kReceive},
                                 kRole1))
       .skipProposal()
       .skipBlock()
@@ -157,7 +168,8 @@ TEST_F(TransferAsset, WithOnlyCanReceivePerm) {
       .sendTx(baseTx()
                   .transferAsset(kUser1Id, kUser2Id, kAsset, kDesc, kAmount)
                   .build()
-                  .signAndAddSignature(kUser1Keypair))
+                  .signAndAddSignature(kUser1Keypair)
+                  .finish())
       .checkBlock(
           [](auto &block) { ASSERT_EQ(block->transactions().size(), 0); })
       .done();
@@ -181,7 +193,8 @@ TEST_F(TransferAsset, NonexistentDest) {
       .sendTx(baseTx()
                   .transferAsset(kUser1Id, nonexistent, kAsset, kDesc, kAmount)
                   .build()
-                  .signAndAddSignature(kUser1Keypair))
+                  .signAndAddSignature(kUser1Keypair)
+                  .finish())
       .checkBlock(
           [](auto &block) { ASSERT_EQ(block->transactions().size(), 0); })
       .done();
@@ -209,7 +222,8 @@ TEST_F(TransferAsset, NonexistentAsset) {
           baseTx()
               .transferAsset(kUser1Id, kUser2Id, nonexistent, kDesc, kAmount)
               .build()
-              .signAndAddSignature(kUser1Keypair))
+              .signAndAddSignature(kUser1Keypair)
+              .finish())
       .checkBlock(
           [](auto &block) { ASSERT_EQ(block->transactions().size(), 0); })
       .done();
@@ -222,17 +236,22 @@ TEST_F(TransferAsset, NonexistentAsset) {
  *       (aka skipProposal throws)
  */
 TEST_F(TransferAsset, NegativeAmount) {
-  IntegrationTestFramework(3)
+  IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms(kUser1, kUser1Keypair, kPerms, kRole1))
+      .skipProposal()
+      .skipBlock()
       .sendTx(makeUserWithPerms(kUser2, kUser2Keypair, kPerms, kRole2))
+      .skipProposal()
+      .skipBlock()
       .sendTx(addAssets(kUser1, kUser1Keypair))
       .skipProposal()
       .skipBlock()
       .sendTx(baseTx()
                   .transferAsset(kUser1Id, kUser2Id, kAsset, kDesc, "-1.0")
                   .build()
-                  .signAndAddSignature(kUser1Keypair),
+                  .signAndAddSignature(kUser1Keypair)
+                  .finish(),
               checkStatelessInvalid);
 }
 
@@ -253,7 +272,8 @@ TEST_F(TransferAsset, ZeroAmount) {
       .sendTx(baseTx()
                   .transferAsset(kUser1Id, kUser2Id, kAsset, kDesc, "0.0")
                   .build()
-                  .signAndAddSignature(kUser1Keypair),
+                  .signAndAddSignature(kUser1Keypair)
+                  .finish(),
               checkStatelessInvalid);
 }
 
@@ -393,17 +413,17 @@ TEST_F(TransferAsset, InterDomain) {
   const auto kNewRole = "newrl";
   const auto kNewDomain = "newdom";
   const auto kUser2Id = kUser2 + "@" + kNewDomain;
-  IntegrationTestFramework(4)
+  IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms(kUser1, kUser1Keypair, kPerms, kRole1))
+      .skipProposal()
+      .skipBlock()
       .sendTx(
           shared_model::proto::TransactionBuilder()
               .creatorAccountId(
                   integration_framework::IntegrationTestFramework::kAdminId)
-              .createdTime(iroha::time::now())
-              .createRole(kNewRole,
-                          std::vector<std::string>{
-                              shared_model::permissions::can_receive})
+              .createdTime(getUniqueTime())
+              .createRole(kNewRole, {interface::permissions::Role::kReceive})
               .createDomain(kNewDomain, kNewRole)
               .createAccount(
                   kUser2,
@@ -411,12 +431,107 @@ TEST_F(TransferAsset, InterDomain) {
                   crypto::DefaultCryptoAlgorithmType::generateKeypair()
                       .publicKey())
               .createAsset(IntegrationTestFramework::kAssetName, kNewDomain, 1)
+              .quorum(1)
               .build()
-              .signAndAddSignature(kAdminKeypair))
+              .signAndAddSignature(kAdminKeypair)
+              .finish())
+      .skipProposal()
+      .skipBlock()
       .sendTx(addAssets(kUser1, kUser1Keypair, kAmount))
+      .skipProposal()
+      .skipBlock()
       .sendTx(completeTx(
           baseTx().transferAsset(kUser1Id, kUser2Id, kAsset, kDesc, kAmount)))
       .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 4); })
+          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); })
+      .done();
+}
+
+/**
+ * @given a pair of users with all required permissions
+ *        AND asset with big precision
+ * @when asset is added and then TransferAsset is called
+ * @then txes passed commit and the state as intented
+ */
+TEST_F(TransferAsset, BigPrecision) {
+  const std::string kNewAsset = IntegrationTestFramework::kAssetName + "a";
+  const std::string kNewAssetId =
+      kNewAsset + "#" + IntegrationTestFramework::kDefaultDomain;
+  const auto precision = 5;
+  const std::string kInitial = "500";
+  const std::string kForTransfer = "1";
+  const std::string kLeft = "499";
+
+  auto check_balance = [](std::string account_id, std::string val) {
+    return [a = std::move(account_id),
+            v = val + "." + std::string(precision, '0')](auto &resp) {
+      auto &acc_ast = boost::apply_visitor(
+          framework::SpecifiedVisitor<interface::AccountAssetResponse>(),
+          resp.get());
+      for (auto &ast : acc_ast.accountAssets()) {
+        if (ast.accountId() == a) {
+          ASSERT_EQ(v, ast.balance().toStringRepr());
+        }
+      }
+    };
+  };
+  auto make_query = [this](std::string account_id) {
+    return proto::QueryBuilder()
+        .creatorAccountId(IntegrationTestFramework::kAdminId)
+        .createdTime(getUniqueTime())
+        .getAccountAssets(account_id)
+        .queryCounter(1)
+        .build()
+        .signAndAddSignature(kAdminKeypair)
+        .finish();
+  };
+
+  IntegrationTestFramework(1)
+      .setInitialState(kAdminKeypair)
+      .sendTx(makeUserWithPerms(kUser1, kUser1Keypair, kPerms, kRole1))
+      .skipProposal()
+      .skipBlock()
+      .sendTx(makeUserWithPerms(kUser2, kUser2Keypair, kPerms, kRole2))
+      .skipProposal()
+      .skipBlock()
+      .sendTx(proto::TransactionBuilder()
+                  .creatorAccountId(
+                      integration_framework::IntegrationTestFramework::kAdminId)
+                  .createdTime(getUniqueTime())
+                  .quorum(1)
+                  .createAsset(kNewAsset,
+                               IntegrationTestFramework::kDefaultDomain,
+                               precision)
+                  .build()
+                  .signAndAddSignature(kAdminKeypair)
+                  .finish())
+      .skipProposal()
+      .checkBlock([](auto &block) {
+        ASSERT_EQ(block->transactions().size(), 1) << "Cannot create asset";
+      })
+      .sendTx(proto::TransactionBuilder()
+                  .creatorAccountId(kUser1Id)
+                  .createdTime(getUniqueTime())
+                  .quorum(1)
+                  .addAssetQuantity(kUser1Id, kNewAssetId, kInitial)
+                  .build()
+                  .signAndAddSignature(kUser1Keypair)
+                  .finish())
+      .checkBlock([](auto &block) {
+        ASSERT_EQ(block->transactions().size(), 1) << "Cannot add assets";
+      })
+      .sendTx(proto::TransactionBuilder()
+                  .creatorAccountId(kUser1Id)
+                  .createdTime(getUniqueTime())
+                  .quorum(1)
+                  .transferAsset(
+                      kUser1Id, kUser2Id, kNewAssetId, kDesc, kForTransfer)
+                  .build()
+                  .signAndAddSignature(kUser1Keypair)
+                  .finish())
+      .checkBlock(
+          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); })
+      .sendQuery(make_query(kUser1Id), check_balance(kUser1Id, kLeft))
+      .sendQuery(make_query(kUser2Id), check_balance(kUser2Id, kForTransfer))
       .done();
 }
