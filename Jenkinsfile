@@ -215,6 +215,7 @@ pipeline {
         }
       }
       agent { label 'x86_64_aws_cov'}
+      options { skipDefaultCheckout() }
       steps {
         script {
           def coverage = load '.jenkinsci/debug-build.groovy'
@@ -237,6 +238,7 @@ pipeline {
             }
           }
           agent { label 'x86_64_aws_test' }
+          options { skipDefaultCheckout() }
           steps {
             script {
               def debugBuild = load ".jenkinsci/debug-build.groovy"
@@ -262,6 +264,7 @@ pipeline {
             }
           }
           agent { label 'armv7' }
+          options { skipDefaultCheckout() }
           steps {
             script {
               def debugBuild = load ".jenkinsci/debug-build.groovy"
@@ -287,6 +290,7 @@ pipeline {
             }
           }
           agent { label 'armv8' }
+          options { skipDefaultCheckout() }
           steps {
             script {
               def debugBuild = load ".jenkinsci/debug-build.groovy"
@@ -313,6 +317,7 @@ pipeline {
             }
           }
           agent { label 'mac' }
+          options { skipDefaultCheckout() }
           steps {
             script {
               def macDebugBuild = load ".jenkinsci/mac-debug-build.groovy"
@@ -346,6 +351,7 @@ pipeline {
       parallel {
         stage('lcov_cobertura') {
           agent { label 'x86_64_aws_cov' }
+          options { skipDefaultCheckout() }
           steps {
             script {
               def coverage = load '.jenkinsci/debug-build.groovy'
@@ -355,6 +361,7 @@ pipeline {
         }
         stage('sonarqube') {
           agent { label 'x86_64_aws_cov' }
+          options { skipDefaultCheckout() }
           steps {
             script {
               def coverage = load '.jenkinsci/debug-build.groovy'
@@ -379,6 +386,7 @@ pipeline {
             }
           }
           agent { label 'x86_64_aws_build' }
+          options { skipDefaultCheckout() }
           steps {
             script {
               def releaseBuild = load '.jenkinsci/release-build.groovy'
@@ -401,11 +409,10 @@ pipeline {
             beforeAgent true
             anyOf {
               expression { return params.Doxygen }
-              expression { return GIT_LOCAL_BRANCH ==~ /(master|develop)/ }
               expression { return REST_PR_CONDITIONS_SATISFIED == "true" }
             }
           }
-          agent { label 'x86_64_aws_cov' }
+          agent { label 'x86_64_aws_docs' }
           steps {
             script {
               def doxygen = load ".jenkinsci/doxygen.groovy"
