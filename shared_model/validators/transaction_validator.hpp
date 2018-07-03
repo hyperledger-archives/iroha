@@ -45,7 +45,6 @@ namespace shared_model {
         ReasonsGroupType reason;
         addInvalidCommand(reason, "AddAssetQuantity");
 
-        validator_.validateAccountId(reason, aaq.accountId());
         validator_.validateAssetId(reason, aaq.assetId());
         validator_.validateAmount(reason, aaq.amount());
 
@@ -196,7 +195,6 @@ namespace shared_model {
         ReasonsGroupType reason;
         addInvalidCommand(reason, "SubtractAssetQuantity");
 
-        validator_.validateAccountId(reason, saq.accountId());
         validator_.validateAssetId(reason, saq.assetId());
         validator_.validateAmount(reason, saq.amount());
 
