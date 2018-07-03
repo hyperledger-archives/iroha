@@ -21,6 +21,7 @@
 #include <boost/format.hpp>
 #include <boost/variant/static_visitor.hpp>
 
+#include "backend/protobuf/commands/proto_command.hpp"
 #include "backend/protobuf/permissions.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "validators/answer.hpp"
@@ -271,6 +272,17 @@ namespace shared_model {
         }
 
         for (const auto &command : tx.commands()) {
+          auto cmd_case =
+              static_cast<const shared_model::proto::Command &>(command)
+                  .getTransport()
+                  .command_case();
+          if (iroha::protocol::Command::COMMAND_NOT_SET == cmd_case) {
+            ReasonsGroupType reason;
+            reason.first = "Undefined";
+            reason.second.push_back("command is undefined");
+            answer.addReason(std::move(reason));
+            continue;
+          }
           auto reason = boost::apply_visitor(command_validator_, command.get());
           if (not reason.second.empty()) {
             answer.addReason(std::move(reason));
