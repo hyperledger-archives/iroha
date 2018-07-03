@@ -32,7 +32,7 @@ std::string creator_account_id = "admin@test";
  */
 iroha::protocol::Transaction generateEmptyTransaction() {
   iroha::protocol::Transaction proto_tx;
-  auto &payload = *proto_tx.mutable_payload();
+  auto &payload = *proto_tx.mutable_payload()->mutable_reduced_payload();
   payload.set_creator_account_id(creator_account_id);
   payload.set_created_time(created_time);
   payload.set_quorum(1);
@@ -64,9 +64,12 @@ iroha::protocol::AddAssetQuantity generateAddAssetQuantity(
 TEST(ProtoTransaction, Builder) {
   iroha::protocol::Transaction proto_tx = generateEmptyTransaction();
 
-  std::string asset_id = "coin#test", amount = "10.00";
-  auto command =
-      proto_tx.mutable_payload()->add_commands()->mutable_add_asset_quantity();
+  std::string account_id = "admin@test", asset_id = "coin#test",
+              amount = "10.00";
+  auto command = proto_tx.mutable_payload()
+                     ->mutable_reduced_payload()
+                     ->add_commands()
+                     ->mutable_add_asset_quantity();
 
   command->CopyFrom(generateAddAssetQuantity(asset_id));
 
