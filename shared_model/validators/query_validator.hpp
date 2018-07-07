@@ -193,7 +193,7 @@ namespace shared_model {
         return answer;
       }
 
-     private:
+     protected:
       Answer answer_;
       FieldValidator field_validator_;
       QueryFieldValidator query_field_validator_;
