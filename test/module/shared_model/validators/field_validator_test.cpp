@@ -25,6 +25,7 @@
 #include <boost/format.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/range/join.hpp>
+#include "block.pb.h"
 
 #include "backend/protobuf/common_objects/peer.hpp"
 #include "backend/protobuf/permissions.hpp"
@@ -657,6 +658,10 @@ class FieldValidatorTest : public ValidatorsTest {
                     &FieldValidator::validateAccountName,
                     &FieldValidatorTest::account_name,
                     account_name_test_cases),
+      makeValidator("writer",
+                    &FieldValidator::validateAccountId,
+                    &FieldValidatorTest::account_id,
+                    account_id_test_cases),
       makeValidator("domain_id",
                     &FieldValidator::validateDomainId,
                     &FieldValidatorTest::domain_id,

@@ -34,7 +34,15 @@ message GetAccountAssets {
 }
 
 message GetAccountDetail {
-  string account_id = 1;
+  oneof opt_account_id{
+    string account_id = 1;
+  }
+  oneof opt_key{
+    string key = 2;
+  }
+  oneof opt_writer{
+    string writer = 3;
+  }
 }
 
 message GetAssetInfo {
