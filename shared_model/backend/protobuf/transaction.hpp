@@ -58,7 +58,7 @@ namespace shared_model {
         return *blobTypePayload_;
       }
 
-      const interface::types::BlobType &reduced_payload() const override {
+      const interface::types::BlobType &reducedPayload() const override {
         return *blobTypeReducedPayload_;
       }
 
@@ -94,7 +94,7 @@ namespace shared_model {
         return reduced_payload_.quorum();
       }
 
-      boost::optional<std::shared_ptr<interface::BatchMeta>> batch_meta()
+      boost::optional<std::shared_ptr<interface::BatchMeta>> batchMeta()
           const override {
         return *meta_;
       }
