@@ -22,7 +22,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/process.hpp>
-#include <pqxx/pqxx>
+#include <soci/soci.h>
+#include <soci/postgresql/soci-postgresql.h>
 
 #include "common/files.hpp"
 #include "common/types.hpp"
@@ -97,13 +98,6 @@ class IrohadTest : public testing::Test {
   }
 
   void dropPostgres() {
-    auto connection = std::make_shared<pqxx::lazyconnection>(pgopts_);
-    try {
-      connection->activate();
-    } catch (const pqxx::broken_connection &e) {
-      FAIL() << "Connection to PostgreSQL broken: " << e.what();
-    }
-
     const auto drop = R"(
 DROP TABLE IF EXISTS account_has_signatory;
 DROP TABLE IF EXISTS account_has_asset;
@@ -122,10 +116,8 @@ DROP TABLE IF EXISTS index_by_creator_height;
 DROP TABLE IF EXISTS index_by_id_height_asset;
 )";
 
-    pqxx::work txn(*connection);
-    txn.exec(drop);
-    txn.commit();
-    connection->disconnect();
+    soci::session sql(soci::postgresql, pgopts_);
+    sql << drop;
   }
 
  public:

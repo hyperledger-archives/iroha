@@ -1,7 +1,8 @@
 addtest(irohad_test irohad_test.cpp)
 target_link_libraries(irohad_test
         boost
-        pqxx
+        SOCI::core
+        SOCI::postgresql
         rapidjson
         integration_framework_config_helper
         libs_common
