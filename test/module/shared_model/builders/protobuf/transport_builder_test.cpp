@@ -359,7 +359,7 @@ TEST_F(TransportBuilderTest, DISABLED_EmptyProposalCreationTest) {
   auto orig_model = createEmptyProposal();
   testTransport<validation::DefaultProposalValidator>(
       orig_model,
-      [](const Value<decltype(orig_model)>) { FAIL(); },
+      [](const Value<decltype(orig_model)> &) { FAIL(); },
       [](const Error<std::string> &) { SUCCEED(); });
 }
 
