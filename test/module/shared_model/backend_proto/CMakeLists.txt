@@ -72,6 +72,14 @@ target_link_libraries(permissions_test
     shared_model_proto_backend
     )
 
+addtest(proto_batch_test
+    proto_batch_test.cpp
+    )
+target_link_libraries(proto_batch_test
+    shared_model_proto_backend
+    shared_model_stateless_validation
+    )
+
 addtest(proto_transaction_sequence_test
     proto_transaction_sequence_test.cpp
     )
