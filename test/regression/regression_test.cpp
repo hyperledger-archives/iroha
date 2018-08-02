@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 #include "builders/protobuf/queries.hpp"
 #include "builders/protobuf/transaction.hpp"
+#include "common/files.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
 #include "framework/specified_visitor.hpp"
@@ -36,7 +37,7 @@ TEST(RegressionTest, SequentialInitialization) {
   auto tx = shared_model::proto::TransactionBuilder()
                 .createdTime(iroha::time::now())
                 .creatorAccountId(kUser)
-                .addAssetQuantity(kUser, kAsset, "1.0")
+                .addAssetQuantity(kAsset, "1.0")
                 .quorum(1)
                 .build()
                 .signAndAddSignature(
@@ -87,7 +88,7 @@ TEST(RegressionTest, StateRecovery) {
                 .createdTime(iroha::time::now())
                 .creatorAccountId("admin@test")
                 .createAccount("user", "test", userKeypair.publicKey())
-                .addAssetQuantity("admin@test", "coin#test", "133.0")
+                .addAssetQuantity("coin#test", "133.0")
                 .transferAsset(
                     "admin@test", "user@test", "coin#test", "descrs", "97.8")
                 .quorum(1)
@@ -120,6 +121,13 @@ TEST(RegressionTest, StateRecovery) {
       (boost::filesystem::temp_directory_path() / "iroha-state-recovery-test")
           .string();
   const std::string dbname = "dbstatereq";
+
+  // Cleanup blockstore directory, because it may contain blocks from previous
+  // test launch if ITF was failed for some reason. If there are some blocks,
+  // then checkProposal will fail with "missed proposal" error, because of
+  // incorrect calculation of chain height.
+  iroha::remove_dir_contents(path);
+
   {
     integration_framework::IntegrationTestFramework(
         1, dbname, [](auto &) {}, false, path)

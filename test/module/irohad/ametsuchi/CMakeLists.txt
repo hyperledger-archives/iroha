@@ -42,6 +42,13 @@ target_link_libraries(kv_storage_test
     ametsuchi_fixture
     )
 
+addtest(mutable_storage_test mutable_storage_test.cpp)
+target_link_libraries(mutable_storage_test
+    ametsuchi
+    libs_common
+    ametsuchi_fixture
+    )
+
 addtest(storage_init_test storage_init_test.cpp)
 target_link_libraries(storage_init_test
     ametsuchi
@@ -55,8 +62,17 @@ target_link_libraries(postgres_options_test
     libs_common
     )
 
+addtest(postgres_executor_test postgres_executor_test.cpp)
+target_link_libraries(postgres_executor_test
+    integration_framework
+    ametsuchi
+    libs_common
+    )
+
 add_library(ametsuchi_fixture INTERFACE)
 target_link_libraries(ametsuchi_fixture INTERFACE
-    pqxx
     integration_framework_config_helper
+    shared_model_proto_backend
+    SOCI::core
+    SOCI::postgresql
     )

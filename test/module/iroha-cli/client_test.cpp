@@ -1,33 +1,25 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "builders/protobuf/common_objects/proto_account_builder.hpp"
+#include "builders/protobuf/proposal.hpp"
 #include "model/sha3_hash.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/validation/validation_mocks.hpp"
+#include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_query_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 #include "client.hpp"
 
+#include "execution/query_execution_impl.hpp"
 #include "main/server_runner.hpp"
 #include "torii/command_service.hpp"
+#include "torii/impl/status_bus_impl.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
 #include "torii/query_service.hpp"
@@ -51,7 +43,19 @@ using namespace iroha::validation;
 using namespace shared_model::proto;
 
 using namespace std::chrono_literals;
-constexpr std::chrono::milliseconds proposal_delay = 10s;
+constexpr std::chrono::milliseconds initial_timeout = 1s;
+constexpr std::chrono::milliseconds nonfinal_timeout = 2 * 10s;
+
+/**
+Here we imitate the behavior of StatusStram client but on a bit lower level. So
+the do-while cycle imitates client resubscription to the stream. Stream
+"expiration" is a valid designed case (see pr #1615 for the details).
+
+The number of attempts (3) is a magic constant here. The idea behind this number
+is the following: only one resubscription is usually enough to pass the test; if
+three resubscribes were not enough, then most likely there is another bug.
+ */
+constexpr uint32_t status_read_attempts = 3;
 
 class ClientServerTest : public testing::Test {
  public:
@@ -74,29 +78,36 @@ class ClientServerTest : public testing::Test {
         .WillRepeatedly(Return(prop_notifier.get_observable()));
     EXPECT_CALL(*pcsMock, on_commit())
         .WillRepeatedly(Return(commit_notifier.get_observable()));
+    EXPECT_CALL(*pcsMock, on_verified_proposal())
+        .WillRepeatedly(Return(verified_prop_notifier.get_observable()));
 
     EXPECT_CALL(*mst, onPreparedTransactionsImpl())
         .WillRepeatedly(Return(mst_prepared_notifier.get_observable()));
     EXPECT_CALL(*mst, onExpiredTransactionsImpl())
         .WillRepeatedly(Return(mst_expired_notifier.get_observable()));
 
+    auto status_bus = std::make_shared<iroha::torii::StatusBusImpl>();
     auto tx_processor =
-        std::make_shared<iroha::torii::TransactionProcessorImpl>(pcsMock, mst);
+        std::make_shared<iroha::torii::TransactionProcessorImpl>(
+            pcsMock, mst, status_bus);
 
     auto pb_tx_factory =
         std::make_shared<iroha::model::converters::PbTransactionFactory>();
 
     //----------- Query Service ----------
-
-    auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(storage);
-
     EXPECT_CALL(*storage, getWsvQuery()).WillRepeatedly(Return(wsv_query));
     EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_query));
 
+    auto qpi = std::make_shared<iroha::torii::QueryProcessorImpl>(
+        storage, std::make_shared<iroha::QueryExecutionImpl>(storage));
+
     //----------- Server run ----------------
     runner
-        ->append(std::make_unique<torii::CommandService>(
-            tx_processor, storage, proposal_delay))
+        ->append(std::make_unique<torii::CommandService>(tx_processor,
+                                                         storage,
+                                                         status_bus,
+                                                         initial_timeout,
+                                                         nonfinal_timeout))
         .append(std::make_unique<torii::QueryService>(qpi))
         .run()
         .match(
@@ -119,6 +130,9 @@ class ClientServerTest : public testing::Test {
   std::shared_ptr<MockPeerCommunicationService> pcsMock;
   std::shared_ptr<iroha::MockMstProcessor> mst;
 
+  rxcpp::subjects::subject<
+      std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
+      verified_prop_notifier;
   rxcpp::subjects::subject<iroha::DataType> mst_prepared_notifier;
   rxcpp::subjects::subject<iroha::DataType> mst_expired_notifier;
 
@@ -180,12 +194,86 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
 
   ASSERT_EQ(iroha_cli::CliClient(ip, port).sendTx(shm_tx).answer,
             iroha_cli::CliClient::OK);
-  auto tx_hash = shm_tx.hash();
-  auto res = iroha_cli::CliClient(ip, port).getTxStatus(
-      shared_model::crypto::toBinaryString(tx_hash));
-  ASSERT_EQ(res.answer.tx_status(),
+  auto getAnswer = [&]() {
+    return iroha_cli::CliClient(ip, port)
+        .getTxStatus(shared_model::crypto::toBinaryString(shm_tx.hash()))
+        .answer;
+  };
+  decltype(getAnswer()) answer;
+  auto read_attempt_counter(status_read_attempts);
+  do {
+    answer = getAnswer();
+  } while (answer.tx_status()
+               != iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED
+           and --read_attempt_counter);
+  ASSERT_EQ(answer.tx_status(),
             iroha::protocol::TxStatus::STATELESS_VALIDATION_FAILED);
-  ASSERT_NE(res.answer.error_message().size(), 0);
+  ASSERT_NE(answer.error_message().size(), 0);
+}
+
+/**
+ * This test checks, if tx, which did not pass stateful validation, is shown to
+ * client with a corresponding status and error message
+ *
+ * @given real client and mocked pcs
+ * @when sending a stateless valid transaction @and failing it at stateful
+ * validation
+ * @then ensure that client sees:
+ *       - status of this transaction as STATEFUL_VALIDATION_FAILED
+ *       - error message is the same, as the one with which transaction was
+ *         failed
+ */
+TEST_F(ClientServerTest, SendTxWhenStatefulInvalid) {
+  iroha_cli::CliClient client(ip, port);
+  EXPECT_CALL(*pcsMock, propagate_transaction(_)).Times(1);
+
+  // creating stateful invalid tx
+  auto tx = TransactionBuilder()
+                .creatorAccountId("some@account")
+                .createdTime(iroha::time::now())
+                .transferAsset("some@account",
+                               "another@account",
+                               "doge#doge",
+                               "some transfer",
+                               "100.0")
+                .quorum(1)
+                .build()
+                .signAndAddSignature(
+                    shared_model::crypto::DefaultCryptoAlgorithmType::
+                        generateKeypair())
+                .finish();
+  ASSERT_EQ(client.sendTx(tx).answer, iroha_cli::CliClient::OK);
+
+  // fail the tx
+  auto verified_proposal = std::make_shared<shared_model::proto::Proposal>(
+      TestProposalBuilder().height(0).createdTime(iroha::time::now()).build());
+  verified_prop_notifier.get_subscriber().on_next(
+      std::make_shared<iroha::validation::VerifiedProposalAndErrors>(
+          std::make_pair(verified_proposal,
+                         iroha::validation::TransactionsErrors{std::make_pair(
+                             iroha::validation::CommandError{
+                                 "CommandName", "CommandError", true, 2},
+                             tx.hash())})));
+  auto stringified_error = "Stateful validation error in transaction "
+                           + tx.hash().hex() + ": command 'CommandName' with "
+                           "index '2' did not pass verification with "
+                           "error 'CommandError'";
+
+  auto getAnswer = [&]() {
+    return client.getTxStatus(shared_model::crypto::toBinaryString(tx.hash()))
+        .answer;
+  };
+  decltype(getAnswer()) answer;
+  auto read_attempt_counter(status_read_attempts);
+  do {
+    // check it really failed with specific message
+    answer = getAnswer();
+  } while (answer.tx_status()
+               != iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED
+           and --read_attempt_counter);
+  ASSERT_EQ(answer.tx_status(),
+            iroha::protocol::TxStatus::STATEFUL_VALIDATION_FAILED);
+  ASSERT_EQ(answer.error_message(), stringified_error);
 }
 
 TEST_F(ClientServerTest, SendQueryWhenInvalidJson) {
@@ -237,20 +325,15 @@ TEST_F(ClientServerTest, SendQueryWhenValid) {
   EXPECT_CALL(*wsv_query, getSignatories("admin@test"))
       .WillRepeatedly(Return(signatories));
 
-  EXPECT_CALL(
-      *wsv_query,
-      hasAccountGrantablePermission(
-          "admin@test",
-          "test@test",
-          shared_model::interface::permissions::permissionOf(
-              shared_model::interface::permissions::Role::kGetMyAccDetail)))
-      .WillOnce(Return(true));
-
-  EXPECT_CALL(*wsv_query, getAccountDetail("test@test"))
+  EXPECT_CALL(*wsv_query, getAccountDetail("test@test", "", ""))
       .WillOnce(Return(boost::make_optional(std::string("value"))));
 
+  const std::vector<std::string> kRole{"role"};
   EXPECT_CALL(*wsv_query, getAccountRoles("admin@test"))
-      .WillOnce(Return(boost::none));
+      .WillOnce(Return(boost::make_optional(kRole)));
+  EXPECT_CALL(*wsv_query, getRolePermissions(kRole[0]))
+      .WillOnce(Return(shared_model::interface::RolePermissionSet{
+          shared_model::interface::permissions::Role::kGetAllAccDetail}));
 
   auto query = QueryBuilder()
                    .createdTime(iroha::time::now())
@@ -270,15 +353,6 @@ TEST_F(ClientServerTest, SendQueryWhenStatefulInvalid) {
 
   EXPECT_CALL(*wsv_query, getSignatories("admin@test"))
       .WillRepeatedly(Return(signatories));
-
-  EXPECT_CALL(
-      *wsv_query,
-      hasAccountGrantablePermission(
-          "admin@test",
-          "test@test",
-          shared_model::interface::permissions::permissionOf(
-              shared_model::interface::permissions::Role::kGetMyAccDetail)))
-      .WillOnce(Return(false));
 
   EXPECT_CALL(*wsv_query, getAccountRoles("admin@test"))
       .WillOnce(Return(boost::none));

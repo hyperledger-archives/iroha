@@ -1,18 +1,6 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <gtest/gtest.h>
@@ -37,37 +25,7 @@ using namespace shared_model::interface::permissions;
 auto zero_string = std::string(32, '0');
 auto fake_hash = shared_model::crypto::Hash(zero_string);
 auto fake_pubkey = shared_model::crypto::PublicKey(zero_string);
-using AmountBuilder = shared_model::builder::AmountBuilderWithoutValidator;
 
-/**
- * Return shared pointer to amount from result, or throw exception
- * @return amount from result
- */
-std::shared_ptr<shared_model::interface::Amount> getAmount(
-    const shared_model::builder::BuilderResult<shared_model::interface::Amount>
-        &result) {
-  return framework::expected::val(result)->value;
-}
-
-/**
- * Shortcut to create CallExact observable wrapper, subscribe with given lambda,
- * and validate the number of calls with optional custom output
- * @tparam O observable type
- * @tparam F on_next function type
- * @param o observable object
- * @param f function object
- * @param call_count number of expected calls
- * @param msg custom validation failure message
- */
-template <typename O, typename F>
-void validateCalls(O &&o,
-                   F &&f,
-                   uint64_t call_count,
-                   const std::string &msg = {}) {
-  auto wrap = make_test_subscriber<CallExact>(std::forward<O>(o), call_count);
-  wrap.subscribe(std::forward<F>(f));
-  ASSERT_TRUE(wrap.validate()) << "Expected " << call_count << " calls" << msg;
-}
 
 /**
  * Validate getAccountTransaction with given parameters
@@ -82,11 +40,11 @@ void validateAccountTransactions(B &&blocks,
                                  const std::string &account,
                                  int call_count,
                                  int command_count) {
-  validateCalls(
-      blocks->getAccountTransactions(account),
-      [&](const auto &tx) { EXPECT_EQ(tx->commands().size(), command_count); },
-      call_count,
-      " for " + account);
+  auto txs = blocks->getAccountTransactions(account);
+  ASSERT_EQ(txs.size(), call_count);
+  std::for_each(txs.begin(), txs.end(), [&](const auto &tx) {
+    EXPECT_EQ(tx->commands().size(), command_count);
+  });
 }
 
 /**
@@ -104,11 +62,11 @@ void validateAccountAssetTransactions(B &&blocks,
                                       const std::string &asset,
                                       int call_count,
                                       int command_count) {
-  validateCalls(
-      blocks->getAccountAssetTransactions(account, asset),
-      [&](const auto &tx) { EXPECT_EQ(tx->commands().size(), command_count); },
-      call_count,
-      " for " + account + " " + asset);
+  auto txs = blocks->getAccountAssetTransactions(account, asset);
+  ASSERT_EQ(txs.size(), call_count);
+  std::for_each(txs.begin(), txs.end(), [&](const auto &tx) {
+    EXPECT_EQ(tx->commands().size(), command_count);
+  });
 }
 
 /**
@@ -178,10 +136,7 @@ TEST_F(AmetsuchiTest, GetBlocksCompletedWhenCalled) {
 
   apply(storage, block);
 
-  auto completed_wrapper =
-      make_test_subscriber<IsCompleted>(blocks->getBlocks(1, 1));
-  completed_wrapper.subscribe();
-  ASSERT_TRUE(completed_wrapper.validate());
+  ASSERT_EQ(*blocks->getBlocks(1, 1)[0], block);
 }
 
 TEST_F(AmetsuchiTest, SampleTest) {
@@ -192,8 +147,6 @@ TEST_F(AmetsuchiTest, SampleTest) {
   const auto domain = "ru", user1name = "userone", user2name = "usertwo",
              user1id = "userone@ru", user2id = "usertwo@ru", assetname = "rub",
              assetid = "rub#ru";
-
-  std::string account, src_account, dest_account, asset;
 
   // Block 1
   auto block1 = TestBlockBuilder()
@@ -220,10 +173,10 @@ TEST_F(AmetsuchiTest, SampleTest) {
       TestBlockBuilder()
           .transactions(std::vector<shared_model::proto::Transaction>(
               {TestTransactionBuilder()
-                   .creatorAccountId("admin2")
+                   .creatorAccountId(user1id)
                    .createAccount(user2name, domain, fake_pubkey)
                    .createAsset(assetname, domain, 1)
-                   .addAssetQuantity(user1id, assetid, "150.0")
+                   .addAssetQuantity(assetid, "150.0")
                    .transferAsset(
                        user1id, user2id, assetid, "Transfer asset", "100.0")
                    .build()}))
@@ -233,21 +186,21 @@ TEST_F(AmetsuchiTest, SampleTest) {
 
   apply(storage, block2);
   validateAccountAsset(
-      wsv, user1id, assetid, *getAmount(AmountBuilder::fromString("50.0")));
+      wsv, user1id, assetid, shared_model::interface::Amount("50.0"));
   validateAccountAsset(
-      wsv, user2id, assetid, *getAmount(AmountBuilder::fromString("100.0")));
+      wsv, user2id, assetid, shared_model::interface::Amount("100.0"));
 
   // Block store tests
   auto hashes = {block1.hash(), block2.hash()};
-  validateCalls(blocks->getBlocks(1, 2),
-                [i = 0, &hashes](auto eachBlock) mutable {
-                  EXPECT_EQ(*(hashes.begin() + i), eachBlock->hash());
-                  ++i;
-                },
-                2);
+
+  auto stored_blocks = blocks->getBlocks(1, 2);
+  ASSERT_EQ(2, stored_blocks.size());
+  for (size_t i = 0; i < stored_blocks.size(); i++) {
+    EXPECT_EQ(*(hashes.begin() + i), stored_blocks[i]->hash());
+  }
 
   validateAccountTransactions(blocks, "admin1", 1, 3);
-  validateAccountTransactions(blocks, "admin2", 1, 4);
+  validateAccountTransactions(blocks, user1id, 1, 4);
   validateAccountTransactions(blocks, "non_existing_user", 0, 0);
 
   validateAccountAssetTransactions(blocks, user1id, assetid, 1, 4);
@@ -291,8 +244,6 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
              asset2name = "assettwo", asset1id = "assetone#domain",
              asset2id = "assettwo#domain";
 
-  std::string account, src_account, dest_account, asset;
-
   // 1st tx
   auto txn1 =
       TestTransactionBuilder()
@@ -305,16 +256,22 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
           .createAccount(user3name, domain, fake_pubkey)
           .createAsset(asset1name, domain, 1)
           .createAsset(asset2name, domain, 1)
-          .addAssetQuantity(user1id, asset1id, "300.0")
-          .addAssetQuantity(user2id, asset2id, "250.0")
           .build();
 
-  auto block1 =
-      TestBlockBuilder()
-          .height(1)
-          .transactions(std::vector<shared_model::proto::Transaction>({txn1}))
-          .prevHash(fake_hash)
-          .build();
+  auto block1 = TestBlockBuilder()
+                    .height(1)
+                    .transactions(std::vector<shared_model::proto::Transaction>(
+                        {txn1,
+                         TestTransactionBuilder()
+                             .creatorAccountId(user1id)
+                             .addAssetQuantity(asset1id, "300.0")
+                             .build(),
+                         TestTransactionBuilder()
+                             .creatorAccountId(user2id)
+                             .addAssetQuantity(asset2id, "250.0")
+                             .build()}))
+                    .prevHash(fake_hash)
+                    .build();
 
   apply(storage, block1);
 
@@ -325,9 +282,9 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
 
   // Check querying assets for users
   validateAccountAsset(
-      wsv, user1id, asset1id, *getAmount(AmountBuilder::fromString("300.0")));
+      wsv, user1id, asset1id, shared_model::interface::Amount("300.0"));
   validateAccountAsset(
-      wsv, user2id, asset2id, *getAmount(AmountBuilder::fromString("250.0")));
+      wsv, user2id, asset2id, shared_model::interface::Amount("250.0"));
 
   // 2th tx (user1 -> user2 # asset1)
   auto txn2 =
@@ -346,9 +303,9 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
 
   // Check account asset after transfer assets
   validateAccountAsset(
-      wsv, user1id, asset1id, *getAmount(AmountBuilder::fromString("180.0")));
+      wsv, user1id, asset1id, shared_model::interface::Amount("180.0"));
   validateAccountAsset(
-      wsv, user2id, asset1id, *getAmount(AmountBuilder::fromString("120.0")));
+      wsv, user2id, asset1id, shared_model::interface::Amount("120.0"));
 
   // 3rd tx
   //   (user2 -> user3 # asset2)
@@ -370,24 +327,22 @@ TEST_F(AmetsuchiTest, queryGetAccountAssetTransactionsTest) {
   apply(storage, block3);
 
   validateAccountAsset(
-      wsv, user2id, asset2id, *getAmount(AmountBuilder::fromString("90.0")));
+      wsv, user2id, asset2id, shared_model::interface::Amount("90.0"));
   validateAccountAsset(
-      wsv, user3id, asset2id, *getAmount(AmountBuilder::fromString("150.0")));
+      wsv, user3id, asset2id, shared_model::interface::Amount("150.0"));
   validateAccountAsset(
-      wsv, user1id, asset2id, *getAmount(AmountBuilder::fromString("10.0")));
+      wsv, user1id, asset2id, shared_model::interface::Amount("10.0"));
 
   // Block store test
   auto hashes = {block1.hash(), block2.hash(), block3.hash()};
-  validateCalls(blocks->getBlocks(1, 3),
-                [i = 0, &hashes](auto eachBlock) mutable {
-                  EXPECT_EQ(*(hashes.begin() + i), eachBlock->hash());
-                  ++i;
-                },
-                3);
 
-  validateAccountTransactions(blocks, admin, 1, 9);
-  validateAccountTransactions(blocks, user1id, 1, 1);
-  validateAccountTransactions(blocks, user2id, 1, 2);
+  auto stored_blocks = blocks->getBlocks(1, 3);
+  ASSERT_EQ(3, stored_blocks.size());
+  for (size_t i = 0; i < stored_blocks.size(); i++) {
+    EXPECT_EQ(*(hashes.begin() + i), stored_blocks[i]->hash());
+  }
+
+  validateAccountTransactions(blocks, admin, 1, 7);
   validateAccountTransactions(blocks, user3id, 0, 0);
 
   // (user1 -> user2 # asset1)
@@ -625,10 +580,6 @@ TEST_F(AmetsuchiTest, TestingStorageWhenInsertBlock) {
 
   ASSERT_NE(0, wsv->getPeers().value().size());
 
-  log->info("Drop ledger");
-
-  storage->dropStorage();
-
   ASSERT_TRUE(wrapper.validate());
 }
 
@@ -662,63 +613,7 @@ TEST_F(AmetsuchiTest, TestingStorageWhenCommitBlock) {
 
   storage->commit(std::move(mutable_storage));
 
-  storage->dropStorage();
-
   ASSERT_TRUE(wrapper.validate());
-}
-
-TEST_F(AmetsuchiTest, TestingStorageWhenDropAll) {
-  auto logger = logger::testLog("TestStorage");
-  logger->info(
-      "Test case: create storage "
-      "=> insert block "
-      "=> assert that written"
-      " => drop all "
-      "=> assert that all deleted ");
-
-  auto log = logger::testLog("TestStorage");
-  log->info(
-      "Test case: create storage "
-      "=> insert block "
-      "=> assert that inserted");
-  std::shared_ptr<StorageImpl> storage;
-  auto storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        storage = _storage.value;
-      },
-      [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
-      });
-  ASSERT_TRUE(storage);
-  auto wsv = storage->getWsvQuery();
-  ASSERT_EQ(0, wsv->getPeers().value().size());
-
-  log->info("Try insert block");
-
-  auto inserted = storage->insertBlock(getBlock());
-  ASSERT_TRUE(inserted);
-
-  log->info("Request ledger information");
-
-  ASSERT_NE(0, wsv->getPeers().value().size());
-
-  log->info("Drop ledger");
-
-  storage->dropStorage();
-
-  ASSERT_EQ(0, wsv->getPeers().value().size());
-  std::shared_ptr<StorageImpl> new_storage;
-  auto new_storageResult = StorageImpl::create(block_store_path, pgopt_);
-  storageResult.match(
-      [&](iroha::expected::Value<std::shared_ptr<StorageImpl>> &_storage) {
-        new_storage = _storage.value;
-      },
-      [](iroha::expected::Error<std::string> &error) {
-        FAIL() << "StorageImpl: " << error.error;
-      });
-  ASSERT_EQ(0, wsv->getPeers().value().size());
-  new_storage->dropStorage();
 }
 
 /**
@@ -931,11 +826,7 @@ TEST_F(AmetsuchiTest, TestRestoreWSV) {
   EXPECT_TRUE(res);
 
   // spoil WSV
-  pqxx::work txn(*connection);
-  txn.exec(R"(
-DELETE FROM domain;
-)");
-  txn.commit();
+  *sql << "DELETE FROM domain";
 
   // check there is no data in WSV
   res = storage->getWsvQuery()->getDomain("test");

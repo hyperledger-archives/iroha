@@ -16,7 +16,7 @@ addtest(ordering_service_test ordering_service_test.cpp)
 target_link_libraries(ordering_service_test
     ordering_service
     shared_model_stateless_validation
-    iroha_amount
+    shared_model_proto_backend
     )
 
 addtest(ordering_gate_test ordering_gate_test.cpp)
@@ -24,5 +24,4 @@ target_link_libraries(ordering_gate_test
     ordering_service
     shared_model_cryptography_model
     shared_model_stateless_validation
-    iroha_amount
     )

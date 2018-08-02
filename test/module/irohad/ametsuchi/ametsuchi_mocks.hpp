@@ -21,6 +21,7 @@
 #include <gmock/gmock.h>
 #include <boost/optional.hpp>
 #include "ametsuchi/block_query.hpp"
+#include "ametsuchi/key_value_storage.hpp"
 #include "ametsuchi/mutable_factory.hpp"
 #include "ametsuchi/mutable_storage.hpp"
 #include "ametsuchi/peer_query.hpp"
@@ -28,7 +29,6 @@
 #include "ametsuchi/temporary_factory.hpp"
 #include "ametsuchi/temporary_wsv.hpp"
 #include "ametsuchi/wsv_query.hpp"
-#include "ametsuchi/key_value_storage.hpp"
 #include "common/result.hpp"
 #include "interfaces/common_objects/peer.hpp"
 
@@ -39,8 +39,10 @@ namespace iroha {
       MOCK_METHOD1(getAccountRoles,
                    boost::optional<std::vector<std::string>>(
                        const std::string &account_id));
-      MOCK_METHOD1(getAccountDetail,
-                   boost::optional<std::string>(const std::string &account_id));
+      MOCK_METHOD3(getAccountDetail,
+                   boost::optional<std::string>(const std::string &account_id,
+                                                const std::string &key,
+                                                const std::string &writer));
       MOCK_METHOD1(getRolePermissions,
                    boost::optional<shared_model::interface::RolePermissionSet>(
                        const std::string &role_name));
@@ -154,27 +156,27 @@ namespace iroha {
      public:
       MOCK_METHOD1(
           getAccountTransactions,
-          rxcpp::observable<wTransaction>(
+          std::vector<wTransaction>(
               const shared_model::interface::types::AccountIdType &account_id));
       MOCK_METHOD1(getTxByHashSync,
                    boost::optional<wTransaction>(
                        const shared_model::crypto::Hash &hash));
       MOCK_METHOD2(
           getAccountAssetTransactions,
-          rxcpp::observable<wTransaction>(
+          std::vector<wTransaction>(
               const shared_model::interface::types::AccountIdType &account_id,
               const shared_model::interface::types::AssetIdType &asset_id));
       MOCK_METHOD1(
           getTransactions,
-          rxcpp::observable<boost::optional<wTransaction>>(
+          std::vector<boost::optional<wTransaction>>(
               const std::vector<shared_model::crypto::Hash> &tx_hashes));
       MOCK_METHOD2(getBlocks,
-                   rxcpp::observable<wBlock>(
+          std::vector<BlockQuery::wBlock>(
                        shared_model::interface::types::HeightType, uint32_t));
       MOCK_METHOD1(getBlocksFrom,
-                   rxcpp::observable<wBlock>(
+          std::vector<BlockQuery::wBlock>(
                        shared_model::interface::types::HeightType));
-      MOCK_METHOD1(getTopBlocks, rxcpp::observable<wBlock>(uint32_t));
+      MOCK_METHOD1(getTopBlocks, std::vector<BlockQuery::wBlock>(uint32_t));
       MOCK_METHOD0(getTopBlock, expected::Result<wBlock, std::string>(void));
       MOCK_METHOD1(hasTxWithHash, bool(const shared_model::crypto::Hash &hash));
       MOCK_METHOD0(getTopBlockHeight, uint32_t(void));
@@ -187,8 +189,33 @@ namespace iroha {
           expected::Result<std::unique_ptr<TemporaryWsv>, std::string>(void));
     };
 
+    class MockTemporaryWsv : public TemporaryWsv {
+     public:
+      MOCK_METHOD2(
+          apply,
+          expected::Result<void, validation::CommandError>(
+              const shared_model::interface::Transaction &,
+              std::function<expected::Result<void, validation::CommandError>(
+                  const shared_model::interface::Transaction &, WsvQuery &)>));
+      MOCK_METHOD1(
+          createSavepoint,
+          std::unique_ptr<TemporaryWsv::SavepointWrapper>(const std::string &));
+    };
+
+    class MockTemporaryWsvSavepointWrapper
+        : public TemporaryWsv::SavepointWrapper {
+      MOCK_METHOD0(release, void(void));
+    };
+
     class MockMutableStorage : public MutableStorage {
      public:
+      MOCK_METHOD2(
+          check,
+          bool(const shared_model::interface::BlockVariant &,
+               std::function<
+                   bool(const shared_model::interface::BlockVariant &,
+                        WsvQuery &,
+                        const shared_model::interface::types::HashType &)>));
       MOCK_METHOD2(
           apply,
           bool(const shared_model::interface::Block &,
@@ -245,10 +272,11 @@ namespace iroha {
       MOCK_METHOD1(insertBlocks,
                    bool(const std::vector<
                         std::shared_ptr<shared_model::interface::Block>> &));
+      MOCK_METHOD0(reset, void(void));
       MOCK_METHOD0(dropStorage, void(void));
 
       rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-      on_commit() {
+      on_commit() override {
         return notifier.get_observable();
       }
       void commit(std::unique_ptr<MutableStorage> storage) override {
@@ -261,8 +289,7 @@ namespace iroha {
     class MockKeyValueStorage : public KeyValueStorage {
      public:
       MOCK_METHOD2(add, bool(Identifier, const Bytes &));
-      MOCK_CONST_METHOD1(get,
-                         boost::optional<Bytes>(Identifier));
+      MOCK_CONST_METHOD1(get, boost::optional<Bytes>(Identifier));
       MOCK_CONST_METHOD0(directory, std::string(void));
       MOCK_CONST_METHOD0(last_id, Identifier(void));
       MOCK_METHOD0(dropAll, void(void));
