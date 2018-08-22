@@ -37,3 +37,16 @@ target_link_libraries(bm_query
     gmock::gmock
     integration_framework
     )
+
+add_executable(bm_pipeline
+    bm_pipeline.cpp)
+
+target_link_libraries(bm_pipeline
+    benchmark
+    gtest::gtest
+    gmock::gmock
+    application
+    raw_block_loader
+    integration_framework
+    shared_model_stateless_validation
+    )
