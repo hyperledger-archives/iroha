@@ -106,7 +106,7 @@ namespace iroha {
     auto current_time = time_provider_->getCurrentTime();
     auto size = data.size();
     std::for_each(
-        data.begin(), data.end(), [this, &current_time, &size](const auto &peer) {
+        data.begin(), data.end(), [this, &current_time, size](const auto &peer) {
           auto diff = storage_->getDiffState(peer, current_time);
           if (not diff.isEmpty()) {
             log_->info("Propagate new data[{}]", size);
