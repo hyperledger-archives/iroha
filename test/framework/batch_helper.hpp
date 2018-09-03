@@ -9,8 +9,10 @@
 #include <boost/range/irange.hpp>
 
 #include "framework/result_fixture.hpp"
+#include "interfaces/iroha_internal/transaction_batch_template_definitions.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
+#include "module/shared_model/validators/validators.hpp"
 #include "validators/transactions_collection/batch_order_validator.hpp"
 
 namespace framework {
