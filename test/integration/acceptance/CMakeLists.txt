@@ -121,3 +121,10 @@ addtest(get_account_test
 target_link_libraries(get_account_test
     acceptance_fixture
     )
+
+addtest(get_asset_info_test
+    get_asset_info_test.cpp
+    )
+target_link_libraries(get_asset_info_test
+    acceptance_fixture
+    )
