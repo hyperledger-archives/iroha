@@ -73,7 +73,9 @@ namespace iroha {
 
       rxcpp::observable<shared_model::interface::BlockVariant>
       YacGateImpl::on_commit() {
-        return hash_gate_->on_commit().flat_map([this](auto commit_message) {
+        return hash_gate_->onOutcome().flat_map([this](auto message) {
+          // TODO 10.06.2018 andrei: IR-497 Work on reject case
+          auto commit_message = boost::get<CommitMessage>(message);
           // map commit to block if it is present or loaded from other peer
           return rxcpp::observable<>::create<
               shared_model::interface::BlockVariant>([this, commit_message](

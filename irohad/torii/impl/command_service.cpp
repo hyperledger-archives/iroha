@@ -29,6 +29,7 @@
 #include "common/timeout.hpp"
 #include "common/types.hpp"
 #include "cryptography/default_hash_provider.hpp"
+#include "interfaces/iroha_internal/transaction_batch_factory.hpp"
 #include "validators/default_validator.hpp"
 
 namespace torii {

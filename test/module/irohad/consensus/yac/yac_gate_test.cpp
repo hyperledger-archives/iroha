@@ -64,7 +64,7 @@ class YacGateTest : public ::testing::Test {
     message.hash = expected_hash;
     message.signature = clone(signature);
     commit_message = CommitMessage({message});
-    expected_commit = rxcpp::observable<>::just(commit_message);
+    expected_commit = rxcpp::observable<>::just(Answer(commit_message));
 
     hash_gate = make_unique<MockHashGate>();
     peer_orderer = make_unique<MockYacPeerOrderer>();
@@ -87,7 +87,7 @@ class YacGateTest : public ::testing::Test {
   std::shared_ptr<shared_model::interface::Block> expected_block;
   VoteMessage message;
   CommitMessage commit_message;
-  rxcpp::observable<CommitMessage> expected_commit;
+  rxcpp::observable<Answer> expected_commit;
 
   unique_ptr<MockHashGate> hash_gate;
   unique_ptr<MockYacPeerOrderer> peer_orderer;
@@ -115,7 +115,7 @@ TEST_F(YacGateTest, YacGateSubscriptionTest) {
   // yac consensus
   EXPECT_CALL(*hash_gate, vote(expected_hash, _)).Times(1);
 
-  EXPECT_CALL(*hash_gate, on_commit()).WillOnce(Return(expected_commit));
+  EXPECT_CALL(*hash_gate, onOutcome()).WillOnce(Return(expected_commit));
 
   // generate order of peers
   EXPECT_CALL(*peer_orderer, getOrdering(_))
@@ -169,7 +169,7 @@ TEST_F(YacGateTest, YacGateSubscribtionTestFailCase) {
   // yac consensus
   EXPECT_CALL(*hash_gate, vote(_, _)).Times(0);
 
-  EXPECT_CALL(*hash_gate, on_commit()).Times(0);
+  EXPECT_CALL(*hash_gate, onOutcome()).Times(0);
 
   // generate order of peers
   EXPECT_CALL(*peer_orderer, getOrdering(_)).WillOnce(Return(boost::none));
@@ -233,10 +233,10 @@ TEST_F(YacGateTest, LoadBlockWhenDifferentCommit) {
   message.hash = YacHash("actual_proposal", "actual_block");
   message.signature = clone(signature);
   commit_message = CommitMessage({message});
-  expected_commit = rxcpp::observable<>::just(commit_message);
+  expected_commit = rxcpp::observable<>::just(Answer(commit_message));
 
   // yac consensus
-  EXPECT_CALL(*hash_gate, on_commit()).WillOnce(Return(expected_commit));
+  EXPECT_CALL(*hash_gate, onOutcome()).WillOnce(Return(expected_commit));
 
   // convert yac hash to model hash
   EXPECT_CALL(*hash_provider, toModelHash(message.hash))
@@ -313,10 +313,10 @@ TEST_F(YacGateTest, LoadBlockWhenDifferentCommitFailFirst) {
   message.hash = expected_hash;
 
   commit_message = CommitMessage({message});
-  expected_commit = rxcpp::observable<>::just(commit_message);
+  expected_commit = rxcpp::observable<>::just(Answer(commit_message));
 
   // yac consensus
-  EXPECT_CALL(*hash_gate, on_commit()).WillOnce(Return(expected_commit));
+  EXPECT_CALL(*hash_gate, onOutcome()).WillOnce(Return(expected_commit));
 
   // convert yac hash to model hash
   EXPECT_CALL(*hash_provider, toModelHash(expected_hash))
