@@ -126,9 +126,7 @@ TEST_F(YacGateTest, YacGateSubscriptionTest) {
 
   // make blocks
   EXPECT_CALL(*block_creator, on_block())
-      .WillOnce(Return(
-          rxcpp::observable<>::just<shared_model::interface::BlockVariant>(
-              expected_block)));
+      .WillOnce(Return(rxcpp::observable<>::just(expected_block)));
 
   init();
 
@@ -179,9 +177,7 @@ TEST_F(YacGateTest, YacGateSubscribtionTestFailCase) {
 
   // make blocks
   EXPECT_CALL(*block_creator, on_block())
-      .WillOnce(Return(
-          rxcpp::observable<>::just<shared_model::interface::BlockVariant>(
-              expected_block)));
+      .WillOnce(Return(rxcpp::observable<>::just(expected_block)));
 
   init();
 }
@@ -194,9 +190,7 @@ TEST_F(YacGateTest, YacGateSubscribtionTestFailCase) {
 TEST_F(YacGateTest, LoadBlockWhenDifferentCommit) {
   // make blocks
   EXPECT_CALL(*block_creator, on_block())
-      .WillOnce(Return(
-          rxcpp::observable<>::just<shared_model::interface::BlockVariant>(
-              expected_block)));
+      .WillOnce(Return(rxcpp::observable<>::just(expected_block)));
 
   // make hash from block
   EXPECT_CALL(*hash_provider, makeHash(_)).WillOnce(Return(expected_hash));
@@ -246,7 +240,7 @@ TEST_F(YacGateTest, LoadBlockWhenDifferentCommit) {
   auto sig = actual_block->signatures().begin();
   auto &pubkey = sig->publicKey();
   EXPECT_CALL(*block_loader, retrieveBlock(pubkey, actual_block->hash()))
-      .WillOnce(Return(shared_model::interface::BlockVariant{actual_block}));
+      .WillOnce(Return(actual_block));
 
   init();
 
@@ -294,9 +288,7 @@ TEST_F(YacGateTest, LoadBlockWhenDifferentCommitFailFirst) {
 
   // make blocks
   EXPECT_CALL(*block_creator, on_block())
-      .WillOnce(Return(
-          rxcpp::observable<>::just<shared_model::interface::BlockVariant>(
-              expected_block)));
+      .WillOnce(Return(rxcpp::observable<>::just(expected_block)));
 
   // make hash from block
   EXPECT_CALL(*hash_provider, makeHash(_)).WillOnce(Return(expected_hash));
@@ -327,7 +319,7 @@ TEST_F(YacGateTest, LoadBlockWhenDifferentCommitFailFirst) {
   auto &pubkey = sig->publicKey();
   EXPECT_CALL(*block_loader, retrieveBlock(pubkey, expected_block->hash()))
       .WillOnce(Return(boost::none))
-      .WillOnce(Return(shared_model::interface::BlockVariant{expected_block}));
+      .WillOnce(Return(expected_block));
 
   init();
 

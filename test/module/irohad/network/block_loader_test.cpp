@@ -242,6 +242,9 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
   ASSERT_TRUE(wrapper.validate());
 }
 
+MATCHER_P(RefAndPointerEq, arg1, "") {
+  return arg == *arg1;
+}
 /**
  * @given block loader @and consensus cache with a block
  * @when retrieveBlock is called with the related hash
@@ -250,24 +253,20 @@ TEST_F(BlockLoaderTest, ValidWhenMultipleBlocks) {
  */
 TEST_F(BlockLoaderTest, ValidWhenBlockPresent) {
   // Request existing block => success
-  auto requested = wrapBlock(std::make_shared<shared_model::proto::Block>(
-      getBaseBlockBuilder().build().signAndAddSignature(key).finish()));
+  auto block = std::make_shared<shared_model::proto::Block>(
+      getBaseBlockBuilder().build().signAndAddSignature(key).finish());
+  auto requested = wrapBlock(block);
   block_cache->insert(requested);
 
   EXPECT_CALL(*peer_query, getLedgerPeers())
       .WillOnce(Return(std::vector<wPeer>{peer}));
-  EXPECT_CALL(*validator, validate(*requested)).WillOnce(Return(Answer{}));
+  EXPECT_CALL(*validator, validate(RefAndPointerEq(block)))
+      .WillOnce(Return(Answer{}));
   EXPECT_CALL(*storage, getBlocksFrom(_)).Times(0);
-  auto block_variant = loader->retrieveBlock(peer_key, requested->hash());
+  auto retrieved_block = loader->retrieveBlock(peer_key, requested->hash());
 
-  ASSERT_TRUE(block_variant);
-  ASSERT_NO_THROW({
-    auto unwrapped_block = boost::apply_visitor(
-        framework::SpecifiedVisitor<
-            std::shared_ptr<shared_model::interface::Block>>(),
-        *block_variant);
-    ASSERT_EQ(*requested, unwrapped_block);
-  });
+  ASSERT_TRUE(retrieved_block);
+  ASSERT_EQ(*block, **retrieved_block);
 }
 
 /**
