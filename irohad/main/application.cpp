@@ -184,7 +184,14 @@ void Irohad::initOrderingGate() {
  */
 void Irohad::initSimulator() {
   auto block_factory = std::make_unique<shared_model::proto::ProtoBlockFactory>(
-      std::make_unique<shared_model::validation::BlockVariantValidator>());
+      //  Block factory in simulator uses UnsignedBlockValidator because it is
+      //  not required to check signatures of block here, as they will be
+      //  checked when supermajority of peers will sign the block. It is also
+      //  not required to validate signatures of transactions here because they
+      //  are validated in the ordering gate, where they are received from the
+      //  ordering service.
+      std::make_unique<
+          shared_model::validation::DefaultUnsignedBlockValidator>());
   simulator = std::make_shared<Simulator>(ordering_gate,
                                           stateful_validator,
                                           storage,
