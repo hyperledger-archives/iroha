@@ -17,7 +17,6 @@
 #include "multi_sig_transactions/mst_time_provider_impl.hpp"
 #include "multi_sig_transactions/storage/mst_storage_impl.hpp"
 #include "torii/impl/status_bus_impl.hpp"
-#include "validators/block_variant_validator.hpp"
 #include "validators/field_validator.hpp"
 
 using namespace iroha;
