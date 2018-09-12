@@ -19,7 +19,7 @@
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 #include "torii/impl/status_bus_impl.hpp"
-#include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/processor/consensus_status_processor_impl.hpp"
 
 using namespace iroha;
 using namespace iroha::network;
@@ -33,7 +33,7 @@ using ::testing::Return;
 
 using shared_model::interface::TransactionBatch;
 
-class TransactionProcessorTest : public ::testing::Test {
+class ConsensusStatusProcessorTest : public ::testing::Test {
  public:
   void SetUp() override {
     pcs = std::make_shared<MockPeerCommunicationService>();
@@ -52,7 +52,7 @@ class TransactionProcessorTest : public ::testing::Test {
         .WillRepeatedly(Return(mst_expired_notifier.get_observable()));
 
     status_bus = std::make_shared<MockStatusBus>();
-    tp = std::make_shared<TransactionProcessorImpl>(pcs, mp, status_bus);
+    csp = std::make_shared<ConsensusStatusProcessorImpl>(pcs, mp, status_bus);
   }
 
   auto base_tx() {
@@ -118,7 +118,7 @@ class TransactionProcessorTest : public ::testing::Test {
 
   std::shared_ptr<MockPeerCommunicationService> pcs;
   std::shared_ptr<MockStatusBus> status_bus;
-  std::shared_ptr<TransactionProcessorImpl> tp;
+  std::shared_ptr<ConsensusStatusProcessorImpl> csp;
   std::shared_ptr<MockMstProcessor> mp;
 
   StatusMapType status_map;
@@ -142,7 +142,7 @@ class TransactionProcessorTest : public ::testing::Test {
  * communication service
  * @then for every transaction in batches STATELESS_VALID status is returned
  */
-TEST_F(TransactionProcessorTest, TransactionProcessorOnProposalTest) {
+TEST_F(ConsensusStatusProcessorTest, TransactionProcessorOnProposalTest) {
   std::vector<shared_model::proto::Transaction> txs;
   for (size_t i = 0; i < proposal_size; i++) {
     auto &&tx = addSignaturesFromKeyPairs(baseTestTx(), makeKey());
@@ -159,7 +159,7 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnProposalTest) {
   EXPECT_CALL(*pcs, propagate_batch(_)).Times(txs.size());
 
   for (const auto &tx : txs) {
-    tp->batchHandle(framework::batch::createBatchFromSingleTransaction(
+    csp->batchHandle(framework::batch::createBatchFromSingleTransaction(
         std::shared_ptr<shared_model::interface::Transaction>(clone(tx))));
   }
 
@@ -180,7 +180,7 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnProposalTest) {
  * AND all transactions were returned by pcs in proposal notifier
  * @then all transactions in batches have stateless valid status
  */
-TEST_F(TransactionProcessorTest, TransactionProcessorOnProposalBatchTest) {
+TEST_F(ConsensusStatusProcessorTest, TransactionProcessorOnProposalBatchTest) {
   using namespace shared_model::validation;
   using TxsValidator = DefaultSignedTransactionsValidator;
 
@@ -204,7 +204,7 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnProposalBatchTest) {
       .Times(transaction_sequence.batches().size());
 
   for (const auto &batch : transaction_sequence.batches()) {
-    tp->batchHandle(batch);
+    csp->batchHandle(batch);
   }
 
   // create proposal from sequence transactions and notify about it
@@ -235,7 +235,7 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnProposalBatchTest) {
  * communication service @and all transactions composed the block
  * @then for every transaction in bathces STATEFUL_VALID status is returned
  */
-TEST_F(TransactionProcessorTest, TransactionProcessorBlockCreatedTest) {
+TEST_F(ConsensusStatusProcessorTest, TransactionProcessorBlockCreatedTest) {
   std::vector<shared_model::proto::Transaction> txs;
   for (size_t i = 0; i < proposal_size; i++) {
     auto &&tx = addSignaturesFromKeyPairs(baseTestTx(), makeKey());
@@ -252,7 +252,7 @@ TEST_F(TransactionProcessorTest, TransactionProcessorBlockCreatedTest) {
   EXPECT_CALL(*pcs, propagate_batch(_)).Times(txs.size());
 
   for (const auto &tx : txs) {
-    tp->batchHandle(framework::batch::createBatchFromSingleTransaction(
+    csp->batchHandle(framework::batch::createBatchFromSingleTransaction(
         std::shared_ptr<shared_model::interface::Transaction>(clone(tx))));
   }
 
@@ -283,8 +283,7 @@ TEST_F(TransactionProcessorTest, TransactionProcessorBlockCreatedTest) {
   // transactions are not commited
 
   SCOPED_TRACE("Stateful Valid status verification");
-  validateStatuses<shared_model::interface::StatefulValidTxResponse>(
-      txs);
+  validateStatuses<shared_model::interface::StatefulValidTxResponse>(txs);
 }
 
 /**
@@ -294,7 +293,7 @@ TEST_F(TransactionProcessorTest, TransactionProcessorBlockCreatedTest) {
  * committed
  * @then for every transaction COMMIT status is returned
  */
-TEST_F(TransactionProcessorTest, TransactionProcessorOnCommitTest) {
+TEST_F(ConsensusStatusProcessorTest, TransactionProcessorOnCommitTest) {
   std::vector<shared_model::proto::Transaction> txs;
   for (size_t i = 0; i < proposal_size; i++) {
     auto &&tx = addSignaturesFromKeyPairs(baseTestTx(), makeKey());
@@ -311,7 +310,7 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnCommitTest) {
   EXPECT_CALL(*pcs, propagate_batch(_)).Times(txs.size());
 
   for (const auto &tx : txs) {
-    tp->batchHandle(framework::batch::createBatchFromSingleTransaction(
+    csp->batchHandle(framework::batch::createBatchFromSingleTransaction(
         std::shared_ptr<shared_model::interface::Transaction>(clone(tx))));
   }
 
@@ -349,7 +348,7 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnCommitTest) {
  * for every transaction, which failed stateful validation,
  * STATEFUL_INVALID_STATUS status is returned
  */
-TEST_F(TransactionProcessorTest, TransactionProcessorInvalidTxsTest) {
+TEST_F(ConsensusStatusProcessorTest, TransactionProcessorInvalidTxsTest) {
   std::vector<shared_model::proto::Transaction> block_txs;
   for (size_t i = 0; i < block_size; i++) {
     auto &&tx = TestTransactionBuilder().createdTime(i).build();
@@ -429,14 +428,14 @@ TEST_F(TransactionProcessorTest, TransactionProcessorInvalidTxsTest) {
  * @when transaction_processor handle the batch
  * @then checks that batch is relayed to MST
  */
-TEST_F(TransactionProcessorTest, MultisigTransactionToMST) {
+TEST_F(ConsensusStatusProcessorTest, MultisigTransactionToMST) {
   auto &&tx = addSignaturesFromKeyPairs(baseTestTx(2), makeKey());
 
   auto &&after_mst = framework::batch::createBatchFromSingleTransaction(
       std::shared_ptr<shared_model::interface::Transaction>(clone(tx)));
   EXPECT_CALL(*mp, propagateBatchImpl(_)).Times(1);
 
-  tp->batchHandle(std::move(after_mst));
+  csp->batchHandle(std::move(after_mst));
 }
 
 /**
@@ -446,7 +445,7 @@ TEST_F(TransactionProcessorTest, MultisigTransactionToMST) {
  * @then checks that PCS is invoked.
  * This happens because tx processor is subscribed for MST
  */
-TEST_F(TransactionProcessorTest, MultisigTransactionFromMst) {
+TEST_F(ConsensusStatusProcessorTest, MultisigTransactionFromMst) {
   auto &&tx = addSignaturesFromKeyPairs(baseTestTx(2), makeKey(), makeKey());
 
   auto &&after_mst = framework::batch::createBatchFromSingleTransaction(
@@ -463,7 +462,7 @@ TEST_F(TransactionProcessorTest, MultisigTransactionFromMst) {
  * @then before expiring it will have MST_PENDING status @and after expiring
  * MST_EXPIRED status
  */
-TEST_F(TransactionProcessorTest, MultisigExpired) {
+TEST_F(ConsensusStatusProcessorTest, MultisigExpired) {
   EXPECT_CALL(*mp, propagateBatchImpl(_)).Times(1);
   EXPECT_CALL(*pcs, propagate_batch(_)).Times(0);
 
@@ -488,7 +487,7 @@ TEST_F(TransactionProcessorTest, MultisigExpired) {
                 shared_model::interface::MstExpiredResponse>(),
             response->get()));
       }));
-  tp->batchHandle(framework::batch::createBatchFromSingleTransaction(tx));
+  csp->batchHandle(framework::batch::createBatchFromSingleTransaction(tx));
   mst_expired_notifier.get_subscriber().on_next(
       std::make_shared<shared_model::interface::TransactionBatch>(
           framework::batch::createBatchFromSingleTransaction(tx)));

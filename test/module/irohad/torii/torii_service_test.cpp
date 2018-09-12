@@ -18,7 +18,7 @@
 #include "torii/command_client.hpp"
 #include "torii/command_service.hpp"
 #include "torii/impl/status_bus_impl.hpp"
-#include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/processor/consensus_status_processor_impl.hpp"
 
 constexpr size_t TimesToriiBlocking = 5;
 
@@ -108,8 +108,8 @@ class ToriiServiceTest : public testing::Test {
         .WillRepeatedly(Return(mst_expired_notifier.get_observable()));
 
     auto status_bus = std::make_shared<iroha::torii::StatusBusImpl>();
-    auto tx_processor =
-        std::make_shared<iroha::torii::TransactionProcessorImpl>(
+    auto cs_processor =
+        std::make_shared<iroha::torii::ConsensusStatusProcessorImpl>(
             pcsMock, mst, status_bus);
 
     EXPECT_CALL(*block_query, getTxByHashSync(_))
@@ -118,7 +118,7 @@ class ToriiServiceTest : public testing::Test {
 
     //----------- Server run ----------------
     runner
-        ->append(std::make_unique<torii::CommandService>(tx_processor,
+        ->append(std::make_unique<torii::CommandService>(cs_processor,
                                                          storage,
                                                          status_bus,
                                                          initial_timeout,

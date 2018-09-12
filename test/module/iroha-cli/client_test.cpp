@@ -22,7 +22,7 @@
 #include "torii/command_service.hpp"
 #include "torii/impl/status_bus_impl.hpp"
 #include "torii/processor/query_processor_impl.hpp"
-#include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/processor/consensus_status_processor_impl.hpp"
 #include "torii/query_service.hpp"
 
 #include "model/converters/json_common.hpp"
@@ -90,7 +90,7 @@ class ClientServerTest : public testing::Test {
 
     auto status_bus = std::make_shared<iroha::torii::StatusBusImpl>();
     auto tx_processor =
-        std::make_shared<iroha::torii::TransactionProcessorImpl>(
+        std::make_shared<iroha::torii::ConsensusStatusProcessorImpl>(
             pcsMock, mst, status_bus);
 
     auto pb_tx_factory =

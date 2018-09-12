@@ -11,14 +11,14 @@
 #include "module/irohad/network/network_mocks.hpp"
 #include "synchronizer/synchronizer_common.hpp"
 #include "torii/command_service.hpp"
-#include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/processor/consensus_status_processor_impl.hpp"
 
 using namespace std::chrono_literals;
 using testing::Return;
 
 struct CommandFixture {
   std::shared_ptr<torii::CommandService> service_;
-  std::shared_ptr<iroha::torii::TransactionProcessorImpl> tx_processor_;
+  std::shared_ptr<iroha::torii::ConsensusStatusProcessorImpl> cs_processor_;
   std::shared_ptr<iroha::network::MockPeerCommunicationService> pcs_;
   std::shared_ptr<iroha::MockMstProcessor> mst_processor_;
 
@@ -46,10 +46,11 @@ struct CommandFixture {
     EXPECT_CALL(*mst_processor_, onExpiredTransactionsImpl())
         .WillRepeatedly(Return(mst_notifier_.get_observable()));
 
-    tx_processor_ = std::make_shared<iroha::torii::TransactionProcessorImpl>(
-        pcs_, mst_processor_);
+    cs_processor_ =
+        std::make_shared<iroha::torii::ConsensusStatusProcessorImpl>(
+            pcs_, mst_processor_);
     service_ = std::make_shared<torii::CommandService>(
-        tx_processor_, nullptr, 15s, 15s);
+        cs_processor_, nullptr, 15s, 15s);
   }
 };
 
