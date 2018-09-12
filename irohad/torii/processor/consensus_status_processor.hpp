@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TRANSACTION_PROCESSOR_HPP
-#define IROHA_TRANSACTION_PROCESSOR_HPP
+#ifndef IROHA_CONSENSUS_STATUS_PROCESSOR_HPP
+#define IROHA_CONSENSUS_STATUS_PROCESSOR_HPP
 
 namespace shared_model {
   namespace interface {
@@ -27,10 +27,10 @@ namespace shared_model {
 namespace iroha {
   namespace torii {
     /**
-     * Transaction processor is interface with start point
-     * for processing transaction in the system
+     * ConsensusStatusProcessor is interface which reflects statuses consensus
+     * statuses and initiate processing of transactions in it
      */
-    class TransactionProcessor {
+    class ConsensusStatusProcessor {
      public:
       /**
        * Process batch and propagate it to the MST or PCS
@@ -39,8 +39,8 @@ namespace iroha {
       virtual void batchHandle(const shared_model::interface::TransactionBatch
                                    &transaction_batch) const = 0;
 
-      virtual ~TransactionProcessor() = default;
+      virtual ~ConsensusStatusProcessor() = default;
     };
   }  // namespace torii
 }  // namespace iroha
-#endif  // IROHA_TRANSACTION_PROCESSOR_HPP
+#endif  // IROHA_CONSENSUS_STATUS_PROCESSOR_HPP

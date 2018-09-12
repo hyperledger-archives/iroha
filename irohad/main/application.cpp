@@ -304,11 +304,11 @@ void Irohad::initPendingTxsStorage() {
  * Initializing transaction command service
  */
 void Irohad::initTransactionCommandService() {
-  auto tx_processor = std::make_shared<TransactionProcessorImpl>(
+  auto cs_processor = std::make_shared<ConsensusStatusProcessorImpl>(
       pcs, mst_processor, status_bus_);
 
   command_service =
-      std::make_shared<::torii::CommandService>(tx_processor,
+      std::make_shared<::torii::CommandService>(cs_processor,
                                                 storage,
                                                 status_bus_,
                                                 std::chrono::seconds(1),

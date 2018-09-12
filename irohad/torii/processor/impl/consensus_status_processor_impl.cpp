@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "torii/processor/transaction_processor_impl.hpp"
+#include "torii/processor/consensus_status_processor_impl.hpp"
 
 #include <boost/format.hpp>
 
@@ -37,7 +37,7 @@ namespace iroha {
       }
     }  // namespace
 
-    TransactionProcessorImpl::TransactionProcessorImpl(
+    ConsensusStatusProcessorImpl::ConsensusStatusProcessorImpl(
         std::shared_ptr<PeerCommunicationService> pcs,
         std::shared_ptr<MstProcessor> mst_processor,
         std::shared_ptr<iroha::torii::StatusBus> status_bus)
@@ -58,7 +58,7 @@ namespace iroha {
       pcs_->on_verified_proposal().subscribe(
           [this](std::shared_ptr<validation::VerifiedProposalAndErrors>
                      proposal_and_errors) {
-            // notify about failed txs
+            // notify about failed txsдщ
             const auto &errors = proposal_and_errors->second;
             std::lock_guard<std::mutex> lock(notifier_mutex_);
             for (const auto &tx_error : errors) {
@@ -120,7 +120,7 @@ namespace iroha {
       });
     }
 
-    void TransactionProcessorImpl::batchHandle(
+    void ConsensusStatusProcessorImpl::batchHandle(
         const shared_model::interface::TransactionBatch &transaction_batch)
         const {
       if (transaction_batch.hasAllSignatures()) {
@@ -138,7 +138,7 @@ namespace iroha {
       }
     }
 
-    void TransactionProcessorImpl::publishStatus(
+    void ConsensusStatusProcessorImpl::publishStatus(
         TxStatusType tx_status,
         const shared_model::crypto::Hash &hash,
         const std::string &error) const {
@@ -188,7 +188,7 @@ namespace iroha {
       status_bus_->publish(builder.build());
     }
 
-    void TransactionProcessorImpl::publishEnoughSignaturesStatus(
+    void ConsensusStatusProcessorImpl::publishEnoughSignaturesStatus(
         const shared_model::interface::types::SharedTxsCollectionType &txs)
         const {
       for (const auto &tx : txs) {

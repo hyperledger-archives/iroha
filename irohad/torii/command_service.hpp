@@ -17,7 +17,7 @@
 #include "endpoint.grpc.pb.h"
 #include "endpoint.pb.h"
 #include "logger/logger.hpp"
-#include "torii/processor/transaction_processor.hpp"
+#include "torii/processor/consensus_status_processor.hpp"
 #include "torii/status_bus.hpp"
 
 namespace torii {
@@ -28,14 +28,14 @@ namespace torii {
    public:
     /**
      * Creates a new instance of CommandService
-     * @param tx_processor - processor of received transactions
+     * @param cs_processor - processor of received transactions from consensus
      * @param storage - to query transactions outside the cache
      * @param status_bus is a common notifier for tx statuses
      * @param initial_timeout - streaming timeout when tx is not received
      * @param nonfinal_timeout - streaming timeout when tx is being processed
      */
     CommandService(
-        std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor,
+        std::shared_ptr<iroha::torii::ConsensusStatusProcessor> cs_processor,
         std::shared_ptr<iroha::ametsuchi::Storage> storage,
         std::shared_ptr<iroha::torii::StatusBus> status_bus,
         std::chrono::milliseconds initial_timeout,
@@ -165,7 +165,7 @@ namespace torii {
         std::shared_ptr<shared_model::interface::TransactionResponse>,
         shared_model::crypto::Hash::Hasher>;
 
-    std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor_;
+    std::shared_ptr<iroha::torii::ConsensusStatusProcessor> cs_processor_;
     std::shared_ptr<iroha::ametsuchi::Storage> storage_;
     std::shared_ptr<iroha::torii::StatusBus> status_bus_;
     std::chrono::milliseconds initial_timeout_;

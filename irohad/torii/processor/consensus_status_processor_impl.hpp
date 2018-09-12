@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef IROHA_TRANSACTION_PROCESSOR_STUB_HPP
-#define IROHA_TRANSACTION_PROCESSOR_STUB_HPP
+#ifndef IROHA_CONSENSUS_STATUS_PROCESSOR_IMPL_HPP
+#define IROHA_CONSENSUS_STATUS_PROCESSOR_IMPL_HPP
 
 #include <mutex>
 
@@ -27,19 +27,19 @@
 #include "logger/logger.hpp"
 #include "multi_sig_transactions/mst_processor.hpp"
 #include "network/peer_communication_service.hpp"
-#include "torii/processor/transaction_processor.hpp"
+#include "torii/processor/consensus_status_processor.hpp"
 #include "torii/status_bus.hpp"
 
 namespace iroha {
   namespace torii {
-    class TransactionProcessorImpl : public TransactionProcessor {
+    class ConsensusStatusProcessorImpl : public ConsensusStatusProcessor {
      public:
       /**
        * @param pcs - provide information proposals and commits
        * @param mst_processor is a handler for multisignature transactions
        * @param status_bus is a common notifier for tx statuses
        */
-      TransactionProcessorImpl(
+      ConsensusStatusProcessorImpl(
           std::shared_ptr<network::PeerCommunicationService> pcs,
           std::shared_ptr<MstProcessor> mst_processor,
           std::shared_ptr<iroha::torii::StatusBus> status_bus);
@@ -107,4 +107,4 @@ namespace iroha {
   }  // namespace torii
 }  // namespace iroha
 
-#endif  // IROHA_TRANSACTION_PROCESSOR_STUB_HPP
+#endif  // IROHA_CONSENSUS_STATUS_PROCESSOR_IMPL_HPP
