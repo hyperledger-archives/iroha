@@ -66,10 +66,7 @@ grpc::Status MstTransportGrpc::SendState(
                 std::for_each(
                     seq.value.batches().begin(),
                     seq.value.batches().end(),
-                    [&new_state](const auto &batch) {
-                      new_state += std::make_shared<
-                          shared_model::interface::TransactionBatch>(batch);
-                    });
+                    [&new_state](const auto &batch) { new_state += batch; });
                 return new_state;
               },
               [this](const auto &err) {
