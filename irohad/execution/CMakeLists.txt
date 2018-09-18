@@ -10,6 +10,7 @@ target_link_libraries(common_execution
         rxcpp
         boost
         shared_model_proto_backend
+        ametsuchi
         )
 
 add_library(query_execution

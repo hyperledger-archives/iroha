@@ -44,4 +44,6 @@ target_link_libraries(yac
     logger
     hash
     shared_model_proto_backend
+    ametsuchi
+    simulator
     )
