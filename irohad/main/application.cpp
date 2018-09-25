@@ -311,10 +311,10 @@ void Irohad::initTransactionCommandService() {
   auto status_factory =
       std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
   command_service = std::make_shared<::torii::CommandServiceImpl>(
-      tx_processor, storage, status_bus_, status_factory);
+      cs_processor, storage, status_bus_, status_factory);
   command_service_transport =
       std::make_shared<::torii::CommandServiceTransportGrpc>(
-          cs_processor,
+          command_service,
           status_bus_,
           std::chrono::seconds(1),
           2 * proposal_delay_,

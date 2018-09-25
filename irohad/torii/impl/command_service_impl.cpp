@@ -18,11 +18,11 @@
 namespace torii {
 
   CommandServiceImpl::CommandServiceImpl(
-      std::shared_ptr<iroha::torii::TransactionProcessor> tx_processor,
+      std::shared_ptr<iroha::torii::ConsensusStatusProcessor> cs_processor,
       std::shared_ptr<iroha::ametsuchi::Storage> storage,
       std::shared_ptr<iroha::torii::StatusBus> status_bus,
       std::shared_ptr<shared_model::interface::TxStatusFactory> status_factory)
-      : tx_processor_(std::move(tx_processor)),
+      : cs_processor_(std::move(cs_processor)),
         storage_(std::move(storage)),
         status_bus_(std::move(status_bus)),
         cache_(std::make_shared<CacheType>()),
@@ -129,7 +129,7 @@ namespace torii {
 
   void CommandServiceImpl::processBatch(
       std::shared_ptr<shared_model::interface::TransactionBatch> batch) {
-    tx_processor_->batchHandle(batch);
+    cs_processor_->batchHandle(batch);
     const auto &txs = batch->transactions();
     std::for_each(txs.begin(), txs.end(), [this](const auto &tx) {
       const auto &tx_hash = tx->hash();
