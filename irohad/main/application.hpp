@@ -43,6 +43,7 @@
 #include "synchronizer/synchronizer.hpp"
 #include "torii/command_service.hpp"
 #include "torii/processor/consensus_status_processor_impl.hpp"
+#include "torii/impl/command_service_transport_grpc.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/query_service.hpp"
 #include "validation/chain_validator.hpp"
@@ -108,7 +109,7 @@ class Irohad {
    */
   virtual void run();
 
-  virtual ~Irohad() = default;
+  virtual ~Irohad();
 
  protected:
   // -----------------------| component initialization |------------------------
@@ -213,6 +214,7 @@ class Irohad {
 
   // transaction service
   std::shared_ptr<torii::CommandService> command_service;
+  std::shared_ptr<torii::CommandServiceTransportGrpc> command_service_transport;
 
   // query service
   std::shared_ptr<torii::QueryService> query_service;
