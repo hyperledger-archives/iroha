@@ -31,3 +31,12 @@ target_link_libraries(mst_processor
     mst_state
     logger
     )
+
+add_library(mst_notificator
+    impl/mst_notificator_impl.cpp
+    )
+
+target_link_libraries(mst_notificator
+    rxcpp
+    logger
+    )

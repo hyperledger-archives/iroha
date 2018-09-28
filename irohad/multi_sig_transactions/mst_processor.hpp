@@ -34,6 +34,12 @@ namespace iroha {
    */
   class MstProcessor {
    public:
+    /// Type of updated state
+    using UpdatedStateType = std::shared_ptr<MstState>;
+
+    /// Batch type
+    using BatchType = DataType;
+
     // ---------------------------| user interface |----------------------------
 
     /**
@@ -46,18 +52,18 @@ namespace iroha {
     /**
      * Prove updating of state for handling status of signing
      */
-    rxcpp::observable<std::shared_ptr<MstState>> onStateUpdate() const;
+    rxcpp::observable<UpdatedStateType> onStateUpdate() const;
 
     /**
      * Observable emit batches which are prepared for further processing in
      * system
      */
-    rxcpp::observable<DataType> onPreparedBatches() const;
+    rxcpp::observable<BatchType> onPreparedBatches() const;
 
     /**
      * Observable emit expired by time transactions
      */
-    rxcpp::observable<DataType> onExpiredBatches() const;
+    rxcpp::observable<BatchType> onExpiredBatches() const;
 
     virtual ~MstProcessor() = default;
 
