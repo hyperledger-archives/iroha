@@ -18,11 +18,18 @@
 #ifndef IROHA_CONSENSUS_STATUS_PROCESSOR_HPP
 #define IROHA_CONSENSUS_STATUS_PROCESSOR_HPP
 
-namespace shared_model {
-  namespace interface {
-    class TransactionBatch;
-  }  // namespace interface
-}  // namespace shared_model
+#include "validation/stateful_validator_common.hpp"
+
+#include <memory>
+
+namespace iroha {
+  //  namespace validation {
+  //    class VerifiedProposalAndErrors;
+  //  }  // namespace validation
+  namespace synchronizer {
+    struct SynchronizationEvent;
+  }  // namespace synchronizer
+}  // namespace iroha
 
 namespace iroha {
   namespace torii {
@@ -33,12 +40,17 @@ namespace iroha {
     class ConsensusStatusProcessor {
      public:
       /**
-       * Process batch and propagate it to the MST or PCS
-       * @param transaction_batch - transaction batch for processing
+       * Handler for new verified proposals
        */
-      virtual void batchHandle(
-          std::shared_ptr<shared_model::interface::TransactionBatch>
-              transaction_batch) const = 0;
+      virtual void handleOnVerifiedProposal(
+          std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
+              validation_outcome) = 0;
+
+      /**
+       * Handler for new commits
+       */
+      virtual void handleOnCommit(
+          const iroha::synchronizer::SynchronizationEvent &) = 0;
 
       virtual ~ConsensusStatusProcessor() = default;
     };

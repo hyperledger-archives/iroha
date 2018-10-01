@@ -15,8 +15,15 @@
 #include "cryptography/hash.hpp"
 #include "interfaces/iroha_internal/tx_status_factory.hpp"
 #include "logger/logger.hpp"
+#include "multi_sig_transactions/mst_processor.hpp"
 #include "torii/processor/consensus_status_processor.hpp"
 #include "torii/status_bus.hpp"
+
+namespace shared_model {
+  namespace interface {
+    class TransactionBatch;
+  }  // namespace interface
+}  // namespace shared_model
 
 namespace torii {
   /**
@@ -30,12 +37,11 @@ namespace torii {
      * @param storage - to query transactions outside the cache
      * @param status_bus is a common notifier for tx statuses
      */
-    CommandServiceImpl(
-        std::shared_ptr<iroha::torii::ConsensusStatusProcessor> cs_processor,
-        std::shared_ptr<iroha::ametsuchi::Storage> storage,
-        std::shared_ptr<iroha::torii::StatusBus> status_bus,
-        std::shared_ptr<shared_model::interface::TxStatusFactory>
-            status_factory);
+    CommandServiceImpl(std::shared_ptr<iroha::MstProcessor> mst_processor,
+                       std::shared_ptr<iroha::ametsuchi::Storage> storage,
+                       std::shared_ptr<iroha::torii::StatusBus> status_bus,
+                       std::shared_ptr<shared_model::interface::TxStatusFactory>
+                           status_factory);
 
     /**
      * Disable copying in any way to prevent potential issues with common
@@ -86,7 +92,7 @@ namespace torii {
         std::shared_ptr<shared_model::interface::TransactionResponse>,
         shared_model::crypto::Hash::Hasher>;
 
-    std::shared_ptr<iroha::torii::ConsensusStatusProcessor> cs_processor_;
+    std::shared_ptr<iroha::MstProcessor> mst_processor_;
     std::shared_ptr<iroha::ametsuchi::Storage> storage_;
     std::shared_ptr<iroha::torii::StatusBus> status_bus_;
     std::shared_ptr<CacheType> cache_;

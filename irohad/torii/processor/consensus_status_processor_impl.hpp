@@ -41,19 +41,18 @@ namespace iroha {
        */
       ConsensusStatusProcessorImpl(
           std::shared_ptr<network::PeerCommunicationService> pcs,
-          std::shared_ptr<MstProcessor> mst_processor,
           std::shared_ptr<iroha::torii::StatusBus> status_bus);
 
-      void batchHandle(
-          std::shared_ptr<shared_model::interface::TransactionBatch>
-              transaction_batch) const override;
+      void handleOnVerifiedProposal(
+          std::shared_ptr<validation::VerifiedProposalAndErrors>
+              validation_outcome) override;
+
+      void handleOnCommit(
+          const iroha::synchronizer::SynchronizationEvent &) override;
 
      private:
       // connections
       std::shared_ptr<network::PeerCommunicationService> pcs_;
-
-      // processing
-      std::shared_ptr<MstProcessor> mst_processor_;
 
       std::shared_ptr<iroha::torii::StatusBus> status_bus_;
 

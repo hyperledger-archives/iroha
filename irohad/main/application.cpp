@@ -307,11 +307,11 @@ void Irohad::initPendingTxsStorage() {
  */
 void Irohad::initTransactionCommandService() {
   auto cs_processor = std::make_shared<ConsensusStatusProcessorImpl>(
-      pcs, mst_processor, status_bus_);
+      pcs, status_bus_);
   auto status_factory =
       std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
   command_service = std::make_shared<::torii::CommandServiceImpl>(
-      cs_processor, storage, status_bus_, status_factory);
+      mst_processor, storage, status_bus_, status_factory);
   command_service_transport =
       std::make_shared<::torii::CommandServiceTransportGrpc>(
           command_service,

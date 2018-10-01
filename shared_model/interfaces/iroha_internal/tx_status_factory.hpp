@@ -25,8 +25,18 @@ namespace shared_model {
       using TransactionHashType =
           const TransactionResponse::TransactionHashType &;
 
-      /// type of error attached to \class TransactionResponse instance
-      using ErrorMessageType = const TransactionResponse::ErrorMessageType &;
+      /**
+       * value type of the error message which is attached to \class
+       * TransactionResponse instance
+       */
+      using ErrorMessageValueType = TransactionResponse::ErrorMessageType;
+
+      /// const ref of \refitem ErrorMessageValueType
+      using ErrorMessageType = const ErrorMessageValueType &;
+
+      static ErrorMessageValueType emptyErrorMassage() {
+        return ErrorMessageValueType{};
+      }
 
       // ------------------------| Stateless statuses |-------------------------
 
