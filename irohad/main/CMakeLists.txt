@@ -55,6 +55,7 @@ target_link_libraries(application
     block_loader
     block_loader_service
     mst_processor
+    mst_notificator
     torii_service
     )
 

@@ -29,6 +29,7 @@
 #include "main/impl/ordering_init.hpp"
 #include "main/server_runner.hpp"
 #include "mst.grpc.pb.h"
+#include "multi_sig_transactions/mst_notificator.hpp"
 #include "multi_sig_transactions/mst_processor.hpp"
 #include "multi_sig_transactions/transport/mst_transport_grpc.hpp"
 #include "network/block_loader.hpp"
@@ -42,8 +43,8 @@
 #include "synchronizer/impl/synchronizer_impl.hpp"
 #include "synchronizer/synchronizer.hpp"
 #include "torii/command_service.hpp"
-#include "torii/processor/consensus_status_processor_impl.hpp"
 #include "torii/impl/command_service_transport_grpc.hpp"
+#include "torii/processor/consensus_status_processor_impl.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/query_service.hpp"
 #include "validation/chain_validator.hpp"
@@ -168,7 +169,6 @@ class Irohad {
   // crypto provider
   std::shared_ptr<shared_model::crypto::CryptoModelSigner<>> crypto_signer_;
 
-
   // factories
   std::shared_ptr<shared_model::interface::TxStatusFactory> status_factory_;
 
@@ -211,6 +211,7 @@ class Irohad {
 
   // mst
   std::shared_ptr<iroha::MstProcessor> mst_processor;
+  std::shared_ptr<iroha::MstNotificator> mst_notifier_;
 
   // pending transactions storage
   std::shared_ptr<iroha::PendingTransactionStorage> pending_txs_storage_;

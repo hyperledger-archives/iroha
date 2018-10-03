@@ -13,6 +13,7 @@
 #include "consensus/yac/impl/supermajority_checker_impl.hpp"
 #include "execution/query_execution_impl.hpp"
 #include "multi_sig_transactions/gossip_propagation_strategy.hpp"
+#include "multi_sig_transactions/mst_notificator_impl.hpp"
 #include "multi_sig_transactions/mst_processor_impl.hpp"
 #include "multi_sig_transactions/mst_processor_stub.hpp"
 #include "multi_sig_transactions/mst_time_provider_impl.hpp"
@@ -297,6 +298,8 @@ void Irohad::initMstProcessor() {
   } else {
     mst_processor = std::make_shared<MstProcessorStub>();
   }
+  mst_notifier_ = std::make_shared<MstNotificatorImpl>(
+      *mst_processor, pcs, status_bus_, status_factory_);
   log_->info("[Init] => MST processor");
 }
 
