@@ -39,9 +39,12 @@ namespace iroha {
 
     ConsensusStatusProcessorImpl::ConsensusStatusProcessorImpl(
         std::shared_ptr<PeerCommunicationService> pcs,
-        std::shared_ptr<iroha::torii::StatusBus> status_bus)
+        std::shared_ptr<iroha::torii::StatusBus> status_bus,
+        std::shared_ptr<shared_model::interface::TxStatusFactory>
+            status_factory)
         : pcs_(std::move(pcs)),
           status_bus_(std::move(status_bus)),
+          status_factory_(std::move(status_factory)),
           log_(logger::log("TxProcessor")) {
       // process stateful validation results
       pcs_->on_verified_proposal().subscribe(
@@ -58,62 +61,11 @@ namespace iroha {
     }
 
     void ConsensusStatusProcessorImpl::publishStatus(
-        TxStatusType tx_status,
+        shared_model::interface::TxStatusFactory::TxStatusFactoryInvoker
+            invoker,
         const shared_model::crypto::Hash &hash,
         const std::string &error) const {
-      auto builder =
-          shared_model::builder::DefaultTransactionStatusBuilder().txHash(hash);
-      if (not error.empty()) {
-        builder = builder.errorMsg(error);
-      }
-      switch (tx_status) {
-        case TxStatusType::kStatelessFailed: {
-          builder = builder.statelessValidationFailed();
-          break;
-        };
-        case TxStatusType::kStatelessValid: {
-          builder = builder.statelessValidationSuccess();
-          break;
-        };
-        case TxStatusType::kStatefulFailed: {
-          builder = builder.statefulValidationFailed();
-          break;
-        };
-        case TxStatusType::kStatefulValid: {
-          builder = builder.statefulValidationSuccess();
-          break;
-        };
-        case TxStatusType::kCommitted: {
-          builder = builder.committed();
-          break;
-        };
-        case TxStatusType::kMstExpired: {
-          builder = builder.mstExpired();
-          break;
-        };
-        case TxStatusType::kNotReceived: {
-          builder = builder.notReceived();
-          break;
-        };
-        case TxStatusType::kMstPending: {
-          builder = builder.mstPending();
-          break;
-        };
-        case TxStatusType::kEnoughSignaturesCollected: {
-          builder = builder.enoughSignaturesCollected();
-          break;
-        };
-      }
-      status_bus_->publish(builder.build());
-    }
-
-    void ConsensusStatusProcessorImpl::publishEnoughSignaturesStatus(
-        const shared_model::interface::types::SharedTxsCollectionType &txs)
-        const {
-      for (const auto &tx : txs) {
-        this->publishStatus(TxStatusType::kEnoughSignaturesCollected,
-                            tx->hash());
-      }
+      status_bus_->publish((status_factory_.get()->*invoker)(hash, error));
     }
 
     void ConsensusStatusProcessorImpl::handleOnVerifiedProposal(
@@ -126,14 +78,16 @@ namespace iroha {
         auto error_msg = composeErrorMessage(tx_error);
         log_->info(error_msg);
         this->publishStatus(
-            TxStatusType::kStatefulFailed, tx_error.second, error_msg);
+            &TxFatoryType::makeStatefulFail, tx_error.second, error_msg);
       }
       // notify about success txs
       for (const auto &successful_tx :
            proposal_and_errors->first->transactions()) {
         log_->info("on stateful validation success: {}",
                    successful_tx.hash().hex());
-        this->publishStatus(TxStatusType::kStatefulValid, successful_tx.hash());
+        this->publishStatus(&TxFatoryType::makeStatefulValid,
+                            successful_tx.hash(),
+                            TxFatoryType::emptyErrorMassage());
       }
     }
 
@@ -156,7 +110,9 @@ namespace iroha {
               std::lock_guard<std::mutex> lock(notifier_mutex_);
               for (const auto &tx_hash : current_txs_hashes_) {
                 log_->info("on commit committed: {}", tx_hash.hex());
-                this->publishStatus(TxStatusType::kCommitted, tx_hash);
+                this->publishStatus(&TxFatoryType::makeCommitted,
+                                    tx_hash,
+                                    TxFatoryType::emptyErrorMassage());
               }
               current_txs_hashes_.clear();
             }

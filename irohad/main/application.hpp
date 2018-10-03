@@ -118,6 +118,8 @@ class Irohad {
 
   virtual void initCryptoProvider();
 
+  virtual void initCreationFactories();
+
   virtual void initValidators();
 
   virtual void initNetworkClient();
@@ -165,6 +167,10 @@ class Irohad {
 
   // crypto provider
   std::shared_ptr<shared_model::crypto::CryptoModelSigner<>> crypto_signer_;
+
+
+  // factories
+  std::shared_ptr<shared_model::interface::TxStatusFactory> status_factory_;
 
   // validators
   std::shared_ptr<iroha::validation::StatefulValidator> stateful_validator;

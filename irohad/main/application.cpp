@@ -68,6 +68,7 @@ void Irohad::init() {
   initWsvRestorer();
   restoreWsv();
 
+  initCreationFactories();
   initCryptoProvider();
   initValidators();
   initNetworkClient();
@@ -131,6 +132,11 @@ bool Irohad::restoreWsv() {
         log_->error(error.error);
         return false;
       });
+}
+
+void Irohad::initCreationFactories() {
+  status_factory_ =
+      std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
 }
 
 /**
@@ -307,18 +313,16 @@ void Irohad::initPendingTxsStorage() {
  */
 void Irohad::initTransactionCommandService() {
   auto cs_processor = std::make_shared<ConsensusStatusProcessorImpl>(
-      pcs, status_bus_);
-  auto status_factory =
-      std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
+      pcs, status_bus_, status_factory_);
   command_service = std::make_shared<::torii::CommandServiceImpl>(
-      mst_processor, storage, status_bus_, status_factory);
+      mst_processor, storage, status_bus_, status_factory_);
   command_service_transport =
       std::make_shared<::torii::CommandServiceTransportGrpc>(
           command_service,
           status_bus_,
           std::chrono::seconds(1),
           2 * proposal_delay_,
-          status_factory);
+          status_factory_);
 
   log_->info("[Init] => command service");
 }
