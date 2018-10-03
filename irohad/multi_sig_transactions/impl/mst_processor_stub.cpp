@@ -9,8 +9,15 @@ using namespace iroha;
 
 auto MstProcessorStub::propagateBatchImpl(const DataType &batch)
     -> decltype(propagateBatch(batch)) {
-  log_->error("Multisig transactions are disabled. Skipping batch: {}",
-              batch->reducedHash().toString());
+  if (std::any_of(batch->transactions().begin(),
+                  batch->transactions().end(),
+                  [](const auto &tx) { return tx->quorum() > 1; })) {
+    log_->warn(
+        "Multisig transactions are disabled. Anyway, Iroha is going to "
+        "propagate batch: {}",
+        batch->reducedHash().toString());
+  }
+  prepared_subject_.get_subscriber().on_next(batch);
 }
 
 auto MstProcessorStub::onStateUpdateImpl() const -> decltype(onStateUpdate()) {
@@ -22,10 +29,7 @@ auto MstProcessorStub::onStateUpdateImpl() const -> decltype(onStateUpdate()) {
 
 auto MstProcessorStub::onPreparedBatchesImpl() const
     -> decltype(onPreparedBatches()) {
-  log_->warn(
-      "Multisig transactions are disabled, so MstProcessor observable won't "
-      "emit any events");
-  return rxcpp::observable<>::empty<DataType>();
+  return prepared_subject_.get_observable();
 }
 
 auto MstProcessorStub::onExpiredBatchesImpl() const

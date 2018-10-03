@@ -8,6 +8,9 @@
 
 #include "multi_sig_transactions/mst_processor.hpp"
 
+#include <rxcpp/rx.hpp>
+#include "multi_sig_transactions/mst_types.hpp"
+
 namespace iroha {
   class MstProcessorStub : public MstProcessor {
     auto propagateBatchImpl(const DataType &batch)
@@ -19,6 +22,8 @@ namespace iroha {
         -> decltype(onPreparedBatches()) override;
 
     auto onExpiredBatchesImpl() const -> decltype(onExpiredBatches()) override;
+
+    rxcpp::subjects::subject<DataType> prepared_subject_;
   };
 
 }  // namespace iroha
