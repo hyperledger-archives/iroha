@@ -43,11 +43,6 @@ namespace iroha {
     /// shortcut for \class shared_model::interface::TxStatusFactory type
     using TxFactoryType = shared_model::interface::TxStatusFactory;
 
-    /// Pointer to factory method for status creation
-    using TxStatusFactoryInvoker = TxFactoryType::FactoryReturnType (
-        TxFactoryType::*)(TxFactoryType::TransactionHashType,
-                          TxFactoryType::ErrorMessageType);
-
     /**
      * Publish a bunch of statuses for corresponding transactions
      * @param invoker - pointer to factory method which creates corresponding
@@ -55,7 +50,7 @@ namespace iroha {
      */
     void publish(const shared_model::interface::types::SharedTxsCollectionType
                      &transactions,
-                 TxStatusFactoryInvoker invoker);
+                 TxFactoryType::TxStatusFactoryInvoker invoker);
 
     /**
      * Publish EnoughSignatures status for passed transactions

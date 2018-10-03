@@ -34,6 +34,10 @@ namespace shared_model {
       /// const ref of \refitem ErrorMessageValueType
       using ErrorMessageType = const ErrorMessageValueType &;
 
+      /// Pointer to factory method for status creation
+      using TxStatusFactoryInvoker = FactoryReturnType (TxStatusFactory::*)(
+          TransactionHashType, ErrorMessageType);
+
       static ErrorMessageValueType emptyErrorMassage() {
         return ErrorMessageValueType{};
       }

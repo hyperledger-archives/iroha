@@ -50,7 +50,7 @@ void MstNotificatorImpl::handleOnCompletedBatches(
 
 void MstNotificatorImpl::publish(
     const shared_model::interface::types::SharedTxsCollectionType &transactions,
-    TxStatusFactoryInvoker invoker) {
+    TxFactoryType::TxStatusFactoryInvoker invoker) {
   std::for_each(transactions.begin(),
                 transactions.end(),
                 [this, invoker](const auto &tx) {
