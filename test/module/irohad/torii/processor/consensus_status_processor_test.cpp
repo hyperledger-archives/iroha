@@ -17,13 +17,13 @@
 #include "framework/specified_visitor.hpp"
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/network/network_mocks.hpp"
-#include "module/irohad/torii/status_mocks.hpp"
 #include "module/irohad/torii/torii_mocks.hpp"
 #include "module/shared_model/builders/protobuf/common_objects/proto_signature_builder.hpp"
 #include "module/shared_model/builders/protobuf/proposal.hpp"
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
+#include "module/shared_model/tx_response_status_mocks.hpp"
 
 using namespace iroha;
 using namespace iroha::network;

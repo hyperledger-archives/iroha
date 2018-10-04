@@ -12,64 +12,64 @@
 // -------------------------| Concrete data type mocks |------------------------
 
 class StatefulFailedTxResponseMock
-        : public shared_model::interface::StatefulFailedTxResponse {};
+    : public shared_model::interface::StatefulFailedTxResponse {};
 
 class StatefulValidTxResponseMock
-        : public shared_model::interface::StatefulValidTxResponse {};
+    : public shared_model::interface::StatefulValidTxResponse {};
 
 class CommittedTxResponseMock
-        : public shared_model::interface::CommittedTxResponse {};
+    : public shared_model::interface::CommittedTxResponse {};
 
 // -----------------------------| Container mock |------------------------------
 std::ostream &operator<<(
-        std::ostream &out,
-        const shared_model::interface::TransactionResponse::ResponseVariantType
+    std::ostream &out,
+    const shared_model::interface::TransactionResponse::ResponseVariantType
         &rhs) {
   return out;
 }
 
 class TransactionResponseMock
-        : public shared_model::interface::TransactionResponse {
-public:
+    : public shared_model::interface::TransactionResponse {
+ public:
   MOCK_CONST_METHOD0(transactionHash, const TransactionHashType &());
   MOCK_CONST_METHOD0(get, const ResponseVariantType &());
   MOCK_CONST_METHOD0(errorMessage, const ErrorMessageType &());
 
   friend std::ostream &operator<<(
-          std::ostream &out,
-          const shared_model::interface::TransactionResponse::ResponseVariantType
+      std::ostream &out,
+      const shared_model::interface::TransactionResponse::ResponseVariantType
           &rhs);
 };
 
 // ------------------------------| Factory mock |-------------------------------
 
 class TxStatusFactoryMock : public shared_model::interface::TxStatusFactory {
-public:
+ public:
   // --------------------------| Stateless statuses |---------------------------
   MOCK_METHOD2(makeStatelessFail,
-          FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
   MOCK_METHOD2(makeStatelessValid,
-          FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
 
   // --------------------------| Stateful statuses |----------------------------
   MOCK_METHOD2(makeStatefulFail,
-          FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
   MOCK_METHOD2(makeStatefulValid,
-          FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
 
   // ----------------------------| Final statuses |-----------------------------
   MOCK_METHOD2(makeCommitted,
-          FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
   MOCK_METHOD2(makeRejected,
-          FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
 
   // ----------------------------| Rest statuses |------------------------------
   MOCK_METHOD2(makeMstExpired,
-          FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
   MOCK_METHOD2(makeNotReceived,
-          FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
   MOCK_METHOD2(makeEnoughSignaturesCollected,
-          FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
 };
 
-#endif //IROHA_STATUS_MOCKS_HPP
+#endif  // IROHA_STATUS_MOCKS_HPP
