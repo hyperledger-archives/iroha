@@ -44,10 +44,7 @@ namespace shared_model {
 
       // ------------------------| Stateless statuses |-------------------------
 
-      /**
-       * Creates stateless failed transaction status
-       * @param
-       */
+      /// Creates stateless failed transaction status
       virtual FactoryReturnType makeStatelessFail(TransactionHashType,
                                                   ErrorMessageType) = 0;
 
