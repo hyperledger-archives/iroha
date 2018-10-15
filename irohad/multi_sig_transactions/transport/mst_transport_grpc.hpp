@@ -54,6 +54,7 @@ namespace iroha {
           std::shared_ptr<MstTransportNotification> notification) override;
 
       void sendState(const shared_model::interface::Peer &to,
+                     const shared_model::crypto::PublicKey &src_key,
                      ConstRefState providing_state) override;
 
      private:

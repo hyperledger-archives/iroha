@@ -26,6 +26,14 @@ namespace iroha {
       std::size_t operator()(
           const std::shared_ptr<shared_model::interface::Peer> &obj) const;
     };
+
+    /**
+     * Hasing of Blob object
+     */
+    class BlobHasher {
+     public:
+      std::size_t operator()(const shared_model::crypto::Blob &blob) const;
+    };
   }  // namespace model
 }  // namespace iroha
 

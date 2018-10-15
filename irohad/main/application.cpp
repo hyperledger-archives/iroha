@@ -317,7 +317,7 @@ void Irohad::initMstProcessor() {
         2 /*amount per once*/);
     auto mst_time = std::make_shared<MstTimeProviderImpl>();
     auto fair_mst_processor = std::make_shared<FairMstProcessor>(
-        mst_transport, mst_storage, mst_propagation, mst_time);
+        mst_transport, mst_storage, mst_propagation, mst_time, keypair.publicKey());
     mst_processor = fair_mst_processor;
     mst_transport->subscribe(fair_mst_processor);
   } else {

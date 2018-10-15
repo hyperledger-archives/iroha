@@ -86,18 +86,19 @@ TEST(TransportTest, SendAndReceive) {
 
   std::shared_ptr<shared_model::interface::Peer> peer =
       makePeer(addr + std::to_string(port), "abcdabcdabcdabcdabcdabcdabcdabcd");
+  auto my_key = makeKey();
   // we want to ensure that server side will call onNewState()
   // with same parameters as on the client side
   EXPECT_CALL(*notifications, onNewState(_, _))
-      .WillOnce(
-          Invoke([&peer, &cv, &state](const auto &p, auto const &target_state) {
-            EXPECT_EQ(*peer, *p);
+      .WillOnce(Invoke(
+          [&my_key, &cv, &state](const auto &from_key, auto const &target_state) {
+            EXPECT_EQ(my_key.publicKey(), from_key);
 
             EXPECT_EQ(state, target_state);
             cv.notify_one();
           }));
 
-  transport->sendState(*peer, state);
+  transport->sendState(*peer, my_key.publicKey(), state);
   std::unique_lock<std::mutex> lock(mtx);
   cv.wait_for(lock, std::chrono::milliseconds(5000));
 

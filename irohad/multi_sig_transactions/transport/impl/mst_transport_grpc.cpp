@@ -10,7 +10,6 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include "backend/protobuf/transaction.hpp"
-#include "cryptography/public_key.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/transaction.hpp"
 
@@ -87,19 +86,9 @@ grpc::Status MstTransportGrpc::SendState(
   async_call_->log_->info("batches in MstState: {}",
                           new_state.getBatches().size());
 
-  auto &peer = request->peer();
-  factory_
-      ->createPeer(peer.address(),
-                   shared_model::crypto::PublicKey(peer.peer_key()))
-      .match(
-          [&](expected::Value<std::unique_ptr<shared_model::interface::Peer>>
-                  &v) {
-            subscriber_.lock()->onNewState(std::move(v.value),
-                                           std::move(new_state));
-          },
-          [&](expected::Error<std::string> &e) {
-            async_call_->log_->info(e.error);
-          });
+  subscriber_.lock()->onNewState(
+      shared_model::crypto::PublicKey(request->source_peer_key()),
+      std::move(new_state));
 
   return grpc::Status::OK;
 }
@@ -110,6 +99,7 @@ void MstTransportGrpc::subscribe(
 }
 
 void MstTransportGrpc::sendState(const shared_model::interface::Peer &to,
+                                 const shared_model::crypto::PublicKey &src_key,
                                  ConstRefState providing_state) {
   async_call_->log_->info("Propagate MstState to peer {}", to.address());
   std::unique_ptr<transport::MstTransportGrpc::StubInterface> client =
@@ -117,9 +107,7 @@ void MstTransportGrpc::sendState(const shared_model::interface::Peer &to,
           to.address(), grpc::InsecureChannelCredentials()));
 
   transport::MstState protoState;
-  auto peer = protoState.mutable_peer();
-  peer->set_peer_key(shared_model::crypto::toBinaryString(to.pubkey()));
-  peer->set_address(to.address());
+  protoState.set_source_peer_key(shared_model::crypto::toBinaryString(src_key));
   for (auto &batch : providing_state.getBatches()) {
     for (auto &tx : batch->transactions()) {
       // TODO (@l4l) 04/03/18 simplify with IR-1040

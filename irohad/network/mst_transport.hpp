@@ -20,11 +20,11 @@ namespace iroha {
      public:
       /**
        * Handler method for updating state, when new data received
-       * @param from - peer emitter of state
+       * @param from - key of the peer emitted the state
        * @param new_state - state propagated from peer
        */
       virtual void onNewState(
-          const std::shared_ptr<shared_model::interface::Peer> &from,
+          const shared_model::crypto::PublicKey &from,
           const MstState &new_state) = 0;
 
       virtual ~MstTransportNotification() = default;
@@ -46,9 +46,11 @@ namespace iroha {
       /**
        * Share state with other peer
        * @param to - peer recipient of message
+       * @param src_key - the public key of source (this) peer
        * @param providing_state - state for transmitting
        */
       virtual void sendState(const shared_model::interface::Peer &to,
+                             const shared_model::crypto::PublicKey &src_key,
                              const MstState &providing_state) = 0;
 
       virtual ~MstTransport() = default;

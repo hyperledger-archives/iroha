@@ -5,6 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <tuple>
+#include "cryptography/keypair.hpp"
 #include "datetime/time.hpp"
 #include "framework/test_subscriber.hpp"
 #include "logger/logger.hpp"
@@ -48,6 +49,7 @@ class MstProcessorTest : public testing::Test {
   /// use effective implementation of storage
   std::shared_ptr<MstStorage> storage;
   std::shared_ptr<FairMstProcessor> mst_processor;
+  const shared_model::crypto::Keypair kMyKeypair = makeKey();
 
   // ---------------------------------| mocks |---------------------------------
 
@@ -74,8 +76,11 @@ class MstProcessorTest : public testing::Test {
     EXPECT_CALL(*time_provider, getCurrentTime())
         .WillRepeatedly(Return(time_now));
 
-    mst_processor = std::make_shared<FairMstProcessor>(
-        transport, storage, propagation_strategy, time_provider);
+    mst_processor = std::make_shared<FairMstProcessor>(transport,
+                                                       storage,
+                                                       propagation_strategy,
+                                                       time_provider,
+                                                       kMyKeypair.publicKey());
   }
 };
 
@@ -261,11 +266,11 @@ TEST_F(MstProcessorTest, onUpdateFromTransportUsecase) {
   auto observers = initObservers(mst_processor, 0, 1, 0);
 
   // ---------------------------------| when |----------------------------------
-  auto another_peer = makePeer("another", "another_pubkey");
+  shared_model::crypto::PublicKey another_peer_key("another_pubkey");
   auto transported_state = MstState::empty(std::make_shared<TestCompleter>());
   transported_state += addSignaturesFromKeyPairs(
       makeTestBatch(txBuilder(1, time_now, quorum)), 0, makeKey());
-  mst_processor->onNewState(another_peer, transported_state);
+  mst_processor->onNewState(another_peer_key, transported_state);
 
   // ---------------------------------| then |----------------------------------
   check(observers);
@@ -286,7 +291,7 @@ TEST_F(MstProcessorTest, onNewPropagationUsecase) {
   auto quorum = 2u;
   mst_processor->propagateBatch(addSignaturesFromKeyPairs(
       makeTestBatch(txBuilder(1, time_after, quorum)), 0, makeKey()));
-  EXPECT_CALL(*transport, sendState(_, _)).Times(2);
+  EXPECT_CALL(*transport, sendState(_, _, _)).Times(2);
 
   // ---------------------------------| when |----------------------------------
   std::vector<std::shared_ptr<shared_model::interface::Peer>> peers{
@@ -305,7 +310,7 @@ TEST_F(MstProcessorTest, onNewPropagationUsecase) {
  */
 TEST_F(MstProcessorTest, emptyStatePropagation) {
   // ---------------------------------| then |----------------------------------
-  EXPECT_CALL(*transport, sendState(_, _)).Times(0);
+  EXPECT_CALL(*transport, sendState(_, _, _)).Times(0);
 
   // ---------------------------------| given |---------------------------------
   auto another_peer = makePeer("another", "another_pubkey");
@@ -313,8 +318,9 @@ TEST_F(MstProcessorTest, emptyStatePropagation) {
   auto another_peer_state = MstState::empty();
   another_peer_state += makeTestBatch(txBuilder(1));
 
-  storage->apply(another_peer, another_peer_state);
-  ASSERT_TRUE(storage->getDiffState(another_peer, time_now).isEmpty());
+  storage->apply(another_peer->pubkey(), another_peer_state);
+  ASSERT_TRUE(
+      storage->getDiffState(another_peer->pubkey(), time_now).isEmpty());
 
   // ---------------------------------| when |----------------------------------
   std::vector<std::shared_ptr<shared_model::interface::Peer>> peers{

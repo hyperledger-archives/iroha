@@ -13,14 +13,16 @@ namespace iroha {
       std::shared_ptr<iroha::network::MstTransport> transport,
       std::shared_ptr<MstStorage> storage,
       std::shared_ptr<PropagationStrategy> strategy,
-      std::shared_ptr<MstTimeProvider> time_provider)
+      std::shared_ptr<MstTimeProvider> time_provider,
+      shared_model::crypto::PublicKey my_key)
       : MstProcessor(),
         transport_(std::move(transport)),
         storage_(std::move(storage)),
         strategy_(std::move(strategy)),
         time_provider_(std::move(time_provider)),
         propagation_subscriber_(strategy_->emitter().subscribe(
-            [this](auto data) { this->onPropagate(data); })) {
+            [this](auto data) { this->onPropagate(data); })),
+        my_key_(my_key) {
     log_ = logger::log("FairMstProcessor");
   }
 
@@ -87,7 +89,7 @@ namespace iroha {
   // -------------------| MstTransportNotification override |-------------------
 
   void FairMstProcessor::onNewState(
-      const std::shared_ptr<shared_model::interface::Peer> &from,
+      const shared_model::crypto::PublicKey &from,
       ConstRefState new_state) {
     log_->info("Applying new state");
     auto current_time = time_provider_->getCurrentTime();
@@ -114,11 +116,12 @@ namespace iroha {
     auto size = data.size();
     std::for_each(data.begin(),
                   data.end(),
-                  [this, &current_time, size](const auto &peer) {
-                    auto diff = storage_->getDiffState(peer, current_time);
+                  [this, &current_time, size](const auto &dst_peer) {
+                    auto diff = storage_->getDiffState(dst_peer->pubkey(),
+                                                       current_time);
                     if (not diff.isEmpty()) {
                       log_->info("Propagate new data[{}]", size);
-                      transport_->sendState(*peer, diff);
+                      transport_->sendState(*dst_peer, my_key_, diff);
                     }
                   });
   }
