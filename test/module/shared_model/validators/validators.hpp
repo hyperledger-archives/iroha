@@ -29,6 +29,40 @@ namespace shared_model {
       MOCK_CONST_METHOD1_T(validate, Answer(const T &));
     };
 
+    struct AlwaysValidFieldValidator final {
+      void validateAccountId(...) const {}
+      void validateAssetId(...) const {}
+      void validatePeer(...) const {}
+      void validateAmount(...) const {}
+      void validatePubkey(...) const {}
+      void validatePeerAddress(...) const {}
+      void validateRoleId(...) const {}
+      void validateAccountName(...) const {}
+      void validateDomainId(...) const {}
+      void validateAssetName(...) const {}
+      void validateAccountDetailKey(...) const {}
+      void validateAccountDetailValue(...) const {}
+      void validatePrecision(...) const {}
+      void validateRolePermission(...) const {}
+      void validateGrantablePermission(...) const {}
+      void validateQuorum(...) const {}
+      void validateCreatorAccountId(...) const {}
+      void validateCreatedTime(...) const {}
+      void validateCounter(...) const {}
+      void validateSignatures(...) const {}
+      void validateQueryPayloadMeta(...) const {}
+      void validateDescription(...) const {}
+      void validateBatchMeta(...) const {}
+      void validateHeight(...) const {}
+      void validateHash(...) const {}
+    };
+
+    template <typename Model>
+    struct AlwaysValidModelValidator final : public AbstractValidator<Model> {
+     public:
+      Answer validate(const Model &m) const override{return {};};
+    };
+
   }  // namespace validation
 }  // namespace shared_model
 

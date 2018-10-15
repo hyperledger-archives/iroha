@@ -33,6 +33,7 @@ target_link_libraries(integration_framework
     )
 
 target_include_directories(integration_framework PUBLIC ${PROJECT_SOURCE_DIR}/test)
+target_include_directories(integration_framework PRIVATE ${gmock_INCLUDE_DIR})
 
 add_library(integration_framework_config_helper config_helper.cpp)
 target_include_directories(integration_framework_config_helper PUBLIC ${PROJECT_SOURCE_DIR}/test)
