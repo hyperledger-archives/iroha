@@ -49,7 +49,6 @@ class MstProcessorTest : public testing::Test {
   /// use effective implementation of storage
   std::shared_ptr<MstStorage> storage;
   std::shared_ptr<FairMstProcessor> mst_processor;
-  const shared_model::crypto::Keypair kMyKeypair = makeKey();
 
   // ---------------------------------| mocks |---------------------------------
 
@@ -76,11 +75,8 @@ class MstProcessorTest : public testing::Test {
     EXPECT_CALL(*time_provider, getCurrentTime())
         .WillRepeatedly(Return(time_now));
 
-    mst_processor = std::make_shared<FairMstProcessor>(transport,
-                                                       storage,
-                                                       propagation_strategy,
-                                                       time_provider,
-                                                       kMyKeypair.publicKey());
+    mst_processor = std::make_shared<FairMstProcessor>(
+        transport, storage, propagation_strategy, time_provider);
   }
 };
 
@@ -291,7 +287,7 @@ TEST_F(MstProcessorTest, onNewPropagationUsecase) {
   auto quorum = 2u;
   mst_processor->propagateBatch(addSignaturesFromKeyPairs(
       makeTestBatch(txBuilder(1, time_after, quorum)), 0, makeKey()));
-  EXPECT_CALL(*transport, sendState(_, _, _)).Times(2);
+  EXPECT_CALL(*transport, sendState(_, _)).Times(2);
 
   // ---------------------------------| when |----------------------------------
   std::vector<std::shared_ptr<shared_model::interface::Peer>> peers{
@@ -310,7 +306,7 @@ TEST_F(MstProcessorTest, onNewPropagationUsecase) {
  */
 TEST_F(MstProcessorTest, emptyStatePropagation) {
   // ---------------------------------| then |----------------------------------
-  EXPECT_CALL(*transport, sendState(_, _, _)).Times(0);
+  EXPECT_CALL(*transport, sendState(_, _)).Times(0);
 
   // ---------------------------------| given |---------------------------------
   auto another_peer = makePeer("another", "another_pubkey");

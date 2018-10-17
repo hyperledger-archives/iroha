@@ -13,16 +13,14 @@ namespace iroha {
       std::shared_ptr<iroha::network::MstTransport> transport,
       std::shared_ptr<MstStorage> storage,
       std::shared_ptr<PropagationStrategy> strategy,
-      std::shared_ptr<MstTimeProvider> time_provider,
-      shared_model::crypto::PublicKey my_key)
+      std::shared_ptr<MstTimeProvider> time_provider)
       : MstProcessor(),
         transport_(std::move(transport)),
         storage_(std::move(storage)),
         strategy_(std::move(strategy)),
         time_provider_(std::move(time_provider)),
         propagation_subscriber_(strategy_->emitter().subscribe(
-            [this](auto data) { this->onPropagate(data); })),
-        my_key_(my_key) {
+            [this](auto data) { this->onPropagate(data); })) {
     log_ = logger::log("FairMstProcessor");
   }
 
@@ -121,7 +119,7 @@ namespace iroha {
                                                        current_time);
                     if (not diff.isEmpty()) {
                       log_->info("Propagate new data[{}]", size);
-                      transport_->sendState(*dst_peer, my_key_, diff);
+                      transport_->sendState(*dst_peer, diff);
                     }
                   });
   }

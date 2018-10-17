@@ -50,7 +50,6 @@ namespace iroha {
        * @param providing_state - state for transmitting
        */
       virtual void sendState(const shared_model::interface::Peer &to,
-                             const shared_model::crypto::PublicKey &src_key,
                              const MstState &providing_state) = 0;
 
       virtual ~MstTransport() = default;

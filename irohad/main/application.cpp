@@ -306,7 +306,8 @@ void Irohad::initMstProcessor() {
         common_objects_factory_,
         transaction_factory,
         batch_parser,
-        transaction_batch_factory_);
+        transaction_batch_factory_,
+        keypair.publicKey());
     auto mst_completer = std::make_shared<DefaultCompleter>();
     auto mst_storage = std::make_shared<MstStorageStateImpl>(mst_completer);
     // TODO: IR-1317 @l4l (02/05/18) magics should be replaced with options via
@@ -317,7 +318,7 @@ void Irohad::initMstProcessor() {
         2 /*amount per once*/);
     auto mst_time = std::make_shared<MstTimeProviderImpl>();
     auto fair_mst_processor = std::make_shared<FairMstProcessor>(
-        mst_transport, mst_storage, mst_propagation, mst_time, keypair.publicKey());
+        mst_transport, mst_storage, mst_propagation, mst_time);
     mst_processor = fair_mst_processor;
     mst_transport->subscribe(fair_mst_processor);
   } else {

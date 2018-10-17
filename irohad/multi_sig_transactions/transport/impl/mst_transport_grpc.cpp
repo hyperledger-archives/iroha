@@ -23,12 +23,14 @@ MstTransportGrpc::MstTransportGrpc(
     std::shared_ptr<shared_model::interface::TransactionBatchParser>
         batch_parser,
     std::shared_ptr<shared_model::interface::TransactionBatchFactory>
-        transaction_batch_factory)
+        transaction_batch_factory,
+    shared_model::crypto::PublicKey my_key)
     : async_call_(std::move(async_call)),
       factory_(std::move(factory)),
       transaction_factory_(std::move(transaction_factory)),
       batch_parser_(std::move(batch_parser)),
-      batch_factory_(std::move(transaction_batch_factory)) {}
+      batch_factory_(std::move(transaction_batch_factory)),
+      my_key_(shared_model::crypto::toBinaryString(my_key)) {}
 
 shared_model::interface::types::SharedTxsCollectionType
 MstTransportGrpc::deserializeTransactions(const transport::MstState *request) {
@@ -99,7 +101,6 @@ void MstTransportGrpc::subscribe(
 }
 
 void MstTransportGrpc::sendState(const shared_model::interface::Peer &to,
-                                 const shared_model::crypto::PublicKey &src_key,
                                  ConstRefState providing_state) {
   async_call_->log_->info("Propagate MstState to peer {}", to.address());
   std::unique_ptr<transport::MstTransportGrpc::StubInterface> client =
@@ -107,7 +108,7 @@ void MstTransportGrpc::sendState(const shared_model::interface::Peer &to,
           to.address(), grpc::InsecureChannelCredentials()));
 
   transport::MstState protoState;
-  protoState.set_source_peer_key(shared_model::crypto::toBinaryString(src_key));
+  protoState.set_source_peer_key(my_key_);
   for (auto &batch : providing_state.getBatches()) {
     for (auto &tx : batch->transactions()) {
       // TODO (@l4l) 04/03/18 simplify with IR-1040

@@ -45,8 +45,7 @@ namespace iroha {
     FairMstProcessor(std::shared_ptr<iroha::network::MstTransport> transport,
                      std::shared_ptr<MstStorage> storage,
                      std::shared_ptr<PropagationStrategy> strategy,
-                     std::shared_ptr<MstTimeProvider> time_provider,
-                     shared_model::crypto::PublicKey my_key);
+                     std::shared_ptr<MstTimeProvider> time_provider);
 
     ~FairMstProcessor();
 
@@ -118,9 +117,6 @@ namespace iroha {
     /// use for tracking the propagation subscription
 
     rxcpp::composite_subscription propagation_subscriber_;
-
-    /// source peer key for MST propogation messages
-    shared_model::crypto::PublicKey my_key_;
   };
 }  // namespace iroha
 

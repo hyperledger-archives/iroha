@@ -48,11 +48,13 @@ TEST(TransportTest, SendAndReceive) {
       std::make_shared<shared_model::interface::TransactionBatchParserImpl>();
   auto batch_factory =
       std::make_shared<shared_model::interface::TransactionBatchFactoryImpl>();
+  auto my_key = makeKey();
   auto transport = std::make_shared<MstTransportGrpc>(async_call_,
                                                       factory,
                                                       std::move(tx_factory),
                                                       std::move(parser),
-                                                      std::move(batch_factory));
+                                                      std::move(batch_factory),
+                                                      my_key.publicKey());
   auto notifications = std::make_shared<iroha::MockMstTransportNotification>();
   transport->subscribe(notifications);
 
@@ -86,7 +88,6 @@ TEST(TransportTest, SendAndReceive) {
 
   std::shared_ptr<shared_model::interface::Peer> peer =
       makePeer(addr + std::to_string(port), "abcdabcdabcdabcdabcdabcdabcdabcd");
-  auto my_key = makeKey();
   // we want to ensure that server side will call onNewState()
   // with same parameters as on the client side
   EXPECT_CALL(*notifications, onNewState(_, _))
@@ -98,7 +99,7 @@ TEST(TransportTest, SendAndReceive) {
             cv.notify_one();
           }));
 
-  transport->sendState(*peer, my_key.publicKey(), state);
+  transport->sendState(*peer, state);
   std::unique_lock<std::mutex> lock(mtx);
   cv.wait_for(lock, std::chrono::milliseconds(5000));
 
