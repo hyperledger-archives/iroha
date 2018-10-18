@@ -12,6 +12,8 @@ def buildSteps(String nodeLabel, int parallelism) {
       //   build.cmakeBuild("", parallelism)
       // }
       sh "echo qqqqRunning on ${nodeLabel}"
+      sh "sleep 20"
+      sh "sleep 1"
     }
   }
 }
