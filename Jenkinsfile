@@ -37,12 +37,20 @@ node ('master') {
                                        builder: x64LinuxBuilder,
                                        worker: x64LinuxWorker)
   def x64MacReleaseBuild = new Build(name: 'Mac Linux Release',
-                                       type: 'Release',
-                                       builder: x64MacBuilder,
-                                       worker: x64MacWorker)
+                                     type: 'Release',
+                                     builder: x64MacBuilder,
+                                     worker: x64MacWorker)
 
   tasks[x64LinuxReleaseBuild.name] = { x64LinuxReleaseBuild.build() }
-  tasks[x64MacReleaseBuild.name] = { x64MacReleaseBuild.build() }
+  //tasks[x64MacReleaseBuild.name] = { x64MacReleaseBuild.build() }
 
   parallel tasks
+
+  if (currentBuild.currentResult == 'SUCCESS') {
+    if (scmVars.CHANGE_ID) {
+      if(scmVars.CHANGE_BRANCH == 'feature/ready-dev-experimental') {
+        sh 'echo PUSH!'
+      }
+    }
+  }
 }
