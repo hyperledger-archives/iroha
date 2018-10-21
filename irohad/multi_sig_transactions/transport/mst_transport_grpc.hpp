@@ -31,8 +31,6 @@ namespace iroha {
       MstTransportGrpc(
           std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
               async_call,
-          std::shared_ptr<shared_model::interface::CommonObjectsFactory>
-              factory,
           std::shared_ptr<TransportFactoryType> transaction_factory,
           std::shared_ptr<shared_model::interface::TransactionBatchParser>
               batch_parser,
@@ -68,7 +66,6 @@ namespace iroha {
       std::weak_ptr<MstTransportNotification> subscriber_;
       std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
           async_call_;
-      std::shared_ptr<shared_model::interface::CommonObjectsFactory> factory_;
       std::shared_ptr<TransportFactoryType> transaction_factory_;
       std::shared_ptr<shared_model::interface::TransactionBatchParser>
           batch_parser_;
