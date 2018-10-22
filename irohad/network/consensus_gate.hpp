@@ -1,52 +1,74 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef IROHA_CONSENSUS_GATE_HPP
 #define IROHA_CONSENSUS_GATE_HPP
 
+#include <boost/optional.hpp>
 #include <rxcpp/rx.hpp>
+
+#include "consensus/round.hpp"
 
 namespace shared_model {
   namespace interface {
     class Block;
-  }
+    class Proposal;
+  }  // namespace interface
 }  // namespace shared_model
 
 namespace iroha {
   namespace network {
+    /// Current pair is valid
+    struct PairValid {
+      std::shared_ptr<shared_model::interface::Block> block;
+    };
+
+    /// Network votes for another pair and round
+    struct VoteOther {
+      std::shared_ptr<shared_model::interface::Block> block;
+    };
+
+    /// Reject on proposal
+    struct ProposalReject {};
+
+    /// Reject on block
+    struct BlockReject {
+      std::shared_ptr<shared_model::interface::Block> block;
+    };
+
+    /// Agreement on <None, None>
+    struct AgreementOnNone {};
+
     /**
      * Public api of consensus module
      */
     class ConsensusGate {
      public:
+      using Round = iroha::consensus::Round;
       /**
        * Providing data for consensus for voting
        * @param block is the block for which current node is voting
        */
       virtual void vote(
-          std::shared_ptr<shared_model::interface::Block> block) = 0;
+          boost::optional<std::shared_ptr<shared_model::interface::Proposal>>
+              proposal,
+          boost::optional<std::shared_ptr<shared_model::interface::Block>>
+              block,
+          Round round) = 0;
+
+      // TODO(@l4l) 10/10/18: IR-1749 move instantiation to separate cpp
+      using GateObject = boost::variant<PairValid,
+                                        VoteOther,
+                                        ProposalReject,
+                                        BlockReject,
+                                        AgreementOnNone>;
 
       /**
-       * Emit committed blocks
-       * Note: committed block may be not satisfy for top block in ledger
-       * because synchronization reasons
+       * @return emit gate responses
        */
-      virtual rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-      on_commit() = 0;
+      virtual rxcpp::observable<GateObject> onOutcome() = 0;
 
       virtual ~ConsensusGate() = default;
     };
