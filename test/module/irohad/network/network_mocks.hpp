@@ -99,9 +99,7 @@ namespace iroha {
                    block,
                Round round));
 
-      MOCK_METHOD0(
-          on_commit,
-          rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>());
+      MOCK_METHOD0(onOutcome, rxcpp::observable<GateObject>());
     };
 
   }  // namespace network

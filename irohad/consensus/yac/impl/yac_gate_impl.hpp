@@ -38,7 +38,6 @@ namespace iroha {
                     std::shared_ptr<simulator::BlockCreator> block_creator,
                     std::shared_ptr<consensus::ConsensusResultCache>
                         consensus_result_cache);
-
         void vote(
             boost::optional<std::shared_ptr<shared_model::interface::Proposal>>
                 proposal,
