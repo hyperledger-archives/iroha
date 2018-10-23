@@ -41,6 +41,7 @@ using namespace std::chrono_literals;
  */
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &pg_conn,
+               const std::string &listen_ip,
                size_t torii_port,
                size_t internal_port,
                size_t max_proposal_size,
@@ -50,6 +51,7 @@ Irohad::Irohad(const std::string &block_store_dir,
                bool is_mst_supported)
     : block_store_dir_(block_store_dir),
       pg_conn_(pg_conn),
+      listen_ip_(listen_ip),
       torii_port_(torii_port),
       internal_port_(internal_port),
       max_proposal_size_(max_proposal_size),
@@ -382,38 +384,45 @@ void Irohad::initWsvRestorer() {
 /**
  * Run iroha daemon
  */
-void Irohad::run() {
+Irohad::RunResult Irohad::run() {
   using iroha::expected::operator|;
 
   // Initializing torii server
-  std::string ip = "0.0.0.0";
-  torii_server =
-      std::make_unique<ServerRunner>(ip + ":" + std::to_string(torii_port_));
+  torii_server = std::make_unique<ServerRunner>(listen_ip_ + ":"
+                                                + std::to_string(torii_port_));
 
   // Initializing internal server
-  internal_server =
-      std::make_unique<ServerRunner>(ip + ":" + std::to_string(internal_port_));
+  internal_server = std::make_unique<ServerRunner>(
+      listen_ip_ + ":" + std::to_string(internal_port_));
 
   // Run torii server
-  (torii_server->append(command_service_transport).append(query_service).run() |
-   [&](const auto &port) {
-     log_->info("Torii server bound on port {}", port);
-     if (is_mst_supported_) {
-       internal_server->append(mst_transport);
-     }
-     // Run internal server
-     return internal_server->append(ordering_init.ordering_gate_transport)
-         .append(ordering_init.ordering_service_transport)
-         .append(yac_init.consensus_network)
-         .append(loader_init.service)
-         .run();
-   })
-      .match(
+  return (torii_server->append(command_service_transport)
+              .append(query_service)
+              .run()
+          |
           [&](const auto &port) {
+            log_->info("Torii server bound on port {}", port);
+            if (is_mst_supported_) {
+              internal_server->append(mst_transport);
+            }
+            // Run internal server
+            return internal_server
+                ->append(ordering_init.ordering_gate_transport)
+                .append(ordering_init.ordering_service_transport)
+                .append(yac_init.consensus_network)
+                .append(loader_init.service)
+                .run();
+          })
+      .match(
+          [&](const auto &port) -> RunResult {
             log_->info("Internal server bound on port {}", port.value);
             log_->info("===> iroha initialized");
+            return {};
           },
-          [&](const expected::Error<std::string> &e) { log_->error(e.error); });
+          [&](const expected::Error<std::string> &e) -> RunResult {
+            log_->error(e.error);
+            return e;
+          });
 }
 
 Irohad::~Irohad() {
