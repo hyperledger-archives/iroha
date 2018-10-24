@@ -25,6 +25,7 @@ add_library(mst_notificator
 
 target_link_libraries(mst_notificator
     rxcpp
+    shared_model_interfaces
     logger
     )
 

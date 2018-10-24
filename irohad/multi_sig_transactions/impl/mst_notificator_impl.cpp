@@ -4,6 +4,8 @@
  */
 
 #include "multi_sig_transactions/mst_notificator_impl.hpp"
+#include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "interfaces/transaction.hpp"
 
 #include <functional>
 

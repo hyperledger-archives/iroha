@@ -15,6 +15,7 @@
 #include "multi_sig_transactions/mst_processor.hpp"
 #include "network/peer_communication_service.hpp"
 #include "torii/status_bus.hpp"
+#include "interfaces/iroha_internal/transaction_sequence.hpp"
 
 namespace iroha {
   class MstNotificatorImpl : public MstNotificator {

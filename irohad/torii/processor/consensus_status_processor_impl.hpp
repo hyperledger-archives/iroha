@@ -6,7 +6,7 @@
 #ifndef IROHA_CONSENSUS_STATUS_PROCESSOR_IMPL_HPP
 #define IROHA_CONSENSUS_STATUS_PROCESSOR_IMPL_HPP
 
-#include "torii/processor/transaction_processor.hpp"
+#include "torii/processor/consensus_status_processor.hpp"
 
 #include <mutex>
 

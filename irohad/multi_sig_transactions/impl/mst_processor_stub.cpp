@@ -6,6 +6,7 @@
 #include "multi_sig_transactions/mst_processor_stub.hpp"
 
 #include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "interfaces/transaction.hpp"
 
 using namespace iroha;
 
