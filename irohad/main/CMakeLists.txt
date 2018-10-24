@@ -57,6 +57,7 @@ target_link_libraries(application
     mst_processor
     mst_notificator
     torii_service
+    pending_txs_storage
     )
 
 add_executable(irohad irohad.cpp)

@@ -4,14 +4,18 @@
  */
 
 #include "main/application.hpp"
+
 #include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
 #include "ametsuchi/impl/wsv_restorer_impl.hpp"
 #include "backend/protobuf/common_objects/proto_common_objects_factory.hpp"
 #include "backend/protobuf/proto_block_json_converter.hpp"
 #include "backend/protobuf/proto_proposal_factory.hpp"
+#include "backend/protobuf/proto_query_response_factory.hpp"
+#include "backend/protobuf/proto_transport_factory.hpp"
 #include "backend/protobuf/proto_tx_status_factory.hpp"
 #include "consensus/yac/impl/supermajority_checker_impl.hpp"
-#include "execution/query_execution_impl.hpp"
+#include "interfaces/iroha_internal/transaction_batch_factory_impl.hpp"
+#include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
 #include "multi_sig_transactions/gossip_propagation_strategy.hpp"
 #include "multi_sig_transactions/mst_notificator_impl.hpp"
 #include "multi_sig_transactions/mst_processor_impl.hpp"
@@ -38,6 +42,7 @@ using namespace std::chrono_literals;
  */
 Irohad::Irohad(const std::string &block_store_dir,
                const std::string &pg_conn,
+               const std::string &listen_ip,
                size_t torii_port,
                size_t internal_port,
                size_t max_proposal_size,
@@ -47,6 +52,7 @@ Irohad::Irohad(const std::string &block_store_dir,
                bool is_mst_supported)
     : block_store_dir_(block_store_dir),
       pg_conn_(pg_conn),
+      listen_ip_(listen_ip),
       torii_port_(torii_port),
       internal_port_(internal_port),
       max_proposal_size_(max_proposal_size),
@@ -57,7 +63,7 @@ Irohad::Irohad(const std::string &block_store_dir,
   log_ = logger::log("IROHAD");
   log_->info("created");
   // Initializing storage at this point in order to insert genesis block before
-  // initialization of iroha deamon
+  // initialization of iroha daemon
   initStorage();
 }
 
@@ -71,8 +77,10 @@ void Irohad::init() {
 
   initCreationFactories();
   initCryptoProvider();
+  initBatchParser();
   initValidators();
   initNetworkClient();
+  initFactories();
   initOrderingGate();
   initSimulator();
   initConsensusCache();
@@ -150,6 +158,13 @@ void Irohad::initCryptoProvider() {
   log_->info("[Init] => crypto provider");
 }
 
+void Irohad::initBatchParser() {
+  batch_parser =
+      std::make_shared<shared_model::interface::TransactionBatchParserImpl>();
+
+  log_->info("[Init] => transaction batch parser");
+}
+
 /**
  * Initializing validators
  */
@@ -157,7 +172,7 @@ void Irohad::initValidators() {
   auto factory = std::make_unique<shared_model::proto::ProtoProposalFactory<
       shared_model::validation::DefaultProposalValidator>>();
   stateful_validator =
-      std::make_shared<StatefulValidatorImpl>(std::move(factory));
+      std::make_shared<StatefulValidatorImpl>(std::move(factory), batch_parser);
   chain_validator = std::make_shared<ChainValidatorImpl>(
       std::make_shared<consensus::yac::SupermajorityCheckerImpl>());
 
@@ -172,6 +187,25 @@ void Irohad::initNetworkClient() {
       std::make_shared<network::AsyncGrpcClient<google::protobuf::Empty>>();
 }
 
+void Irohad::initFactories() {
+  transaction_batch_factory_ =
+      std::make_shared<shared_model::interface::TransactionBatchFactoryImpl>();
+  std::unique_ptr<shared_model::validation::AbstractValidator<
+      shared_model::interface::Transaction>>
+      transaction_validator =
+          std::make_unique<shared_model::validation::
+                               DefaultOptionalSignedTransactionValidator>();
+  transaction_factory =
+      std::make_shared<shared_model::proto::ProtoTransportFactory<
+          shared_model::interface::Transaction,
+          shared_model::proto::Transaction>>(std::move(transaction_validator));
+
+  query_response_factory_ =
+      std::make_shared<shared_model::proto::ProtoQueryResponseFactory>();
+
+  log_->info("[Init] => factories");
+}
+
 /**
  * Initializing ordering gate
  */
@@ -181,6 +215,7 @@ void Irohad::initOrderingGate() {
                                                  proposal_delay_,
                                                  storage,
                                                  storage,
+                                                 transaction_batch_factory_,
                                                  async_call_);
   log_->info("[Init] => init ordering gate - [{}]",
              logger::logBool(ordering_gate));
@@ -281,7 +316,11 @@ void Irohad::initStatusBus() {
 void Irohad::initMstProcessor() {
   if (is_mst_supported_) {
     mst_transport = std::make_shared<iroha::network::MstTransportGrpc>(
-        async_call_, common_objects_factory_);
+        async_call_,
+        common_objects_factory_,
+        transaction_factory,
+        batch_parser,
+        transaction_batch_factory_);
     auto mst_completer = std::make_shared<DefaultCompleter>();
     auto mst_storage = std::make_shared<MstStorageStateImpl>(mst_completer);
     // TODO: IR-1317 @l4l (02/05/18) magics should be replaced with options via
@@ -325,7 +364,10 @@ void Irohad::initTransactionCommandService() {
           status_bus_,
           std::chrono::seconds(1),
           2 * proposal_delay_,
-          status_factory_);
+          status_factory_,
+          transaction_factory,
+          batch_parser,
+          transaction_batch_factory_);
 
   log_->info("[Init] => command service");
 }
@@ -335,8 +377,7 @@ void Irohad::initTransactionCommandService() {
  */
 void Irohad::initQueryService() {
   auto query_processor = std::make_shared<QueryProcessorImpl>(
-      storage,
-      std::make_unique<QueryExecutionImpl>(storage, pending_txs_storage_));
+      storage, storage, pending_txs_storage_, query_response_factory_);
 
   query_service = std::make_shared<::torii::QueryService>(query_processor);
 
@@ -350,38 +391,45 @@ void Irohad::initWsvRestorer() {
 /**
  * Run iroha daemon
  */
-void Irohad::run() {
+Irohad::RunResult Irohad::run() {
   using iroha::expected::operator|;
 
   // Initializing torii server
-  std::string ip = "0.0.0.0";
-  torii_server =
-      std::make_unique<ServerRunner>(ip + ":" + std::to_string(torii_port_));
+  torii_server = std::make_unique<ServerRunner>(listen_ip_ + ":"
+                                                + std::to_string(torii_port_));
 
   // Initializing internal server
-  internal_server =
-      std::make_unique<ServerRunner>(ip + ":" + std::to_string(internal_port_));
+  internal_server = std::make_unique<ServerRunner>(
+      listen_ip_ + ":" + std::to_string(internal_port_));
 
   // Run torii server
-  (torii_server->append(command_service_transport).append(query_service).run() |
-   [&](const auto &port) {
-     log_->info("Torii server bound on port {}", port);
-     if (is_mst_supported_) {
-       internal_server->append(mst_transport);
-     }
-     // Run internal server
-     return internal_server->append(ordering_init.ordering_gate_transport)
-         .append(ordering_init.ordering_service_transport)
-         .append(yac_init.consensus_network)
-         .append(loader_init.service)
-         .run();
-   })
-      .match(
+  return (torii_server->append(command_service_transport)
+              .append(query_service)
+              .run()
+          |
           [&](const auto &port) {
+            log_->info("Torii server bound on port {}", port);
+            if (is_mst_supported_) {
+              internal_server->append(mst_transport);
+            }
+            // Run internal server
+            return internal_server
+                ->append(ordering_init.ordering_gate_transport)
+                .append(ordering_init.ordering_service_transport)
+                .append(yac_init.consensus_network)
+                .append(loader_init.service)
+                .run();
+          })
+      .match(
+          [&](const auto &port) -> RunResult {
             log_->info("Internal server bound on port {}", port.value);
             log_->info("===> iroha initialized");
+            return {};
           },
-          [&](const expected::Error<std::string> &e) { log_->error(e.error); });
+          [&](const expected::Error<std::string> &e) -> RunResult {
+            log_->error(e.error);
+            return e;
+          });
 }
 
 Irohad::~Irohad() {
