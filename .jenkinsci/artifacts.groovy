@@ -42,5 +42,59 @@ def uploadArtifacts(filePaths, uploadPath, artifactServers=['nexus.iroha.tech'])
   }
 }
 
-return this
+def hashSum(String binaryPath, String filePath) {
+  sum = sh(script: "${binaryPath} ${filePath} | cut -d' ' -f1", returnStdout: true).trim()
+  return sum
+}
 
+def md5SumLinux(String filePath) {
+  return hashSum("md5sum", filePath)
+}
+
+def md5SumMac(String filePath) {
+  return hashSum("md5 -r", filePath)
+}
+
+def sha256SumLinux(String filePath) {
+  return hashSum("sha256sum", filePath)
+}
+
+def sha256SumMac(String filePath) {
+  return hashSum("shasum -a 256", filePath)
+}
+
+def writeStringIntoFile(String string, String outFile) {
+  sh("echo ${string} > ${outfile}")
+  return outFile
+}
+
+def gpgDetachedSignatureLinux(String filePath, String outFile, String privateKeyCredentialsID, String masterKeyCredentialsID) {
+  withCredentials([file(credentialsId: "${privateKeyCredentialsID}", variable: 'CI_GPG_PRIVKEY'),
+    string(credentialsId: "${masterKeyCredentialsID}", variable: 'CI_GPG_MASTERKEY')]) {
+      sh "gpg --yes --batch --no-tty --import ${CI_GPG_PRIVKEY} || true"
+      gpgKeyBinary = "gpg --armor --detach-sign --no-tty --batch --yes --passphrase-fd 0"
+      signatureOutPath = filePath + '.ascfile'
+      sh "echo \"${CI_GPG_MASTERKEY}\" | $gpgKeyBinary -o ${signatureOutPath} ${filePath}"
+  }
+  return signatureOutPath
+}
+
+def gpgDetachedSignatureMac(String filePath, String privateKeyCredentialsID, String masterKeyCredentialsID) {
+  withCredentials([file(credentialsId: "${privateKeyCredentialsID}", variable: 'CI_GPG_PRIVKEY'),
+    string(credentialsId: "${masterKeyCredentialsID}", variable: 'CI_GPG_MASTERKEY')]) {
+      sh "gpg --yes --batch --no-tty --import ${CI_GPG_PRIVKEY} || true"
+      gpgKeyBinary = "GPG_TTY=\$(tty) gpg --pinentry-mode loopback --armor --detach-sign --no-tty --batch --yes --passphrase-fd 0"
+      signatureOutPath = filePath + '.ascfile'
+      sh "echo \"${CI_GPG_MASTERKEY}\" | $gpgKeyBinary -o ${signatureOutPath} ${filePath}"
+  }
+  return signatureOutPath
+}
+
+def fileUploadWithCredentials(String filePath, String credentialsId, String remoteServer) {
+  withCredentials([usernamePassword(credentialsId: "${credentialsId}", usernameVariable: 'UPLOAD_USER', passwordVariable: 'UPLOAD_PASS')]) {
+    sh(script: "curl -u ${UPLOAD_USER}:${UPLOAD_PASS} --upload-file ${filepath} ${remoteServer}")
+  }
+  return sh(script: "echo \$(echo ${remoteServer} | tr -d '/')/\$(basename ${filePath})", returnStdout: true).trim()
+}
+
+return this
