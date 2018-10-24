@@ -12,6 +12,7 @@
 #include "backend/protobuf/transaction.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/transaction.hpp"
+#include "validators/field_validator.hpp"
 
 using namespace iroha::network;
 
@@ -86,8 +87,17 @@ grpc::Status MstTransportGrpc::SendState(
   async_call_->log_->info("batches in MstState: {}",
                           new_state.getBatches().size());
 
+  shared_model::crypto::PublicKey source_key(request->source_peer_key());
+  auto key_invalid_reason =
+      shared_model::validation::validatePubkey(source_key);
+  if (key_invalid_reason) {
+    async_call_->log_->info(
+        "Dropping received MST State due to invalid public key: {}",
+        *key_invalid_reason);
+  }
+
   subscriber_.lock()->onNewState(
-      shared_model::crypto::PublicKey(request->source_peer_key()),
+      source_key,
       std::move(new_state));
 
   return grpc::Status::OK;
