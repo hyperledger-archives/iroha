@@ -46,7 +46,6 @@ namespace iroha {
       /**
        * Share state with other peer
        * @param to - peer recipient of message
-       * @param src_key - the public key of source (this) peer
        * @param providing_state - state for transmitting
        */
       virtual void sendState(const shared_model::interface::Peer &to,

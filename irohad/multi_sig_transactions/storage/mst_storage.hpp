@@ -37,7 +37,7 @@ namespace iroha {
 
     /**
      * Apply new state for peer
-     * @param target_peer - key for for updating state
+     * @param target_peer_key - key for for updating state
      * @param new_state - state with new data
      * @return State with completed or updated batches
      * General note: implementation of method covered by lock

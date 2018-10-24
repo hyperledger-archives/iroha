@@ -21,11 +21,6 @@ namespace iroha {
       return std::hash<std::string>{}(batch->reducedHash().hex());
     }
 
-    std::size_t PeerHasher::operator()(
-        const std::shared_ptr<shared_model::interface::Peer> &obj) const {
-      return std::hash<std::string>{}(obj->address() + obj->pubkey().hex());
-    }
-
     std::size_t BlobHasher::operator()(
         const shared_model::crypto::Blob &blob) const {
       return boost::hash_value(blob.blob());
