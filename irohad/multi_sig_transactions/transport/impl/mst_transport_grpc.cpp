@@ -94,6 +94,7 @@ grpc::Status MstTransportGrpc::SendState(
     async_call_->log_->info(
         "Dropping received MST State due to invalid public key: {}",
         *key_invalid_reason);
+    return grpc::Status::OK;
   }
 
   subscriber_.lock()->onNewState(
