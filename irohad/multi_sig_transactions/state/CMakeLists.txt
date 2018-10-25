@@ -9,4 +9,5 @@ target_link_libraries(mst_state
     mst_hash
     boost
     logger
+    boost # todo rework with sh_m types target with boost
     )

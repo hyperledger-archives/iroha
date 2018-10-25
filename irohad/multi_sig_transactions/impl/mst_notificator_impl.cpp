@@ -21,13 +21,13 @@ MstNotificatorImpl::MstNotificatorImpl(
       status_factory_(std::move(status_factory)),
       log_(logger::log("MstNotificator")) {
   mst_processor.onStateUpdate().subscribe(
-      [this](const auto &state) { handleOnStateUpdate(state); });
+      [this](const auto &state) { this->handleOnStateUpdate(state); });
   mst_processor.onExpiredBatches().subscribe([this](const auto &expired_batch) {
-    handleOnExpiredBatches(expired_batch);
+    this->handleOnExpiredBatches(expired_batch);
   });
   mst_processor.onPreparedBatches().subscribe(
       [this](const auto &completed_batch) {
-        handleOnCompletedBatches(completed_batch);
+        this->handleOnCompletedBatches(completed_batch);
       });
 }
 
@@ -72,3 +72,5 @@ void MstNotificatorImpl::publishExpiredStatuses(
         &transactions) {
   publish(transactions, &TxFactoryType::makeMstExpired);
 }
+
+// todo add dtor

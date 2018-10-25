@@ -8,6 +8,9 @@
 
 #include <gmock/gmock.h>
 #include "interfaces/iroha_internal/tx_status_factory.hpp"
+#include "interfaces/transaction_responses/committed_tx_response.hpp"
+#include "interfaces/transaction_responses/stateful_failed_tx_response.hpp"
+#include "interfaces/transaction_responses/stateful_valid_tx_response.hpp"
 
 // -------------------------| Concrete data type mocks |------------------------
 

@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <boost/range/join.hpp>
 
+#include "backend/protobuf/proto_tx_status_factory.hpp"
 #include "builders/protobuf/transaction.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/iroha_internal/transaction_sequence_factory.hpp"
@@ -114,13 +115,13 @@ class ConsensusStatusProcessorTest : public ::testing::Test {
   std::shared_ptr<MockPeerCommunicationService> pcs;
   std::shared_ptr<MockStatusBus> status_bus;
   std::shared_ptr<TxStatusFactoryMock> status_factory;
+  std::shared_ptr<shared_model::interface::TxStatusFactory>
+      external_status_factory =
+          std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
 
   std::shared_ptr<ConsensusStatusProcessorImpl> csp;
 
   StatusMapType status_map;
-  shared_model::builder::TransactionStatusBuilder<
-      shared_model::proto::TransactionStatusBuilder>
-      status_builder;
 
   rxcpp::subjects::subject<SynchronizationEvent> commit_notifier;
   rxcpp::subjects::subject<
@@ -222,8 +223,9 @@ TEST_F(ConsensusStatusProcessorTest, TransactionProcessorInvalidTxsTest) {
   for (size_t i = 0; i < block_size; i++) {
     auto &&tx = TestTransactionBuilder().createdTime(i).build();
     block_txs.push_back(tx);
-    status_map[tx.hash()] =
-        status_builder.notReceived().txHash(tx.hash()).build();
+    status_map[tx.hash()] = external_status_factory->makeNotReceived(
+        tx.hash(),
+        shared_model::interface::TxStatusFactory::emptyErrorMassage());
   }
 
   std::vector<shared_model::proto::Transaction> invalid_txs;
@@ -231,8 +233,9 @@ TEST_F(ConsensusStatusProcessorTest, TransactionProcessorInvalidTxsTest) {
   for (size_t i = block_size; i < proposal_size; i++) {
     auto &&tx = TestTransactionBuilder().createdTime(i).build();
     invalid_txs.push_back(tx);
-    status_map[tx.hash()] =
-        status_builder.notReceived().txHash(tx.hash()).build();
+    status_map[tx.hash()] = external_status_factory->makeNotReceived(
+        tx.hash(),
+        shared_model::interface::TxStatusFactory::emptyErrorMassage());
   }
 
   // For all transactions from proposal
