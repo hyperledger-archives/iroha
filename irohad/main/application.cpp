@@ -338,7 +338,7 @@ void Irohad::initMstProcessor() {
     mst_processor = std::make_shared<MstProcessorStub>();
   }
   mst_notifier_ = std::make_shared<MstNotificatorImpl>(
-      *mst_processor, pcs, status_bus_, status_factory_);
+      mst_processor, pcs, status_bus_, status_factory_);
   log_->info("[Init] => MST processor");
 }
 
@@ -354,7 +354,7 @@ void Irohad::initPendingTxsStorage() {
  * Initializing transaction command service
  */
 void Irohad::initTransactionCommandService() {
-  auto cs_processor = std::make_shared<ConsensusStatusProcessorImpl>(
+  cs_processor = std::make_shared<ConsensusStatusProcessorImpl>(
       pcs, status_bus_, status_factory_);
   command_service = std::make_shared<::torii::CommandServiceImpl>(
       mst_processor, storage, status_bus_, status_factory_);

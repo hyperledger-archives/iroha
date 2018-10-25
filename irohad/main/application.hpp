@@ -229,6 +229,9 @@ class Irohad {
   // pcs
   std::shared_ptr<iroha::network::PeerCommunicationService> pcs;
 
+  // cs processor
+  std::shared_ptr<iroha::torii::ConsensusStatusProcessor> cs_processor;
+
   // transaction factory
   std::shared_ptr<shared_model::interface::AbstractTransportFactory<
       shared_model::interface::Transaction,
@@ -240,8 +243,8 @@ class Irohad {
       query_response_factory_;
 
   // mst
-  std::shared_ptr<iroha::MstProcessor> mst_processor;
   std::shared_ptr<iroha::MstNotificator> mst_notifier_;
+  std::shared_ptr<iroha::MstProcessor> mst_processor;
 
   // pending transactions storage
   std::shared_ptr<iroha::PendingTransactionStorage> pending_txs_storage_;
