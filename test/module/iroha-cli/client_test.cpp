@@ -21,8 +21,8 @@
 #include "torii/impl/command_service_impl.hpp"
 #include "torii/impl/command_service_transport_grpc.hpp"
 #include "torii/impl/status_bus_impl.hpp"
-#include "torii/processor/query_processor_impl.hpp"
 #include "torii/processor/consensus_status_processor_impl.hpp"
+#include "torii/processor/query_processor_impl.hpp"
 #include "torii/query_service.hpp"
 
 #include "model/converters/json_common.hpp"
@@ -43,6 +43,7 @@ using ::testing::_;
 using ::testing::A;
 using ::testing::AtLeast;
 using ::testing::ByMove;
+using ::testing::Invoke;
 using ::testing::Return;
 
 using namespace iroha::ametsuchi;
@@ -90,6 +91,10 @@ class ClientServerTest : public testing::Test {
         .WillRepeatedly(Return(commit_notifier.get_observable()));
     EXPECT_CALL(*pcsMock, on_verified_proposal())
         .WillRepeatedly(Return(verified_prop_notifier.get_observable()));
+    ON_CALL(*mst, propagateBatchImpl(_))
+        .WillByDefault(Invoke([this](const auto &batch) {
+          this->pcsMock->propagate_batch(batch);
+        }));
 
     EXPECT_CALL(*mst, onStateUpdateImpl())
         .WillRepeatedly(Return(mst_update_notifier.get_observable()));
@@ -102,10 +107,7 @@ class ClientServerTest : public testing::Test {
         .WillRepeatedly(Return(boost::make_optional(
             std::shared_ptr<QueryExecutor>(query_executor))));
 
-    auto status_bus = std::make_shared<iroha::torii::StatusBusImpl>();
-    auto tx_processor =
-        std::make_shared<iroha::torii::ConsensusStatusProcessorImpl>(
-            pcsMock, mst, status_bus);
+    status_bus = std::make_shared<iroha::torii::StatusBusImpl>();
 
     auto pb_tx_factory =
         std::make_shared<iroha::model::converters::PbTransactionFactory>();
@@ -124,7 +126,7 @@ class ClientServerTest : public testing::Test {
         storage, storage, pending_txs_storage, query_response_factory);
 
     //----------- Server run ----------------
-    auto status_factory =
+    status_factory =
         std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
     std::unique_ptr<shared_model::validation::AbstractValidator<
         shared_model::interface::Transaction>>
@@ -142,7 +144,7 @@ class ClientServerTest : public testing::Test {
     runner
         ->append(std::make_unique<torii::CommandServiceTransportGrpc>(
             std::make_shared<torii::CommandServiceImpl>(
-                tx_processor, storage, status_bus, status_factory),
+                mst, storage, status_bus, status_factory),
             status_bus,
             initial_timeout,
             nonfinal_timeout,
@@ -186,6 +188,8 @@ class ClientServerTest : public testing::Test {
   std::shared_ptr<MockBlockQuery> block_query;
   std::shared_ptr<MockQueryExecutor> query_executor;
   std::shared_ptr<MockStorage> storage;
+  std::shared_ptr<shared_model::proto::ProtoTxStatusFactory> status_factory;
+  std::shared_ptr<iroha::torii::StatusBusImpl> status_bus;
 
   const std::string ip = "127.0.0.1";
   int port;
@@ -193,7 +197,7 @@ class ClientServerTest : public testing::Test {
 
 TEST_F(ClientServerTest, SendTxWhenValid) {
   iroha_cli::CliClient client(ip, port);
-  EXPECT_CALL(*pcsMock, propagate_batch(_)).Times(1);
+  EXPECT_CALL(*mst, propagateBatchImpl(_)).Times(1);
 
   auto shm_tx = shared_model::proto::TransactionBuilder()
                     .creatorAccountId("some@account")
@@ -263,16 +267,15 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
  * client with a corresponding status and error message
  *
  * @given real client and mocked pcs
- * @when sending a stateless valid transaction @and failing it at stateful
- * validation
- * @then ensure that client sees:
+ * @when  sending a stateless valid transaction
+ * @and   failing it at stateful validation
+ * @then  ensure that client sees:
  *       - status of this transaction as STATEFUL_VALIDATION_FAILED
  *       - error message is the same, as the one with which transaction was
  *         failed
  */
 TEST_F(ClientServerTest, SendTxWhenStatefulInvalid) {
   iroha_cli::CliClient client(ip, port);
-  EXPECT_CALL(*pcsMock, propagate_batch(_)).Times(1);
 
   // creating stateful invalid tx
   auto tx = TransactionBuilder()
@@ -291,20 +294,14 @@ TEST_F(ClientServerTest, SendTxWhenStatefulInvalid) {
                 .finish();
   ASSERT_EQ(client.sendTx(tx).answer, iroha_cli::CliClient::OK);
 
-  // fail the tx
-  auto verified_proposal = std::make_shared<shared_model::proto::Proposal>(
-      TestProposalBuilder().height(0).createdTime(iroha::time::now()).build());
-  verified_prop_notifier.get_subscriber().on_next(
-      std::make_shared<iroha::validation::VerifiedProposalAndErrors>(
-          std::make_pair(verified_proposal,
-                         iroha::validation::TransactionsErrors{std::make_pair(
-                             iroha::validation::CommandError{
-                                 "CommandName", "CommandError", true, 2},
-                             tx.hash())})));
-  auto stringified_error = "Stateful validation error in transaction "
-                           + tx.hash().hex() + ": command 'CommandName' with "
+  // emulate failing tx
+  auto tx_hash = tx.hash();
+  auto stringified_error = "Stateful validation error in transaction " +
+          tx_hash.hex() + ": command 'CommandName' with "
                                                "index '2' did not pass verification with "
                                                "error 'CommandError'";
+  status_bus->publish(
+      status_factory->makeStatefulFail(tx_hash, stringified_error));
 
   auto getAnswer = [&]() {
     return client.getTxStatus(shared_model::crypto::toBinaryString(tx.hash()))
