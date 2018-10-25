@@ -66,6 +66,7 @@ three resubscribes were not enough, then most likely there is another bug.
  */
 constexpr uint32_t status_read_attempts = 3;
 
+// TODO [IR-1812] @muratovv 25.10.18: simplify client test
 class ClientServerTest : public testing::Test {
  public:
   virtual void SetUp() {

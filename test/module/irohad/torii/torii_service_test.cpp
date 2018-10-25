@@ -51,6 +51,7 @@ three resubscribes were not enough, then most likely there is another bug.
  */
 constexpr uint32_t resubscribe_attempts = 3;
 
+// TODO [IR-1813] @muratovv 25.10.18: simplify torii_service test
 class CustomPeerCommunicationServiceMock : public PeerCommunicationService {
  public:
   CustomPeerCommunicationServiceMock(
