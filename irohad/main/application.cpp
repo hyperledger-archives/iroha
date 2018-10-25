@@ -315,10 +315,10 @@ void Irohad::initMstProcessor() {
   if (is_mst_supported_) {
     mst_transport = std::make_shared<iroha::network::MstTransportGrpc>(
         async_call_,
-        common_objects_factory_,
         transaction_factory,
         batch_parser,
-        transaction_batch_factory_);
+        transaction_batch_factory_,
+        keypair.publicKey());
     // TODO: IR-1317 @l4l (02/05/18) magics should be replaced with options via
     // cli parameters
     mst_propagation = std::make_shared<GossipPropagationStrategy>(
