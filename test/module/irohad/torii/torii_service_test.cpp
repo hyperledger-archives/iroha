@@ -112,18 +112,13 @@ class ToriiServiceTest : public testing::Test {
     EXPECT_CALL(*mst, onExpiredBatchesImpl())
         .WillRepeatedly(Return(mst_expired_notifier.get_observable()));
 
-    auto status_bus = std::make_shared<iroha::torii::StatusBusImpl>();
-    auto cs_processor =
-        std::make_shared<iroha::torii::ConsensusStatusProcessorImpl>(
-            pcsMock, mst, status_bus);
+    status_bus = std::make_shared<iroha::torii::StatusBusImpl>();
 
     EXPECT_CALL(*block_query, getTxByHashSync(_))
         .WillRepeatedly(Return(boost::none));
     EXPECT_CALL(*storage, getBlockQuery()).WillRepeatedly(Return(block_query));
 
     //----------- Server run ----------------
-    auto status_factory =
-        std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
     std::unique_ptr<shared_model::validation::AbstractValidator<
         shared_model::interface::Transaction>>
         transaction_validator = std::make_unique<
@@ -140,7 +135,7 @@ class ToriiServiceTest : public testing::Test {
     runner
         ->append(std::make_unique<torii::CommandServiceTransportGrpc>(
             std::make_shared<torii::CommandServiceImpl>(
-                cs_processor, storage, status_bus, status_factory),
+                mst, storage, status_bus, status_factory),
             status_bus,
             initial_timeout,
             nonfinal_timeout,
@@ -182,6 +177,10 @@ class ToriiServiceTest : public testing::Test {
 
   shared_model::crypto::Keypair keypair =
       shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair();
+
+  std::shared_ptr<iroha::torii::StatusBusImpl> status_bus;
+  std::shared_ptr<shared_model::proto::ProtoTxStatusFactory> status_factory =
+      std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
 
   const std::string ip = "127.0.0.1";
   int port;
@@ -283,16 +282,13 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     ASSERT_TRUE(stat.ok());
   }
 
-  // create proposal from these transactions
-  auto proposal = std::make_shared<shared_model::proto::Proposal>(
-      TestProposalBuilder()
-          .height(1)
-          .createdTime(iroha::time::now())
-          .transactions(txs)
-          .build());
-  prop_notifier_.get_subscriber().on_next(proposal);
-
   torii::CommandSyncClient client2(client1);
+
+  // emulates stateless work work
+  std::for_each(tx_hashes.begin(), tx_hashes.end(), [this](auto const &hash) {
+    status_bus->publish(status_factory->makeStatelessValid(
+        hash, status_factory->emptyErrorMassage()));
+  });
 
   // check if stateless validation passed
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
@@ -303,50 +299,24 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
     client2.Status(tx_request, toriiResponse);
 
     ASSERT_EQ(toriiResponse.tx_status(),
-              iroha::protocol::TxStatus::ENOUGH_SIGNATURES_COLLECTED);
+              iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
   }
 
-  // create block from the all transactions but the last one
+  // emulate the agreement on all transactions exepts last
+  std::for_each(
+      tx_hashes.begin(), tx_hashes.end() - 1, [this](auto const &hash) {
+        status_bus->publish(status_factory->makeStatefulValid(
+            hash, status_factory->emptyErrorMassage()));
+      });
+
   auto failed_tx_hash = txs.back().hash();
-  txs.pop_back();
-  auto block =
-      clone(TestBlockBuilder()
-                .transactions(txs)
-                .height(1)
-                .createdTime(0)
-                .prevHash(shared_model::crypto::Hash(std::string(32, '0')))
-                .build());
-
-  // notify the verified proposal event about txs, which passed stateful
-  // validation
-  auto verified_proposal = std::make_shared<shared_model::proto::Proposal>(
-      TestProposalBuilder()
-          .height(1)
-          .createdTime(iroha::time::now())
-          .transactions(txs)
-          .build());
-  auto errors = iroha::validation::TransactionsErrors{std::make_pair(
-      iroha::validation::CommandError{
-          "FailedCommand", "stateful validation failed", true, 2},
-      failed_tx_hash)};
   auto stringified_error = "Stateful validation error in transaction "
-                           + failed_tx_hash.hex() + ": "
-                           "command 'FailedCommand' with index '2' "
-                           "did not pass verification with error 'stateful "
-                           "validation failed'";
-  verified_prop_notifier_.get_subscriber().on_next(
-      std::make_shared<iroha::validation::VerifiedProposalAndErrors>(
-          std::make_pair(verified_proposal, errors)));
-
-  // create commit from block notifier's observable
-  rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
-      block_notifier_;
-  SynchronizationEvent commit{block_notifier_.get_observable(),
-                              SynchronizationOutcomeType::kCommit};
-
-  // invoke on next of commit_notifier by sending new block to commit
-  commit_notifier_.get_subscriber().on_next(commit);
-  block_notifier_.get_subscriber().on_next(std::move(block));
+                         + failed_tx_hash.hex() + ": "
+                                                  "command 'FailedCommand' with index '2' "
+                                                  "did not pass verification with error 'stateful "
+                                                  "validation failed'";
+  status_bus->publish(
+      status_factory->makeStatefulFail(failed_tx_hash, stringified_error));
 
   auto client3 = client2;
   // check if all transactions but the last one passed stateful validation
@@ -367,8 +337,12 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
               iroha::protocol::TxStatus::STATEFUL_VALIDATION_SUCCESS);
   }
 
-  // end current commit
-  block_notifier_.get_subscriber().on_completed();
+  // emulate the commit status
+  std::for_each(
+      tx_hashes.begin(), tx_hashes.end() - 1, [this](auto const &hash) {
+        status_bus->publish(status_factory->makeCommitted(
+            hash, status_factory->emptyErrorMassage()));
+      });
 
   auto client4 = client3;
   // check if all transactions but the last have committed state
@@ -464,40 +438,12 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
   });
 
   client.Torii(iroha_tx.getTransport());
-
-  std::vector<decltype(iroha_tx)> txs;
-  txs.push_back(iroha_tx);
-  auto proposal =
-      std::make_shared<proto::Proposal>(proto::ProposalBuilder()
-                                            .createdTime(iroha::time::now())
-                                            .transactions(txs)
-                                            .height(1)
-                                            .build());
-  prop_notifier_.get_subscriber().on_next(proposal);
-  verified_prop_notifier_.get_subscriber().on_next(
-      std::make_shared<iroha::validation::VerifiedProposalAndErrors>(
-          std::make_pair(proposal, iroha::validation::TransactionsErrors{})));
-
-  auto block = clone(proto::BlockBuilder()
-                         .height(1)
-                         .createdTime(iroha::time::now())
-                         .transactions(txs)
-                         .prevHash(crypto::Hash(std::string(32, '0')))
-                         .build()
-                         .signAndAddSignature(keypair)
-                         .finish());
-
-  // create commit from block notifier's observable
-  rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
-      block_notifier_;
-  SynchronizationEvent commit{block_notifier_.get_observable(),
-                              SynchronizationOutcomeType::kCommit};
-
-  // invoke on next of commit_notifier by sending new block to commit
-  commit_notifier_.get_subscriber().on_next(commit);
-  block_notifier_.get_subscriber().on_next(std::move(block));
-
-  block_notifier_.get_subscriber().on_completed();
+  status_bus->publish(status_factory->makeStatelessValid(
+      iroha_tx.hash(), status_factory->emptyErrorMassage()));
+  status_bus->publish(status_factory->makeStatefulValid(
+      iroha_tx.hash(), status_factory->emptyErrorMassage()));
+  status_bus->publish(status_factory->makeCommitted(
+      iroha_tx.hash(), status_factory->emptyErrorMassage()));
   t.join();
 
   // we can be sure only about final status
@@ -562,6 +508,12 @@ TEST_F(ToriiServiceTest, ListOfTxs) {
 
   // send the txs
   client.ListTorii(tx_list);
+
+  // emulate work
+  std::for_each(tx_hashes.begin(), tx_hashes.end(), [this](const auto &hash) {
+    status_bus->publish(status_factory->makeEnoughSignaturesCollected(
+        hash, status_factory->emptyErrorMassage()));
+  });
 
   // check their statuses
   std::for_each(
