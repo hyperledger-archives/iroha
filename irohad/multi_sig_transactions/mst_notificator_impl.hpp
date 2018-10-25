@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "common/subscription_manager.hpp"
 #include "interfaces/iroha_internal/transaction_sequence.hpp"
 #include "interfaces/iroha_internal/tx_status_factory.hpp"
 #include "logger/logger.hpp"
@@ -18,7 +19,8 @@
 #include "torii/status_bus.hpp"
 
 namespace iroha {
-  class MstNotificatorImpl : public MstNotificator {
+  class MstNotificatorImpl : public MstNotificator,
+                             private iroha::utils::SubscriptionManager {
    public:
     // -----------------------------| public API|-------------------------------
 
@@ -37,6 +39,8 @@ namespace iroha {
 
     void handleOnCompletedBatches(
         const MstProcessor::BatchType &batch) override;
+
+    ~MstNotificatorImpl();
 
    private:
     // ----------------------------| private API|-------------------------------

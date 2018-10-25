@@ -47,17 +47,17 @@ namespace iroha {
           status_factory_(std::move(status_factory)),
           log_(logger::log("TxProcessor")) {
       // process stateful validation results
-      pcs_->on_verified_proposal().subscribe(
+      addSubscription(pcs_->on_verified_proposal().subscribe(
           [this](std::shared_ptr<validation::VerifiedProposalAndErrors>
                      proposal_and_errors) {
             handleOnVerifiedProposal(proposal_and_errors);
-          });
+          }));
 
       // commit transactions
-      pcs_->on_commit().subscribe(
+      addSubscription(pcs_->on_commit().subscribe(
           [this](synchronizer::SynchronizationEvent sync_event) {
             handleOnCommit(sync_event);
-          });
+          }));
     }
 
     void ConsensusStatusProcessorImpl::publishStatus(

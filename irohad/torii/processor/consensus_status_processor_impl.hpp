@@ -11,6 +11,7 @@
 #include <mutex>
 
 #include <rxcpp/rx.hpp>
+#include "common/subscription_manager.hpp"
 #include "interfaces/common_objects/transaction_sequence_common.hpp"
 #include "interfaces/iroha_internal/tx_status_factory.hpp"
 #include "interfaces/transaction_responses/tx_response.hpp"
@@ -22,7 +23,9 @@
 
 namespace iroha {
   namespace torii {
-    class ConsensusStatusProcessorImpl : public ConsensusStatusProcessor {
+    class ConsensusStatusProcessorImpl
+        : public ConsensusStatusProcessor,
+          private iroha::utils::SubscriptionManager {
      public:
       /**
        * @param pcs - provide information proposals and commits
