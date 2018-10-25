@@ -96,8 +96,6 @@ namespace iroha {
           soci::into(block_str), soci::use(hash_str);
       if (block_str) {
         blockId = std::stoull(block_str.get());
-      } else {
-        log_->info("No block with transaction {}", hash.toString());
       }
       return blockId;
     }
