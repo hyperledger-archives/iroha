@@ -10,7 +10,7 @@
 
 namespace iroha {
   /**
-   * Interface provides notification handlers for
+   * Interface provides notification handlers for MST
    */
   class MstNotificator {
    public:

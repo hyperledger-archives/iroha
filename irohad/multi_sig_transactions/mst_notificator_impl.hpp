@@ -10,12 +10,12 @@
 
 #include <memory>
 
+#include "interfaces/iroha_internal/transaction_sequence.hpp"
 #include "interfaces/iroha_internal/tx_status_factory.hpp"
 #include "logger/logger.hpp"
 #include "multi_sig_transactions/mst_processor.hpp"
 #include "network/peer_communication_service.hpp"
 #include "torii/status_bus.hpp"
-#include "interfaces/iroha_internal/transaction_sequence.hpp"
 
 namespace iroha {
   class MstNotificatorImpl : public MstNotificator {
@@ -23,7 +23,7 @@ namespace iroha {
     // -----------------------------| public API|-------------------------------
 
     MstNotificatorImpl(
-        const iroha::MstProcessor &mst_processor,
+        std::shared_ptr<iroha::MstProcessor> mst_processor,
         std::shared_ptr<iroha::network::PeerCommunicationService> pcs,
         std::shared_ptr<iroha::torii::StatusBus> status_bus,
         std::shared_ptr<shared_model::interface::TxStatusFactory>

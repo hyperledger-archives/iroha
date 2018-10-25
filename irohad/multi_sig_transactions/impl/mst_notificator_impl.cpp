@@ -12,7 +12,7 @@
 using namespace iroha;
 
 MstNotificatorImpl::MstNotificatorImpl(
-    const iroha::MstProcessor &mst_processor,
+    std::shared_ptr<iroha::MstProcessor>mst_processor,
     std::shared_ptr<iroha::network::PeerCommunicationService> pcs,
     std::shared_ptr<iroha::torii::StatusBus> status_bus,
     std::shared_ptr<shared_model::interface::TxStatusFactory> status_factory)
@@ -20,12 +20,12 @@ MstNotificatorImpl::MstNotificatorImpl(
       status_bus_(std::move(status_bus)),
       status_factory_(std::move(status_factory)),
       log_(logger::log("MstNotificator")) {
-  mst_processor.onStateUpdate().subscribe(
+  mst_processor->onStateUpdate().subscribe(
       [this](const auto &state) { this->handleOnStateUpdate(state); });
-  mst_processor.onExpiredBatches().subscribe([this](const auto &expired_batch) {
+  mst_processor->onExpiredBatches().subscribe([this](const auto &expired_batch) {
     this->handleOnExpiredBatches(expired_batch);
   });
-  mst_processor.onPreparedBatches().subscribe(
+  mst_processor->onPreparedBatches().subscribe(
       [this](const auto &completed_batch) {
         this->handleOnCompletedBatches(completed_batch);
       });
