@@ -38,7 +38,10 @@ namespace shared_model {
       using TxStatusFactoryInvoker = FactoryReturnType (TxStatusFactory::*)(
           TransactionHashType, ErrorMessageType);
 
-      static ErrorMessageValueType emptyErrorMassage() {
+      /**
+       * @return default value for empty error message
+       */
+      static ErrorMessageValueType emptyErrorMessage() {
         return ErrorMessageValueType{};
       }
 

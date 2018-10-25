@@ -288,7 +288,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   // emulates stateless work work
   std::for_each(tx_hashes.begin(), tx_hashes.end(), [this](auto const &hash) {
     status_bus->publish(status_factory->makeStatelessValid(
-        hash, status_factory->emptyErrorMassage()));
+        hash, status_factory->emptyErrorMessage()));
   });
 
   // check if stateless validation passed
@@ -307,7 +307,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   std::for_each(
       tx_hashes.begin(), tx_hashes.end() - 1, [this](auto const &hash) {
         status_bus->publish(status_factory->makeStatefulValid(
-            hash, status_factory->emptyErrorMassage()));
+            hash, status_factory->emptyErrorMessage()));
       });
 
   auto failed_tx_hash = txs.back().hash();
@@ -342,7 +342,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   std::for_each(
       tx_hashes.begin(), tx_hashes.end() - 1, [this](auto const &hash) {
         status_bus->publish(status_factory->makeCommitted(
-            hash, status_factory->emptyErrorMassage()));
+            hash, status_factory->emptyErrorMessage()));
       });
 
   auto client4 = client3;
@@ -440,11 +440,11 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
 
   client.Torii(iroha_tx.getTransport());
   status_bus->publish(status_factory->makeStatelessValid(
-      iroha_tx.hash(), status_factory->emptyErrorMassage()));
+      iroha_tx.hash(), status_factory->emptyErrorMessage()));
   status_bus->publish(status_factory->makeStatefulValid(
-      iroha_tx.hash(), status_factory->emptyErrorMassage()));
+      iroha_tx.hash(), status_factory->emptyErrorMessage()));
   status_bus->publish(status_factory->makeCommitted(
-      iroha_tx.hash(), status_factory->emptyErrorMassage()));
+      iroha_tx.hash(), status_factory->emptyErrorMessage()));
   t.join();
 
   // we can be sure only about final status
@@ -513,7 +513,7 @@ TEST_F(ToriiServiceTest, ListOfTxs) {
   // emulate work
   std::for_each(tx_hashes.begin(), tx_hashes.end(), [this](const auto &hash) {
     status_bus->publish(status_factory->makeEnoughSignaturesCollected(
-        hash, status_factory->emptyErrorMassage()));
+        hash, status_factory->emptyErrorMessage()));
   });
 
   // check their statuses

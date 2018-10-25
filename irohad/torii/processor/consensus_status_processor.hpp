@@ -23,9 +23,6 @@
 #include <memory>
 
 namespace iroha {
-  //  namespace validation {
-  //    class VerifiedProposalAndErrors;
-  //  }  // namespace validation
   namespace synchronizer {
     struct SynchronizationEvent;
   }  // namespace synchronizer

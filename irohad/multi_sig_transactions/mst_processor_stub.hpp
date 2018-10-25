@@ -9,6 +9,7 @@
 #include "multi_sig_transactions/mst_processor.hpp"
 
 #include <rxcpp/rx.hpp>
+
 #include "multi_sig_transactions/mst_types.hpp"
 
 namespace iroha {

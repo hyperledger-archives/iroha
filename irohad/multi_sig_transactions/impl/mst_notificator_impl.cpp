@@ -34,7 +34,6 @@ MstNotificatorImpl::MstNotificatorImpl(
 
 void MstNotificatorImpl::handleOnStateUpdate(
     const MstProcessor::UpdatedStateType &state) {
-  log_->info("handleOnStateUpdate: nothing to do");
 }
 
 void MstNotificatorImpl::handleOnExpiredBatches(
@@ -58,7 +57,7 @@ void MstNotificatorImpl::publish(
                 transactions.end(),
                 [this, invoker](const auto &tx) {
                   status_bus_->publish((status_factory_.get()->*invoker)(
-                      tx->hash(), status_factory_->emptyErrorMassage()));
+                      tx->hash(), status_factory_->emptyErrorMessage()));
                 });
 }
 

@@ -87,7 +87,7 @@ namespace iroha {
                    successful_tx.hash().hex());
         this->publishStatus(&TxFatoryType::makeStatefulValid,
                             successful_tx.hash(),
-                            TxFatoryType::emptyErrorMassage());
+                            TxFatoryType::emptyErrorMessage());
       }
     }
 
@@ -112,7 +112,7 @@ namespace iroha {
                 log_->info("on commit committed: {}", tx_hash.hex());
                 this->publishStatus(&TxFatoryType::makeCommitted,
                                     tx_hash,
-                                    TxFatoryType::emptyErrorMassage());
+                                    TxFatoryType::emptyErrorMessage());
               }
               current_txs_hashes_.clear();
             }

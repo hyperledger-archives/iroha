@@ -225,7 +225,7 @@ TEST_F(ConsensusStatusProcessorTest, TransactionProcessorInvalidTxsTest) {
     block_txs.push_back(tx);
     status_map[tx.hash()] = external_status_factory->makeNotReceived(
         tx.hash(),
-        shared_model::interface::TxStatusFactory::emptyErrorMassage());
+        shared_model::interface::TxStatusFactory::emptyErrorMessage());
   }
 
   std::vector<shared_model::proto::Transaction> invalid_txs;
@@ -235,7 +235,7 @@ TEST_F(ConsensusStatusProcessorTest, TransactionProcessorInvalidTxsTest) {
     invalid_txs.push_back(tx);
     status_map[tx.hash()] = external_status_factory->makeNotReceived(
         tx.hash(),
-        shared_model::interface::TxStatusFactory::emptyErrorMassage());
+        shared_model::interface::TxStatusFactory::emptyErrorMessage());
   }
 
   // For all transactions from proposal
