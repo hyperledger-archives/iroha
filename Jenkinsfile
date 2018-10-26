@@ -12,6 +12,13 @@ class Builder {
     List unstable
     List always
     List aborted
+    PostSteps(success, failure, unstable, always, aborted) {
+      this.success = success
+      this.failure = failure
+      this.unstable = unstable
+      this.always = always
+      this.aborted = aborted
+    }
   }
   List buildSteps
   PostSteps postSteps
@@ -20,28 +27,47 @@ class Builder {
 class Build {
   String name
   String type
+  String nodeLabel
   Builder builder
   Worker worker
 
   def build() {
-    try {
-      this.builder.buildSteps
-      if (currentBuild.currentResult == 'SUCCESS') {
-        this.builder.postSteps.success
-      }
-      else if(currentBuild.currentResult == 'UNSTABLE') {
-        this.builder.postSteps.unstable
-      }
-      else if(currentBuild.currentResult == 'FAILURE') {
-        this.builder.postSteps.failure
-      }
-      else if(currentBuild.currentResult == 'ABORTED') {
-        this.builder.postSteps.aborted
-      }
-    }
-    finally {
-      this.builder.postSteps.always
-    }
+    println this.nodeLabel
+    // return {
+    //   node(this.nodeLabel) {
+    //     try {
+    //       this.builder.buildSteps.each {
+    //         it()
+    //       }
+    //       if (currentBuild.currentResult == 'SUCCESS') {
+    //         this.builder.postSteps.success.each {
+    //           it()
+    //         }
+    //       }
+    //       else if(currentBuild.currentResult == 'UNSTABLE') {
+    //         this.builder.postSteps.unstable.each {
+    //           it()
+    //         }
+    //       }
+    //       else if(currentBuild.currentResult == 'FAILURE') {
+    //         this.builder.postSteps.failure.each {
+    //           it()
+    //         }
+    //       }
+    //       else if(currentBuild.currentResult == 'ABORTED') {
+    //         this.builder.postSteps.aborted.each {
+    //           it()
+    //         }
+    //       }
+    //     }
+    //     finally {
+    //       this.builder.postSteps.always.each {
+    //         it()
+    //       }
+    //     }
+    //     //println "Running on node some other node"
+    //   }
+    // }
   }
 }
 
@@ -67,12 +93,15 @@ node ('master') {
   x64LinuxDebugBuildScript = load '.jenkinsci/builders/x64-linux-debug-build-steps.groovy'
   x64LinuxWorker = new Worker(label: 'x86_64', cpusAvailable: 4)
   // def x64MacWorker = new Worker(label: 'mac', cpusAvailable: 4)
+  x64LinuxReleaseBuildSteps = [{x64LinuxReleaseBuildScript.buildSteps(
+    x64LinuxWorker.label, x64LinuxWorker.cpusAvailable, 'gcc54', 'develop', false, environmentList)}]
+  x64LinuxReleaseBuilder = new Builder(buildSteps: x64LinuxReleaseBuildSteps, postSteps: null)
+  // x64LinuxReleasePostSteps = new Builder.PostSteps(x64LinuxReleaseBuilder,
+  //   always=[{x64LinuxReleaseBuildScript.alwaysPostSteps(environmentList)}],
+  //     success=[{x64LinuxReleaseBuildScript.successPostSteps(scmVars, environmentList)}])
 
-  x64LinuxReleaseBuildSteps = x64LinuxReleaseBuildScript.buildSteps(
-    x64LinuxWorker.label, x64LinuxWorker.cpusAvailable, 'gcc54', 'develop', false, environmentList)
-  x64LinuxReleasePostSteps = new Builder.PostSteps(
-    always: [x64LinuxReleaseBuildScript.alwaysPostSteps(environmentList)],
-    success: [x64LinuxReleaseBuildScript.successPostSteps(scmVars, environmentList)])
+  x64LinuxReleasePostSteps = new Builder.PostSteps(x64LinuxReleaseBuilder,
+    success=[{sh("echo Success")}], failure=[], unstable=[], always=[{sh("echo Always")}], aborted=[])
 
   // x64LinuxDebugBuildSteps = x64LinuxDebugBuildScript.buildSteps(nodeLabel=x64LinuxWorker.label,
   //   parallelism=x64LinuxWorker.cpusAvailable, compilerVersion='gcc54', pushDockerTag=true, coverage=false,
@@ -81,14 +110,15 @@ node ('master') {
   //   always: [x64LinuxDebugBuildScript.alwaysPostSteps(environmentList)])
   //def x64MacReleaseBuildSteps = x64LinuxReleaseBuildScript.buildSteps(x64MacWorker.label, x64MacWorker.cpusAvailable)
 
-  x64LinuxReleaseBuilder = new Builder(buildSteps: x64LinuxReleaseBuildSteps, postSteps: x64LinuxReleasePostSteps)
+  x64LinuxReleaseBuilder.postSteps = x64LinuxReleasePostSteps
   //x64LinuxDebugBuilder = new Builder(buildSteps: x64LinuxDebugBuildSteps, postSteps: x64LinuxDebugPostSteps)
   //def x64MacBuilder = new Builder(buildSteps: x64MacReleaseBuildSteps)
 
   x64LinuxReleaseBuild = new Build(name: 'x86_64 Linux Release',
-                                       type: 'Release',
-                                       builder: x64LinuxReleaseBuilder,
-                                       worker: x64LinuxWorker)
+                                   type: 'Release',
+                                   nodeLabel: 'x86_64',
+                                   builder: x64LinuxReleaseBuilder,
+                                   worker: x64LinuxWorker)
 
   // x64LinuxDebugBuild = new Build(name: 'x86_64 Linux Debug',
   //                                      type: 'Debug',
@@ -99,7 +129,7 @@ node ('master') {
   //                                    builder: x64MacBuilder,
   //                                    worker: x64MacWorker)
 
-  tasks[x64LinuxReleaseBuild.name] = { x64LinuxReleaseBuild.build() }
+  tasks[x64LinuxReleaseBuild.name] = x64LinuxReleaseBuild.build()
   //tasks[x64LinuxDebugBuild.name] = { x64LinuxDebugBuild.build() }
   //tasks[x64MacReleaseBuild.name] = { x64MacReleaseBuild.build() }
 

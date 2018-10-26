@@ -29,33 +29,31 @@ def releaseDockerManifestPush(dockerImageObj, String dockerTag, List environment
 
 def buildSteps(String nodeLabel, int parallelism, String compilerVersion, String dockerTag,
       boolean pushDockerTag, List environment) {
-  node (nodeLabel) {
-    stage('Build') {
-      withEnv(environment) {
-        scmVars = checkout scm
-        build = load '.jenkinsci/build.groovy'
-        vars = load ".jenkinsci/utils/vars.groovy"
-        compilers = vars.compilerMapping()
-        platform = sh(script: 'uname -m', returnStdout: true).trim()
-        sh "docker network create ${env.IROHA_NETWORK}"
-        iC = docker.image("${env.DOCKER_REGISTRY_BASENAME}:${platform}-develop-build")
-        iC.pull()
-        iC.inside("-v /var/jenkins/ccache:${env.CCACHE_RELEASE_DIR}") {
-          sh "curl -L -o build/iroha-fff.deb http://de.archive.ubuntu.com/ubuntu/pool/main/n/netkit-telnet/telnet_0.17-40_amd64.deb"
-          sh "tar -zcf build/iroha.tar.gz build/iroha-fff.deb"
-          // build.cmakeConfigure("-DCMAKE_CXX_COMPILER=${compilers[compilerVersion]['cxx_compiler']} \
-          //   -DCMAKE_CC_COMPILER=${compilers[compilerVersion]['cc_compiler']} -DCMAKE_BUILD_TYPE=Release \
-          //   -DPACKAGE_DEB=ON -DPACKAGE_TGZ=ON -DCOVERAGE=OFF -DTESTING=OFF")
-          // build.cmakeBuild("--target package", parallelism)
-          sh "mv ./build/iroha-*.deb ./build/iroha.deb"
-        }
-        if (pushDockerTag) {
-          sh "cp ./build/iroha.deb docker/release/iroha.deb"
-          iCRelease = docker.build("${env.DOCKER_REGISTRY_BASENAME}:${scmVars.GIT_COMMIT}-${env.BUILD_NUMBER}-release", "--no-cache -f docker/release/Dockerfile ${WORKSPACE}/docker/release")
-          utils.dockerPush(iC, "${platform}-${dockerTag}")
-          releaseDockerManifestPush(iCRelease, dockerTag, environment)
-          sh "docker rmi ${iCRelease.id}"
-        }
+  stage('Build') {
+    withEnv(environment) {
+      scmVars = checkout scm
+      build = load '.jenkinsci/build.groovy'
+      vars = load ".jenkinsci/utils/vars.groovy"
+      compilers = vars.compilerMapping()
+      platform = sh(script: 'uname -m', returnStdout: true).trim()
+      sh "docker network create ${env.IROHA_NETWORK}"
+      iC = docker.image("${env.DOCKER_REGISTRY_BASENAME}:${platform}-develop-build")
+      iC.pull()
+      iC.inside("-v /var/jenkins/ccache:${env.CCACHE_RELEASE_DIR}") {
+        sh "curl -L -o build/iroha-fff.deb http://de.archive.ubuntu.com/ubuntu/pool/main/n/netkit-telnet/telnet_0.17-40_amd64.deb"
+        sh "tar -zcf build/iroha.tar.gz build/iroha-fff.deb"
+        // build.cmakeConfigure("-DCMAKE_CXX_COMPILER=${compilers[compilerVersion]['cxx_compiler']} \
+        //   -DCMAKE_CC_COMPILER=${compilers[compilerVersion]['cc_compiler']} -DCMAKE_BUILD_TYPE=Release \
+        //   -DPACKAGE_DEB=ON -DPACKAGE_TGZ=ON -DCOVERAGE=OFF -DTESTING=OFF")
+        // build.cmakeBuild("--target package", parallelism)
+        sh "mv ./build/iroha-*.deb ./build/iroha.deb"
+      }
+      if (pushDockerTag) {
+        sh "cp ./build/iroha.deb docker/release/iroha.deb"
+        iCRelease = docker.build("${env.DOCKER_REGISTRY_BASENAME}:${scmVars.GIT_COMMIT}-${env.BUILD_NUMBER}-release", "--no-cache -f docker/release/Dockerfile ${WORKSPACE}/docker/release")
+        utils.dockerPush(iC, "${platform}-${dockerTag}")
+        releaseDockerManifestPush(iCRelease, dockerTag, environment)
+        sh "docker rmi ${iCRelease.id}"
       }
     }
   }
