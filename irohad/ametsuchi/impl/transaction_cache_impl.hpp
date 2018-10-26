@@ -14,10 +14,23 @@ namespace iroha {
 
     class TransactionCacheImpl : public TransactionCache {
      public:
-      explicit TransactionCacheImpl(std::unique_ptr<ametsuchi::BlockQuery> block_query);
+      explicit TransactionCacheImpl(
+          std::unique_ptr<ametsuchi::BlockQuery> block_query);
 
       bool verify(
           const shared_model::crypto::Hash &transaction_hash) const override;
+
+      void verify(
+          const shared_model::interface::types::BatchesCollectionType::iterator
+              &begin,
+          const shared_model::interface::types::BatchesCollectionType::iterator
+              &end,
+          const std::function<
+              void(shared_model::interface::types::BatchesCollectionType &&)>
+              &valid_txs_processor,
+          const std::function<
+              void(shared_model::interface::types::BatchesCollectionType &&)>
+              &invalid_txs_processor) const override;
 
       bool verify(std::shared_ptr<shared_model::interface::TransactionBatch>
                       batch) const override;
@@ -26,7 +39,7 @@ namespace iroha {
       std::unique_ptr<ametsuchi::BlockQuery> block_query_;
     };
 
-  }  // namespace transaction_cache
+  }  // namespace ametsuchi
 }  // namespace iroha
 
 #endif  // IROHA_TRANSACTION_CACHE_IMPL_HPP

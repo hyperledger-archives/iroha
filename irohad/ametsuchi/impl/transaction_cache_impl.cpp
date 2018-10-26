@@ -29,5 +29,24 @@ namespace iroha {
           });
     }
 
+    void TransactionCacheImpl::verify(
+        const shared_model::interface::types::BatchesCollectionType::iterator
+            &begin,
+        const shared_model::interface::types::BatchesCollectionType::iterator
+            &end,
+        const std::function<
+            void(shared_model::interface::types::BatchesCollectionType &&)>
+            &valid_txs_processor,
+        const std::function<
+            void(shared_model::interface::types::BatchesCollectionType &&)>
+            &invalid_txs_processor) const {
+
+      auto it = std::partition(
+          begin, end, [this](auto batch) { return verify(batch); });
+      valid_txs_processor(
+          shared_model::interface::types::BatchesCollectionType(begin, it));
+      invalid_txs_processor(
+          shared_model::interface::types::BatchesCollectionType(it, end));
+    }
   }  // namespace ametsuchi
 }  // namespace iroha

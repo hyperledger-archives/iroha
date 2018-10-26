@@ -70,6 +70,11 @@ target_link_libraries(postgres_query_executor_test
     libs_common
     )
 
+addtest(committed_transactions_cache_test committed_transactions_cache_test.cpp)
+target_link_libraries(committed_transactions_cache_test
+    ametsuchi
+    )
+
 add_library(ametsuchi_fixture INTERFACE)
 target_link_libraries(ametsuchi_fixture INTERFACE
     integration_framework_config_helper
