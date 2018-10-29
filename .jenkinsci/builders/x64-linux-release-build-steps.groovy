@@ -27,20 +27,20 @@ def releaseDockerManifestPush(dockerImageObj, String dockerTag, List environment
   }
 }
 
-def buildSteps(String nodeLabel, int parallelism, String compilerVersion, String dockerTag,
+def buildSteps(int parallelism, String compilerVersion, String dockerTag,
       boolean pushDockerTag, List environment) {
   stage('Build') {
     withEnv(environment) {
       scmVars = checkout scm
       build = load '.jenkinsci/build.groovy'
       vars = load ".jenkinsci/utils/vars.groovy"
+      utils = load ".jenkinsci/utils/utils.groovy"
       compilers = vars.compilerMapping()
       platform = sh(script: 'uname -m', returnStdout: true).trim()
-      sh "docker network create ${env.IROHA_NETWORK}"
       iC = docker.image("${env.DOCKER_REGISTRY_BASENAME}:${platform}-develop-build")
       iC.pull()
       iC.inside("-v /var/jenkins/ccache:${env.CCACHE_RELEASE_DIR}") {
-        sh "curl -L -o build/iroha-fff.deb http://de.archive.ubuntu.com/ubuntu/pool/main/n/netkit-telnet/telnet_0.17-40_amd64.deb"
+        sh "curl -L -o build/iroha-fff.deb --create-dirs http://de.archive.ubuntu.com/ubuntu/pool/main/n/netkit-telnet/telnet_0.17-40_amd64.deb"
         sh "tar -zcf build/iroha.tar.gz build/iroha-fff.deb"
         // build.cmakeConfigure("-DCMAKE_CXX_COMPILER=${compilers[compilerVersion]['cxx_compiler']} \
         //   -DCMAKE_CC_COMPILER=${compilers[compilerVersion]['cc_compiler']} -DCMAKE_BUILD_TYPE=Release \
@@ -61,7 +61,7 @@ def buildSteps(String nodeLabel, int parallelism, String compilerVersion, String
 
 def alwaysPostSteps(List environment) {
   withEnv(environment) {
-    //cleanWs()
+    cleanWs()
   }
 }
 
@@ -70,20 +70,21 @@ def successPostSteps(scmVars, List environment) {
     artifacts = load ".jenkinsci/artifacts.groovy"
     filesToUpload = []
     platform = sh(script: 'uname -m', returnStdout: true).trim()
-    sh("mkdir build/artifacts")
+    sh("mkdir -p build/artifacts")
     sh("mv ./build/iroha.deb ./build/iroha.tar.gz build/artifacts")
     filePaths = [ './build/artifacts/iroha.deb', './build/artifacts/iroha.tar.gz' ]
     filePaths.each {
       filesToUpload.add("${it}")
-      filesToUpload.add(artifacts.writeStringIntoFile(artifacts.md5sumLinux("${it}"), "${it}.md5sum"))
-      filesToUpload.add(artifacts.writeStringIntoFile(artifacts.sha256sum("${it}"), "${it}.sha256sum"))
+      filesToUpload.add(artifacts.writeStringIntoFile(artifacts.md5SumLinux("${it}"), "${it}.md5sum"))
+      filesToUpload.add(artifacts.writeStringIntoFile(artifacts.sha256SumLinux("${it}"), "${it}.sha256sum"))
       filesToUpload.add(artifacts.gpgDetachedSignatureLinux("${it}", "${it}.ascfile",'ci_gpg_privkey', 'ci_gpg_masterkey'))
     }
     uploadPath = sprintf('/iroha/linux/%1$s/%2$s-%3$s-%4$s',
-        [platform, scmVars.GIT_LOCAL_BRANCH, sh(script: 'date "+%Y%m%d"', returnStdout: true).trim(),
-        scmVars.GIT_COMMIT.substring(0,6)])
+      [platform, scmVars.GIT_LOCAL_BRANCH, sh(script: 'date "+%Y%m%d"', returnStdout: true).trim(),
+      scmVars.GIT_COMMIT.substring(0,6)])
     filesToUpload.each {
-      artifacts.fileUploadWithCredentials("${it}", 'ci_nexus', "https://nexus.iroha.tech/repository/artifacts/${uploadPath}")
+      uploadFileName = sh(script: "basename ${it}", returnStdout: true).trim()
+      artifacts.fileUploadWithCredentials("${it}", 'ci_nexus', "https://nexus.iroha.tech/repository/artifacts/${uploadPath}/${uploadFileName}")
     }
   }
 }

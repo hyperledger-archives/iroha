@@ -6,19 +6,13 @@ class Worker {
 }
 
 class Builder {
-  class PostSteps {
+  // can't get to work without 'static'
+  static class PostSteps {
     List success
     List failure
     List unstable
     List always
     List aborted
-    PostSteps(success, failure, unstable, always, aborted) {
-      this.success = success
-      this.failure = failure
-      this.unstable = unstable
-      this.always = always
-      this.aborted = aborted
-    }
   }
   List buildSteps
   PostSteps postSteps
@@ -38,10 +32,14 @@ def build(Build build) {
         build.builder.buildSteps.each {
           it()
         }
+        build.builder.postSteps.success.each {
+          it()
+        }
+      catch(e) {
+
+      }
         if (currentBuild.currentResult == 'SUCCESS') {
-          build.builder.postSteps.success.each {
-            it()
-          }
+
         }
         else if(currentBuild.currentResult == 'UNSTABLE') {
           build.builder.postSteps.unstable.each {
@@ -59,12 +57,12 @@ def build(Build build) {
           }
         }
       }
+      // ALWAYS
       finally {
         build.builder.postSteps.always.each {
           it()
         }
       }
-      //println "Running on node some other node"
     }
   }
 }
@@ -92,24 +90,20 @@ node ('master') {
   x64LinuxWorker = new Worker(label: 'x86_64', cpusAvailable: 4)
   // def x64MacWorker = new Worker(label: 'mac', cpusAvailable: 4)
   x64LinuxReleaseBuildSteps = [{x64LinuxReleaseBuildScript.buildSteps(
-    x64LinuxWorker.label, x64LinuxWorker.cpusAvailable, 'gcc54', 'develop', false, environmentList)}]
-  x64LinuxReleaseBuilder = new Builder(buildSteps: x64LinuxReleaseBuildSteps, postSteps: null)
-  // x64LinuxReleasePostSteps = new Builder.PostSteps(x64LinuxReleaseBuilder,
-  //   always=[{x64LinuxReleaseBuildScript.alwaysPostSteps(environmentList)}],
-  //     success=[{x64LinuxReleaseBuildScript.successPostSteps(scmVars, environmentList)}])
+    x64LinuxWorker.cpusAvailable, 'gcc54', 'develop', false, environmentList)}]
+  x64LinuxReleasePostSteps = new Builder.PostSteps(
+    always: [{x64LinuxReleaseBuildScript.alwaysPostSteps(environmentList)}],
+    success: [{x64LinuxReleaseBuildScript.successPostSteps(scmVars, environmentList)}])
+  x64LinuxReleaseBuilder = new Builder(buildSteps: x64LinuxReleaseBuildSteps, postSteps: x64LinuxReleasePostSteps)
 
-  x64LinuxReleasePostSteps = new Builder.PostSteps(x64LinuxReleaseBuilder,
-    success=[{sh("echo Success")}], failure=[], unstable=[], always=[{sh("echo Always")}], aborted=[])
-
-  // x64LinuxDebugBuildSteps = x64LinuxDebugBuildScript.buildSteps(nodeLabel=x64LinuxWorker.label,
-  //   parallelism=x64LinuxWorker.cpusAvailable, compilerVersion='gcc54', pushDockerTag=true, coverage=false,
-  //   testing=false, cppcheck=true, sonar=false, environment=environmentList)
-  // x64LinuxDebugPostSteps = new x64LinuxDebugBuildSteps.PostSteps(
-  //   always: [x64LinuxDebugBuildScript.alwaysPostSteps(environmentList)])
+  x64LinuxDebugBuildSteps = x64LinuxDebugBuildScript.buildSteps(
+    parallelism=x64LinuxWorker.cpusAvailable, compilerVersion='gcc54', pushDockerTag=false, coverage=false,
+    testing=false, cppcheck=true, sonar=false, environment=environmentList)
+  x64LinuxDebugPostSteps = new x64LinuxDebugBuildSteps.PostSteps(
+    always: [{x64LinuxDebugBuildScript.alwaysPostSteps(environmentList)}])
   //def x64MacReleaseBuildSteps = x64LinuxReleaseBuildScript.buildSteps(x64MacWorker.label, x64MacWorker.cpusAvailable)
 
-  x64LinuxReleaseBuilder.postSteps = x64LinuxReleasePostSteps
-  //x64LinuxDebugBuilder = new Builder(buildSteps: x64LinuxDebugBuildSteps, postSteps: x64LinuxDebugPostSteps)
+  x64LinuxDebugBuilder = new Builder(buildSteps: x64LinuxDebugBuildSteps, postSteps: x64LinuxDebugPostSteps)
   //def x64MacBuilder = new Builder(buildSteps: x64MacReleaseBuildSteps)
 
   x64LinuxReleaseBuild = new Build(name: 'x86_64 Linux Release',
@@ -125,9 +119,9 @@ node ('master') {
   //                                    worker: x64MacWorker)
 
   tasks[x64LinuxReleaseBuild.name] = build(x64LinuxReleaseBuild)
-  //tasks[x64LinuxDebugBuild.name] = { x64LinuxDebugBuild.build() }
+  tasks[x64LinuxDebugBuild.name] = build(x64LinuxDebugBuild)
   //tasks[x64MacReleaseBuild.name] = { x64MacReleaseBuild.build() }
-
+  cleanWs()
   parallel tasks
 
   // if (currentBuild.currentResult == 'SUCCESS') {

@@ -64,7 +64,7 @@ def sha256SumMac(String filePath) {
 }
 
 def writeStringIntoFile(String string, String outFile) {
-  sh("echo ${string} > ${outfile}")
+  sh("echo ${string} > ${outFile}")
   return outFile
 }
 
@@ -92,9 +92,9 @@ def gpgDetachedSignatureMac(String filePath, String privateKeyCredentialsID, Str
 
 def fileUploadWithCredentials(String filePath, String credentialsId, String remoteServer) {
   withCredentials([usernamePassword(credentialsId: "${credentialsId}", usernameVariable: 'UPLOAD_USER', passwordVariable: 'UPLOAD_PASS')]) {
-    sh(script: "curl -u ${UPLOAD_USER}:${UPLOAD_PASS} --upload-file ${filepath} ${remoteServer}")
+    sh(script: "curl -u ${UPLOAD_USER}:${UPLOAD_PASS} --upload-file ${filePath} ${remoteServer}")
   }
-  return sh(script: "echo \$(echo ${remoteServer} | tr -d '/')/\$(basename ${filePath})", returnStdout: true).trim()
+  return sh(script: "echo ${remoteServer}", returnStdout: true).trim()
 }
 
 return this

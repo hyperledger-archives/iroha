@@ -6,20 +6,11 @@ def previousCommitOrCurrent(scmVars) {
   return !scmVars.GIT_PREVIOUS_COMMIT ? scmVars.GIT_COMMIT : scmVars.GIT_PREVIOUS_COMMIT
 }
 
-def doDockerCleanup() {
-  // Check whether the image is the last-standing man
-  // i.e., no other tags exist for this image
-  sh """
-    docker rmi \$(docker images --no-trunc --format '{{.Repository}}:{{.Tag}}\\t{{.ID}}' | grep \$(docker images --no-trunc --format '{{.ID}}' ${iC.id}) | head -n -1 | cut -f 1) || true
-    docker network rm $IROHA_NETWORK || true
-  """
-}
-
-def selectedBranchesCoverage(branches) {
+def selectedBranchesCoverage(List branches) {
   return env.GIT_LOCAL_BRANCH in branches
 }
 
-def ccacheSetup(maxSize) {
+def ccacheSetup(int maxSize) {
   sh """
     ccache --version
     ccache --show-stats
@@ -28,7 +19,7 @@ def ccacheSetup(maxSize) {
   """
 }
 
-def dockerPush(dockerImageObj, imageName) {
+def dockerPush(dockerImageObj, String imageName) {
   docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
     dockerImageObj.push(imageName)
   }
@@ -44,7 +35,7 @@ def getUrl(String url, String savePath, boolean createDstDir=false) {
   return savePath
 }
 
-def filesDiffer(f1, f2) {
+def filesDiffer(String f1, String f2) {
   diffExitCode = sh(script: "diff -q ${f1} ${f2}", returnStatus: true)
   return diffExitCode != 0
 }
