@@ -42,7 +42,7 @@ namespace shared_model {
        * @return default value for empty error message
        */
       static ErrorMessageValueType emptyErrorMessage() {
-        return ErrorMessageValueType{};
+        return {};
       }
 
       // ------------------------| Stateless statuses |-------------------------
@@ -87,6 +87,10 @@ namespace shared_model {
       /// Creates status which shows that enough signatures were collected
       virtual FactoryReturnType makeEnoughSignaturesCollected(
           TransactionHashType, ErrorMessageType) = 0;
+
+      /// Creates status which shows that transaction is
+      virtual FactoryReturnType makeMstPending(TransactionHashType,
+                                               ErrorMessageType) = 0;
 
       virtual ~TxStatusFactory() = default;
     };

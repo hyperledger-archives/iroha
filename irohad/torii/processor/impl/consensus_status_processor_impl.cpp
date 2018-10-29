@@ -78,16 +78,16 @@ namespace iroha {
         auto error_msg = composeErrorMessage(tx_error);
         log_->info(error_msg);
         this->publishStatus(
-            &TxFatoryType::makeStatefulFail, tx_error.second, error_msg);
+            &TxFactoryType::makeStatefulFail, tx_error.second, error_msg);
       }
       // notify about success txs
       for (const auto &successful_tx :
            proposal_and_errors->first->transactions()) {
         log_->info("on stateful validation success: {}",
                    successful_tx.hash().hex());
-        this->publishStatus(&TxFatoryType::makeStatefulValid,
+        this->publishStatus(&TxFactoryType::makeStatefulValid,
                             successful_tx.hash(),
-                            TxFatoryType::emptyErrorMessage());
+                            TxFactoryType::emptyErrorMessage());
       }
     }
 
@@ -110,9 +110,9 @@ namespace iroha {
               std::lock_guard<std::mutex> lock(notifier_mutex_);
               for (const auto &tx_hash : current_txs_hashes_) {
                 log_->info("on commit committed: {}", tx_hash.hex());
-                this->publishStatus(&TxFatoryType::makeCommitted,
+                this->publishStatus(&TxFactoryType::makeCommitted,
                                     tx_hash,
-                                    TxFatoryType::emptyErrorMessage());
+                                    TxFactoryType::emptyErrorMessage());
               }
               current_txs_hashes_.clear();
             }

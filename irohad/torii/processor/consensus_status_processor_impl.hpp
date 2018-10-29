@@ -69,7 +69,7 @@ namespace iroha {
       std::mutex notifier_mutex_;
 
       // shortcut for the type
-      using TxFatoryType = shared_model::interface::TxStatusFactory;
+      using TxFactoryType = shared_model::interface::TxStatusFactory;
 
       /**
        * Publish status of transaction
@@ -77,7 +77,7 @@ namespace iroha {
        * @param hash of that transaction
        * @param error, which can appear during validation
        */
-      void publishStatus(TxFatoryType::TxStatusFactoryInvoker invoker,
+      void publishStatus(TxFactoryType::TxStatusFactoryInvoker invoker,
                          const shared_model::crypto::Hash &hash,
                          const std::string &error = "") const;
     };
