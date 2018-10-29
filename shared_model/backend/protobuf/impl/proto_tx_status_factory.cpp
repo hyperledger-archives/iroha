@@ -94,3 +94,8 @@ ProtoTxStatusFactory::makeEnoughSignaturesCollected(TransactionHashType hash,
   return wrap(fillCommon(
       hash, error, iroha::protocol::TxStatus::ENOUGH_SIGNATURES_COLLECTED));
 }
+
+ProtoTxStatusFactory::FactoryReturnType ProtoTxStatusFactory::makeMstPending(
+    TransactionHashType hash, ErrorMessageType error) {
+  return wrap(fillCommon(hash, error, iroha::protocol::TxStatus::MST_PENDING));
+}

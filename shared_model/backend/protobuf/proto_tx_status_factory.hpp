@@ -48,6 +48,9 @@ namespace shared_model {
 
       FactoryReturnType makeEnoughSignaturesCollected(
           TransactionHashType, ErrorMessageType) override;
+
+      FactoryReturnType makeMstPending(TransactionHashType,
+                                       ErrorMessageType) override;
     };
   }  // namespace proto
 }  // namespace shared_model
