@@ -27,47 +27,45 @@ class Builder {
 class Build {
   String name
   String type
-  String nodeLabel
   Builder builder
   Worker worker
+}
 
-  def build() {
-    println this.nodeLabel
-    // return {
-    //   node(this.nodeLabel) {
-    //     try {
-    //       this.builder.buildSteps.each {
-    //         it()
-    //       }
-    //       if (currentBuild.currentResult == 'SUCCESS') {
-    //         this.builder.postSteps.success.each {
-    //           it()
-    //         }
-    //       }
-    //       else if(currentBuild.currentResult == 'UNSTABLE') {
-    //         this.builder.postSteps.unstable.each {
-    //           it()
-    //         }
-    //       }
-    //       else if(currentBuild.currentResult == 'FAILURE') {
-    //         this.builder.postSteps.failure.each {
-    //           it()
-    //         }
-    //       }
-    //       else if(currentBuild.currentResult == 'ABORTED') {
-    //         this.builder.postSteps.aborted.each {
-    //           it()
-    //         }
-    //       }
-    //     }
-    //     finally {
-    //       this.builder.postSteps.always.each {
-    //         it()
-    //       }
-    //     }
-    //     //println "Running on node some other node"
-    //   }
-    // }
+def build(Build build) {
+  return {
+    node(build.worker.label) {
+      try {
+        build.builder.buildSteps.each {
+          it()
+        }
+        if (currentBuild.currentResult == 'SUCCESS') {
+          build.builder.postSteps.success.each {
+            it()
+          }
+        }
+        else if(currentBuild.currentResult == 'UNSTABLE') {
+          build.builder.postSteps.unstable.each {
+            it()
+          }
+        }
+        else if(currentBuild.currentResult == 'FAILURE') {
+          build.builder.postSteps.failure.each {
+            it()
+          }
+        }
+        else if(currentBuild.currentResult == 'ABORTED') {
+          build.builder.postSteps.aborted.each {
+            it()
+          }
+        }
+      }
+      finally {
+        build.builder.postSteps.always.each {
+          it()
+        }
+      }
+      //println "Running on node some other node"
+    }
   }
 }
 
@@ -115,10 +113,7 @@ node ('master') {
   //def x64MacBuilder = new Builder(buildSteps: x64MacReleaseBuildSteps)
 
   x64LinuxReleaseBuild = new Build(name: 'x86_64 Linux Release',
-                                   type: 'Release',
-                                   nodeLabel: 'x86_64',
-                                   builder: x64LinuxReleaseBuilder,
-                                   worker: x64LinuxWorker)
+    type: 'Release', builder: x64LinuxReleaseBuilder, worker: x64LinuxWorker)
 
   // x64LinuxDebugBuild = new Build(name: 'x86_64 Linux Debug',
   //                                      type: 'Debug',
@@ -129,7 +124,7 @@ node ('master') {
   //                                    builder: x64MacBuilder,
   //                                    worker: x64MacWorker)
 
-  tasks[x64LinuxReleaseBuild.name] = x64LinuxReleaseBuild.build()
+  tasks[x64LinuxReleaseBuild.name] = build(x64LinuxReleaseBuild)
   //tasks[x64LinuxDebugBuild.name] = { x64LinuxDebugBuild.build() }
   //tasks[x64MacReleaseBuild.name] = { x64MacReleaseBuild.build() }
 
