@@ -40,7 +40,7 @@ namespace iroha {
     void handleOnCompletedBatches(
         const MstProcessor::BatchType &batch) override;
 
-    ~MstNotificatorImpl();
+    ~MstNotificatorImpl() = default;
 
    private:
     // ----------------------------| private API|-------------------------------
