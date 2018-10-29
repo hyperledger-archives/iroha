@@ -138,7 +138,7 @@ class MstPipelineTest : public AcceptanceFixture {
 /**
  * @given mst account, pair of signers and tx with a SetAccountDetail command
  * @when sending that tx with author signature @and then with signers' ones
- * @then commit appears only after tx is signed by all required signatories
+ * @then proposal appears only after tx is signed by all required signatories
  */
 TEST_F(MstPipelineTest, OnePeerSendsTest) {
   auto log_ = logger::log("MstPipelineTest");
