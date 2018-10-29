@@ -3,75 +3,155 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/**
- * @given transaction processor
- * @when transactions passed to processor compose proposal which is sent to peer
- * communication service
- * @then for every transaction in batches ENOUGH_SIGNATURES_COLLECTED status is
- * returned
- */
-TEST_F(ConsensusStatusProcessorTest, TransactionProcessorOnProposalTest) {
-  std::vector<shared_model::proto::Transaction> txs;
-  for (size_t i = 0; i < proposal_size; i++) {
-    auto &&tx = addSignaturesFromKeyPairs(baseTestTx(), makeKey());
-    txs.push_back(tx);
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
+#include "multi_sig_transactions/mst_notificator_impl.hpp"
+
+#include "framework/specified_visitor.hpp"
+#include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
+#include "module/irohad/multi_sig_transactions/mst_test_helpers.hpp"
+#include "module/irohad/network/network_mocks.hpp"
+#include "module/irohad/torii/torii_mocks.hpp"
+#include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
+#include "module/shared_model/tx_response_status_mocks.hpp"
+
+using ::testing::_;
+using ::testing::Return;
+
+class MstNotifierTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+    pcs = std::make_shared<iroha::network::MockPeerCommunicationService>();
+
+    status_factory = std::make_shared<TxStatusFactoryMock>();
+
+    status_bus = std::make_shared<iroha::torii::MockStatusBus>();
+
+    mst_processor = std::make_shared<iroha::MockMstProcessor>();
+    EXPECT_CALL(*mst_processor, onStateUpdateImpl())
+        .WillRepeatedly(Return(update_state_subject.get_observable()));
+    EXPECT_CALL(*mst_processor, onPreparedBatchesImpl())
+        .WillRepeatedly(Return(prepared_batch_subject.get_observable()));
+    EXPECT_CALL(*mst_processor, onExpiredBatchesImpl())
+        .WillRepeatedly(Return(expired_batch_subject.get_observable()));
+
+    mst_notificator = std::make_shared<iroha::MstNotificatorImpl>(
+        mst_processor, pcs, status_bus, status_factory);
   }
 
-  EXPECT_CALL(*status_bus, publish(_))
-      .Times(proposal_size)
-      .WillRepeatedly(testing::Invoke([this](auto response) {
-        status_map[response->transactionHash()] = response;
-      }));
+  /// creates mst state with two batches
+  auto createMstState() {
+    auto mst_state = iroha::MstState::empty();
 
-  // create proposal and notify about it
-  auto proposal = std::make_shared<shared_model::proto::Proposal>(
-      TestProposalBuilder().transactions(txs).build());
+    auto time = iroha::time::now();
+    mst_state += addSignatures(
+        makeTestBatch(txBuilder(1, time)), 0, makeSignature("1", "pub_key_1"));
+    mst_state += addSignatures(makeTestBatch(txBuilder(1, time + 1)),
+                               0,
+                               makeSignature("1", "pub_key_1"));
+    return std::make_shared<iroha::MstState>(mst_state);
+  }
 
-  SCOPED_TRACE("Enough signatures collected status verification");
-  validateStatuses<shared_model::interface::EnoughSignaturesCollectedResponse>(
-      txs);
+  /// creates batch with one transaction inside
+  auto createBatch() {
+    auto time = iroha::time::now();
+    return addSignatures(
+        makeTestBatch(txBuilder(1, time)), 0, makeSignature("1", "pub_key_1"));
+  }
+
+ protected:
+  using StatusMapType = std::unordered_map<
+      shared_model::crypto::Hash,
+      std::shared_ptr<shared_model::interface::TransactionResponse>,
+      shared_model::crypto::Hash::Hasher>;
+
+  /**
+   * Checks if all transactions have corresponding status
+   * @param transactions transactions to check status
+   * @param status to be checked
+   */
+  template <typename Status>
+  void validateStatuses(
+      std::vector<shared_model::proto::Transaction> &transactions) {
+    for (const auto &tx : transactions) {
+      auto tx_status = status_map.find(tx.hash());
+      ASSERT_NE(tx_status, status_map.end());
+      ASSERT_NO_THROW(boost::apply_visitor(
+          framework::SpecifiedVisitor<Status>(), tx_status->second->get()));
+    }
+  }
+
+  std::shared_ptr<iroha::network::MockPeerCommunicationService> pcs;
+  std::shared_ptr<TxStatusFactoryMock> status_factory;
+  std::shared_ptr<iroha::torii::MockStatusBus> status_bus;
+  std::shared_ptr<iroha::MockMstProcessor> mst_processor;
+
+  // tested component
+  std::shared_ptr<iroha::MstNotificator> mst_notificator;
+
+  StatusMapType status_map;
+
+  // input from MST
+  rxcpp::subjects::subject<iroha::MstProcessor::UpdatedStateType>
+      update_state_subject;
+  rxcpp::subjects::subject<iroha::MstProcessor::BatchType>
+      prepared_batch_subject;
+  rxcpp::subjects::subject<iroha::MstProcessor::BatchType>
+      expired_batch_subject;
+};
+
+/**
+ * @given Mst notifier
+ * @when  Mst processor shares updated batches
+ * @then  Mst notifier should emit MstPending statuses for corresponding
+ * transactions
+ */
+TEST_F(MstNotifierTest, OnUpdateNotify) {
+  auto mst_state = createMstState();
+  auto invoke_times = mst_state->getBatches().size();
+  EXPECT_CALL(*pcs, propagate_batch(_)).Times(0);
+  // here we don't care about return value of factory because it relays to
+  // status_bus mock
+  EXPECT_CALL(*status_factory, makeMstPending(_, _)).Times(invoke_times);
+  EXPECT_CALL(*status_bus, publish(_)).Times(invoke_times);
+
+  update_state_subject.get_subscriber().on_next(mst_state);
 }
 
 /**
- * @given transactions from the same batch
- * @when transactions sequence is created and propagated
- * AND all transactions were returned by pcs in proposal notifier
- * @then all transactions in batches have ENOUGH_SIGNATURES_COLLECTED status
+ * @given Mst notifier
+ * @when  Mst processor shares expired batches
+ * @then all transactions in batches have Expired statuses for corresponding
+ * transactions
  */
-TEST_F(ConsensusStatusProcessorTest, TransactionProcessorOnProposalBatchTest) {
-  using namespace shared_model::validation;
-  using TxsValidator = DefaultSignedTransactionsValidator;
+TEST_F(MstNotifierTest, OnExpiredNotify) {
+  auto batch = createBatch();
+  auto invoke_times = batch->transactions().size();
+  EXPECT_CALL(*pcs, propagate_batch(_)).Times(0);
+  // here we don't care about return value of factory because it relays to
+  // status_bus mock
+  EXPECT_CALL(*status_factory, makeMstExpired(_, _)).Times(invoke_times);
+  EXPECT_CALL(*status_bus, publish(_)).Times(invoke_times);
 
-  auto transactions =
-      framework::batch::createValidBatch(proposal_size).transactions();
+  expired_batch_subject.get_subscriber().on_next(batch);
+}
 
-  EXPECT_CALL(*status_bus, publish(_))
-      .Times(proposal_size)
-      .WillRepeatedly(testing::Invoke([this](auto response) {
-        status_map[response->transactionHash()] = response;
-      }));
+/**
+ * @given Mst notifier
+ * @when  Mst processor shares complited batches
+ * @then  Mst notifier invoke propagation of batch on PCS
+ *        @and set EnoughSignatures statues for corresponding transactions
+ */
+TEST_F(MstNotifierTest, OnCompletedNotify) {
+  auto batch = createBatch();
+  auto invoke_times = batch->transactions().size();
+  EXPECT_CALL(*pcs, propagate_batch(_)).Times(invoke_times);
+  // here we don't care about return value of factory because it relays to
+  // status_bus mock
+  EXPECT_CALL(*status_factory, makeEnoughSignaturesCollected(_, _))
+      .Times(invoke_times);
+  EXPECT_CALL(*status_bus, publish(_)).Times(invoke_times);
 
-  auto transaction_sequence_result =
-      shared_model::interface::TransactionSequenceFactory::
-          createTransactionSequence(transactions, TxsValidator());
-  auto transaction_sequence =
-      framework::expected::val(transaction_sequence_result).value().value;
-
-  // create proposal from sequence transactions and notify about it
-  std::vector<shared_model::proto::Transaction> proto_transactions;
-
-  std::transform(
-      transactions.begin(),
-      transactions.end(),
-      std::back_inserter(proto_transactions),
-      [](const auto tx) {
-        return *std::static_pointer_cast<shared_model::proto::Transaction>(tx);
-      });
-
-  auto proposal = std::make_shared<shared_model::proto::Proposal>(
-      TestProposalBuilder().transactions(proto_transactions).build());
-
-  SCOPED_TRACE("Enough signatures collected status verification");
-  validateStatuses<shared_model::interface::EnoughSignaturesCollectedResponse>(
-      proto_transactions);
+  prepared_batch_subject.get_subscriber().on_next(batch);
 }
