@@ -9,6 +9,7 @@
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
 #include "integration/acceptance/acceptance_fixture.hpp"
+#include "logger/logger.hpp"
 
 using namespace std::string_literals;
 using namespace integration_framework;
@@ -95,7 +96,6 @@ class MstPipelineTest : public AcceptanceFixture {
     ASSERT_NO_THROW({
       const auto &pending_txs_resp =
           boost::get<const interface::TransactionsResponse &>(response.get());
-
       ASSERT_TRUE(pending_txs_resp.transactions().empty());
     });
   }
@@ -138,22 +138,22 @@ class MstPipelineTest : public AcceptanceFixture {
 /**
  * @given mst account, pair of signers and tx with a SetAccountDetail command
  * @when sending that tx with author signature @and then with signers' ones
- * @then proposal appears only after tx is signed by all required signatories
+ * @then proposal with corresponding transaction is appeared only after tx is
+ * signed by all required signatories
  */
 TEST_F(MstPipelineTest, OnePeerSendsTest) {
-  auto log_ = logger::log("MstPipelineTest");
   auto tx = baseTx()
                 .setAccountDetail(kUserId, "fav_meme", "doge")
                 .quorum(kSignatories + 1);
   auto check_mst_pending_tx_status =
       [&log_](const proto::TransactionResponse &resp) {
-        log_->warn("Txresponse 1 {}", resp.toString());
-        ASSERT_NO_THROW(boost::get<const interface::StatelessValidTxResponse &>(
-            resp.get()));
+        log_->warn("TxResponse 1 {}", resp.toString());
+        ASSERT_NO_THROW(
+            boost::get<const interface::MstPendingResponse &>(resp.get()));
       };
   auto check_enough_signatures_collected_tx_status =
       [&log_](const proto::TransactionResponse &resp) {
-        log_->warn("Txresponse 2{}", resp.toString());
+        log_->warn("TxResponse 2 {}", resp.toString());
         ASSERT_NO_THROW(
             boost::get<const interface::EnoughSignaturesCollectedResponse &>(
                 resp.get()));
@@ -172,9 +172,10 @@ TEST_F(MstPipelineTest, OnePeerSendsTest) {
     mst_itf.checkProposal([&mst_tx, &required_break](auto &proposal) {
       ASSERT_EQ(proposal->transactions().size(), 1);
       auto &proposal_tx = *boost::begin(proposal->transactions());
-      if (mst_tx.hash() == proposal_tx.hash())
+      if (mst_tx.hash() == proposal_tx.hash()) {
         ASSERT_EQ(boost::size(proposal_tx.signatures()), 3);
-      required_break = true;
+        required_break = true;
+      }
     });
     if (required_break) {
       break;
@@ -235,18 +236,47 @@ TEST_F(MstPipelineTest, GetPendingTxsLatestSignatures) {
  * @given an empty ledger
  * @when creating pending transactions @and signing them with number of
  * signatures to get over quorum @and executing get pending transactions
- * @then those transactions are not returned
+ * @then those transaction is not returned in getPending query
  */
 TEST_F(MstPipelineTest, GetPendingTxsNoSignedTxs) {
+  mst_itf_.setInitialState(kAdminKeypair);
+
+  // create random signatures for emulating mst transaction
+  signatories.push_back(crypto::DefaultCryptoAlgorithmType::generateKeypair());
+  signatories.push_back(crypto::DefaultCryptoAlgorithmType::generateKeypair());
+
   auto pending_tx = baseTx()
+                        .creatorAccountId(IntegrationTestFramework::kAdminId)
                         .setAccountDetail(kUserId, "fav_meme", "doge")
                         .quorum(kSignatories + 1);
+  auto hash = complete(pending_tx, signatories.at(0)).hash();
+  mst_itf_.sendTx(complete(pending_tx, signatories.at(0)))
+      .sendTx(complete(pending_tx, signatories.at(1)))
+      .sendTx(complete(pending_tx, kUserKeypair));
 
-  auto &mst_itf = prepareMstItf();
-  mst_itf.sendTx(complete(pending_tx, signatories[0]))
-      .sendTx(complete(pending_tx, signatories[1]))
-      .sendTx(complete(pending_tx, kUserKeypair))
-      .sendQuery(makeGetPendingTxsQuery(kUserId, kUserKeypair), noTxsCheck);
+  // wait until corresponding transaction will not pass consensus
+  while (true) {
+    auto required_break = false;
+    mst_itf_
+        .checkProposal([&hash, &required_break](auto &proposal) {
+          ASSERT_EQ(proposal->transactions().size(), 1);
+          auto &proposal_tx = *boost::begin(proposal->transactions());
+          if (hash == proposal_tx.hash()) {
+            ASSERT_EQ(boost::size(proposal_tx.signatures()), 3);
+            required_break = true;
+          }
+        })
+        .skipBlock();
+    if (required_break) {
+      break;
+    }
+  }
+
+  mst_itf_
+      .sendQuery(makeGetPendingTxsQuery(IntegrationTestFramework::kAdminId,
+                                        kAdminKeypair),
+                 noTxsCheck)
+      .done();
 }
 
 /**
