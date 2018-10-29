@@ -20,10 +20,11 @@ target_link_libraries(mst_processor
     )
 
 add_library(mst_notificator
-    impl/mst_notificator_impl.cpp
+    impl/mst_notifier_impl.cpp
     )
 
 target_link_libraries(mst_notificator
+    subscription_manager
     rxcpp
     shared_model_interfaces
     logger

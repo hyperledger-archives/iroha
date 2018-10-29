@@ -19,21 +19,15 @@ namespace iroha {
 namespace iroha {
   namespace torii {
     /**
-     * ConsensusStatusProcessor is interface which reflects statuses consensus
-     * statuses and initiate processing of transactions in it
+     * ConsensusStatusProcessor is interface which is responsible for
+     * appropriate statuses from consensus
      */
     class ConsensusStatusProcessor {
      public:
-      /**
-       * Handler for new verified proposals
-       */
       virtual void handleOnVerifiedProposal(
           std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
               validation_outcome) = 0;
 
-      /**
-       * Handler for new commits
-       */
       virtual void handleOnCommit(
           const iroha::synchronizer::SynchronizationEvent &) = 0;
 

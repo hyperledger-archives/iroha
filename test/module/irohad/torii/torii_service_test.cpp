@@ -285,7 +285,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
 
   torii::CommandSyncClient client2(client1);
 
-  // emulates stateless work work
+  // emulates stateless work
   std::for_each(tx_hashes.begin(), tx_hashes.end(), [this](auto const &hash) {
     status_bus->publish(status_factory->makeStatelessValid(
         hash, status_factory->emptyErrorMessage()));
@@ -303,7 +303,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
               iroha::protocol::TxStatus::STATELESS_VALIDATION_SUCCESS);
   }
 
-  // emulate the agreement on all transactions exepts last
+  // emulate the agreement on all transactions except last
   std::for_each(
       tx_hashes.begin(), tx_hashes.end() - 1, [this](auto const &hash) {
         status_bus->publish(status_factory->makeStatefulValid(

@@ -7,7 +7,6 @@ add_library(mst_state
 
 target_link_libraries(mst_state
     mst_hash
-    boost
     logger
     boost # // TODO [IR-1814] @muratovv 25.10.18: replace with lib dependency
     )

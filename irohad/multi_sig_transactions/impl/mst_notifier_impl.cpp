@@ -3,15 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "multi_sig_transactions/mst_notificator_impl.hpp"
-#include "interfaces/iroha_internal/transaction_batch.hpp"
-#include "interfaces/transaction.hpp"
+#include "multi_sig_transactions/mst_notifier_impl.hpp"
 
 #include <functional>
 
+#include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "interfaces/transaction.hpp"
+
 using namespace iroha;
 
-MstNotificatorImpl::MstNotificatorImpl(
+MstNotifierImpl::MstNotifierImpl(
     std::shared_ptr<iroha::MstProcessor> mst_processor,
     std::shared_ptr<iroha::network::PeerCommunicationService> pcs,
     std::shared_ptr<iroha::torii::StatusBus> status_bus,
@@ -19,24 +20,24 @@ MstNotificatorImpl::MstNotificatorImpl(
     : pcs_(std::move(pcs)),
       status_bus_(std::move(status_bus)),
       status_factory_(std::move(status_factory)),
-      log_(logger::log("MstNotificator")) {
+      log_(logger::log("MstNotifier")) {
   addSubscription(mst_processor->onStateUpdate().subscribe(
-      [this](const auto &state) { this->handleOnStateUpdate(state); }));
+      [this](const auto &state) { this->handleStateUpdate(state); }));
 
   addSubscription(mst_processor->onExpiredBatches().subscribe(
       [this](const auto &expired_batch) {
-        this->handleOnExpiredBatches(expired_batch);
+        this->handleExpiredBatches(expired_batch);
       }));
 
   addSubscription(mst_processor->onPreparedBatches().subscribe(
       [this](const auto &completed_batch) {
-        this->handleOnCompletedBatches(completed_batch);
+        this->handleCompletedBatches(completed_batch);
       }));
 }
 
-void MstNotificatorImpl::handleOnStateUpdate(
+void MstNotifierImpl::handleStateUpdate(
     const MstProcessor::UpdatedStateType &state) {
-  log_->info("handleOnStateUpdate");
+  log_->info("handleStateUpdate");
   std::for_each(state->getBatches().begin(),
                 state->getBatches().end(),
                 [this](const auto &updated_batch) {
@@ -44,35 +45,34 @@ void MstNotificatorImpl::handleOnStateUpdate(
                 });
 }
 
-void MstNotificatorImpl::handleOnExpiredBatches(
+void MstNotifierImpl::handleExpiredBatches(
     const MstProcessor::BatchType &expired_batch) {
-  log_->info("handleOnExpiredBatches");
+  log_->info("handleExpiredBatches");
   publishExpiredStatuses(expired_batch->transactions());
 }
 
-void MstNotificatorImpl::handleOnCompletedBatches(
+void MstNotifierImpl::handleCompletedBatches(
     const MstProcessor::BatchType &completed_batch) {
-  log_->info("handleOnCompletedBatches");
+  log_->info("handleCompletedBatches");
 
-  std::for_each(
-      completed_batch->transactions().begin(),
-      completed_batch->transactions().end(),
-      [this](const auto &tx) {
-        if (tx->quorum() < boost::size(tx->signatures())) {
-          log_->error(
-              "handleOnCompletedBatches: Tx {} required {} signatures, "
-              "but got {}",
-              tx->toString(),
-              tx->quorum(),
-              boost::size(tx->signatures()));
-        }
-      });
+  std::for_each(completed_batch->transactions().begin(),
+                completed_batch->transactions().end(),
+                [this](const auto &tx) {
+                  if (tx->quorum() < boost::size(tx->signatures())) {
+                    log_->error(
+                        "handleCompletedBatches: Tx {} required {} signatures, "
+                        "but got {}",
+                        tx->toString(),
+                        tx->quorum(),
+                        boost::size(tx->signatures()));
+                  }
+                });
 
   publishEnoughSignaturesStatuses(completed_batch->transactions());
   pcs_->propagate_batch(completed_batch);
 }
 
-void MstNotificatorImpl::publish(
+void MstNotifierImpl::publish(
     const shared_model::interface::types::SharedTxsCollectionType &transactions,
     TxFactoryType::TxStatusFactoryInvoker invoker) {
   std::for_each(transactions.begin(),
@@ -83,19 +83,19 @@ void MstNotificatorImpl::publish(
                 });
 }
 
-void MstNotificatorImpl::publishEnoughSignaturesStatuses(
+void MstNotifierImpl::publishEnoughSignaturesStatuses(
     const shared_model::interface::types::SharedTxsCollectionType
         &transactions) {
   publish(transactions, &TxFactoryType::makeEnoughSignaturesCollected);
 }
 
-void MstNotificatorImpl::publishExpiredStatuses(
+void MstNotifierImpl::publishExpiredStatuses(
     const shared_model::interface::types::SharedTxsCollectionType
         &transactions) {
   publish(transactions, &TxFactoryType::makeMstExpired);
 }
 
-void MstNotificatorImpl::publishPendingStatuses(
+void MstNotifierImpl::publishPendingStatuses(
     const shared_model::interface::types::SharedTxsCollectionType
         &transactions) {
   publish(transactions, &TxFactoryType::makeMstPending);

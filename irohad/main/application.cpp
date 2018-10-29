@@ -17,13 +17,14 @@
 #include "interfaces/iroha_internal/transaction_batch_factory_impl.hpp"
 #include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
 #include "multi_sig_transactions/gossip_propagation_strategy.hpp"
-#include "multi_sig_transactions/mst_notificator_impl.hpp"
+#include "multi_sig_transactions/mst_notifier_impl.hpp"
 #include "multi_sig_transactions/mst_processor_impl.hpp"
 #include "multi_sig_transactions/mst_processor_stub.hpp"
 #include "multi_sig_transactions/mst_time_provider_impl.hpp"
 #include "multi_sig_transactions/storage/mst_storage_impl.hpp"
 #include "torii/impl/command_service_impl.hpp"
 #include "torii/impl/status_bus_impl.hpp"
+#include "torii/processor/consensus_status_processor_impl.hpp"
 #include "validators/field_validator.hpp"
 
 using namespace iroha;
@@ -75,7 +76,6 @@ void Irohad::init() {
   initWsvRestorer();
   restoreWsv();
 
-  initCreationFactories();
   initCryptoProvider();
   initBatchParser();
   initValidators();
@@ -91,6 +91,7 @@ void Irohad::init() {
   initStatusBus();
   initMstProcessor();
   initPendingTxsStorage();
+  initConsensusStatusProcessor();
 
   // Torii
   initTransactionCommandService();
@@ -141,11 +142,6 @@ bool Irohad::restoreWsv() {
         log_->error(error.error);
         return false;
       });
-}
-
-void Irohad::initCreationFactories() {
-  status_factory_ =
-      std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
 }
 
 /**
@@ -202,6 +198,9 @@ void Irohad::initFactories() {
 
   query_response_factory_ =
       std::make_shared<shared_model::proto::ProtoQueryResponseFactory>();
+
+  status_factory_ =
+      std::make_shared<shared_model::proto::ProtoTxStatusFactory>();
 
   log_->info("[Init] => factories");
 }
@@ -337,7 +336,7 @@ void Irohad::initMstProcessor() {
   } else {
     mst_processor = std::make_shared<MstProcessorStub>();
   }
-  mst_notifier_ = std::make_shared<MstNotificatorImpl>(
+  mst_notifier_ = std::make_shared<MstNotifierImpl>(
       mst_processor, pcs, status_bus_, status_factory_);
   log_->info("[Init] => MST processor");
 }
@@ -350,12 +349,15 @@ void Irohad::initPendingTxsStorage() {
   log_->info("[Init] => pending transactions storage");
 }
 
+void Irohad::initConsensusStatusProcessor() {
+  cs_processor = std::make_shared<ConsensusStatusProcessorImpl>(
+      pcs, status_bus_, status_factory_);
+}
+
 /**
  * Initializing transaction command service
  */
 void Irohad::initTransactionCommandService() {
-  cs_processor = std::make_shared<ConsensusStatusProcessorImpl>(
-      pcs, status_bus_, status_factory_);
   command_service = std::make_shared<::torii::CommandServiceImpl>(
       mst_processor, storage, status_bus_, status_factory_);
   command_service_transport =

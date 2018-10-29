@@ -18,6 +18,8 @@
 #ifndef IROHA_APPLICATION_HPP
 #define IROHA_APPLICATION_HPP
 
+// TODO: 29/10/2018 @muratovv Rework with interface headers IR-1818
+
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "consensus/consensus_block_cache.hpp"
 #include "cryptography/crypto_provider/crypto_model_signer.hpp"
@@ -31,7 +33,7 @@
 #include "main/impl/ordering_init.hpp"
 #include "main/server_runner.hpp"
 #include "mst.grpc.pb.h"
-#include "multi_sig_transactions/mst_notificator.hpp"
+#include "multi_sig_transactions/mst_notifier.hpp"
 #include "multi_sig_transactions/mst_processor.hpp"
 #include "multi_sig_transactions/transport/mst_transport_grpc.hpp"
 #include "network/block_loader.hpp"
@@ -46,7 +48,7 @@
 #include "synchronizer/synchronizer.hpp"
 #include "torii/command_service.hpp"
 #include "torii/impl/command_service_transport_grpc.hpp"
-#include "torii/processor/consensus_status_processor_impl.hpp"
+#include "torii/processor/consensus_status_processor.hpp"
 #include "torii/processor/query_processor_impl.hpp"
 #include "torii/query_service.hpp"
 #include "validation/chain_validator.hpp"
@@ -127,8 +129,6 @@ class Irohad {
 
   virtual void initCryptoProvider();
 
-  virtual void initCreationFactories();
-
   virtual void initBatchParser();
 
   virtual void initValidators();
@@ -148,6 +148,8 @@ class Irohad {
   virtual void initConsensusGate();
 
   virtual void initSynchronizer();
+
+  virtual void initConsensusStatusProcessor();
 
   virtual void initPeerCommunicationService();
 
@@ -243,7 +245,7 @@ class Irohad {
       query_response_factory_;
 
   // mst
-  std::shared_ptr<iroha::MstNotificator> mst_notifier_;
+  std::shared_ptr<iroha::MstNotifier> mst_notifier_;
   std::shared_ptr<iroha::MstProcessor> mst_processor;
 
   // pending transactions storage

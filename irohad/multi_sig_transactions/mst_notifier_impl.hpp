@@ -6,7 +6,7 @@
 #ifndef IROHA_MST_NOTIFICATOR_IMPL_HPP
 #define IROHA_MST_NOTIFICATOR_IMPL_HPP
 
-#include "multi_sig_transactions/mst_notificator.hpp"
+#include "multi_sig_transactions/mst_notifier.hpp"
 
 #include <memory>
 
@@ -19,28 +19,25 @@
 #include "torii/status_bus.hpp"
 
 namespace iroha {
-  class MstNotificatorImpl : public MstNotificator,
-                             private iroha::utils::SubscriptionManager {
+  class MstNotifierImpl : public MstNotifier,
+                          private iroha::utils::SubscriptionManager {
    public:
     // -----------------------------| public API|-------------------------------
 
-    MstNotificatorImpl(
+    MstNotifierImpl(
         std::shared_ptr<iroha::MstProcessor> mst_processor,
         std::shared_ptr<iroha::network::PeerCommunicationService> pcs,
         std::shared_ptr<iroha::torii::StatusBus> status_bus,
         std::shared_ptr<shared_model::interface::TxStatusFactory>
             status_factory);
 
-    void handleOnStateUpdate(
+    void handleStateUpdate(
         const MstProcessor::UpdatedStateType &state) override;
 
-    void handleOnExpiredBatches(
+    void handleExpiredBatches(
         const MstProcessor::BatchType &expired_batch) override;
 
-    void handleOnCompletedBatches(
-        const MstProcessor::BatchType &batch) override;
-
-    ~MstNotificatorImpl() = default;
+    void handleCompletedBatches(const MstProcessor::BatchType &batch) override;
 
    private:
     // ----------------------------| private API|-------------------------------

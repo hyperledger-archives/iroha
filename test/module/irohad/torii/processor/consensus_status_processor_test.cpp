@@ -5,6 +5,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
 #include <boost/range/join.hpp>
 
 #include "backend/protobuf/proto_tx_status_factory.hpp"

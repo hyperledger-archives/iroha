@@ -12,28 +12,28 @@ namespace iroha {
   /**
    * Interface provides notification handlers for MST
    */
-  class MstNotificator {
+  class MstNotifier {
    public:
     /**
      * Handler which should be invoked on update of MST state
      * @param state - new data from MST
      */
-    virtual void handleOnStateUpdate(
+    virtual void handleStateUpdate(
         const MstProcessor::UpdatedStateType &state) = 0;
 
     /**
      * Handler which should be invoked on expired batches
      */
-    virtual void handleOnExpiredBatches(
+    virtual void handleExpiredBatches(
         const MstProcessor::BatchType &expired_batch) = 0;
 
     /**
      * Handler which should be invoked on completed batches
      */
-    virtual void handleOnCompletedBatches(
+    virtual void handleCompletedBatches(
         const MstProcessor::BatchType &batch) = 0;
 
-    virtual ~MstNotificator() = default;
+    virtual ~MstNotifier() = default;
   };
 }  // namespace iroha
 

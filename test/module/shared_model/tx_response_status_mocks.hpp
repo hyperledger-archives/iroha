@@ -50,31 +50,31 @@ class TxStatusFactoryMock : public shared_model::interface::TxStatusFactory {
  public:
   // --------------------------| Stateless statuses |---------------------------
   MOCK_METHOD2(makeStatelessFail,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
   MOCK_METHOD2(makeStatelessValid,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
 
   // --------------------------| Stateful statuses |----------------------------
   MOCK_METHOD2(makeStatefulFail,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
   MOCK_METHOD2(makeStatefulValid,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
 
   // ----------------------------| Final statuses |-----------------------------
   MOCK_METHOD2(makeCommitted,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
   MOCK_METHOD2(makeRejected,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
 
   // ----------------------------| Rest statuses |------------------------------
   MOCK_METHOD2(makeMstExpired,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
   MOCK_METHOD2(makeNotReceived,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
   MOCK_METHOD2(makeEnoughSignaturesCollected,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
   MOCK_METHOD2(makeMstPending,
-               FactoryReturnType(TransactionHashType, ErrorMessageType));
+               FactoryReturnType(TransactionHashType, ConstRefErrorMessage));
 };
 
 #endif  // IROHA_STATUS_MOCKS_HPP

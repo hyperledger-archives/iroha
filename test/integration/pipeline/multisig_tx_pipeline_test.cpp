@@ -146,14 +146,12 @@ TEST_F(MstPipelineTest, OnePeerSendsTest) {
                 .setAccountDetail(kUserId, "fav_meme", "doge")
                 .quorum(kSignatories + 1);
   auto check_mst_pending_tx_status =
-      [&log_](const proto::TransactionResponse &resp) {
-        log_->warn("TxResponse 1 {}", resp.toString());
+      [](const proto::TransactionResponse &resp) {
         ASSERT_NO_THROW(
             boost::get<const interface::MstPendingResponse &>(resp.get()));
       };
   auto check_enough_signatures_collected_tx_status =
-      [&log_](const proto::TransactionResponse &resp) {
-        log_->warn("TxResponse 2 {}", resp.toString());
+      [](const proto::TransactionResponse &resp) {
         ASSERT_NO_THROW(
             boost::get<const interface::EnoughSignaturesCollectedResponse &>(
                 resp.get()));

@@ -16,3 +16,7 @@ target_include_directories(common INTERFACE
     ${PROJECT_SOURCE_DIR}/libs/common
     )
 
+add_library(subscription_manager subscription_manager.cpp)
+target_link_libraries(subscription_manager
+    rxcpp
+    )

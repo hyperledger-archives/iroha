@@ -6,7 +6,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "multi_sig_transactions/mst_notificator_impl.hpp"
+#include "multi_sig_transactions/mst_notifier_impl.hpp"
 
 #include "framework/specified_visitor.hpp"
 #include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
@@ -36,7 +36,7 @@ class MstNotifierTest : public ::testing::Test {
     EXPECT_CALL(*mst_processor, onExpiredBatchesImpl())
         .WillRepeatedly(Return(expired_batch_subject.get_observable()));
 
-    mst_notificator = std::make_shared<iroha::MstNotificatorImpl>(
+    mst_notifier = std::make_shared<iroha::MstNotifierImpl>(
         mst_processor, pcs, status_bus, status_factory);
   }
 
@@ -88,7 +88,7 @@ class MstNotifierTest : public ::testing::Test {
   std::shared_ptr<iroha::MockMstProcessor> mst_processor;
 
   // tested component
-  std::shared_ptr<iroha::MstNotificator> mst_notificator;
+  std::shared_ptr<iroha::MstNotifier> mst_notifier;
 
   StatusMapType status_map;
 

@@ -10,6 +10,7 @@
 #include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/iroha_internal/transaction_sequence.hpp"
+#include "interfaces/iroha_internal/tx_status_factory.hpp"
 #include "validation/stateful_validator_common.hpp"
 
 namespace iroha {

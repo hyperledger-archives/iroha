@@ -7,8 +7,6 @@
 #define IROHA_SUBSCRIPTION_MANAGER_HPP
 
 #include <rxcpp/rx.hpp>
-
-#include <algorithm>
 #include <vector>
 
 namespace iroha {
@@ -22,20 +20,13 @@ namespace iroha {
      */
     class SubscriptionManager {
      public:
-      virtual ~SubscriptionManager() {
-        std::for_each(
-            subscriptions.begin(),
-            subscriptions.end(),
-            [this](const auto &subscription) { subscription.unsubscribe(); });
-      }
+      virtual ~SubscriptionManager();
 
      protected:
       /**
        * Add new subscription for the management
        */
-      void addSubscription(rxcpp::composite_subscription &&subscription) {
-        subscriptions.push_back(subscription);
-      }
+      void addSubscription(rxcpp::composite_subscription &&subscription);
 
       /// list of all subscriptions
       std::vector<rxcpp::composite_subscription> subscriptions;
