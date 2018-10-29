@@ -73,6 +73,8 @@ class TxStatusFactoryMock : public shared_model::interface::TxStatusFactory {
                FactoryReturnType(TransactionHashType, ErrorMessageType));
   MOCK_METHOD2(makeEnoughSignaturesCollected,
                FactoryReturnType(TransactionHashType, ErrorMessageType));
+  MOCK_METHOD2(makeMstPending,
+               FactoryReturnType(TransactionHashType, ErrorMessageType));
 };
 
 #endif  // IROHA_STATUS_MOCKS_HPP
