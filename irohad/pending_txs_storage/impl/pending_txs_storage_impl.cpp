@@ -13,25 +13,23 @@ namespace iroha {
   PendingTransactionStorageImpl::PendingTransactionStorageImpl(
       StateObservable updated_batches,
       BatchObservable prepared_batch,
-      BatchObservable expired_batch) {
-    updated_batches_subscription_ =
+      BatchObservable expired_batch)
+      : log_(logger::log("PendingTransactionStorageImpl")) {
+    addSubscription(
         updated_batches.subscribe([this](const SharedState &batches) {
+          this->log_->info("update batches");
           this->updatedBatchesHandler(batches);
-        });
-    prepared_batch_subscription_ =
+        }));
+    addSubscription(
         prepared_batch.subscribe([this](const SharedBatch &preparedBatch) {
+          this->log_->info("remove batch");
           this->removeBatch(preparedBatch);
-        });
-    expired_batch_subscription_ =
+        }));
+    addSubscription(
         expired_batch.subscribe([this](const SharedBatch &expiredBatch) {
+          this->log_->info("expire batch");
           this->removeBatch(expiredBatch);
-        });
-  }
-
-  PendingTransactionStorageImpl::~PendingTransactionStorageImpl() {
-    updated_batches_subscription_.unsubscribe();
-    prepared_batch_subscription_.unsubscribe();
-    expired_batch_subscription_.unsubscribe();
+        }));
   }
 
   PendingTransactionStorageImpl::SharedTxsCollectionType

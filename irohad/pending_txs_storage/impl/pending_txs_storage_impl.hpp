@@ -6,20 +6,25 @@
 #ifndef IROHA_PENDING_TXS_STORAGE_IMPL_HPP
 #define IROHA_PENDING_TXS_STORAGE_IMPL_HPP
 
+#include "interfaces/iroha_internal/transaction_batch.hpp"
+
+#include <rxcpp/rx.hpp>
 #include <set>
 #include <shared_mutex>
 #include <unordered_map>
 #include <unordered_set>
 
-#include <rxcpp/rx.hpp>
-#include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "common/subscription_manager.hpp"
+#include "logger/logger.hpp"
 #include "pending_txs_storage/pending_txs_storage.hpp"
 
 namespace iroha {
 
   class MstState;
 
-  class PendingTransactionStorageImpl : public PendingTransactionStorage {
+  class PendingTransactionStorageImpl
+      : public PendingTransactionStorage,
+        private iroha::utils::SubscriptionManager {
    public:
     using AccountIdType = shared_model::interface::types::AccountIdType;
     using HashType = shared_model::interface::types::HashType;
@@ -35,7 +40,7 @@ namespace iroha {
                                   BatchObservable prepared_batch,
                                   BatchObservable expired_batch);
 
-    ~PendingTransactionStorageImpl() override;
+    ~PendingTransactionStorageImpl() override = default;
 
     SharedTxsCollectionType getPendingTransactions(
         const AccountIdType &account_id) const override;
@@ -77,6 +82,9 @@ namespace iroha {
                          HashType::Hasher>
           batches;
     } storage_;
+
+
+    logger::Logger log_;
   };
 
 }  // namespace iroha
