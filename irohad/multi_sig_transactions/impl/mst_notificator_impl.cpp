@@ -35,7 +35,14 @@ MstNotificatorImpl::MstNotificatorImpl(
 }
 
 void MstNotificatorImpl::handleOnStateUpdate(
-    const MstProcessor::UpdatedStateType &state) {}
+    const MstProcessor::UpdatedStateType &state) {
+  log_->info("handleOnStateUpdate");
+  std::for_each(state->getBatches().begin(),
+                state->getBatches().end(),
+                [this](const auto &updated_batch) {
+                  publishPendingStatuses(updated_batch->transactions());
+                });
+}
 
 void MstNotificatorImpl::handleOnExpiredBatches(
     const MstProcessor::BatchType &expired_batch) {
@@ -88,4 +95,8 @@ void MstNotificatorImpl::publishExpiredStatuses(
   publish(transactions, &TxFactoryType::makeMstExpired);
 }
 
-MstNotificatorImpl::~MstNotificatorImpl() {}
+void MstNotificatorImpl::publishPendingStatuses(
+    const shared_model::interface::types::SharedTxsCollectionType
+        &transactions) {
+  publish(transactions, &TxFactoryType::makeMstPending);
+}

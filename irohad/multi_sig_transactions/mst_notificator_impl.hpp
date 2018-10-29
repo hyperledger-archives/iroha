@@ -71,6 +71,13 @@ namespace iroha {
         const shared_model::interface::types::SharedTxsCollectionType
             &transactions);
 
+    /**
+     * Publish PendingMst status for passed transactions
+     */
+    void publishPendingStatuses(
+        const shared_model::interface::types::SharedTxsCollectionType
+            &transactions);
+
     std::shared_ptr<iroha::network::PeerCommunicationService> pcs_;
 
     std::shared_ptr<iroha::torii::StatusBus> status_bus_;
