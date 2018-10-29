@@ -40,7 +40,7 @@ void MstNotificatorImpl::handleOnStateUpdate(
   std::for_each(state->getBatches().begin(),
                 state->getBatches().end(),
                 [this](const auto &updated_batch) {
-                  publishPendingStatuses(updated_batch->transactions());
+                  this->publishPendingStatuses(updated_batch->transactions());
                 });
 }
 
