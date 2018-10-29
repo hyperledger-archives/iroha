@@ -22,10 +22,12 @@ MstNotificatorImpl::MstNotificatorImpl(
       log_(logger::log("MstNotificator")) {
   addSubscription(mst_processor->onStateUpdate().subscribe(
       [this](const auto &state) { this->handleOnStateUpdate(state); }));
+
   addSubscription(mst_processor->onExpiredBatches().subscribe(
       [this](const auto &expired_batch) {
         this->handleOnExpiredBatches(expired_batch);
       }));
+
   addSubscription(mst_processor->onPreparedBatches().subscribe(
       [this](const auto &completed_batch) {
         this->handleOnCompletedBatches(completed_batch);
@@ -33,8 +35,7 @@ MstNotificatorImpl::MstNotificatorImpl(
 }
 
 void MstNotificatorImpl::handleOnStateUpdate(
-    const MstProcessor::UpdatedStateType &state) {
-}
+    const MstProcessor::UpdatedStateType &state) {}
 
 void MstNotificatorImpl::handleOnExpiredBatches(
     const MstProcessor::BatchType &expired_batch) {
@@ -45,6 +46,20 @@ void MstNotificatorImpl::handleOnExpiredBatches(
 void MstNotificatorImpl::handleOnCompletedBatches(
     const MstProcessor::BatchType &completed_batch) {
   log_->info("handleOnCompletedBatches");
+
+  std::for_each(
+      completed_batch->transactions().begin(),
+      completed_batch->transactions().end(),
+      [this](const auto &tx) {
+        if (tx->quorum() < boost::size(tx->signatures())) {
+          log_->error(
+              "handleOnCompletedBatches: Tx {} required {} signatures, "
+              "but got {}",
+              tx->toString(),
+              tx->quorum(),
+              boost::size(tx->signatures()));
+        }
+      });
 
   publishEnoughSignaturesStatuses(completed_batch->transactions());
   pcs_->propagate_batch(completed_batch);

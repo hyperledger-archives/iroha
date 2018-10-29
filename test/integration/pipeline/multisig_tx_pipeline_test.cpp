@@ -141,31 +141,46 @@ class MstPipelineTest : public AcceptanceFixture {
  * @then commit appears only after tx is signed by all required signatories
  */
 TEST_F(MstPipelineTest, OnePeerSendsTest) {
+  auto log_ = logger::log("MstPipelineTest");
   auto tx = baseTx()
                 .setAccountDetail(kUserId, "fav_meme", "doge")
                 .quorum(kSignatories + 1);
   auto check_mst_pending_tx_status =
-      [](const proto::TransactionResponse &resp) {
-        ASSERT_NO_THROW(
-            boost::get<const interface::MstPendingResponse &>(resp.get()));
+      [&log_](const proto::TransactionResponse &resp) {
+        log_->warn("Txresponse 1 {}", resp.toString());
+        ASSERT_NO_THROW(boost::get<const interface::StatelessValidTxResponse &>(
+            resp.get()));
       };
   auto check_enough_signatures_collected_tx_status =
-      [](const proto::TransactionResponse &resp) {
+      [&log_](const proto::TransactionResponse &resp) {
+        log_->warn("Txresponse 2{}", resp.toString());
         ASSERT_NO_THROW(
             boost::get<const interface::EnoughSignaturesCollectedResponse &>(
                 resp.get()));
       };
 
   auto &mst_itf = prepareMstItf();
-  mst_itf.sendTx(complete(tx, kUserKeypair), check_mst_pending_tx_status)
+  auto mst_tx = complete(tx, kUserKeypair);
+  mst_itf.sendTx(mst_tx, check_mst_pending_tx_status)
       .sendTx(complete(tx, signatories[0]), check_mst_pending_tx_status)
       .sendTx(complete(tx, signatories[1]),
-              check_enough_signatures_collected_tx_status)
-      .skipProposal()
-      .skipVerifiedProposal()
-      .checkBlock([](auto &proposal) {
-        ASSERT_EQ(proposal->transactions().size(), 1);
-      });
+              check_enough_signatures_collected_tx_status);
+
+  // wait until multisig transaction is appeared
+  while (true) {
+    auto required_break = false;
+    mst_itf.checkProposal([&mst_tx, &required_break](auto &proposal) {
+      ASSERT_EQ(proposal->transactions().size(), 1);
+      auto &proposal_tx = *boost::begin(proposal->transactions());
+      if (mst_tx.hash() == proposal_tx.hash())
+        ASSERT_EQ(boost::size(proposal_tx.signatures()), 3);
+      required_break = true;
+    });
+    if (required_break) {
+      break;
+    }
+  }
+  mst_itf.done();
 }
 
 /**
