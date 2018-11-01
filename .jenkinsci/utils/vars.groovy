@@ -7,4 +7,8 @@ def compilerMapping () {
 
   }
 
+enum PythonVersion {
+  python2, python3
+}
+
 return this

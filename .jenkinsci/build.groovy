@@ -1,11 +1,15 @@
 #!/usr/bin/env groovy
 
-def cmakeConfigure(String buildDir, String cmakeOptions) {
-  sh "cmake -H. -B${buildDir} ${cmakeOptions}"
+def cmakeConfigure(String buildDir, String cmakeOptions, String sourceTreeDir=".") {
+  sh "cmake -H${sourceTreeDir} -B${buildDir} ${cmakeOptions}"
 }
 
 def cmakeBuild(String buildDir, String cmakeOptions, int parallelism) {
   sh "cmake --build ${buildDir} ${cmakeOptions} -- -j${parallelism}"
+}
+
+def cmakeBuildWindows(String buildDir, String cmakeOptions) {
+  sh "cmake --build ${buildDir} ${cmakeOptions}"
 }
 
 def cppCheck(String buildDir, int parallelism) {
