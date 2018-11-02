@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 #include <rxcpp/rx.hpp>
 
+#include "consensus/gate_object.hpp"
 #include "consensus/round.hpp"
 
 namespace shared_model {
@@ -20,33 +21,12 @@ namespace shared_model {
 
 namespace iroha {
   namespace network {
-    /// Current pair is valid
-    struct PairValid {
-      std::shared_ptr<shared_model::interface::Block> block;
-    };
-
-    /// Network votes for another pair and round
-    struct VoteOther {
-      std::shared_ptr<shared_model::interface::Block> block;
-    };
-
-    /// Reject on proposal
-    struct ProposalReject {};
-
-    /// Reject on block
-    struct BlockReject {
-      std::shared_ptr<shared_model::interface::Block> block;
-    };
-
-    /// Agreement on <None, None>
-    struct AgreementOnNone {};
-
     /**
      * Public api of consensus module
      */
     class ConsensusGate {
      public:
-      using Round = iroha::consensus::Round;
+      using Round = consensus::Round;
       /**
        * Providing data for consensus for voting
        * @param block is the block for which current node is voting
@@ -58,12 +38,7 @@ namespace iroha {
               block,
           Round round) = 0;
 
-      // TODO(@l4l) 10/10/18: IR-1749 move instantiation to separate cpp
-      using GateObject = boost::variant<PairValid,
-                                        VoteOther,
-                                        ProposalReject,
-                                        BlockReject,
-                                        AgreementOnNone>;
+      using GateObject = consensus::GateObject;
 
       /**
        * @return emit gate responses
