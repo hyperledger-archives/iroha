@@ -34,7 +34,9 @@ target_link_libraries(raw_block_loader
 
 add_library(application
     application.cpp
-    impl/ordering_init.cpp
+    # TODO andrei 08.11.2018 IR-1851 Create separate targets for initialization
+    # helpers in application
+    impl/on_demand_ordering_init.cpp
     impl/consensus_init.cpp
     impl/block_loader_init.cpp
     )
@@ -45,7 +47,11 @@ target_link_libraries(application
     server_runner
     ametsuchi
     networking
-    ordering_service
+    on_demand_ordering_service
+    on_demand_ordering_service_transport_grpc
+    on_demand_connection_manager
+    on_demand_ordering_gate
+    on_demand_common
     chain_validator
     stateful_validator
     processors
