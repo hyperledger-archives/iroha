@@ -199,7 +199,7 @@ TEST_F(Validator, SomeTxsFail) {
           .build();
 
   EXPECT_CALL(*temp_wsv_mock, apply(Eq(ByRef(invalid_tx))))
-      .WillOnce(Return(iroha::expected::Error<CommandError>({})));
+      .WillOnce(Return(iroha::expected::makeError(CommandError{"", 2, false})));
   EXPECT_CALL(*temp_wsv_mock, apply(Eq(ByRef(valid_tx))))
       .WillRepeatedly(Return(iroha::expected::Value<void>({})));
 
@@ -208,6 +208,9 @@ TEST_F(Validator, SomeTxsFail) {
       verified_proposal_and_errors->verified_proposal->transactions().size(),
       2);
   ASSERT_EQ(verified_proposal_and_errors->rejected_transactions.size(), 1);
+  ASSERT_EQ(verified_proposal_and_errors->rejected_transactions.begin()
+                ->second.error_code,
+            2);
 }
 
 /**
@@ -271,7 +274,8 @@ TEST_F(Validator, Batches) {
   EXPECT_CALL(*temp_wsv_mock, apply(Eq(ByRef(txs[2]))))
       .WillOnce(Return(iroha::expected::Value<void>({})));
   EXPECT_CALL(*temp_wsv_mock, apply(Eq(ByRef(txs[3]))))
-      .WillOnce(Return(iroha::expected::Error<CommandError>({})));
+      .WillOnce(
+          Return(iroha::expected::makeError(CommandError({"", 2, false}))));
   EXPECT_CALL(*temp_wsv_mock, apply(Eq(ByRef(txs[5]))))
       .WillOnce(Return(iroha::expected::Value<void>({})));
   EXPECT_CALL(*temp_wsv_mock, apply(Eq(ByRef(txs[6]))))
@@ -282,4 +286,7 @@ TEST_F(Validator, Batches) {
       verified_proposal_and_errors->verified_proposal->transactions().size(),
       5);
   ASSERT_EQ(verified_proposal_and_errors->rejected_transactions.size(), 1);
+  ASSERT_EQ(verified_proposal_and_errors->rejected_transactions.begin()
+                ->second.error_code,
+            2);
 }
