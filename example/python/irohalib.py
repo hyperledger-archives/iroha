@@ -44,7 +44,13 @@ class IrohaCrypto(object):
         :proto_with_payload: proto transaction or query
         :return: bytes representation of hash
         """
-        bytes = proto_with_payload.payload.SerializeToString()
+        obj = None
+        if hasattr(proto_with_payload, 'payload'):
+            obj = getattr(proto_with_payload, 'payload')
+        elif hasattr(proto_with_payload, 'meta'):
+            obj = getattr(proto_with_payload, 'meta')
+
+        bytes = obj.SerializeToString()
         hash = hashlib.sha3_256(bytes).digest()
         return hash
 
@@ -211,6 +217,28 @@ class Iroha(object):
             internal_query.CopyFrom(message)
         return query_wrapper
 
+    def blocks_query(self, counter=1, creator_account=None, created_time=None):
+        """
+        Creates a protobuf query for a blocks stream
+        :param counter: query counter, should be incremented for each new query
+        :param creator_account: account id of query creator
+        :param created_time: query creation timestamp in milliseconds
+        :return: a proto blocks query
+        """
+        if not created_time:
+            created_time = self.now()
+        if not creator_account:
+            creator_account = self.creator_account
+
+        meta = queries_pb2.QueryPayloadMeta()
+        meta.created_time = created_time
+        meta.creator_account_id = creator_account
+        meta.query_counter = counter
+
+        query_wrapper = queries_pb2.BlocksQuery()
+        query_wrapper.meta.CopyFrom(meta)
+        return query_wrapper
+
     @staticmethod
     def batch(*transactions, atomic=True):
         """
@@ -240,8 +268,10 @@ class IrohaGrpc(object):
     def __init__(self, address=None):
         self._address = address if address else '127.0.0.1:50051'
         self._channel = grpc.insecure_channel(self._address)
-        self._command_service_stub = endpoint_pb2_grpc.CommandServiceStub(self._channel)
-        self._query_service_stub = endpoint_pb2_grpc.QueryServiceStub(self._channel)
+        self._command_service_stub = endpoint_pb2_grpc.CommandServiceStub(
+            self._channel)
+        self._query_service_stub = endpoint_pb2_grpc.QueryServiceStub(
+            self._channel)
 
     def send_tx(self, transaction):
         """
@@ -283,6 +313,17 @@ class IrohaGrpc(object):
         """
         response = self._query_service_stub.Find(query)
         return response
+
+    def send_blocks_stream_query(self, query):
+        """
+        Send a query for blocks stream to Iroha
+        :param query: protobuf BlocksQuery
+        :return: an iterable over a stream of blocks
+        :raise: grpc.RpcError with .code() available in case of any error
+        """
+        response = self._query_service_stub.FetchCommits(query)
+        for block in response:
+            yield block
 
     def tx_status(self, transaction):
         """
