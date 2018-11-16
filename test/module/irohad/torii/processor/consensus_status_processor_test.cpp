@@ -55,14 +55,6 @@ class ConsensusStatusProcessorTest : public ::testing::Test {
         pcs, status_bus, status_factory);
   }
 
-  auto base_tx() {
-    return shared_model::proto::TransactionBuilder()
-        .creatorAccountId("user@domain")
-        .createdTime(iroha::time::now())
-        .setAccountQuorum("user@domain", 2)
-        .quorum(1);
-  }
-
   auto baseTestTx(shared_model::interface::types::QuorumType quorum = 1) {
     return TestTransactionBuilder()
         .createdTime(iroha::time::now())
@@ -196,14 +188,14 @@ TEST_F(ConsensusStatusProcessorTest, TransactionProcessorOnCommitTest) {
   auto proposal = std::make_shared<shared_model::proto::Proposal>(
       TestProposalBuilder().transactions(txs).build());
 
-  // empty transactions errors - all txs are valid
+  // empty transactions errors mean that all txs are valid
   verified_prop_notifier.get_subscriber().on_next(
       std::make_shared<iroha::validation::VerifiedProposalAndErrors>(
           std::make_pair(proposal, iroha::validation::TransactionsErrors{})));
 
   auto block = TestBlockBuilder().transactions(txs).build();
 
-  // 2. Create block and notify transaction processor about it
+  // 2. Create block and make a notification about it
   SynchronizationEvent commit_event{
       rxcpp::observable<>::just(
           std::shared_ptr<shared_model::interface::Block>(clone(block))),
@@ -239,13 +231,10 @@ TEST_F(ConsensusStatusProcessorTest, TransactionProcessorInvalidTxsTest) {
         shared_model::interface::TxStatusFactory::emptyErrorMessage());
   }
 
-  // For all transactions from proposal
-  // transaction will be published twice
-  // (first that they are stateless
-  // valid and second that they either
-  // passed or not stateful validation)
-  // Plus all transactions from block will
-  // be committed and corresponding status will be sent
+  // Each transaction from proposal transaction will be published twice
+  // The first time - stateless valid status, the second - passed or stateful
+  // invalid status. Additionally, all the transactions from a block will be
+  // committed and corresponding statuses will be sent.
   EXPECT_CALL(*status_bus, publish(_)).Times(proposal_size + block_size);
 
   EXPECT_CALL(*status_factory, makeStatefulFail(_, _))

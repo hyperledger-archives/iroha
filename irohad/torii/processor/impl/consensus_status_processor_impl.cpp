@@ -6,7 +6,6 @@
 #include "torii/processor/consensus_status_processor_impl.hpp"
 
 #include <boost/format.hpp>
-
 #include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/iroha_internal/transaction_sequence.hpp"
@@ -74,7 +73,8 @@ namespace iroha {
             proposal_and_errors) {
       // notify about failed txes
       const auto &errors = proposal_and_errors->second;
-      std::lock_guard<std::mutex> lock(notifier_mutex_);
+      // TODO: 15/11/2018 @muratovv refactor status_bus with explicit concurrent
+      // behaviour IR-1872
       for (const auto &tx_error : errors) {
         auto error_msg = composeErrorMessage(tx_error);
         log_->info(error_msg);

@@ -26,7 +26,7 @@ auto MstProcessorStub::propagateBatchImpl(const DataType &batch)
 auto MstProcessorStub::onStateUpdateImpl() const -> decltype(onStateUpdate()) {
   log_->warn(
       "Multisig transactions are disabled, so MstProcessor state updates "
-      "observable won't  emit any events");
+      "observable won't emit any events");
   return rxcpp::observable<>::empty<std::shared_ptr<MstState>>();
 }
 
@@ -38,7 +38,7 @@ auto MstProcessorStub::onPreparedBatchesImpl() const
 auto MstProcessorStub::onExpiredBatchesImpl() const
     -> decltype(onExpiredBatches()) {
   log_->warn(
-      "Multisig transactions are disabled, so MstProcessor expires batches "
+      "Multisig transactions are disabled, so MstProcessor expired batches "
       "observable won't emit any events");
   return rxcpp::observable<>::empty<DataType>();
 }

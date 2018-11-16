@@ -8,8 +8,6 @@
 
 #include "torii/processor/consensus_status_processor.hpp"
 
-#include <mutex>
-
 #include <rxcpp/rx.hpp>
 
 #include "common/subscription_manager.hpp"
@@ -62,10 +60,6 @@ namespace iroha {
       std::shared_ptr<shared_model::interface::TxStatusFactory> status_factory_;
 
       logger::Logger log_;
-
-      /// prevents from emitting new tx statuses from different threads
-      /// in parallel
-      std::mutex notifier_mutex_;
 
       // shortcut for the type
       using TxFactoryType = shared_model::interface::TxStatusFactory;

@@ -234,7 +234,7 @@ TEST_F(MstPipelineTest, GetPendingTxsLatestSignatures) {
  * @given an empty ledger
  * @when creating pending transactions @and signing them with number of
  * signatures to get over quorum @and executing get pending transactions
- * @then those transaction is not returned in getPending query
+ * @then the transaction is not returned in getPending query
  */
 TEST_F(MstPipelineTest, GetPendingTxsNoSignedTxs) {
   mst_itf_.setInitialState(kAdminKeypair);
