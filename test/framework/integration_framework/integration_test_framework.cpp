@@ -139,21 +139,21 @@ namespace integration_framework {
 
     auto proposals = iroha_instance_->getIrohaInstance()
                          ->getPeerCommunicationService()
-                         ->on_proposal();
+                         ->onProposal();
 
     proposals
-        .filter([](auto proposal) {
-          return boost::size(proposal->transactions()) != 0;
+        .filter([](const auto &event) {
+          return boost::size(getProposalUnsafe(event)->transactions()) != 0;
         })
-        .subscribe([this](auto proposal) {
-          proposal_queue_.push(proposal);
+        .subscribe([this](const auto &event) {
+          proposal_queue_.push(getProposalUnsafe(event));
           log_->info("proposal");
           queue_cond.notify_all();
         });
 
     auto proposal_flat_map =
         [](auto t) -> rxcpp::observable<std::tuple_element_t<0, decltype(t)>> {
-      if (boost::size(std::get<1>(t)->transactions()) != 0) {
+      if (boost::size(getProposalUnsafe(std::get<1>(t))->transactions()) != 0) {
         return rxcpp::observable<>::just(std::get<0>(t));
       }
       return rxcpp::observable<>::empty<std::tuple_element_t<0, decltype(t)>>();
@@ -161,7 +161,7 @@ namespace integration_framework {
 
     iroha_instance_->getIrohaInstance()
         ->getPeerCommunicationService()
-        ->on_verified_proposal()
+        ->onVerifiedProposal()
         .zip(proposals)
         .flat_map(proposal_flat_map)
         .subscribe([this](auto verified_proposal_and_errors) {
@@ -248,10 +248,10 @@ namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::sendTx(
       const shared_model::proto::Transaction &tx) {
     sendTx(tx, [this](const auto &status) {
-            if (!status.errorMessage().empty()) {
-                 log_->debug("Got error while sending transaction: "
-                                + status.errorMessage());
-            }
+      if (!status.errorMessage().empty()) {
+        log_->debug("Got error while sending transaction: "
+                    + status.errorMessage());
+      }
     });
     return *this;
   }

@@ -18,6 +18,7 @@
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
+#include "ordering/impl/on_demand_common.hpp"
 #include "torii/command_client.hpp"
 #include "torii/impl/command_service_impl.hpp"
 #include "torii/impl/command_service_transport_grpc.hpp"
@@ -54,8 +55,7 @@ constexpr uint32_t resubscribe_attempts = 3;
 class CustomPeerCommunicationServiceMock : public PeerCommunicationService {
  public:
   CustomPeerCommunicationServiceMock(
-      rxcpp::subjects::subject<
-          std::shared_ptr<shared_model::interface::Proposal>> prop_notifier,
+      rxcpp::subjects::subject<OrderingEvent> prop_notifier,
       rxcpp::subjects::subject<SynchronizationEvent> commit_notifier,
       rxcpp::subjects::subject<
           std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
@@ -68,8 +68,7 @@ class CustomPeerCommunicationServiceMock : public PeerCommunicationService {
       std::shared_ptr<shared_model::interface::TransactionBatch> batch)
       const override {}
 
-  rxcpp::observable<std::shared_ptr<shared_model::interface::Proposal>>
-  on_proposal() const override {
+  rxcpp::observable<OrderingEvent> onProposal() const override {
     return prop_notifier_.get_observable();
   }
 
@@ -79,13 +78,12 @@ class CustomPeerCommunicationServiceMock : public PeerCommunicationService {
 
   rxcpp::observable<
       std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
-  on_verified_proposal() const override {
+  onVerifiedProposal() const override {
     return verified_prop_notifier_.get_observable();
   }
 
  private:
-  rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Proposal>>
-      prop_notifier_;
+  rxcpp::subjects::subject<OrderingEvent> prop_notifier_;
   rxcpp::subjects::subject<SynchronizationEvent> commit_notifier_;
   rxcpp::subjects::subject<
       std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
@@ -166,8 +164,7 @@ class ToriiServiceTest : public testing::Test {
   std::shared_ptr<MockBlockQuery> block_query;
   std::shared_ptr<MockStorage> storage;
 
-  rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Proposal>>
-      prop_notifier_;
+  rxcpp::subjects::subject<OrderingEvent> prop_notifier_;
   rxcpp::subjects::subject<SynchronizationEvent> commit_notifier_;
   rxcpp::subjects::subject<
       std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
@@ -284,13 +281,15 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   }
 
   // create proposal from these transactions
-  auto proposal = std::make_shared<shared_model::proto::Proposal>(
-      TestProposalBuilder()
-          .height(1)
-          .createdTime(iroha::time::now())
-          .transactions(txs)
-          .build());
-  prop_notifier_.get_subscriber().on_next(proposal);
+  std::shared_ptr<shared_model::interface::Proposal> proposal =
+      std::make_shared<shared_model::proto::Proposal>(
+          TestProposalBuilder()
+              .height(1)
+              .createdTime(iroha::time::now())
+              .transactions(txs)
+              .build());
+  prop_notifier_.get_subscriber().on_next(OrderingEvent{
+      proposal, {proposal->height(), iroha::ordering::kFirstRejectRound}});
 
   torii::CommandSyncClient client2(client1);
 
@@ -468,13 +467,14 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
 
   std::vector<decltype(iroha_tx)> txs;
   txs.push_back(iroha_tx);
-  auto proposal =
+  std::shared_ptr<shared_model::interface::Proposal> proposal =
       std::make_shared<proto::Proposal>(proto::ProposalBuilder()
                                             .createdTime(iroha::time::now())
                                             .transactions(txs)
                                             .height(1)
                                             .build());
-  prop_notifier_.get_subscriber().on_next(proposal);
+  prop_notifier_.get_subscriber().on_next(OrderingEvent{
+      proposal, {proposal->height(), iroha::ordering::kFirstRejectRound}});
   verified_prop_notifier_.get_subscriber().on_next(
       std::make_shared<iroha::validation::VerifiedProposalAndErrors>(
           std::make_pair(proposal, iroha::validation::TransactionsErrors{})));

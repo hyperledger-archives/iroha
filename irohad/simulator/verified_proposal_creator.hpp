@@ -24,7 +24,7 @@
 namespace shared_model {
   namespace interface {
     class Proposal;
-  }
+  }  // namespace interface
 }  // namespace shared_model
 
 namespace iroha {
@@ -39,16 +39,15 @@ namespace iroha {
        * Processing proposal for making stateful validation
        * @param proposal - object for validation
        */
-      virtual void process_proposal(
+      virtual void processProposal(
           const shared_model::interface::Proposal &proposal) = 0;
 
       /**
        * Emit proposals that was verified by validation
-       * @return
        */
       virtual rxcpp::observable<
-          std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
-      on_verified_proposal() = 0;
+          std::shared_ptr<validation::VerifiedProposalAndErrors>>
+      onVerifiedProposal() = 0;
 
       virtual ~VerifiedProposalCreator() = default;
     };

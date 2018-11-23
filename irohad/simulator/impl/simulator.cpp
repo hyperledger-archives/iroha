@@ -29,10 +29,9 @@ namespace iroha {
           crypto_signer_(std::move(crypto_signer)),
           block_factory_(std::move(block_factory)),
           log_(logger::log("Simulator")) {
-      ordering_gate->on_proposal().subscribe(
-          proposal_subscription_,
-          [this](std::shared_ptr<shared_model::interface::Proposal> proposal) {
-            this->process_proposal(*proposal);
+      ordering_gate->onProposal().subscribe(
+          proposal_subscription_, [this](const network::OrderingEvent &event) {
+            this->processProposal(**event.proposal);
           });
 
       notifier_.get_observable().subscribe(
@@ -49,13 +48,12 @@ namespace iroha {
       verified_proposal_subscription_.unsubscribe();
     }
 
-    rxcpp::observable<
-        std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
-    Simulator::on_verified_proposal() {
+    rxcpp::observable<std::shared_ptr<validation::VerifiedProposalAndErrors>>
+    Simulator::onVerifiedProposal() {
       return notifier_.get_observable();
     }
 
-    void Simulator::process_proposal(
+    void Simulator::processProposal(
         const shared_model::interface::Proposal &proposal) {
       log_->info("process proposal");
 
