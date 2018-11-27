@@ -613,4 +613,9 @@ namespace integration_framework {
       boost::filesystem::remove_all(iroha_instance_->block_store_dir_);
     }
   }
+
+  const std::shared_ptr<IrohaInstance>
+      &IntegrationTestFramework::getIrohaInstance() const {
+    return iroha_instance_;
+  }
 }  // namespace integration_framework

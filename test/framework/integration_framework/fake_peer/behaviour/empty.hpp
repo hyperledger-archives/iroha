@@ -20,10 +20,14 @@ namespace integration_framework {
      public:
       virtual ~EmptyBehaviour() = default;
 
-      void processMstMessage(FakePeer::MstMessagePtr message) override;
-      void processYacMessage(FakePeer::YacMessagePtr message) override;
-      void processOsBatch(FakePeer::OsBatchPtr batch) override;
-      void processOgProposal(FakePeer::OgProposalPtr proposal) override;
+      void processMstMessage(MstMessagePtr message) override;
+      void processYacMessage(YacMessagePtr message) override;
+      void processOsBatch(OsBatchPtr batch) override;
+      void processOgProposal(OgProposalPtr proposal) override;
+      LoaderBlockRequestResult processLoaderBlockRequest(
+          LoaderBlockRequest request) override;
+      LoaderBlocksRequestResult processLoaderBlocksRequest(
+          LoaderBlocksRequest request) override;
 
       virtual std::string getName();
     };

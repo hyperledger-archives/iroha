@@ -10,11 +10,7 @@
 
 #include <rxcpp/rx.hpp>
 
-namespace shared_model {
-  namespace interface {
-    class Proposal;
-  }
-}  // namespace shared_model
+#include "framework/integration_framework/fake_peer/types.hpp"
 
 namespace integration_framework {
   namespace fake_peer {
@@ -22,15 +18,12 @@ namespace integration_framework {
     class OgNetworkNotifier final
         : public iroha::network::OrderingGateNotification {
      public:
-      using Proposal = shared_model::interface::Proposal;
-      using ProposalPtr = std::shared_ptr<Proposal>;
+      void onProposal(OgProposalPtr proposal) override;
 
-      void onProposal(ProposalPtr proposal) override;
-
-      rxcpp::observable<ProposalPtr> get_observable();
+      rxcpp::observable<OgProposalPtr> get_observable();
 
      private:
-      rxcpp::subjects::subject<ProposalPtr> proposals_subject_;
+      rxcpp::subjects::subject<OgProposalPtr> proposals_subject_;
     };
 
   }  // namespace fake_peer

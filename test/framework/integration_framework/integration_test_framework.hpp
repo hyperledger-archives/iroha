@@ -359,6 +359,9 @@ namespace integration_framework {
      */
     void done();
 
+    /// Get the controlled Iroha instance.
+    const std::shared_ptr<IrohaInstance> &getIrohaInstance() const;
+
    protected:
     using AsyncCall = iroha::network::AsyncGrpcClient<google::protobuf::Empty>;
 

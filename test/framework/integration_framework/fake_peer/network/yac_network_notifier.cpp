@@ -17,8 +17,7 @@ namespace integration_framework {
       votes_subject_.get_subscriber().on_next(state_ptr);
     }
 
-    rxcpp::observable<YacNetworkNotifier::StateMessagePtr>
-    YacNetworkNotifier::get_observable() {
+    rxcpp::observable<YacMessagePtr> YacNetworkNotifier::get_observable() {
       return votes_subject_.get_observable();
     }
 

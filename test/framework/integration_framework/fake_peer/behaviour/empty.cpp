@@ -1,12 +1,25 @@
+/**
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include "framework/integration_framework/fake_peer/behaviour/empty.hpp"
 
 namespace integration_framework {
   namespace fake_peer {
 
-    void EmptyBehaviour::processMstMessage(FakePeer::MstMessagePtr message) {}
-    void EmptyBehaviour::processYacMessage(FakePeer::YacMessagePtr message) {}
-    void EmptyBehaviour::processOsBatch(FakePeer::OsBatchPtr batch) {}
-    void EmptyBehaviour::processOgProposal(FakePeer::OgProposalPtr proposal) {}
+    void EmptyBehaviour::processMstMessage(MstMessagePtr message) {}
+    void EmptyBehaviour::processYacMessage(YacMessagePtr message) {}
+    void EmptyBehaviour::processOsBatch(OsBatchPtr batch) {}
+    void EmptyBehaviour::processOgProposal(OgProposalPtr proposal) {}
+    LoaderBlockRequestResult EmptyBehaviour::processLoaderBlockRequest(
+        LoaderBlockRequest request) {
+      return {};
+    }
+    LoaderBlocksRequestResult EmptyBehaviour::processLoaderBlocksRequest(
+        LoaderBlocksRequest request) {
+      return {};
+    }
 
     std::string EmptyBehaviour::getName() {
       return "empty behaviour";

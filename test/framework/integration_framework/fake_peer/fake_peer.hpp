@@ -12,55 +12,15 @@
 #include <boost/core/noncopyable.hpp>
 #include <rxcpp/rx.hpp>
 #include "framework/integration_framework/fake_peer/network/mst_message.hpp"
+#include "framework/integration_framework/fake_peer/types.hpp"
 #include "interfaces/iroha_internal/abstract_transport_factory.hpp"
 #include "logger/logger.hpp"
 #include "network/impl/async_grpc_client.hpp"
 
-namespace shared_model {
-  namespace crypto {
-    class Keypair;
-  }
-  namespace interface {
-    class CommonObjectsFactory;
-    class Proposal;
-    class Transaction;
-    class TransactionBatch;
-    class TransactionBatchParser;
-    class TransactionBatchFactory;
-  }  // namespace interface
-}  // namespace shared_model
-
-namespace iroha {
-  namespace protocol {
-    class Transaction;
-  }
-  namespace network {
-    class MstTransportGrpc;
-    class MstTransportNotification;
-  }  // namespace network
-  namespace consensus {
-    namespace yac {
-      class NetworkImpl;
-      class YacCryptoProvider;
-      class YacHash;
-      struct VoteMessage;
-    }  // namespace yac
-  }    // namespace consensus
-  namespace ordering {
-    class OrderingGateTransportGrpc;
-    class OrderingServiceTransportGrpc;
-  }  // namespace ordering
-  class MstState;
-}  // namespace iroha
 class ServerRunner;
 
 namespace integration_framework {
   namespace fake_peer {
-    class MstNetworkNotifier;
-    class OsNetworkNotifier;
-    class OgNetworkNotifier;
-    class YacNetworkNotifier;
-    class Behaviour;
 
     /**
      * A lightweight implementation of iroha peer network interface for
@@ -73,12 +33,6 @@ namespace integration_framework {
           shared_model::interface::AbstractTransportFactory<
               shared_model::interface::Transaction,
               iroha::protocol::Transaction>;
-      using MstMessagePtr = std::shared_ptr<MstMessage>;
-      using YacMessagePtr = std::shared_ptr<
-          const std::vector<iroha::consensus::yac::VoteMessage>>;
-      using OgProposalPtr = std::shared_ptr<shared_model::interface::Proposal>;
-      using OsBatchPtr =
-          std::shared_ptr<shared_model::interface::TransactionBatch>;
 
       /**
        * Constructor.
@@ -110,6 +64,19 @@ namespace integration_framework {
       /// Assign the given behaviour to this fake peer.
       FakePeer &setBehaviour(const std::shared_ptr<Behaviour> &behaviour);
 
+      /// Get the behaviour assigned to this peer, if any, otherwise nullptr.
+      const std::shared_ptr<Behaviour> &getBehaviour() const;
+
+      /// Assign this peer a block storage. Used by behaviours.
+      FakePeer &setBlockStorage(
+          const std::shared_ptr<BlockStorage> &block_storage);
+
+      /// Remove any block storage previously assigned to this peer, if any.
+      FakePeer &removeBlockStorage();
+
+      /// Get the block storage previously assigned to this peer, if any.
+      boost::optional<const BlockStorage &> getBlockStorage() const;
+
       /// Start the fake peer.
       void run();
 
@@ -130,6 +97,14 @@ namespace integration_framework {
 
       /// Get the observable of OG proposals received by this peer.
       rxcpp::observable<OgProposalPtr> getOgProposalsObservable();
+
+      /// Get the observable of block requests received by this peer.
+      rxcpp::observable<LoaderBlockRequest>
+      get_loader_block_request_observable();
+
+      /// Get the observable of blocks requests received by this peer.
+      rxcpp::observable<LoaderBlocksRequest>
+      get_loader_blocks_request_observable();
 
       /**
        * Send the real peer votes from this peer analogous to the provided ones.
@@ -164,6 +139,10 @@ namespace integration_framework {
           const std::shared_ptr<shared_model::interface::TransactionBatch>
               &batch);
 
+      bool sendBlockRequest(const LoaderBlockRequest &request);
+
+      size_t sendBlocksRequest(const LoaderBlocksRequest &request);
+
      private:
       using MstTransport = iroha::network::MstTransportGrpc;
       using YacTransport = iroha::consensus::yac::NetworkImpl;
@@ -190,6 +169,7 @@ namespace integration_framework {
       std::shared_ptr<YacTransport> yac_transport_;
       std::shared_ptr<OsTransport> os_transport_;
       std::shared_ptr<OgTransport> og_transport_;
+      std::shared_ptr<LoaderGrpc> synchronizer_transport_;
 
       std::shared_ptr<MstNetworkNotifier> mst_network_notifier_;
       std::shared_ptr<YacNetworkNotifier> yac_network_notifier_;
@@ -201,6 +181,7 @@ namespace integration_framework {
       std::shared_ptr<iroha::consensus::yac::YacCryptoProvider> yac_crypto_;
 
       std::shared_ptr<Behaviour> behaviour_;
+      std::shared_ptr<BlockStorage> block_storage_;
 
       logger::Logger log_;
     };

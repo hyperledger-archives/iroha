@@ -1,3 +1,8 @@
+/**
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include "framework/integration_framework/fake_peer/behaviour/behaviour.hpp"
 
 namespace integration_framework {
@@ -47,6 +52,10 @@ namespace integration_framework {
       assert(fake_peer && "Fake peer shared pointer is not set!"
         " Probably the fake peer has gone before the associated behaviour.");
       return *fake_peer;
+    }
+
+    logger::Logger &Behaviour::getLogger() {
+      return log_;
     }
 
   }  // namespace fake_peer

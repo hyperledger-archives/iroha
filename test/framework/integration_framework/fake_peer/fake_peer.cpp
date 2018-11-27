@@ -14,6 +14,8 @@
 #include "cryptography/default_hash_provider.hpp"
 #include "cryptography/keypair.hpp"
 #include "framework/integration_framework/fake_peer/behaviour/behaviour.hpp"
+#include "framework/integration_framework/fake_peer/block_storage.hpp"
+#include "framework/integration_framework/fake_peer/network/loader_grpc.hpp"
 #include "framework/integration_framework/fake_peer/network/mst_network_notifier.hpp"
 #include "framework/integration_framework/fake_peer/network/ordering_gate_network_notifier.hpp"
 #include "framework/integration_framework/fake_peer/network/ordering_service_network_notifier.hpp"
@@ -111,14 +113,46 @@ namespace integration_framework {
       return *this;
     }
 
+    const std::shared_ptr<Behaviour> &FakePeer::getBehaviour() const {
+      return behaviour_;
+    }
+
+    FakePeer &FakePeer::setBlockStorage(
+        const std::shared_ptr<BlockStorage> &block_storage) {
+      if (block_storage_) {
+        block_storage_->claimNotUsingPeer(shared_from_this());
+      }
+      block_storage_ = block_storage;
+      block_storage_->claimUsingPeer(shared_from_this());
+      return *this;
+    }
+
+    FakePeer &FakePeer::removeBlockStorage() {
+      if (block_storage_) {
+        block_storage_->claimNotUsingPeer(shared_from_this());
+      }
+      block_storage_.reset();
+      return *this;
+    }
+
+    boost::optional<const BlockStorage &> FakePeer::getBlockStorage() const {
+      if (block_storage_) {
+        return *block_storage_;
+      }
+      return boost::none;
+    }
+
     void FakePeer::run() {
       // start instance
+      synchronizer_transport_ =
+          std::make_shared<LoaderGrpc>(shared_from_this());
       log_->info("starting listening server");
       internal_server_ = std::make_unique<ServerRunner>(getAddress());
       internal_server_->append(yac_transport_)
           .append(mst_transport_)
           .append(os_transport_)
           .append(og_transport_)
+          .append(synchronizer_transport_)
           .run()
           .match(
               [this](const iroha::expected::Result<int, std::string>::ValueType
@@ -144,22 +178,19 @@ namespace integration_framework {
       return *keypair_;
     }
 
-    rxcpp::observable<FakePeer::MstMessagePtr>
-    FakePeer::getMstStatesObservable() {
+    rxcpp::observable<MstMessagePtr> FakePeer::getMstStatesObservable() {
       return mst_network_notifier_->get_observable();
     }
 
-    rxcpp::observable<FakePeer::YacMessagePtr>
-    FakePeer::getYacStatesObservable() {
+    rxcpp::observable<YacMessagePtr> FakePeer::getYacStatesObservable() {
       return yac_network_notifier_->get_observable();
     }
 
-    rxcpp::observable<FakePeer::OsBatchPtr> FakePeer::getOsBatchesObservable() {
+    rxcpp::observable<OsBatchPtr> FakePeer::getOsBatchesObservable() {
       return os_network_notifier_->get_observable();
     }
 
-    rxcpp::observable<FakePeer::OgProposalPtr>
-    FakePeer::getOgProposalsObservable() {
+    rxcpp::observable<OgProposalPtr> FakePeer::getOgProposalsObservable() {
       return og_network_notifier_->get_observable();
     }
 
@@ -199,8 +230,7 @@ namespace integration_framework {
       yac_transport_->sendState(*real_peer_, state);
     }
 
-    void FakePeer::voteForTheSame(
-        const FakePeer::YacMessagePtr &incoming_votes) {
+    void FakePeer::voteForTheSame(const YacMessagePtr &incoming_votes) {
       using iroha::consensus::yac::VoteMessage;
       log_->debug("Got a YAC state message with {} votes.",
                   incoming_votes->size());
@@ -240,6 +270,16 @@ namespace integration_framework {
         const std::shared_ptr<shared_model::interface::TransactionBatch>
             &batch) {
       og_transport_->propagateBatch(batch);
+    }
+
+    bool FakePeer::sendBlockRequest(const LoaderBlockRequest &request) {
+      return synchronizer_transport_->sendBlockRequest(real_peer_->address(),
+                                                       request);
+    }
+
+    size_t FakePeer::sendBlocksRequest(const LoaderBlocksRequest &request) {
+      return synchronizer_transport_->sendBlocksRequest(real_peer_->address(),
+                                                        request);
     }
 
   }  // namespace fake_peer
