@@ -10,15 +10,17 @@
 #include "consensus/yac/transport/yac_network_interface.hpp"
 
 namespace integration_framework {
+  namespace fake_peer {
 
-  void YacNetworkNotifier::onState(YacNetworkNotifier::StateMessage state) {
-    auto state_ptr = std::make_shared<const StateMessage>(std::move(state));
-    votes_subject_.get_subscriber().on_next(state_ptr);
-  }
+    void YacNetworkNotifier::onState(YacNetworkNotifier::StateMessage state) {
+      auto state_ptr = std::make_shared<const StateMessage>(std::move(state));
+      votes_subject_.get_subscriber().on_next(state_ptr);
+    }
 
-  rxcpp::observable<YacNetworkNotifier::StateMessagePtr>
-  YacNetworkNotifier::get_observable() {
-    return votes_subject_.get_observable();
-  }
+    rxcpp::observable<YacNetworkNotifier::StateMessagePtr>
+    YacNetworkNotifier::get_observable() {
+      return votes_subject_.get_observable();
+    }
 
+  }  // namespace fake_peer
 }  // namespace integration_framework

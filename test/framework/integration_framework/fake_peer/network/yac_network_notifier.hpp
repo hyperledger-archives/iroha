@@ -15,25 +15,27 @@ namespace iroha {
     namespace yac {
       struct VoteMessage;
     }  // namespace yac
-  }  // namespace consensus
+  }    // namespace consensus
 }  // namespace iroha
 
 namespace integration_framework {
+  namespace fake_peer {
 
-  class YacNetworkNotifier final
-      : public iroha::consensus::yac::YacNetworkNotifications {
-   public:
-    using StateMessage = std::vector<iroha::consensus::yac::VoteMessage>;
-    using StateMessagePtr = std::shared_ptr<const StateMessage>;
+    class YacNetworkNotifier final
+        : public iroha::consensus::yac::YacNetworkNotifications {
+     public:
+      using StateMessage = std::vector<iroha::consensus::yac::VoteMessage>;
+      using StateMessagePtr = std::shared_ptr<const StateMessage>;
 
-    void onState(StateMessage state) override;
+      void onState(StateMessage state) override;
 
-    rxcpp::observable<StateMessagePtr> get_observable();
+      rxcpp::observable<StateMessagePtr> get_observable();
 
-   private:
-    rxcpp::subjects::subject<StateMessagePtr> votes_subject_;
-  };
+     private:
+      rxcpp::subjects::subject<StateMessagePtr> votes_subject_;
+    };
 
+  }  // namespace fake_peer
 }  // namespace integration_framework
 
 #endif /* FAKE_PEER_YAC_NETWORK_NOTIFIER_HPP_ */

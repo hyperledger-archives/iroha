@@ -8,14 +8,17 @@
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 
 namespace integration_framework {
+  namespace fake_peer {
 
-  void OgNetworkNotifier::onProposal(OgNetworkNotifier::ProposalPtr proposal) {
-    proposals_subject_.get_subscriber().on_next(std::move(proposal));
-  }
+    void OgNetworkNotifier::onProposal(
+        OgNetworkNotifier::ProposalPtr proposal) {
+      proposals_subject_.get_subscriber().on_next(std::move(proposal));
+    }
 
-  rxcpp::observable<OgNetworkNotifier::ProposalPtr>
-  OgNetworkNotifier::get_observable() {
-    return proposals_subject_.get_observable();
-  }
+    rxcpp::observable<OgNetworkNotifier::ProposalPtr>
+    OgNetworkNotifier::get_observable() {
+      return proposals_subject_.get_observable();
+    }
 
+  }  // namespace fake_peer
 }  // namespace integration_framework

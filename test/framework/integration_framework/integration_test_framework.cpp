@@ -5,8 +5,8 @@
 
 #include "framework/integration_framework/integration_test_framework.hpp"
 
-#include <memory>
 #include <limits>
+#include <memory>
 
 #include <boost/assert.hpp>
 #include <boost/thread/barrier.hpp>
@@ -58,6 +58,7 @@ using AbstractTransactionValidator =
 using AlwaysValidTransactionValidator =
     shared_model::validation::AlwaysValidModelValidator<
         shared_model::interface::Transaction>;
+using FakePeer = integration_framework::fake_peer::FakePeer;
 
 namespace {
   std::string kLocalHost = "127.0.0.1";
@@ -123,7 +124,8 @@ namespace integration_framework {
     }
   }
 
-  std::future<std::shared_ptr<FakePeer>> IntegrationTestFramework::addInitialPeer(
+  std::future<std::shared_ptr<FakePeer>>
+  IntegrationTestFramework::addInitialPeer(
       const boost::optional<Keypair> &key) {
     fake_peers_promises_.emplace_back(std::promise<std::shared_ptr<FakePeer>>(),
                                       key);
@@ -196,7 +198,8 @@ namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
       const Keypair &keypair) {
     initPipeline(keypair);
-    iroha_instance_->makeGenesis(IntegrationTestFramework::defaultBlock(keypair));
+    iroha_instance_->makeGenesis(
+        IntegrationTestFramework::defaultBlock(keypair));
     log_->info("added genesis block");
     subscribeQueuesAndRun();
     return *this;
@@ -271,8 +274,7 @@ namespace integration_framework {
         ->getPeerCommunicationService()
         ->on_verified_proposal()
         .subscribe([this](auto verified_proposal_and_errors) {
-          verified_proposal_queue_.push(
-              verified_proposal_and_errors);
+          verified_proposal_queue_.push(verified_proposal_and_errors);
           log_->info("verified proposal");
           queue_cond.notify_all();
         });
@@ -295,7 +297,6 @@ namespace integration_framework {
           log_->info("response");
           queue_cond.notify_all();
         });
-
 
     if (fake_peers_.size() > 0) {
       log_->info("starting fake iroha peers");
@@ -392,10 +393,10 @@ namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::sendTx(
       const shared_model::proto::Transaction &tx) {
     sendTx(tx, [this](const auto &status) {
-            if (!status.errorMessage().empty()) {
-                 log_->debug("Got error while sending transaction: "
-                                + status.errorMessage());
-            }
+      if (!status.errorMessage().empty()) {
+        log_->debug("Got error while sending transaction: "
+                    + status.errorMessage());
+      }
     });
     return *this;
   }

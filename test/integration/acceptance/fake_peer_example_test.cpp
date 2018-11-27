@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "framework/integration_framework/fake_peer/behaviour/honest.hpp"
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
 #include "integration/acceptance/acceptance_fixture.hpp"
@@ -20,11 +21,13 @@ static constexpr std::chrono::seconds kMstStateWaitingTime(10);
 
 class FakePeerExampleFixture : public AcceptanceFixture {
  public:
+  using FakePeerPtr = std::shared_ptr<fake_peer::FakePeer>;
+
   std::unique_ptr<IntegrationTestFramework> itf_;
 
   /**
    * Prepare state of ledger:
-   * - create fake iroha peers
+   * - create honest fake iroha peers
    * - create account of target user
    * - add assets to admin
    *
@@ -33,8 +36,7 @@ class FakePeerExampleFixture : public AcceptanceFixture {
    */
   IntegrationTestFramework &prepareState(size_t num_fake_peers) {
     // request the fake peers construction
-    std::vector<std::future<std::shared_ptr<integration_framework::FakePeer>>>
-        fake_peers_futures;
+    std::vector<std::future<FakePeerPtr>> fake_peers_futures;
     std::generate_n(std::back_inserter(fake_peers_futures),
                     num_fake_peers,
                     [this] { return itf_->addInitialPeer({}); });
@@ -44,18 +46,16 @@ class FakePeerExampleFixture : public AcceptanceFixture {
     auto permissions =
         interface::RolePermissionSet({Role::kReceive, Role::kTransfer});
 
-    // get the constructed fake peers
-    std::transform(
-        fake_peers_futures.begin(),
-        fake_peers_futures.end(),
-        std::back_inserter(fake_peers_),
-        [](auto &fake_peer_future) {
-          assert(fake_peer_future.valid() && "fake peer must be ready");
-          return fake_peer_future.get();
-        });
+    // get the constructed fake peers & set honest behaviour
+    for (auto &fake_peer_future : fake_peers_futures) {
+      assert(fake_peer_future.valid() && "fake peer must be ready");
+      FakePeerPtr fake_peer = fake_peer_future.get();
+      fake_peer->setBehaviour(std::make_shared<fake_peer::HonestBehaviour>());
+      fake_peers_.emplace_back(std::move(fake_peer));
+    }
 
-    // inside prepareState we can use lambda for such assert, since prepare
-    // transactions are not going to fail
+    // inside prepareState we can use lambda for such assert, since
+    // prepare transactions are not going to fail
     auto block_with_tx = [](auto &block) {
       ASSERT_EQ(block->transactions().size(), 1);
     };
@@ -69,11 +69,11 @@ class FakePeerExampleFixture : public AcceptanceFixture {
 
  protected:
   void SetUp() override {
-    itf_ = std::make_unique<IntegrationTestFramework>(
-        1, boost::none, true, true);
+    itf_ =
+        std::make_unique<IntegrationTestFramework>(1, boost::none, true, true);
   }
 
-  std::vector<std::shared_ptr<integration_framework::FakePeer>> fake_peers_;
+  std::vector<FakePeerPtr> fake_peers_;
 };
 
 /**
@@ -89,7 +89,7 @@ TEST_F(FakePeerExampleFixture,
   std::condition_variable mst_cv;
   std::atomic_bool got_state_notification(false);
   auto &itf = prepareState(1);
-  fake_peers_.front()->get_mst_states_observable().subscribe(
+  fake_peers_.front()->getMstStatesObservable().subscribe(
       [&mst_cv, &got_state_notification](const auto &state) {
         got_state_notification.store(true);
         mst_cv.notify_one();
