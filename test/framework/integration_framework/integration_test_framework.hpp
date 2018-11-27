@@ -341,9 +341,6 @@ namespace integration_framework {
 
     rxcpp::observable<iroha::network::Commit> getYacOnCommitObservable();
 
-    IntegrationTestFramework &subscribeForAllMstNotifications(
-        std::shared_ptr<iroha::network::MstTransportNotification> notification);
-
     /**
      * Request next status of the transaction
      * @param tx_hash is hash for filtering responses

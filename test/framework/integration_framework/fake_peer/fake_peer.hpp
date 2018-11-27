@@ -10,7 +10,8 @@
 #include <string>
 
 #include <boost/core/noncopyable.hpp>
-#include "framework/integration_framework/fake_peer/yac_network_notifier.hpp"
+#include <rxcpp/rx.hpp>
+#include "framework/integration_framework/fake_peer/network/mst_message.hpp"
 #include "interfaces/iroha_internal/abstract_transport_factory.hpp"
 #include "logger/logger.hpp"
 #include "network/impl/async_grpc_client.hpp"
@@ -42,16 +43,19 @@ namespace iroha {
       class NetworkImpl;
       class YacCryptoProvider;
       class YacHash;
+      struct VoteMessage;
     }  // namespace yac
   }    // namespace consensus
   namespace ordering {
     class OrderingGateTransportGrpc;
     class OrderingServiceTransportGrpc;
   }
+  class MstState;
 }  // namespace iroha
 class ServerRunner;
 
 namespace integration_framework {
+  class MstNetworkNotifier;
   class OsNetworkNotifier;
   class OgNetworkNotifier;
   class YacNetworkNotifier;
@@ -66,7 +70,8 @@ namespace integration_framework {
         shared_model::interface::AbstractTransportFactory<
             shared_model::interface::Transaction,
             iroha::protocol::Transaction>;
-    using YacStatePtr =
+    using MstMessagePtr = std::shared_ptr<MstMessage>;
+    using YacMessagePtr =
         std::shared_ptr<const std::vector<iroha::consensus::yac::VoteMessage>>;
     using OgProposalPtr = std::shared_ptr<shared_model::interface::Proposal>;
     using OsBatchPtr =
@@ -102,14 +107,6 @@ namespace integration_framework {
     /// Start the fake peer.
     void run();
 
-    /**
-     * Subscribe for mst notifications.
-     *
-     * @param notification - the object to subscribe
-     */
-    void subscribeForMstNotifications(
-        std::shared_ptr<iroha::network::MstTransportNotification> notification);
-
     /// Get the address:port string of this peer.
     std::string getAddress() const;
 
@@ -122,8 +119,11 @@ namespace integration_framework {
     /// Stop this peer from agreeing all proposals.
     void disableAgreeAllProposals();
 
+    /// Get the observable of MST states received by this peer.
+    rxcpp::observable<MstMessagePtr> get_mst_states_observable();
+
     /// Get the observable of YAC states received by this peer.
-    rxcpp::observable<YacStatePtr> getYacStatesObservable();
+    rxcpp::observable<YacMessagePtr> getYacStatesObservable();
 
     /// Get the observable of OS batches received by this peer.
     rxcpp::observable<OsBatchPtr> getOsBatchesObservable();
@@ -136,7 +136,7 @@ namespace integration_framework {
      *
      * @param incoming_votes - the votes to take as the base.
      */
-    void voteForTheSame(const YacStatePtr &incoming_votes);
+    void voteForTheSame(const YacMessagePtr &incoming_votes);
 
     /**
      * Make a signature of the provided hash.
@@ -149,6 +149,9 @@ namespace integration_framework {
     /// Make a vote from this peer for the provided YAC hash.
     iroha::consensus::yac::VoteMessage makeVote(
         const iroha::consensus::yac::YacHash &yac_hash);
+
+    /// Send the main peer the given MST state.
+    void sendMstState(const iroha::MstState &state);
 
     /// Send the main peer the given YAC state.
     void sendYacState(
@@ -187,6 +190,7 @@ namespace integration_framework {
     std::shared_ptr<OsTransport> os_transport_;
     std::shared_ptr<OgTransport> og_transport_;
 
+    std::shared_ptr<MstNetworkNotifier> mst_network_notifier_;
     std::shared_ptr<YacNetworkNotifier> yac_network_notifier_;
     std::shared_ptr<OsNetworkNotifier> os_network_notifier_;
     std::shared_ptr<OgNetworkNotifier> og_network_notifier_;

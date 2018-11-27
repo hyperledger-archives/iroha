@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "framework/integration_framework/fake_peer/yac_network_notifier.hpp"
+#include "framework/integration_framework/fake_peer/network/yac_network_notifier.hpp"
 
 #include "consensus/yac/messages.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"

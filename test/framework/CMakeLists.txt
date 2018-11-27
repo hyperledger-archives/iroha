@@ -25,9 +25,10 @@ add_library(integration_framework
     integration_framework/integration_test_framework.cpp
     integration_framework/iroha_instance.cpp
     integration_framework/fake_peer/fake_peer.cpp
-    integration_framework/fake_peer/yac_network_notifier.cpp
-    integration_framework/fake_peer/ordering_service_network_notifier.cpp
-    integration_framework/fake_peer/ordering_gate_network_notifier.cpp
+    integration_framework/fake_peer/network/mst_network_notifier.cpp
+    integration_framework/fake_peer/network/ordering_service_network_notifier.cpp
+    integration_framework/fake_peer/network/ordering_gate_network_notifier.cpp
+    integration_framework/fake_peer/network/yac_network_notifier.cpp
     integration_framework/port_guard.cpp
     common_constants.cpp
     )

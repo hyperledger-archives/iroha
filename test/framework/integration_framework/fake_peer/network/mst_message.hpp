@@ -1,0 +1,22 @@
+/**
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#ifndef INTEGRATION_FRAMEWORK_FAKE_PEER_MST_MESSAGE_HPP_
+#define INTEGRATION_FRAMEWORK_FAKE_PEER_MST_MESSAGE_HPP_
+
+#include "cryptography/public_key.hpp"
+#include "multi_sig_transactions/state/mst_state.hpp"
+
+namespace integration_framework {
+  struct MstMessage final {
+    MstMessage(const shared_model::crypto::PublicKey &f,
+               const iroha::MstState &s)
+        : from(f), state(s) {}
+    shared_model::crypto::PublicKey from;
+    iroha::MstState state;
+  };
+}  // namespace integration_framework
+
+#endif /* INTEGRATION_FRAMEWORK_FAKE_PEER_MST_MESSAGE_HPP_ */
