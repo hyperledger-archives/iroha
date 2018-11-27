@@ -382,5 +382,11 @@ namespace shared_model {
       return boost::none;
     }
 
+    void FieldValidator::validateTxPaginationMeta(
+        ReasonsGroupType &reason,
+        const interface::TxPaginationMeta &tx_pagination_meta) const {
+      // TODO mboldyrev 27.11.2018, IR-26 IR-27: implement validation
+    }
+
   }  // namespace validation
 }  // namespace shared_model
