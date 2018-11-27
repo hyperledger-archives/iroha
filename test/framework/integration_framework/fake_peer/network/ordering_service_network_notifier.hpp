@@ -21,7 +21,7 @@ namespace integration_framework {
       void onBatch(std::unique_ptr<shared_model::interface::TransactionBatch>
                        batch) override;
 
-      rxcpp::observable<OsBatchPtr> get_observable();
+      rxcpp::observable<OsBatchPtr> getObservable();
 
      private:
       rxcpp::subjects::subject<OsBatchPtr> batches_subject_;

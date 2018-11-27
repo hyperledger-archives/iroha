@@ -14,7 +14,7 @@ namespace integration_framework {
       proposals_subject_.get_subscriber().on_next(std::move(proposal));
     }
 
-    rxcpp::observable<OgProposalPtr> OgNetworkNotifier::get_observable() {
+    rxcpp::observable<OgProposalPtr> OgNetworkNotifier::getObservable() {
       return proposals_subject_.get_observable();
     }
 

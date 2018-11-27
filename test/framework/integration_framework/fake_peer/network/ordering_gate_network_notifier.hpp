@@ -20,7 +20,7 @@ namespace integration_framework {
      public:
       void onProposal(OgProposalPtr proposal) override;
 
-      rxcpp::observable<OgProposalPtr> get_observable();
+      rxcpp::observable<OgProposalPtr> getObservable();
 
      private:
       rxcpp::subjects::subject<OgProposalPtr> proposals_subject_;

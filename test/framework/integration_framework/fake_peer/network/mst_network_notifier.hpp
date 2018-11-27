@@ -21,7 +21,7 @@ namespace integration_framework {
       void onNewState(const shared_model::crypto::PublicKey &from,
                       const iroha::MstState &new_state) override;
 
-      rxcpp::observable<MstMessagePtr> get_observable();
+      rxcpp::observable<MstMessagePtr> getObservable();
 
      private:
       rxcpp::subjects::subject<MstMessagePtr> mst_subject_;

@@ -99,12 +99,10 @@ namespace integration_framework {
       rxcpp::observable<OgProposalPtr> getOgProposalsObservable();
 
       /// Get the observable of block requests received by this peer.
-      rxcpp::observable<LoaderBlockRequest>
-      get_loader_block_request_observable();
+      rxcpp::observable<LoaderBlockRequest> getLoaderBlockRequestObservable();
 
       /// Get the observable of blocks requests received by this peer.
-      rxcpp::observable<LoaderBlocksRequest>
-      get_loader_blocks_request_observable();
+      rxcpp::observable<LoaderBlocksRequest> getLoaderBlocksRequestObservable();
 
       /**
        * Send the real peer votes from this peer analogous to the provided ones.

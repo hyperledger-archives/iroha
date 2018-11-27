@@ -179,19 +179,19 @@ namespace integration_framework {
     }
 
     rxcpp::observable<MstMessagePtr> FakePeer::getMstStatesObservable() {
-      return mst_network_notifier_->get_observable();
+      return mst_network_notifier_->getObservable();
     }
 
     rxcpp::observable<YacMessagePtr> FakePeer::getYacStatesObservable() {
-      return yac_network_notifier_->get_observable();
+      return yac_network_notifier_->getObservable();
     }
 
     rxcpp::observable<OsBatchPtr> FakePeer::getOsBatchesObservable() {
-      return os_network_notifier_->get_observable();
+      return os_network_notifier_->getObservable();
     }
 
     rxcpp::observable<OgProposalPtr> FakePeer::getOgProposalsObservable() {
-      return og_network_notifier_->get_observable();
+      return og_network_notifier_->getObservable();
     }
 
     std::shared_ptr<shared_model::interface::Signature> FakePeer::makeSignature(

@@ -22,7 +22,7 @@ namespace integration_framework {
 
       void onState(StateMessage state) override;
 
-      rxcpp::observable<YacMessagePtr> get_observable();
+      rxcpp::observable<YacMessagePtr> getObservable();
 
      private:
       rxcpp::subjects::subject<YacMessagePtr> votes_subject_;
