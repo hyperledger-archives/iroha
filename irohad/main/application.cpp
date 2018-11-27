@@ -6,8 +6,8 @@
 #include "main/application.hpp"
 
 #include "ametsuchi/impl/postgres_ordering_service_persistent_state.hpp"
+#include "ametsuchi/impl/tx_presence_cache_impl.hpp"
 #include "ametsuchi/impl/wsv_restorer_impl.hpp"
-#include "ametsuchi/tx_presence_cache.hpp"
 #include "backend/protobuf/common_objects/proto_common_objects_factory.hpp"
 #include "backend/protobuf/proto_block_json_converter.hpp"
 #include "backend/protobuf/proto_permission_to_string.hpp"
@@ -41,37 +41,6 @@ using namespace iroha::torii;
 using namespace iroha::consensus::yac;
 
 using namespace std::chrono_literals;
-
-// TODO: @muratovv 12.11.2018 remove the mock after effective implementation
-// will be finished IR-1840
-#include <gmock/gmock.h>
-namespace iroha {
-  namespace ametsuchi {
-    class MockTxPresenceCache : public iroha::ametsuchi::TxPresenceCache {
-     public:
-      MOCK_CONST_METHOD1(check,
-                         iroha::ametsuchi::TxCacheStatusType(
-                             const shared_model::crypto::Hash &));
-
-      MOCK_CONST_METHOD1(
-          check,
-          iroha::ametsuchi::TxPresenceCache::BatchStatusCollectionType(
-              const shared_model::interface::TransactionBatch &));
-    };
-
-    namespace tx_cache_status_responses {
-      std::ostream &operator<<(std::ostream &os, const Committed &resp) {
-        return os << resp.hash.toString();
-      }
-      std::ostream &operator<<(std::ostream &os, const Rejected &resp) {
-        return os << resp.hash.toString();
-      }
-      std::ostream &operator<<(std::ostream &os, const Missing &resp) {
-        return os << resp.hash.toString();
-      }
-    }  // namespace tx_cache_status_responses
-  }    // namespace ametsuchi
-}  // namespace iroha
 
 /**
  * Configuring iroha daemon
@@ -297,6 +266,15 @@ void Irohad::initBlockLoader() {
 }
 
 /**
+ * Initializing persistent cache
+ */
+void Irohad::initPersistentCache() {
+  persistent_cache = std::make_shared<TxPresenceCacheImpl>(storage);
+
+  log_->info("[Init] => persistent cache");
+}
+
+/**
  * Initializing consensus gate
  */
 void Irohad::initConsensusGate() {
@@ -349,8 +327,6 @@ void Irohad::initStatusBus() {
 void Irohad::initMstProcessor() {
   auto mst_completer = std::make_shared<DefaultCompleter>();
   auto mst_storage = std::make_shared<MstStorageStateImpl>(mst_completer);
-  auto tx_presence_cache =
-      std::make_shared<iroha::ametsuchi::MockTxPresenceCache>();
   std::shared_ptr<iroha::PropagationStrategy> mst_propagation;
   if (is_mst_supported_) {
     mst_transport = std::make_shared<iroha::network::MstTransportGrpc>(
@@ -358,7 +334,7 @@ void Irohad::initMstProcessor() {
         transaction_factory,
         batch_parser,
         transaction_batch_factory_,
-        std::move(tx_presence_cache),
+        persistent_cache,
         keypair.publicKey());
     // TODO: IR-1317 @l4l (02/05/18) magics should be replaced with options via
     // cli parameters
