@@ -30,6 +30,9 @@ types::TransactionsNumberType TxPaginationMeta::pageSize() const {
 }
 
 boost::optional<types::HashType> TxPaginationMeta::firstTxHash() const {
-  return {proto_->opt_first_tx_hash_case(),
-          types::HashType(proto_->first_tx_hash())};
+  if (proto_->opt_first_tx_hash_case()
+      == TransportType::OptFirstTxHashCase::OPT_FIRST_TX_HASH_NOT_SET) {
+    return boost::none;
+  }
+  return types::HashType(proto_->first_tx_hash());
 }
