@@ -12,16 +12,18 @@
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "cryptography/default_hash_provider.hpp"
 #include "cryptography/keypair.hpp"
+#include "framework/integration_framework/fake_peer/ordering_gate_network_notifier.hpp"
+#include "framework/integration_framework/fake_peer/ordering_service_network_notifier.hpp"
 #include "framework/result_fixture.hpp"
 #include "interfaces/common_objects/common_objects_factory.hpp"
 #include "main/server_runner.hpp"
 #include "multi_sig_transactions/transport/mst_transport_grpc.hpp"
 #include "network/impl/async_grpc_client.hpp"
+#include "ordering/impl/ordering_gate_transport_grpc.hpp"
+#include "ordering/impl/ordering_service_transport_grpc.hpp"
 
 using namespace shared_model::crypto;
 using namespace framework::expected;
-
-using YacStateMessage = integration_framework::YacNetworkNotifier::StateMessagePtr;
 
 static std::shared_ptr<shared_model::interface::Peer> createPeer(
     const std::shared_ptr<shared_model::interface::CommonObjectsFactory>
@@ -76,10 +78,18 @@ namespace integration_framework {
                                                       transaction_batch_factory,
                                                       keypair_->publicKey())),
         yac_transport_(std::make_shared<YacTransport>(async_call_)),
+        os_transport_(std::make_shared<OsTransport>(transaction_batch_factory,
+                                                    async_call_)),
+        og_transport_(
+            std::make_shared<OgTransport>(real_peer_->address(), async_call_)),
         yac_network_notifier_(std::make_shared<YacNetworkNotifier>()),
+        os_network_notifier_(std::make_shared<OsNetworkNotifier>()),
+        og_network_notifier_(std::make_shared<OgNetworkNotifier>()),
         yac_crypto_(std::make_shared<iroha::consensus::yac::CryptoProviderImpl>(
             *keypair_, common_objects_factory)) {
     yac_transport_->subscribe(yac_network_notifier_);
+    os_transport_->subscribe(os_network_notifier_);
+    og_transport_->subscribe(og_network_notifier_);
     log_ = logger::log(
         "IntegrationTestFramework "
         "(fake peer at "
@@ -95,6 +105,8 @@ namespace integration_framework {
     internal_server_ = std::make_unique<ServerRunner>(getAddress());
     internal_server_->append(yac_transport_)
         .append(mst_transport_)
+        .append(os_transport_)
+        .append(og_transport_)
         .run()
         .match(
             [this](const iroha::expected::Result<int, std::string>::ValueType
@@ -123,13 +135,21 @@ namespace integration_framework {
     return *keypair_;
   }
 
-  rxcpp::observable<YacStateMessage> FakePeer::get_yac_states_observable() {
+  rxcpp::observable<FakePeer::YacStatePtr> FakePeer::getYacStatesObservable() {
     return yac_network_notifier_->get_observable();
+  }
+
+  rxcpp::observable<FakePeer::OsBatchPtr> FakePeer::getOsBatchesObservable() {
+    return os_network_notifier_->get_observable();
+  }
+
+  rxcpp::observable<FakePeer::OgProposalPtr> FakePeer::getOgProposalsObservable() {
+    return og_network_notifier_->get_observable();
   }
 
   void FakePeer::enableAgreeAllProposals() {
     if (!proposal_agreer_subscription_.is_subscribed()) {
-      proposal_agreer_subscription_ = get_yac_states_observable().subscribe(
+      proposal_agreer_subscription_ = getYacStatesObservable().subscribe(
           [this](auto &&message) { this->voteForTheSame(message); });
     };
   }
@@ -172,7 +192,7 @@ namespace integration_framework {
     yac_transport_->sendState(*real_peer_, state);
   }
 
-  void FakePeer::voteForTheSame(const YacStateMessage &incoming_votes) {
+  void FakePeer::voteForTheSame(const FakePeer::YacStatePtr &incoming_votes) {
     using iroha::consensus::yac::VoteMessage;
     log_->debug("Got a YAC state message with {} votes.",
                 incoming_votes->size());
@@ -200,6 +220,17 @@ namespace integration_framework {
           return makeVote(incoming_vote.hash);
         });
     sendYacState(my_votes);
+  }
+
+  void FakePeer::sendProposal(
+      std::unique_ptr<shared_model::interface::Proposal> proposal) {
+    os_transport_->publishProposal(std::move(proposal),
+                                   {real_peer_->address()});
+  }
+
+  void FakePeer::sendBatch(
+      const std::shared_ptr<shared_model::interface::TransactionBatch> &batch) {
+    og_transport_->propagateBatch(batch);
   }
 
 }  // namespace integration_framework

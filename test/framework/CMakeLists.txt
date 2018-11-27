@@ -26,6 +26,8 @@ add_library(integration_framework
     integration_framework/iroha_instance.cpp
     integration_framework/fake_peer/fake_peer.cpp
     integration_framework/fake_peer/yac_network_notifier.cpp
+    integration_framework/fake_peer/ordering_service_network_notifier.cpp
+    integration_framework/fake_peer/ordering_gate_network_notifier.cpp
     integration_framework/port_guard.cpp
     common_constants.cpp
     )
@@ -38,6 +40,7 @@ target_link_libraries(integration_framework
     shared_model_cryptography_model
     server_runner
     mst_transport
+    ordering_service
     )
 
 target_include_directories(integration_framework PUBLIC ${PROJECT_SOURCE_DIR}/test)

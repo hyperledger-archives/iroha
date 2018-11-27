@@ -21,7 +21,9 @@ namespace shared_model {
   }
   namespace interface {
     class CommonObjectsFactory;
+    class Proposal;
     class Transaction;
+    class TransactionBatch;
     class TransactionBatchParser;
     class TransactionBatchFactory;
   }  // namespace interface
@@ -40,12 +42,19 @@ namespace iroha {
       class NetworkImpl;
       class YacCryptoProvider;
       class YacHash;
-    }
+    }  // namespace yac
+  }    // namespace consensus
+  namespace ordering {
+    class OrderingGateTransportGrpc;
+    class OrderingServiceTransportGrpc;
   }
 }  // namespace iroha
 class ServerRunner;
 
 namespace integration_framework {
+  class OsNetworkNotifier;
+  class OgNetworkNotifier;
+  class YacNetworkNotifier;
 
   /**
    * A lightweight implementation of iroha peer network interface for inter-peer
@@ -57,6 +66,11 @@ namespace integration_framework {
         shared_model::interface::AbstractTransportFactory<
             shared_model::interface::Transaction,
             iroha::protocol::Transaction>;
+    using YacStatePtr =
+        std::shared_ptr<const std::vector<iroha::consensus::yac::VoteMessage>>;
+    using OgProposalPtr = std::shared_ptr<shared_model::interface::Proposal>;
+    using OsBatchPtr =
+        std::shared_ptr<shared_model::interface::TransactionBatch>;
 
     /**
      * Constructor.
@@ -109,17 +123,20 @@ namespace integration_framework {
     void disableAgreeAllProposals();
 
     /// Get the observable of YAC states received by this peer.
-    rxcpp::observable<YacNetworkNotifier::StateMessagePtr>
-    get_yac_states_observable();
+    rxcpp::observable<YacStatePtr> getYacStatesObservable();
+
+    /// Get the observable of OS batches received by this peer.
+    rxcpp::observable<OsBatchPtr> getOsBatchesObservable();
+
+    /// Get the observable of OG proposals received by this peer.
+    rxcpp::observable<OgProposalPtr> getOgProposalsObservable();
 
     /**
      * Send the real peer votes from this peer analogous to the provided ones.
      *
      * @param incoming_votes - the votes to take as the base.
      */
-    void voteForTheSame(
-        const integration_framework::YacNetworkNotifier::StateMessagePtr
-            &incoming_votes);
+    void voteForTheSame(const YacStatePtr &incoming_votes);
 
     /**
      * Make a signature of the provided hash.
@@ -137,9 +154,18 @@ namespace integration_framework {
     void sendYacState(
         const std::vector<iroha::consensus::yac::VoteMessage> &state);
 
+    void sendProposal(
+        std::unique_ptr<shared_model::interface::Proposal> proposal);
+
+    void sendBatch(
+        const std::shared_ptr<shared_model::interface::TransactionBatch>
+            &batch);
+
    private:
     using MstTransport = iroha::network::MstTransportGrpc;
     using YacTransport = iroha::consensus::yac::NetworkImpl;
+    using OsTransport = iroha::ordering::OrderingServiceTransportGrpc;
+    using OgTransport = iroha::ordering::OrderingGateTransportGrpc;
     using AsyncCall = iroha::network::AsyncGrpcClient<google::protobuf::Empty>;
 
     std::shared_ptr<shared_model::interface::CommonObjectsFactory>
@@ -158,9 +184,14 @@ namespace integration_framework {
 
     std::shared_ptr<MstTransport> mst_transport_;
     std::shared_ptr<YacTransport> yac_transport_;
-    std::unique_ptr<ServerRunner> internal_server_;
+    std::shared_ptr<OsTransport> os_transport_;
+    std::shared_ptr<OgTransport> og_transport_;
 
     std::shared_ptr<YacNetworkNotifier> yac_network_notifier_;
+    std::shared_ptr<OsNetworkNotifier> os_network_notifier_;
+    std::shared_ptr<OgNetworkNotifier> og_network_notifier_;
+
+    std::unique_ptr<ServerRunner> internal_server_;
 
     std::shared_ptr<iroha::consensus::yac::YacCryptoProvider> yac_crypto_;
 

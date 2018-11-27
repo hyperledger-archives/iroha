@@ -16,7 +16,7 @@ grpc::Status OrderingGateTransportGrpc::onProposal(
     ::grpc::ServerContext *context,
     const iroha::protocol::Proposal *request,
     ::google::protobuf::Empty *response) {
-  async_call_->log_->info("receive proposal");
+  async_call_->log_->info("received a proposal");
 
   auto proposal_res = factory_->createProposal(*request);
   proposal_res.match(
