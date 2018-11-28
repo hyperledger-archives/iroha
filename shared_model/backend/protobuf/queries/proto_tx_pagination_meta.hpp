@@ -21,7 +21,7 @@ namespace shared_model {
                                TxPaginationMeta> {
      public:
       explicit TxPaginationMeta(const TransportType &query);
-      //explicit TxPaginationMeta(TransportType &&query);
+      explicit TxPaginationMeta(TransportType &&query);
       TxPaginationMeta(const TxPaginationMeta &o);
       TxPaginationMeta(TxPaginationMeta &&o) noexcept;
 

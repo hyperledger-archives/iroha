@@ -14,10 +14,9 @@ using namespace shared_model::proto;
 TxPaginationMeta::TxPaginationMeta(const TransportType &query)
     : CopyableProto(query) {}
 
-/*
 TxPaginationMeta::TxPaginationMeta(TransportType &&query)
-    : CopyableProto(std::move<TransportType>(query)) {}
-*/
+    : CopyableProto(
+          static_cast<std::remove_reference<TransportType>::type &&>(query)) {}
 
 TxPaginationMeta::TxPaginationMeta(const TxPaginationMeta &o)
     : TxPaginationMeta(*o.proto_) {}
