@@ -20,8 +20,8 @@ namespace shared_model {
                                iroha::protocol::TxPaginationMeta,
                                TxPaginationMeta> {
      public:
-      TxPaginationMeta(const TransportType &query);
-      //TxPaginationMeta(TransportType &&query);
+      explicit TxPaginationMeta(const TransportType &query);
+      //explicit TxPaginationMeta(TransportType &&query);
       TxPaginationMeta(const TxPaginationMeta &o);
       TxPaginationMeta(TxPaginationMeta &&o) noexcept;
 
