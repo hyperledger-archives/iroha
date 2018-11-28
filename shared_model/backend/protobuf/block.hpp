@@ -30,7 +30,7 @@ namespace shared_model {
       using TransportType = iroha::protocol::Block;
 
       Block(Block &&o) noexcept;
-      Block &operator=(Block &&o) noexcept = default;
+      Block &operator=(Block &&o) = default;
       explicit Block(const TransportType &ref);
       explicit Block(TransportType &&ref);
 
