@@ -6,7 +6,6 @@
 #include "simulator/impl/simulator.hpp"
 
 #include <boost/range/adaptor/transformed.hpp>
-
 #include "common/bind.hpp"
 #include "interfaces/iroha_internal/block.hpp"
 #include "interfaces/iroha_internal/proposal.hpp"
@@ -31,15 +30,24 @@ namespace iroha {
           log_(logger::log("Simulator")) {
       ordering_gate->onProposal().subscribe(
           proposal_subscription_, [this](const network::OrderingEvent &event) {
-            this->processProposal(**event.proposal);
+            if (event.proposal) {
+              this->processProposal(*getProposalUnsafe(event), event.round);
+            } else {
+              notifier_.get_subscriber().on_next(
+                  VerifiedProposalCreatorEvent{boost::none, event.round});
+            }
           });
 
       notifier_.get_observable().subscribe(
           verified_proposal_subscription_,
-          [this](std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
-                     verified_proposal_and_errors) {
-            this->process_verified_proposal(
-                *verified_proposal_and_errors->first);
+          [this](const VerifiedProposalCreatorEvent &event) {
+            if (event.verified_proposal_result) {
+              this->processVerifiedProposal(
+                  getVerifiedProposalUnsafe(event)->first, event.round);
+            } else {
+              block_notifier_.get_subscriber().on_next(
+                  BlockCreatorEvent{boost::none, event.round});
+            }
           });
     }
 
@@ -48,13 +56,14 @@ namespace iroha {
       verified_proposal_subscription_.unsubscribe();
     }
 
-    rxcpp::observable<std::shared_ptr<validation::VerifiedProposalAndErrors>>
+    rxcpp::observable<VerifiedProposalCreatorEvent>
     Simulator::onVerifiedProposal() {
       return notifier_.get_observable();
     }
 
     void Simulator::processProposal(
-        const shared_model::interface::Proposal &proposal) {
+        const shared_model::interface::Proposal &proposal,
+        const consensus::Round &round) {
       log_->info("process proposal");
 
       // Get last block from local ledger
@@ -97,11 +106,12 @@ namespace iroha {
       storage.reset();
 
       notifier_.get_subscriber().on_next(
-          std::move(validated_proposal_and_errors));
+          VerifiedProposalCreatorEvent{validated_proposal_and_errors, round});
     }
 
-    void Simulator::process_verified_proposal(
-        const shared_model::interface::Proposal &proposal) {
+    void Simulator::processVerifiedProposal(
+        const std::shared_ptr<shared_model::interface::Proposal> &proposal,
+        const consensus::Round &round) {
       log_->info("process verified proposal");
 
       auto height = block_query_factory_->createBlockQuery() |
@@ -115,14 +125,14 @@ namespace iroha {
       std::shared_ptr<shared_model::interface::Block> block =
           block_factory_->unsafeCreateBlock(height,
                                             last_block->hash(),
-                                            proposal.createdTime(),
-                                            proposal.transactions());
+                                            proposal->createdTime(),
+                                            proposal->transactions());
       crypto_signer_->sign(*block);
-      block_notifier_.get_subscriber().on_next(block);
+      block_notifier_.get_subscriber().on_next(
+          BlockCreatorEvent{RoundData{proposal, block}, round});
     }
 
-    rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
-    Simulator::on_block() {
+    rxcpp::observable<BlockCreatorEvent> Simulator::onBlock() {
       return block_notifier_.get_observable();
     }
 

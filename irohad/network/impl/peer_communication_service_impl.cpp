@@ -6,6 +6,9 @@
 #include "network/impl/peer_communication_service_impl.hpp"
 
 #include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "network/ordering_gate.hpp"
+#include "simulator/verified_proposal_creator.hpp"
+#include "synchronizer/synchronizer.hpp"
 
 namespace iroha {
   namespace network {
@@ -32,8 +35,7 @@ namespace iroha {
       return ordering_gate_->onProposal();
     }
 
-    rxcpp::observable<
-        std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
+    rxcpp::observable<simulator::VerifiedProposalCreatorEvent>
     PeerCommunicationServiceImpl::onVerifiedProposal() const {
       return proposal_creator_->onVerifiedProposal();
     }

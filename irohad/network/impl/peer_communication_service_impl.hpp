@@ -6,16 +6,22 @@
 #ifndef IROHA_PEER_COMMUNICATION_SERVICE_IMPL_HPP
 #define IROHA_PEER_COMMUNICATION_SERVICE_IMPL_HPP
 
-#include "network/ordering_gate.hpp"
 #include "network/peer_communication_service.hpp"
-#include "simulator/verified_proposal_creator.hpp"
-#include "synchronizer/synchronizer.hpp"
-#include "validation/stateful_validator_common.hpp"
 
 #include "logger/logger.hpp"
 
 namespace iroha {
+  namespace simulator {
+    class VerifiedProposalCreator;
+  }  // namespace simulator
+
+  namespace synchronizer {
+    class Synchronizer;
+  }  // namespace synchronizer
+
   namespace network {
+    class OrderingGate;
+
     class PeerCommunicationServiceImpl : public PeerCommunicationService {
      public:
       PeerCommunicationServiceImpl(
@@ -29,8 +35,7 @@ namespace iroha {
 
       rxcpp::observable<OrderingEvent> onProposal() const override;
 
-      rxcpp::observable<
-          std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
+      rxcpp::observable<simulator::VerifiedProposalCreatorEvent>
       onVerifiedProposal() const override;
 
       rxcpp::observable<synchronizer::SynchronizationEvent> on_commit()
