@@ -12,6 +12,7 @@ add_library(shared_model_proto_backend
     impl/proto_query_response_factory.cpp
     impl/proto_tx_status_factory.cpp
     impl/proto_permission_to_string.cpp
+    impl/transaction.cpp
     commands/impl/proto_add_asset_quantity.cpp
     commands/impl/proto_add_peer.cpp
     commands/impl/proto_add_signatory.cpp
@@ -43,6 +44,7 @@ add_library(shared_model_proto_backend
     queries/impl/proto_get_pending_transactions.cpp
     queries/impl/proto_blocks_query.cpp
     queries/impl/proto_query_payload_meta.cpp
+    queries/impl/proto_tx_pagination_meta.cpp
     )
 
 if (IROHA_ROOT_PROJECT)

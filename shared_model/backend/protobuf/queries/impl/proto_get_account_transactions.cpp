@@ -5,6 +5,8 @@
 
 #include "backend/protobuf/queries/proto_get_account_transactions.hpp"
 
+#include "backend/protobuf/queries/proto_tx_pagination_meta.hpp"
+
 namespace shared_model {
   namespace proto {
 
@@ -31,6 +33,12 @@ namespace shared_model {
     const interface::types::AccountIdType &GetAccountTransactions::accountId()
         const {
       return account_transactions_.account_id();
+    }
+
+    std::unique_ptr<interface::TxPaginationMeta>
+    GetAccountTransactions::paginationMeta() const {
+      return std::make_unique<TxPaginationMeta>(
+          account_transactions_.pagination_meta());
     }
 
   }  // namespace proto

@@ -40,6 +40,9 @@ namespace shared_model {
 
       const interface::types::AssetIdType &assetId() const override;
 
+      std::unique_ptr<interface::TxPaginationMeta> paginationMeta()
+          const override;
+
      private:
       // ------------------------------| fields |-------------------------------
 
