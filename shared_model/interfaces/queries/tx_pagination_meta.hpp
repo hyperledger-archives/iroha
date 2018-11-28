@@ -27,6 +27,7 @@ namespace shared_model {
 
       bool operator==(const ModelType &rhs) const override;
     };
+
   }  // namespace interface
 }  // namespace shared_model
 
