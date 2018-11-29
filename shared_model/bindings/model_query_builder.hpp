@@ -17,8 +17,13 @@ namespace shared_model {
      */
     class ModelQueryBuilder {
      private:
-      template <int Sp>
-      explicit ModelQueryBuilder(const proto::TemplateQueryBuilder<Sp> &o)
+      template <bool CheckFields,
+                typename SV,
+                typename BT,
+                proto::QueryFieldsMaskType RequiredFieldsMask>
+      explicit ModelQueryBuilder(
+          const proto::
+              TemplateQueryBuilder<CheckFields, SV, BT, RequiredFieldsMask> &o)
           : builder_(o) {}
 
      public:
@@ -146,9 +151,7 @@ namespace shared_model {
       proto::UnsignedWrapper<proto::Query> build();
 
      private:
-      proto::TemplateQueryBuilder<
-          (1 << shared_model::proto::TemplateQueryBuilder<>::total) - 1>
-          builder_;
+      proto::TemplateQueryBuilder<false> builder_;
     };
   }  // namespace bindings
 }  // namespace shared_model

@@ -27,12 +27,12 @@
  * and "required fields" check
  */
 using TestQueryBuilder = shared_model::proto::TemplateQueryBuilder<
-    (1 << shared_model::proto::TemplateQueryBuilder<>::total) - 1,
+    false,
     shared_model::validation::AlwaysValidValidator,
     shared_model::proto::Query>;
 
 using TestUnsignedQueryBuilder = shared_model::proto::TemplateQueryBuilder<
-    (1 << shared_model::proto::TemplateQueryBuilder<>::total) - 1,
+    false,
     shared_model::validation::AlwaysValidValidator,
     shared_model::proto::UnsignedWrapper<shared_model::proto::Query>>;
 

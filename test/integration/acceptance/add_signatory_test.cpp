@@ -54,8 +54,7 @@ TEST_F(AddSignatory, Basic) {
           complete(baseTx().addSignatory(kUserId, kUser2Keypair.publicKey())),
           CHECK_BLOCK(1))
       .sendQuery(
-          complete(baseQry().creatorAccountId(kAdminId).getSignatories(kUserId),
-                   kAdminKeypair),
+          complete(baseQry(kAdminId).getSignatories(kUserId), kAdminKeypair),
           [this](auto &resp) {
             ASSERT_NO_THROW({
               auto &keys =
