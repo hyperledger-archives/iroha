@@ -12,7 +12,7 @@ endif()
 PROJECT(iroha C CXX)
 
 SET(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-SET(CMAKE_CXX_FLAGS "-std=c++14 -stdlib=libc++ -Wall -fdiagnostics-color=always")
+SET(CMAKE_CXX_FLAGS "-std=c++14 -Wall -fdiagnostics-color=always")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-error=deprecated-declarations")
 SET(CMAKE_CXX_FLAGS_DEBUG   "-g -Wextra -Wno-unused-parameter -Wno-deprecated-declarations -O0")
 SET(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
