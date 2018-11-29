@@ -5,6 +5,8 @@ set(VERSION c9a1e56750a4eef6ffca95f41f79f06979056e01)
 set(protomutator_LIB ${CMAKE_STATIC_LIBRARY_PREFIX}protobuf-mutator${CMAKE_STATIC_LIBRARY_SUFFIX})
 set(libfuzzer_LIB ${CMAKE_STATIC_LIBRARY_PREFIX}protobuf-mutator-libfuzzer${CMAKE_STATIC_LIBRARY_SUFFIX})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+
 externalproject_add(google_protobuf-mutator
     GIT_REPOSITORY  ${URL}
     GIT_TAG         ${VERSION}
