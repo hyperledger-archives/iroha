@@ -150,7 +150,9 @@ class AcceptanceFixture : public ::testing::Test {
    * @return built object
    */
   template <typename Builder>
-  auto complete(Builder builder, const shared_model::crypto::Keypair &keypair)
+  auto complete(
+      typename std::enable_if<Builder::is_completed, Builder>::type builder,
+      const shared_model::crypto::Keypair &keypair)
       -> decltype(builder.build()
                       .signAndAddSignature(
                           std::declval<shared_model::crypto::Keypair>())
@@ -162,7 +164,9 @@ class AcceptanceFixture : public ::testing::Test {
    * @return built object
    */
   template <typename Builder>
-  auto complete(Builder builder) -> decltype(builder.build().finish());
+  auto complete(
+      typename std::enable_if<Builder::is_completed, Builder>::type builder)
+      -> decltype(builder.build().finish());
 
   /**
    * Checks whether a response contains particular error

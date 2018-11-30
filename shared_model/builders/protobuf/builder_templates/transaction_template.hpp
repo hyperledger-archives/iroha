@@ -87,6 +87,11 @@ namespace shared_model {
       }
 
      public:
+      /// The type of builder whith all fields set.
+      using Completed = TemplateTransactionBuilder<(1 << TOTAL) - 1, SV, BT>;
+
+      static constexpr bool is_completed = S == (1 << TOTAL) - 1;
+
       TemplateTransactionBuilder(const SV &validator = SV())
           : stateless_validator_(validator) {}
 

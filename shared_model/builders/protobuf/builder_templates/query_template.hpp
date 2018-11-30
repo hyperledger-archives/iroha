@@ -95,6 +95,11 @@ namespace shared_model {
       }
 
      public:
+      /// The type of builder whith all fields set.
+      using Completed = TemplateQueryBuilder<CheckFields, SV, BT, 0>;
+
+      static constexpr bool is_completed = RequiredFieldsMask == 0;
+
       TemplateQueryBuilder(const SV &validator = SV())
           : stateless_validator_(validator) {}
 

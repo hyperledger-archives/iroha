@@ -103,8 +103,9 @@ auto AcceptanceFixture::baseQry()
 }
 
 template <typename Builder>
-auto AcceptanceFixture::complete(Builder builder,
-                                 const shared_model::crypto::Keypair &keypair)
+auto AcceptanceFixture::complete(
+    typename std::enable_if<Builder::is_completed, Builder>::type builder,
+    const shared_model::crypto::Keypair &keypair)
     -> decltype(
         builder.build()
             .signAndAddSignature(std::declval<shared_model::crypto::Keypair>())
@@ -112,15 +113,16 @@ auto AcceptanceFixture::complete(Builder builder,
   return builder.build().signAndAddSignature(keypair).finish();
 }
 
-template auto AcceptanceFixture::complete<TestUnsignedTransactionBuilder>(
-    TestUnsignedTransactionBuilder builder,
+template auto
+AcceptanceFixture::complete<TestUnsignedTransactionBuilder::Completed>(
+    typename TestUnsignedTransactionBuilder::Completed builder,
     const shared_model::crypto::Keypair &keypair)
     -> decltype(
         builder.build()
             .signAndAddSignature(std::declval<shared_model::crypto::Keypair>())
             .finish());
-template auto AcceptanceFixture::complete<TestUnsignedQueryBuilder>(
-    TestUnsignedQueryBuilder builder,
+template auto AcceptanceFixture::complete<TestUnsignedQueryBuilder::Completed>(
+    typename TestUnsignedQueryBuilder::Completed builder,
     const shared_model::crypto::Keypair &keypair)
     -> decltype(
         builder.build()
@@ -128,7 +130,8 @@ template auto AcceptanceFixture::complete<TestUnsignedQueryBuilder>(
             .finish());
 
 template <typename Builder>
-auto AcceptanceFixture::complete(Builder builder)
+auto AcceptanceFixture::complete(
+    typename std::enable_if<Builder::is_completed, Builder>::type builder)
     -> decltype(builder.build().finish()) {
   return complete(builder, kUserKeypair);
 }
@@ -143,11 +146,13 @@ AcceptanceFixture::checkQueryErrorResponse() {
   };
 }
 
-template auto AcceptanceFixture::complete<TestUnsignedTransactionBuilder>(
-    TestUnsignedTransactionBuilder builder)
+template auto
+AcceptanceFixture::complete<TestUnsignedTransactionBuilder::Completed>(
+    typename TestUnsignedTransactionBuilder::Completed builder)
     -> decltype(builder.build().finish());
-template auto AcceptanceFixture::complete<TestUnsignedQueryBuilder>(
-    TestUnsignedQueryBuilder builder) -> decltype(builder.build().finish());
+template auto AcceptanceFixture::complete<TestUnsignedQueryBuilder::Completed>(
+    typename TestUnsignedQueryBuilder::Completed builder)
+    -> decltype(builder.build().finish());
 
 template std::function<void(const shared_model::interface::QueryResponse &)>
 AcceptanceFixture::checkQueryErrorResponse<
