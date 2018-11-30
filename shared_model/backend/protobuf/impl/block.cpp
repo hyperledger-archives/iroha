@@ -5,13 +5,13 @@
 
 #include "backend/protobuf/block.hpp"
 
+#include <boost/range/adaptors.hpp>
 #include "backend/protobuf/common_objects/noncopyable_proto.hpp"
 #include "backend/protobuf/common_objects/signature.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "backend/protobuf/util.hpp"
-#include "interfaces/common_objects/types.hpp"
-
 #include "block.pb.h"
+#include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {
   namespace proto {
@@ -45,6 +45,16 @@ namespace shared_model {
         return SignatureSetType<proto::Signature>(signatures.begin(),
                                                   signatures.end());
       }()};
+
+      std::vector<interface::types::HashType> rejected_transactions_hashes_{
+          [this] {
+            std::vector<interface::types::HashType> hashes;
+            for (const auto &hash :
+                 *payload_.mutable_rejected_transactions_hashes()) {
+              hashes.emplace_back(shared_model::crypto::Hash(hash));
+            }
+            return hashes;
+          }()};
 
       interface::types::BlobType payload_blob_{
           [this] { return makeBlob(payload_); }()};
@@ -113,6 +123,11 @@ namespace shared_model {
 
     interface::types::TransactionsNumberType Block::txsNumber() const {
       return impl_->payload_.tx_number();
+    }
+
+    interface::types::HashCollectionType Block::rejected_transactions_hashes()
+        const {
+      return impl_->rejected_transactions_hashes_;
     }
 
     const interface::types::BlobType &Block::payload() const {

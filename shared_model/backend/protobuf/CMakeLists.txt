@@ -12,6 +12,7 @@ add_library(shared_model_proto_backend
     impl/proto_query_response_factory.cpp
     impl/proto_tx_status_factory.cpp
     impl/proto_permission_to_string.cpp
+    impl/transaction.cpp
     commands/impl/proto_add_asset_quantity.cpp
     commands/impl/proto_add_peer.cpp
     commands/impl/proto_add_signatory.cpp
@@ -66,5 +67,6 @@ endif ()
 
 target_link_libraries(shared_model_proto_backend
     schema
+    common
     shared_model_interfaces
     )
