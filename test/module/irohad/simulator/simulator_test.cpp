@@ -33,6 +33,8 @@ using ::testing::_;
 using ::testing::A;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::ReturnArg;
+using ::testing::NiceMock;
 
 using wBlock = std::shared_ptr<shared_model::interface::Block>;
 
@@ -43,7 +45,7 @@ class SimulatorTest : public ::testing::Test {
         std::make_shared<shared_model::crypto::CryptoModelSignerExpecter>();
 
     validator = std::make_shared<MockStatefulValidator>();
-    factory = std::make_shared<MockTemporaryFactory>();
+    factory = std::make_shared<NiceMock<MockTemporaryFactory>>();
     query = std::make_shared<MockBlockQuery>();
     ordering_gate = std::make_shared<MockOrderingGate>();
     crypto_signer = std::make_shared<shared_model::crypto::CryptoModelSigner<>>(
@@ -167,7 +169,8 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator->on_verified_proposal(), 1);
   proposal_wrapper.subscribe([&proposal](auto verified_proposal) {
-    ASSERT_EQ(verified_proposal->verified_proposal->height(), proposal->height());
+    ASSERT_EQ(verified_proposal->verified_proposal->height(),
+              proposal->height());
     ASSERT_EQ(verified_proposal->verified_proposal->transactions(),
               proposal->transactions());
     ASSERT_TRUE(verified_proposal->rejected_transactions.empty());
@@ -304,8 +307,7 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
   for (auto rejected_tx = txs.begin() + 1; rejected_tx != txs.end();
        ++rejected_tx) {
     verified_proposal_and_errors->rejected_transactions.emplace(
-        rejected_tx->hash(),
-        validation::CommandError{"SomeCommand", "SomeError", true});
+        rejected_tx->hash(), validation::CommandError{"SomeCommand", 1, "", true});
   }
   shared_model::proto::Block block = makeBlock(proposal->height() - 1);
 

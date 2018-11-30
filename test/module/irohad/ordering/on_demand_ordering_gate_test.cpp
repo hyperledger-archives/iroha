@@ -24,11 +24,15 @@ using ::testing::ByMove;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::Truly;
+using ::testing::UnorderedElementsAre;
+using ::testing::UnorderedElementsAreArray;
 
-struct OnDemandOrderingGateTest : public ::testing::Test {
+class OnDemandOrderingGateTest : public ::testing::Test {
+ public:
   void SetUp() override {
     ordering_service = std::make_shared<MockOnDemandOrderingService>();
     notification = std::make_shared<MockOdOsNotification>();
+    cache = std::make_shared<cache::MockOrderingGateCache>();
     auto ufactory = std::make_unique<NiceMock<MockUnsafeProposalFactory>>();
     factory = ufactory.get();
     tx_cache = std::make_shared<ametsuchi::MockTxPresenceCache>();
@@ -41,6 +45,7 @@ struct OnDemandOrderingGateTest : public ::testing::Test {
         std::make_shared<OnDemandOrderingGate>(ordering_service,
                                                notification,
                                                rounds.get_observable(),
+                                               cache,
                                                std::move(ufactory),
                                                tx_cache,
                                                initial_round);
@@ -53,6 +58,8 @@ struct OnDemandOrderingGateTest : public ::testing::Test {
   std::shared_ptr<ametsuchi::MockTxPresenceCache> tx_cache;
   std::shared_ptr<OnDemandOrderingGate> ordering_gate;
 
+  std::shared_ptr<cache::MockOrderingGateCache> cache;
+
   const consensus::Round initial_round = {2, 1};
 };
 
@@ -62,9 +69,11 @@ struct OnDemandOrderingGateTest : public ::testing::Test {
  * @then it is passed to the ordering service
  */
 TEST_F(OnDemandOrderingGateTest, propagateBatch) {
-  std::shared_ptr<shared_model::interface::TransactionBatch> batch;
+  auto hash1 = shared_model::interface::types::HashType("");
+  auto batch = createMockBatchWithHash(hash1);
   OdOsNotification::CollectionType collection{batch};
 
+  EXPECT_CALL(*cache, addToBack(UnorderedElementsAre(batch))).Times(1);
   EXPECT_CALL(*notification, onBatches(initial_round, collection)).Times(1);
 
   ordering_gate->propagateBatch(batch);
@@ -77,10 +86,7 @@ TEST_F(OnDemandOrderingGateTest, propagateBatch) {
  * @then new proposal round based on the received height is initiated
  */
 TEST_F(OnDemandOrderingGateTest, BlockEvent) {
-  auto block = std::make_shared<MockBlock>();
-  EXPECT_CALL(*block, height()).WillRepeatedly(Return(3));
-  OnDemandOrderingGate::BlockEvent event = {block};
-  consensus::Round round{event->height(), 1};
+  consensus::Round round{3, 1};
 
   boost::optional<OdOsNotification::ProposalType> oproposal(
       std::make_unique<MockProposal>());
@@ -95,7 +101,7 @@ TEST_F(OnDemandOrderingGateTest, BlockEvent) {
       make_test_subscriber<CallExact>(ordering_gate->on_proposal(), 1);
   gate_wrapper.subscribe([&](auto val) { ASSERT_EQ(val.get(), proposal); });
 
-  rounds.get_subscriber().on_next(event);
+  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -135,10 +141,7 @@ TEST_F(OnDemandOrderingGateTest, EmptyEvent) {
  * @then new empty proposal round based on the received height is initiated
  */
 TEST_F(OnDemandOrderingGateTest, BlockEventNoProposal) {
-  auto block = std::make_shared<MockBlock>();
-  EXPECT_CALL(*block, height()).WillRepeatedly(Return(3));
-  OnDemandOrderingGate::BlockEvent event = {block};
-  consensus::Round round{event->height(), 1};
+  consensus::Round round{3, 1};
 
   boost::optional<OdOsNotification::ProposalType> oproposal;
 
@@ -156,7 +159,7 @@ TEST_F(OnDemandOrderingGateTest, BlockEventNoProposal) {
       make_test_subscriber<CallExact>(ordering_gate->on_proposal(), 1);
   gate_wrapper.subscribe([&](auto val) { ASSERT_EQ(val.get(), proposal); });
 
-  rounds.get_subscriber().on_next(event);
+  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -199,9 +202,7 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
  * this transaction
  */
 TEST_F(OnDemandOrderingGateTest, ReplayedTransactionInProposal) {
-  auto block = std::make_shared<MockBlock>();
-  EXPECT_CALL(*block, height()).WillRepeatedly(Return(2));
-  OnDemandOrderingGate::BlockEvent event = {block};
+  OnDemandOrderingGate::BlockEvent event = {initial_round, {}};
 
   // initialize mock transaction
   auto tx1 = std::make_shared<NiceMock<MockTransaction>>();
@@ -239,4 +240,54 @@ TEST_F(OnDemandOrderingGateTest, ReplayedTransactionInProposal) {
   rounds.get_subscriber().on_next(event);
 
   ASSERT_TRUE(gate_wrapper.validate());
+}
+
+/**
+ * @given initialized ordering gate
+ * @when block event with no batches is emitted @and cache contains batch1 and
+ * batch2 on the head
+ * @then batch1 and batch2 are propagated to network
+ */
+TEST_F(OnDemandOrderingGateTest, SendBatchesFromTheCache) {
+  // prepare hashes for mock batches
+  shared_model::interface::types::HashType hash1("hash1");
+  shared_model::interface::types::HashType hash2("hash2");
+
+  // prepare batches
+  auto batch1 = createMockBatchWithHash(hash1);
+  auto batch2 = createMockBatchWithHash(hash2);
+
+  cache::OrderingGateCache::BatchesSetType collection{batch1, batch2};
+
+  EXPECT_CALL(*cache, pop()).WillOnce(Return(collection));
+
+  EXPECT_CALL(*cache, addToBack(UnorderedElementsAreArray(collection)))
+      .Times(1);
+  EXPECT_CALL(*notification,
+              onBatches(initial_round, UnorderedElementsAreArray(collection)))
+      .Times(1);
+
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{initial_round, {}});
+}
+
+/**
+ * @given initialized ordering gate
+ * @when an block round event is received from the PCS
+ * @then all batches from that event are removed from the cache
+ */
+TEST_F(OnDemandOrderingGateTest, BatchesRemoveFromCache) {
+  // prepare hashes for mock batches
+  shared_model::interface::types::HashType hash1("hash1");
+  shared_model::interface::types::HashType hash2("hash2");
+
+  // prepare batches
+  auto batch1 = createMockBatchWithHash(hash1);
+  auto batch2 = createMockBatchWithHash(hash2);
+
+  EXPECT_CALL(*cache, pop()).Times(1);
+  EXPECT_CALL(*cache, remove(UnorderedElementsAre(hash1, hash2))).Times(1);
+
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{initial_round, {hash1, hash2}});
 }

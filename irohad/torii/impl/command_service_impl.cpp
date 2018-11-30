@@ -58,14 +58,14 @@ namespace torii {
     if (not block_query) {
       // TODO andrei 30.11.18 IR-51 Handle database error
       log_->warn("Could not create block query. Tx: {}", request.hex());
-      return status_factory_->makeNotReceived(request, "");
+      return status_factory_->makeNotReceived(request);
     }
 
-    auto status = storage_->getBlockQuery()->checkTxPresence(request);
+    auto status = block_query->checkTxPresence(request);
     if (not status) {
       // TODO andrei 30.11.18 IR-51 Handle database error
       log_->warn("Check tx presence database error. Tx: {}", request.hex());
-      return status_factory_->makeNotReceived(request, "");
+      return status_factory_->makeNotReceived(request);
     }
 
     return iroha::visit_in_place(
@@ -74,11 +74,11 @@ namespace torii {
          &request](const iroha::ametsuchi::tx_cache_status_responses::Missing &)
             -> std::shared_ptr<shared_model::interface::TransactionResponse> {
           log_->warn("Asked non-existing tx: {}", request.hex());
-          return status_factory_->makeNotReceived(request, "");
+          return status_factory_->makeNotReceived(request);
         },
         [this, &request](const auto &) {
           std::shared_ptr<shared_model::interface::TransactionResponse>
-              response = status_factory_->makeCommitted(request, "");
+              response = status_factory_->makeCommitted(request);
           cache_->addItem(request, response);
           return response;
         });
@@ -104,7 +104,7 @@ namespace torii {
         std::shared_ptr<shared_model::interface::TransactionResponse>;
     auto initial_status = cache_->findItem(hash).value_or([&] {
       log_->debug("tx is not received: {}", hash.toString());
-      return status_factory_->makeNotReceived(hash, "");
+      return status_factory_->makeNotReceived(hash);
     }());
     return status_bus_
         ->statuses()
@@ -161,7 +161,7 @@ namespace torii {
       }
 
       this->pushStatus("ToriiBatchProcessor",
-                       status_factory_->makeStatelessValid(tx_hash, ""));
+                       status_factory_->makeStatelessValid(tx_hash));
     });
   }
 
