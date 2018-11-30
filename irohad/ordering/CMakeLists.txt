@@ -66,4 +66,5 @@ target_link_libraries(on_demand_ordering_gate
     rxcpp
     boost
     common
+    shared_model_cryptography_model
     )

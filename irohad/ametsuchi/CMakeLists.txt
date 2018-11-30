@@ -22,6 +22,8 @@ target_link_libraries(ametsuchi
     common
     shared_model_interfaces
     shared_model_stateless_validation
+    shared_model_utils
+    shared_model_proto_backend
     SOCI::core
     SOCI::postgresql
     )

@@ -136,7 +136,7 @@ endif()
 add_subdirectory(schema)
 add_subdirectory(libs)
 add_subdirectory(irohad)
-add_subdirectory(iroha-cli)
+# add_subdirectory(iroha-cli)
 
 # fallback to local shared_model
 if (NOT USE_LIBIROHA)

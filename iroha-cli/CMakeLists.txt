@@ -27,41 +27,41 @@ target_link_libraries(cli-flags_validators
     gflags
     )
 
-add_library(client
-    client.cpp
-    impl/query_response_handler.cpp
-    impl/transaction_response_handler.cpp
-    impl/grpc_response_handler.cpp
-    )
-target_link_libraries(client
-    interactive_cli
-    ed25519_crypto
-    logger
-    rapidjson
-    pb_model_converters
-    json_model_converters
-    model_generators
-    command_client
-    query_client
-    model_generators
-    parser
-    model
-    )
-target_include_directories(client PUBLIC
-    ${PROJECT_SOURCE_DIR}/iroha-cli
-    )
+# add_library(client
+#     client.cpp
+#     impl/query_response_handler.cpp
+#     impl/transaction_response_handler.cpp
+#     impl/grpc_response_handler.cpp
+#     )
+# target_link_libraries(client
+#     interactive_cli
+#     ed25519_crypto
+#     logger
+#     rapidjson
+#     pb_model_converters
+#     json_model_converters
+#     model_generators
+#     command_client
+#     query_client
+#     model_generators
+#     parser
+#     model
+#     )
+# target_include_directories(client PUBLIC
+#     ${PROJECT_SOURCE_DIR}/iroha-cli
+#     )
 
 # IrohaCli
-add_executable(iroha-cli
-    main.cpp
-    validators.cpp
-    )
-target_link_libraries(iroha-cli
-    client
-    cli-flags_validators
-    keys_manager
-    boost
-    )
+# add_executable(iroha-cli
+#     main.cpp
+#     validators.cpp
+#     )
+# target_link_libraries(iroha-cli
+#     client
+#     cli-flags_validators
+#     keys_manager
+#     boost
+#     )
 
-add_install_step_for_bin(iroha-cli)
+# add_install_step_for_bin(iroha-cli)
 

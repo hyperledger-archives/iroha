@@ -15,15 +15,15 @@
 # limitations under the License.
 #
 
-add_library(model_generators
-    impl/block_generator.cpp
-    impl/transaction_generator.cpp
-    impl/command_generator.cpp
-    impl/query_generator.cpp
-    )
+# add_library(model_generators
+#     impl/block_generator.cpp
+#     impl/transaction_generator.cpp
+#     impl/command_generator.cpp
+#     impl/query_generator.cpp
+#     )
 
-target_link_libraries(model_generators
-    model
-    generator
-    keys_manager
-    )
+# target_link_libraries(model_generators
+#     model
+#     generator
+#     keys_manager
+#     )

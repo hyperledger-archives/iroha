@@ -23,4 +23,5 @@ add_library(consensus_round
 
 target_link_libraries(consensus_round
     boost
+    shared_model_utils
     )
