@@ -81,9 +81,16 @@ grpc::Status MstTransportGrpc::SendState(
         [&](iroha::expected::Value<std::unique_ptr<
                 shared_model::interface::TransactionBatch>> &value) {
           auto cache_presence = tx_presence_cache_->check(*value.value);
+          if (not cache_presence) {
+            // TODO andrei 30.11.18 IR-51 Handle database error
+            async_call_->log_->warn(
+                "Check tx presence database error. Batch: {}",
+                value.value->toString());
+            return;
+          }
           auto is_replay = std::any_of(
-              cache_presence.begin(),
-              cache_presence.end(),
+              cache_presence->begin(),
+              cache_presence->end(),
               [](const auto &tx_status) {
                 return iroha::visit_in_place(
                     tx_status,

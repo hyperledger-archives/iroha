@@ -17,10 +17,10 @@ namespace iroha {
      public:
       explicit TxPresenceCacheImpl(std::shared_ptr<Storage> storage);
 
-      TxCacheStatusType check(
+      boost::optional<TxCacheStatusType> check(
           const shared_model::crypto::Hash &hash) const override;
 
-      BatchStatusCollectionType check(
+      boost::optional<BatchStatusCollectionType> check(
           const shared_model::interface::TransactionBatch &batch)
           const override;
 
@@ -28,9 +28,10 @@ namespace iroha {
       /**
        * Performs an actual storage request about hash status
        * @param hash to check
-       * @return hash status
+       * @return hash status if storage query was successful, boost::none
+       * otherwise
        */
-      TxCacheStatusType checkInStorage(
+      boost::optional<TxCacheStatusType> checkInStorage(
           const shared_model::crypto::Hash &hash) const;
 
       std::shared_ptr<Storage> storage_;
