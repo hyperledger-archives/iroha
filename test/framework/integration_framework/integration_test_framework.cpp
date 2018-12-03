@@ -55,16 +55,18 @@ using ProtoTransactionFactory = shared_model::proto::ProtoTransportFactory<
 using AbstractTransactionValidator =
     shared_model::validation::AbstractValidator<
         shared_model::interface::Transaction>;
-using AlwaysValidTransactionValidator =
+using AlwaysValidInterfaceTransactionValidator =
     shared_model::validation::AlwaysValidModelValidator<
         shared_model::interface::Transaction>;
+using AlwaysValidProtoTransactionValudator =
+    shared_model::validation::AlwaysValidModelValidator<
+        iroha::protocol::Transaction>;
 using FakePeer = integration_framework::fake_peer::FakePeer;
 
 namespace {
   std::string kLocalHost = "127.0.0.1";
   constexpr size_t kDefaultToriiPort = 11501;
   constexpr size_t kDefaultInternalPort = 50541;
-  constexpr size_t kMaxPort = 65535;
 }  // namespace
 
 namespace integration_framework {
@@ -97,7 +99,8 @@ namespace integration_framework {
         common_objects_factory_(
             std::make_shared<AlwaysValidProtoCommonObjectsFactory>()),
         transaction_factory_(std::make_shared<ProtoTransactionFactory>(
-            std::make_unique<AlwaysValidTransactionValidator>())),
+            std::make_unique<AlwaysValidInterfaceTransactionValidator>(),
+            std::make_unique<AlwaysValidProtoTransactionValudator>())),
         batch_parser_(std::make_shared<
                       shared_model::interface::TransactionBatchParserImpl>()),
         transaction_batch_factory_(
@@ -393,9 +396,9 @@ namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::sendTx(
       const shared_model::proto::Transaction &tx) {
     sendTx(tx, [this](const auto &status) {
-      if (!status.errorMessage().empty()) {
+      if (!status.statelessErrorOrCommandName().empty()) {
         log_->debug("Got error while sending transaction: "
-                    + status.errorMessage());
+                    + status.statelessErrorOrCommandName());
       }
     });
     return *this;
@@ -598,6 +601,10 @@ namespace integration_framework {
     validation(static_cast<const shared_model::proto::TransactionResponse &>(
         *response));
     return *this;
+  }
+
+  size_t IntegrationTestFramework::internalPort() const {
+    return internal_port_;
   }
 
   void IntegrationTestFramework::done() {

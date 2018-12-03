@@ -182,3 +182,10 @@ addtest(fake_peer_example_test
 target_link_libraries(fake_peer_example_test
     acceptance_fixture
     )
+
+addtest(set_account_quorum_test
+    set_account_quorum_test.cpp
+    )
+target_link_libraries(set_account_quorum_test
+    acceptance_fixture
+    )

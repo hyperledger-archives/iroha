@@ -6,6 +6,7 @@
 #include "framework/integration_framework/port_guard.hpp"
 
 #include <boost/assert.hpp>
+#include <boost/format.hpp>
 
 namespace integration_framework {
 
@@ -13,17 +14,24 @@ namespace integration_framework {
   PortGuard::UsedPorts PortGuard::all_used_ports_ = {};
   std::mutex PortGuard::all_used_ports_mutex_ = {};
 
+  PortGuard::PortGuard() = default;
+
+  PortGuard::PortGuard(PortGuard &&other) noexcept
+      : instance_used_ports_(std::move(other.instance_used_ports_)) {
+    other.instance_used_ports_.reset();
+  }
+
   PortGuard::~PortGuard() {
     std::lock_guard<std::mutex> lock(all_used_ports_mutex_);
     BOOST_ASSERT_MSG(
         ((all_used_ports_ | instance_used_ports_) ^ all_used_ports_).none(),
         "Some ports used by this PortGuard instance are not set in ports "
         "used by all instances!");
-    all_used_ports_ ^= instance_used_ports_;
+    all_used_ports_ &= ~instance_used_ports_;
   }
 
   boost::optional<PortGuard::PortType> PortGuard::tryGetPort(
-      const PortType &min_value, const PortType &max_value) {
+      const PortType min_value, const PortType max_value) {
     std::lock_guard<std::mutex> lock(all_used_ports_mutex_);
     PortType tested_port = min_value;
     while (all_used_ports_.test(tested_port)) {
@@ -41,13 +49,14 @@ namespace integration_framework {
     return tested_port;
   }
 
-  PortGuard::PortType PortGuard::getPort(const PortType &min_value,
-                                         const PortType &max_value) {
-    boost::optional<PortType> opt_port = tryGetPort(min_value, max_value);
+  PortGuard::PortType PortGuard::getPort(const PortType min_value,
+                                         const PortType max_value) {
+    const auto opt_port = tryGetPort(min_value, max_value);
     BOOST_VERIFY_MSG(
         opt_port,
-        ("Could not get a port in interval [" + std::to_string(min_value) + ", "
-         + std::to_string(max_value) + "]!")
+        (boost::format("Could not get a port in interval [%d, %d]!") % min_value
+         % max_value)
+            .str()
             .c_str());
     return *opt_port;
   }
