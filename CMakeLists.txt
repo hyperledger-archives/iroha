@@ -12,11 +12,12 @@ endif()
 PROJECT(iroha C CXX)
 
 SET(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
-SET(CMAKE_CXX_FLAGS "-std=c++14 -Wall -fdiagnostics-color=always")
+SET(CMAKE_CXX_FLAGS "-std=c++14 -Wall -fdiagnostics-color=always -stdlib=libc++")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wno-error=deprecated-declarations")
 SET(CMAKE_CXX_FLAGS_DEBUG   "-g -Wextra -Wno-unused-parameter -Wno-deprecated-declarations -O0")
 SET(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 SET(CMAKE_INSTALL_RPATH "../lib")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++ -lc++abi -v")
 
 if(COVERAGE)
   find_program(LCOV_PROGRAM lcov)
