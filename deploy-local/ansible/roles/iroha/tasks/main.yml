@@ -1,0 +1,134 @@
+---
+
+  - set_fact:
+      id: "{{ play_hosts.index(inventory_hostname) }}"
+
+
+  - name: Clean files dir
+    file:
+      path: "{{ role_path }}/files/"
+      state: absent
+    run_once: yes
+    become: no
+    delegate_to: localhost
+
+  - name: Create files dir
+    file:
+      path: "{{ role_path }}/files/"
+      state: directory
+    run_once: yes
+    become: no
+    delegate_to: localhost
+
+  - name: Generate iroha node keypairs
+    shell:
+      _raw_params: >
+        python3 generate_keypair.py
+      chdir: "{{ role_path }}"
+    register: "keys"
+    become: no
+    delegate_to: localhost
+
+
+  - name: Write nodes to file
+    lineinfile:
+      path: "{{ role_path }}/files/nodes.csv"
+      line: "{{ hostvars[item]['ansible_host'] }};10001;{{ hostvars[item]['keys'].stdout }}"
+      insertafter: EOF
+      create: yes
+    loop: "{{ ansible_play_hosts }}"
+    delegate_to: localhost
+    run_once: yes
+    become: no
+
+
+  - name: Write iroha nodes private keys to files
+    copy:
+      content: "{{ keys.stdout.split(';')[0] }}"
+      dest: "{{ role_path }}/files/node_{{inventory_hostname}}.priv"
+    become: no
+    delegate_to: localhost
+
+
+  - name: Write iroha nodes public keys to files
+    copy:
+      content: "{{ keys.stdout.split(';')[1] }}"
+      dest: "{{ role_path }}/files/node_{{inventory_hostname}}.pub"
+    become: no
+    delegate_to: localhost
+
+
+  - name: Copy genesis block
+    copy:
+      src: "{{ projectRoot }}/deploy/iroha/genesis.block"
+      dest: "{{ role_path }}/files"
+    run_once: yes
+    become: no
+    delegate_to: localhost
+
+  - name: Add peers and notaries to genesis block
+    shell:
+      _raw_params: "python add_peers_and_notaries.py nodes.csv"
+      chdir: "{{ role_path }}"
+    run_once: yes
+    become: no
+    delegate_to: localhost
+
+  - name: Create iroha dir
+    file:
+      path: "/tmp/iroha{{id}}"
+      state: directory
+    become: no
+ 
+  - name: Create iroha keys folder
+    file:
+      path: "/tmp/iroha{{id}}/keys"
+      state: directory
+      recurse: yes
+
+  - name: Copy compose to remote machine
+    template:
+      src: "{{ role_path }}/docker-compose.yml.j2"
+      dest: "/tmp/iroha{{id}}/docker-compose.yml"
+
+
+  - name: Copy iroha node private key
+    copy:
+      src: "{{ projectRoot }}/deploy/ansible/roles/iroha/files/node_{{ inventory_hostname }}.priv"
+      dest: "/tmp/iroha{{id}}/keys/node0.priv"
+
+  - name: Copy iroha node public key
+    copy:
+      src: "{{ projectRoot }}/deploy/ansible/roles/iroha/files/node_{{ inventory_hostname }}.pub"
+      dest: "/tmp/iroha{{id}}/keys/node0.pub"
+
+  - name: Template for config docker
+    template:
+      src: "{{ projectRoot }}/deploy/iroha/config.docker.j2"
+      dest: "/tmp/iroha{{id}}/config.docker"
+
+  - name: Copy other iroha files
+    copy:
+      src: "{{ item }}"
+      dest: "/tmp/iroha{{id}}"
+    with_items:
+      - "{{ projectRoot }}/deploy/iroha/entrypoint.sh"
+      - "{{ projectRoot }}/deploy/ansible/roles/iroha/files/genesis.block"
+
+  - name: Make iroha entrypoint executable
+    file:
+      path: "/tmp/iroha{{id}}/entrypoint.sh"
+      mode: 0755
+
+  - name: Shutdown compose
+    docker_service:
+      project_src: "/tmp/iroha{{id}}"
+      state: absent
+
+  - name: Run compose
+    docker_service:
+      project_src: "/tmp/iroha{{id}}"
+      recreate: always
+
+
+

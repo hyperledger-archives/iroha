@@ -1,0 +1,26 @@
+---
+- hosts: ubuntu
+  gather_facts: yes
+  pre_tasks:
+    - name: install python 2  # python installation (ansible hosts gather_facts requirement)
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python)
+      changed_when: False
+
+    - name: Install pip
+      apt: state=present name="python-pip"
+
+
+- hosts: docker
+  gather_facts: no
+  pre_tasks:
+    - name: install python 2
+      raw: tce-load -wi python
+      become: false
+
+    - name: Install pip
+      raw: curl https://bootstrap.pypa.io/get-pip.py | python -
+
+- hosts: all
+  gather_facts: yes
+  roles:
+    - iroha

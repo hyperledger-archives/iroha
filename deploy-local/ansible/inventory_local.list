@@ -1,0 +1,17 @@
+[docker]
+vm0 ansible_host=192.168.99.102  ansible_ssh_private_key_file=/Users/a/.docker/machine/machines/test1/id_rsa
+#vm1 ansible_host=192.168.99.102  ansible_ssh_private_key_file=/Users/a/.ssh/ansible
+#vm2 ansible_host=192.168.99.103  ansible_ssh_private_key_file=/Users/a/.ssh/ansible
+
+[local]
+peer1 ansible_connection=local ansible_host=d3-iroha-0
+peer2 ansible_connection=local ansible_host=d3-iroha-1
+peer3 ansible_connection=local ansible_host=d3-iroha-2
+peer4 ansible_connection=local ansible_host=d3-iroha-3
+
+[local:vars]
+ansible_python_interpreter=/usr/local/bin/python2.7
+
+[docker:vars]
+ansible_ssh_user=docker
+ansible_python_interpreter=/usr/bin/env python
