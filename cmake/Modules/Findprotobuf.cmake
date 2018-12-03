@@ -22,8 +22,6 @@ set(URL https://github.com/google/protobuf.git)
 set(VERSION 106ffc04be1abf3ff3399f54ccf149815b287dd9) # Protocol Buffers v3.5.1
 set_target_description(protobuf "Protocol buffers library" ${URL} ${VERSION})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-
 if (NOT protobuf_FOUND)
   externalproject_add(google_protobuf
       GIT_REPOSITORY  ${URL}
