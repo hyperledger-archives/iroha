@@ -26,16 +26,16 @@ if (NOT protobuf_FOUND)
   externalproject_add(google_protobuf
       GIT_REPOSITORY  ${URL}
       GIT_TAG         ${VERSION}
-      CONFIGURE_COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} -H${EP_PREFIX}/src/google_protobuf/cmake -B${EP_PREFIX}/src/google_protobuf-build -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=OFF
+      CONFIGURE_COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} -H${EP_PREFIX}/src/google_protobuf/cmake -B${EP_PREFIX}/src/google_protobuf-build -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_SHARED_LIBS=ON
       BUILD_BYPRODUCTS ${EP_PREFIX}/src/google_protobuf-build/protoc
-                       ${EP_PREFIX}/src/google_protobuf-build/${CMAKE_STATIC_LIBRARY_PREFIX}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX}
+                       ${EP_PREFIX}/src/google_protobuf-build/${CMAKE_SHARED_LIBRARY_PREFIX}protobuf${CMAKE_SHARED_LIBRARY_SUFFIX}
       INSTALL_COMMAND ""
       TEST_COMMAND "" # remove test step
       UPDATE_COMMAND "" # remove update step
       )
   externalproject_get_property(google_protobuf source_dir binary_dir)
   set(protobuf_INCLUDE_DIR ${source_dir}/src)
-  set(protobuf_LIBRARY ${binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}protobuf${CMAKE_STATIC_LIBRARY_SUFFIX})
+  set(protobuf_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}protobuf${CMAKE_SHARED_LIBRARY_SUFFIX})
   set(protoc_EXECUTABLE ${binary_dir}/protoc)
   file(MAKE_DIRECTORY ${protobuf_INCLUDE_DIR})
   link_directories(${binary_dir})

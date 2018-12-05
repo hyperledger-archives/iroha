@@ -47,22 +47,22 @@ if (NOT grpc_FOUND)
         -DgRPC_PROTOBUF_PROVIDER=package
         ${PROTO_DEP}
         -DgRPC_ZLIB_PROVIDER=package
-        -DBUILD_SHARED_LIBS=OFF
+        -DBUILD_SHARED_LIBS=ON
       BUILD_BYPRODUCTS
         ${EP_PREFIX}/src/grpc_grpc-build/grpc_cpp_plugin
-        ${EP_PREFIX}/src/grpc_grpc-build/${CMAKE_STATIC_LIBRARY_PREFIX}gpr${CMAKE_STATIC_LIBRARY_SUFFIX}
-        ${EP_PREFIX}/src/grpc_grpc-build/${CMAKE_STATIC_LIBRARY_PREFIX}grpc${CMAKE_STATIC_LIBRARY_SUFFIX}
-        ${EP_PREFIX}/src/grpc_grpc-build/${CMAKE_STATIC_LIBRARY_PREFIX}grpc++${CMAKE_STATIC_LIBRARY_SUFFIX}
+        ${EP_PREFIX}/src/grpc_grpc-build/${CMAKE_SHARED_LIBRARY_PREFIX}gpr${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${EP_PREFIX}/src/grpc_grpc-build/${CMAKE_SHARED_LIBRARY_PREFIX}grpc${CMAKE_SHARED_LIBRARY_SUFFIX}
+        ${EP_PREFIX}/src/grpc_grpc-build/${CMAKE_SHARED_LIBRARY_PREFIX}grpc++${CMAKE_SHARED_LIBRARY_SUFFIX}
       INSTALL_COMMAND "" # remove install step
       TEST_COMMAND "" # remove test step
       UPDATE_COMMAND "" # remove update step
       )
   externalproject_get_property(grpc_grpc source_dir binary_dir)
   set(grpc_INCLUDE_DIR ${source_dir}/include)
-  set(gpr_LIBRARY ${binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}gpr${CMAKE_STATIC_LIBRARY_SUFFIX})
-  set(grpc_LIBRARY ${binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}grpc${CMAKE_STATIC_LIBRARY_SUFFIX})
-  set(grpc_grpc++_LIBRARY ${binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}grpc++${CMAKE_STATIC_LIBRARY_SUFFIX})
-  set(address_sorting_LIBRARY ${binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}address_sorting${CMAKE_STATIC_LIBRARY_SUFFIX})
+  set(gpr_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}gpr${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(grpc_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}grpc${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(grpc_grpc++_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}grpc++${CMAKE_SHARED_LIBRARY_SUFFIX})
+  set(address_sorting_LIBRARY ${binary_dir}/${CMAKE_SHARED_LIBRARY_PREFIX}address_sorting${CMAKE_SHARED_LIBRARY_SUFFIX})
   set(grpc_CPP_PLUGIN ${binary_dir}/grpc_cpp_plugin)
   file(MAKE_DIRECTORY ${grpc_INCLUDE_DIR})
   link_directories(${binary_dir})
