@@ -182,6 +182,14 @@ class Iroha(object):
         field_name = Iroha._camel_case_to_snake_case(name)
         internal_command = getattr(command_wrapper, field_name)
         for key, value in kwargs.items():
+            if 'permissions' == key:
+                permissions_attr = getattr(internal_command, 'permissions')
+                permissions_attr.extend(value)
+                continue
+            if 'peer' == key:
+                peer_attr = getattr(internal_command, 'peer')
+                peer_attr.CopyFrom(value)
+                continue
             setattr(internal_command, key, value)
         return command_wrapper
 
@@ -268,9 +276,9 @@ class IrohaGrpc(object):
     def __init__(self, address=None):
         self._address = address if address else '127.0.0.1:50051'
         self._channel = grpc.insecure_channel(self._address)
-        self._command_service_stub = endpoint_pb2_grpc.CommandServiceStub(
+        self._command_service_stub = endpoint_pb2_grpc.CommandService_v1Stub(
             self._channel)
-        self._query_service_stub = endpoint_pb2_grpc.QueryServiceStub(
+        self._query_service_stub = endpoint_pb2_grpc.QueryService_v1Stub(
             self._channel)
 
     def send_tx(self, transaction):
@@ -353,5 +361,5 @@ class IrohaGrpc(object):
         for status in response:
             status_name = endpoint_pb2.TxStatus.Name(status.tx_status)
             status_code = status.tx_status
-            error_message = status.error_message
-            yield status_name, status_code, error_message
+            error_code = status.error_code
+            yield status_name, status_code, error_code
