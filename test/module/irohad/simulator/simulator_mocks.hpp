@@ -13,10 +13,10 @@ namespace iroha {
   namespace simulator {
     class MockBlockCreator : public BlockCreator {
      public:
-      MOCK_METHOD2(
-          processVerifiedProposal,
-          void(const std::shared_ptr<shared_model::interface::Proposal> &,
-               const consensus::Round &));
+      MOCK_METHOD2(processVerifiedProposal,
+                   void(const std::shared_ptr<
+                            iroha::validation::VerifiedProposalAndErrors> &,
+                        const consensus::Round &));
       MOCK_METHOD0(onBlock, rxcpp::observable<BlockCreatorEvent>());
     };
   }  // namespace simulator

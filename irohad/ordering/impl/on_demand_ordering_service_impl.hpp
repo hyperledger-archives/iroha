@@ -17,6 +17,9 @@
 #include "logger/logger.hpp"
 
 namespace iroha {
+  namespace ametsuchi {
+    class TxPresenceCache;
+  }
   namespace ordering {
     class OnDemandOrderingServiceImpl : public OnDemandOrderingService {
      public:
@@ -34,6 +37,7 @@ namespace iroha {
           size_t transaction_limit,
           std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
               proposal_factory,
+          std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
           size_t number_of_proposals = 3,
           const consensus::Round &initial_round = {2, 1});
 
@@ -67,6 +71,12 @@ namespace iroha {
        * Note: method is not thread-safe
        */
       ProposalType emitProposal(const consensus::Round &round);
+
+      /**
+       * Check if batch was already processed by the peer
+       */
+      bool batchAlreadyProcessed(
+          const shared_model::interface::TransactionBatch &batch);
 
       /**
        * Max number of transaction in one proposal
@@ -106,6 +116,11 @@ namespace iroha {
 
       std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
           proposal_factory_;
+
+      /**
+       * Processed transactions cache used for replay prevention
+       */
+      std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache_;
 
       /**
        * Logger instance

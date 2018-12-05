@@ -308,3 +308,106 @@ TEST_F(SynchronizerTest, NoneOutcome) {
 
   ASSERT_TRUE(wrapper.validate());
 }
+
+/**
+ * @given commit with the block peer voted for
+ * @when synchronizer processes the commit
+ * @then commitPrepared is called @and commit is not called
+ */
+TEST_F(SynchronizerTest, VotedForBlockCommitPrepared) {
+  EXPECT_CALL(*mutable_factory, commitPrepared(_)).WillOnce(Return(true));
+
+  EXPECT_CALL(*mutable_factory, commit_(_)).Times(0);
+
+  auto wrapper =
+      make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
+  wrapper.subscribe([this](auto commit_event) {
+    auto block_wrapper =
+        make_test_subscriber<CallExact>(commit_event.synced_blocks, 1);
+    block_wrapper.subscribe([this](auto block) {
+      // Check commit block
+      ASSERT_EQ(block->height(), commit_message->height());
+    });
+    ASSERT_EQ(commit_event.sync_outcome, SynchronizationOutcomeType::kCommit);
+    ASSERT_TRUE(block_wrapper.validate());
+  });
+
+  gate_outcome.get_subscriber().on_next(
+      consensus::PairValid{commit_message, consensus::Round{kHeight, 1}});
+}
+
+/**
+ * @given commit with the block which is different than the peer has voted for
+ * @when synchronizer processes the commit
+ * @then commitPrepared is not called @and commit is called
+ */
+TEST_F(SynchronizerTest, VotedForOtherCommitPrepared) {
+  DefaultValue<expected::Result<std::unique_ptr<MutableStorage>, std::string>>::
+      SetFactory(&createMockMutableStorage);
+
+  EXPECT_CALL(*mutable_factory, commitPrepared(_)).Times(0);
+
+  EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
+
+  EXPECT_CALL(*mutable_factory, commit_(_)).Times(1);
+
+  EXPECT_CALL(*block_loader, retrieveBlocks(_))
+      .WillRepeatedly(Return(rxcpp::observable<>::just(commit_message)));
+
+  EXPECT_CALL(*chain_validator, validateAndApply(_, _)).WillOnce(Return(true));
+
+  auto wrapper =
+      make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
+  wrapper.subscribe([this](auto commit_event) {
+    auto block_wrapper =
+        make_test_subscriber<CallExact>(commit_event.synced_blocks, 1);
+    block_wrapper.subscribe([this](auto block) {
+      // Check commit block
+      ASSERT_EQ(block->height(), commit_message->height());
+    });
+    ASSERT_EQ(commit_event.sync_outcome, SynchronizationOutcomeType::kCommit);
+    ASSERT_TRUE(block_wrapper.validate());
+  });
+
+  gate_outcome.get_subscriber().on_next(
+      consensus::VoteOther{public_keys, hash, consensus::Round{kHeight, 1}});
+}
+
+/**
+ * @given commit with the block peer voted for
+ * @when synchronizer processes the commit @and commit prepared is unsuccessful
+ * @then commit is called and synchronizer works as expected
+ */
+TEST_F(SynchronizerTest, VotedForThisCommitPreparedFailure) {
+  auto ustorage = std::make_unique<MockMutableStorage>();
+
+  auto storage = ustorage.get();
+
+  auto storage_value =
+      expected::makeValue<std::unique_ptr<MutableStorage>>(std::move(ustorage));
+
+  EXPECT_CALL(*mutable_factory, commitPrepared(_)).WillOnce(Return(false));
+
+  EXPECT_CALL(*mutable_factory, createMutableStorage())
+      .WillOnce(Return(ByMove(std::move(storage_value))));
+
+  EXPECT_CALL(*storage, apply(_)).WillOnce(Return(true));
+
+  EXPECT_CALL(*mutable_factory, commit_(_)).Times(1);
+
+  auto wrapper =
+      make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
+  wrapper.subscribe([this](auto commit_event) {
+    auto block_wrapper =
+        make_test_subscriber<CallExact>(commit_event.synced_blocks, 1);
+    block_wrapper.subscribe([this](auto block) {
+      // Check commit block
+      ASSERT_EQ(block->height(), commit_message->height());
+    });
+    ASSERT_EQ(commit_event.sync_outcome, SynchronizationOutcomeType::kCommit);
+    ASSERT_TRUE(block_wrapper.validate());
+  });
+
+  gate_outcome.get_subscriber().on_next(
+      consensus::PairValid{commit_message, consensus::Round{kHeight, 1}});
+}

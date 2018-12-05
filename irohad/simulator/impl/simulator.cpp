@@ -5,6 +5,7 @@
 
 #include "simulator/impl/simulator.hpp"
 
+#include <boost/range/adaptor/map.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include "common/bind.hpp"
 #include "interfaces/iroha_internal/block.hpp"
@@ -42,8 +43,8 @@ namespace iroha {
           verified_proposal_subscription_,
           [this](const VerifiedProposalCreatorEvent &event) {
             if (event.verified_proposal_result) {
-              this->processVerifiedProposal(
-                  getVerifiedProposalUnsafe(event)->first, event.round);
+              this->processVerifiedProposal(getVerifiedProposalUnsafe(event),
+                                            event.round);
             } else {
               block_notifier_.get_subscriber().on_next(
                   BlockCreatorEvent{boost::none, event.round});
@@ -100,17 +101,19 @@ namespace iroha {
           boost::get<expected::Value<std::unique_ptr<ametsuchi::TemporaryWsv>>>(
               &temporary_wsv_var)
               ->value);
-      auto validated_proposal_and_errors =
-          std::make_shared<iroha::validation::VerifiedProposalAndErrors>(
-              validator_->validate(proposal, *storage));
-      storage.reset();
+
+      std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
+          validated_proposal_and_errors =
+              validator_->validate(proposal, *storage);
+      ametsuchi_factory_->prepareBlock(std::move(storage));
 
       notifier_.get_subscriber().on_next(
           VerifiedProposalCreatorEvent{validated_proposal_and_errors, round});
     }
 
     void Simulator::processVerifiedProposal(
-        const std::shared_ptr<shared_model::interface::Proposal> &proposal,
+        const std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
+            &verified_proposal_and_errors,
         const consensus::Round &round) {
       log_->info("process verified proposal");
 
@@ -122,11 +125,16 @@ namespace iroha {
         log_->error("Unable to query top block height");
         return;
       }
+      const auto &proposal = verified_proposal_and_errors->verified_proposal;
+      const auto &rejected_tx_hashes =
+          verified_proposal_and_errors->rejected_transactions
+          | boost::adaptors::map_keys;
       std::shared_ptr<shared_model::interface::Block> block =
           block_factory_->unsafeCreateBlock(height,
                                             last_block->hash(),
                                             proposal->createdTime(),
-                                            proposal->transactions());
+                                            proposal->transactions(),
+                                            rejected_tx_hashes);
       crypto_signer_->sign(*block);
       block_notifier_.get_subscriber().on_next(
           BlockCreatorEvent{RoundData{proposal, block}, round});

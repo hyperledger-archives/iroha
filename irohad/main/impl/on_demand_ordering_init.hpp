@@ -9,6 +9,7 @@
 #include <random>
 
 #include "ametsuchi/peer_query_factory.hpp"
+#include "ametsuchi/tx_presence_cache.hpp"
 #include "interfaces/iroha_internal/unsafe_proposal_factory.hpp"
 #include "logger/logger.hpp"
 #include "network/impl/async_grpc_client.hpp"
@@ -16,6 +17,7 @@
 #include "network/peer_communication_service.hpp"
 #include "ordering.grpc.pb.h"
 #include "ordering/impl/on_demand_os_server_grpc.hpp"
+#include "ordering/impl/ordering_gate_cache/ordering_gate_cache.hpp"
 #include "ordering/on_demand_ordering_service.hpp"
 #include "ordering/on_demand_os_transport.hpp"
 
@@ -55,8 +57,10 @@ namespace iroha {
       auto createGate(
           std::shared_ptr<ordering::OnDemandOrderingService> ordering_service,
           std::shared_ptr<ordering::transport::OdOsNotification> network_client,
+          std::shared_ptr<ordering::cache::OrderingGateCache> cache,
           std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
               proposal_factory,
+          std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
           consensus::Round initial_round);
 
       /**
@@ -66,7 +70,8 @@ namespace iroha {
       auto createService(
           size_t max_size,
           std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
-              proposal_factory);
+              proposal_factory,
+          std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache);
 
      public:
       /**
@@ -108,6 +113,7 @@ namespace iroha {
               async_call,
           std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
               proposal_factory,
+          std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
           consensus::Round initial_round);
 
       /// gRPC service for ordering service

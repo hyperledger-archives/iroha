@@ -13,7 +13,6 @@
 
 namespace iroha {
   namespace synchronizer {
-
     /**
      * Synchronizer is interface for fetching missed blocks
      */

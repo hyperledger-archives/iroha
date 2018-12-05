@@ -16,6 +16,7 @@
 #include "ordering/impl/on_demand_ordering_service_impl.hpp"
 #include "ordering/impl/on_demand_os_client_grpc.hpp"
 #include "ordering/impl/on_demand_os_server_grpc.hpp"
+#include "ordering/impl/ordering_gate_cache/on_demand_cache.hpp"
 
 namespace {
   /// match event and call corresponding lambda depending on sync_outcome
@@ -165,8 +166,10 @@ namespace iroha {
     auto OnDemandOrderingInit::createGate(
         std::shared_ptr<ordering::OnDemandOrderingService> ordering_service,
         std::shared_ptr<ordering::transport::OdOsNotification> network_client,
+        std::shared_ptr<ordering::cache::OrderingGateCache> cache,
         std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
             proposal_factory,
+        std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
         consensus::Round initial_round) {
       return std::make_shared<ordering::OnDemandOrderingGate>(
           std::move(ordering_service),
@@ -176,23 +179,43 @@ namespace iroha {
                 commit,
                 [](const auto &commit)
                     -> ordering::OnDemandOrderingGate::BlockRoundEventType {
-                  return commit.synced_blocks.as_blocking().last();
+                  ordering::cache::OrderingGateCache::HashesSetType hashes;
+                  commit.synced_blocks.as_blocking().subscribe(
+                      [&hashes](const auto &block) {
+                        const auto &committed = block->transactions();
+                        std::transform(committed.begin(),
+                                       committed.end(),
+                                       std::inserter(hashes, hashes.end()),
+                                       [](const auto &transaction) {
+                                         return transaction.hash();
+                                       });
+                        const auto &rejected =
+                            block->rejected_transactions_hashes();
+                        std::copy(rejected.begin(),
+                                  rejected.end(),
+                                  std::inserter(hashes, hashes.end()));
+                      });
+                  return ordering::OnDemandOrderingGate::BlockEvent{
+                      commit.round, hashes};
                 },
                 [](const auto &)
                     -> ordering::OnDemandOrderingGate::BlockRoundEventType {
                   return ordering::OnDemandOrderingGate::EmptyEvent{};
                 });
           }),
+          std::move(cache),
           std::move(proposal_factory),
+          std::move(tx_cache),
           initial_round);
     }
 
     auto OnDemandOrderingInit::createService(
         size_t max_size,
         std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
-            proposal_factory) {
+            proposal_factory,
+        std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache) {
       return std::make_shared<ordering::OnDemandOrderingServiceImpl>(
-          max_size, std::move(proposal_factory));
+          max_size, std::move(proposal_factory), std::move(tx_cache));
     }
 
     std::shared_ptr<iroha::network::OrderingGate>
@@ -212,8 +235,9 @@ namespace iroha {
             async_call,
         std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
             proposal_factory,
+        std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
         consensus::Round initial_round) {
-      auto ordering_service = createService(max_size, proposal_factory);
+      auto ordering_service = createService(max_size, proposal_factory, tx_cache);
       service = std::make_shared<ordering::transport::OnDemandOsServerGrpc>(
           ordering_service,
           std::move(transaction_factory),
@@ -224,7 +248,9 @@ namespace iroha {
                                                 std::move(async_call),
                                                 delay,
                                                 std::move(initial_hashes)),
+                        std::make_shared<ordering::cache::OnDemandCache>(),
                         std::move(proposal_factory),
+                        std::move(tx_cache),
                         initial_round);
     }
 

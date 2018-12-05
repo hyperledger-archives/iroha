@@ -25,7 +25,7 @@ namespace iroha {
           log_(logger::log("synchronizer")) {
       consensus_gate->onOutcome().subscribe(
           subscription_, [this](consensus::GateObject object) {
-            return this->processOutcome(object);
+            this->processOutcome(object);
           });
     }
 
@@ -107,14 +107,16 @@ namespace iroha {
 
     void SynchronizerImpl::processNext(const consensus::PairValid &msg) {
       log_->info("at handleNext");
-      auto opt_storage = getStorage();
-      if (opt_storage == boost::none) {
-        return;
+      if (not mutable_factory_->commitPrepared(*msg.block)) {
+        auto opt_storage = getStorage();
+        if (opt_storage == boost::none) {
+          return;
+        }
+        std::unique_ptr<ametsuchi::MutableStorage> storage =
+            std::move(opt_storage.value());
+        storage->apply(*msg.block);
+        mutable_factory_->commit(std::move(storage));
       }
-      std::unique_ptr<ametsuchi::MutableStorage> storage =
-          std::move(opt_storage.value());
-      storage->apply(*msg.block);
-      mutable_factory_->commit(std::move(storage));
       notifier_.get_subscriber().on_next(
           SynchronizationEvent{rxcpp::observable<>::just(msg.block),
                                SynchronizationOutcomeType::kCommit,
