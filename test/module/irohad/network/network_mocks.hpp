@@ -45,9 +45,10 @@ namespace iroha {
 
     class MockBlockLoader : public BlockLoader {
      public:
-      MOCK_METHOD1(
+      MOCK_METHOD2(
           retrieveBlocks,
           rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>(
+              const shared_model::interface::types::HeightType,
               const shared_model::crypto::PublicKey &));
       MOCK_METHOD2(
           retrieveBlock,

@@ -34,8 +34,11 @@ class SynchronizerTest : public ::testing::Test {
   void SetUp() override {
     chain_validator = std::make_shared<MockChainValidator>();
     mutable_factory = std::make_shared<MockMutableFactory>();
+    block_query_factory =
+        std::make_shared<::testing::NiceMock<MockBlockQueryFactory>>();
     block_loader = std::make_shared<MockBlockLoader>();
     consensus_gate = std::make_shared<MockConsensusGate>();
+    block_query = std::make_shared<::testing::NiceMock<MockBlockQuery>>();
 
     commit_message = makeCommit();
     public_keys = boost::copy_range<
@@ -48,8 +51,17 @@ class SynchronizerTest : public ::testing::Test {
     EXPECT_CALL(*consensus_gate, onOutcome())
         .WillOnce(Return(gate_outcome.get_observable()));
 
-    synchronizer = std::make_shared<SynchronizerImpl>(
-        consensus_gate, chain_validator, mutable_factory, block_loader);
+    ON_CALL(*block_query_factory, createBlockQuery())
+        .WillByDefault(Return(boost::make_optional(
+            std::shared_ptr<iroha::ametsuchi::BlockQuery>(block_query))));
+    ON_CALL(*block_query, getTopBlockHeight())
+        .WillByDefault(Return(kHeight - 1));
+
+    synchronizer = std::make_shared<SynchronizerImpl>(consensus_gate,
+                                                      chain_validator,
+                                                      mutable_factory,
+                                                      block_query_factory,
+                                                      block_loader);
   }
 
   std::shared_ptr<shared_model::interface::Block> makeCommit(
@@ -65,12 +77,14 @@ class SynchronizerTest : public ::testing::Test {
     return std::make_shared<shared_model::proto::Block>(std::move(block));
   }
 
-  const size_t kHeight = 5;
+  const shared_model::interface::types::HeightType kHeight{5};
 
   std::shared_ptr<MockChainValidator> chain_validator;
   std::shared_ptr<MockMutableFactory> mutable_factory;
+  std::shared_ptr<MockBlockQueryFactory> block_query_factory;
   std::shared_ptr<MockBlockLoader> block_loader;
   std::shared_ptr<MockConsensusGate> consensus_gate;
+  std::shared_ptr<MockBlockQuery> block_query;
 
   std::shared_ptr<shared_model::interface::Block> commit_message;
   shared_model::interface::types::PublicKeyCollectionType public_keys;
@@ -92,7 +106,7 @@ TEST_F(SynchronizerTest, ValidWhenSingleCommitSynchronized) {
   EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
   EXPECT_CALL(*mutable_factory, commit_(_)).Times(1);
   EXPECT_CALL(*chain_validator, validateAndApply(_, _)).Times(0);
-  EXPECT_CALL(*block_loader, retrieveBlocks(_)).Times(0);
+  EXPECT_CALL(*block_loader, retrieveBlocks(_, _)).Times(0);
 
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 1);
@@ -125,7 +139,7 @@ TEST_F(SynchronizerTest, ValidWhenBadStorage) {
       .WillOnce(Return(ByMove(expected::makeError("Connection was closed"))));
   EXPECT_CALL(*mutable_factory, commit_(_)).Times(0);
   EXPECT_CALL(*chain_validator, validateAndApply(_, _)).Times(0);
-  EXPECT_CALL(*block_loader, retrieveBlocks(_)).Times(0);
+  EXPECT_CALL(*block_loader, retrieveBlocks(_, _)).Times(0);
 
   auto wrapper =
       make_test_subscriber<CallExact>(synchronizer->on_commit_chain(), 0);
@@ -145,11 +159,12 @@ TEST_F(SynchronizerTest, ValidWhenBadStorage) {
 TEST_F(SynchronizerTest, ValidWhenValidChain) {
   DefaultValue<expected::Result<std::unique_ptr<MutableStorage>, std::string>>::
       SetFactory(&createMockMutableStorage);
+
   EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
 
   EXPECT_CALL(*mutable_factory, commit_(_)).Times(1);
   EXPECT_CALL(*chain_validator, validateAndApply(_, _)).WillOnce(Return(true));
-  EXPECT_CALL(*block_loader, retrieveBlocks(_))
+  EXPECT_CALL(*block_loader, retrieveBlocks(_, _))
       .WillOnce(Return(rxcpp::observable<>::just(commit_message)));
 
   auto wrapper =
@@ -188,7 +203,7 @@ TEST_F(SynchronizerTest, ExactlyThreeRetrievals) {
         chain.as_blocking().subscribe([](auto) {});
         return true;
       }));
-  EXPECT_CALL(*block_loader, retrieveBlocks(_))
+  EXPECT_CALL(*block_loader, retrieveBlocks(_, _))
       .WillOnce(Return(rxcpp::observable<>::empty<
                        std::shared_ptr<shared_model::interface::Block>>()))
       .WillOnce(Return(rxcpp::observable<>::just(commit_message)))
@@ -214,7 +229,7 @@ TEST_F(SynchronizerTest, RetrieveBlockTwoFailures) {
       SetFactory(&createMockMutableStorage);
   EXPECT_CALL(*mutable_factory, createMutableStorage()).Times(1);
   EXPECT_CALL(*mutable_factory, commit_(_)).Times(1);
-  EXPECT_CALL(*block_loader, retrieveBlocks(_))
+  EXPECT_CALL(*block_loader, retrieveBlocks(_, _))
       .WillRepeatedly(Return(rxcpp::observable<>::just(commit_message)));
 
   // fail the chain validation two times so that synchronizer will try more
@@ -351,7 +366,7 @@ TEST_F(SynchronizerTest, VotedForOtherCommitPrepared) {
 
   EXPECT_CALL(*mutable_factory, commit_(_)).Times(1);
 
-  EXPECT_CALL(*block_loader, retrieveBlocks(_))
+  EXPECT_CALL(*block_loader, retrieveBlocks(_, _))
       .WillRepeatedly(Return(rxcpp::observable<>::just(commit_message)));
 
   EXPECT_CALL(*chain_validator, validateAndApply(_, _)).WillOnce(Return(true));

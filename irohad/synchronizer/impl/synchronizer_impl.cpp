@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "ametsuchi/block_query_factory.hpp"
 #include "ametsuchi/mutable_storage.hpp"
 #include "common/visitor.hpp"
 #include "interfaces/iroha_internal/block.hpp"
@@ -17,11 +18,13 @@ namespace iroha {
     SynchronizerImpl::SynchronizerImpl(
         std::shared_ptr<network::ConsensusGate> consensus_gate,
         std::shared_ptr<validation::ChainValidator> validator,
-        std::shared_ptr<ametsuchi::MutableFactory> mutableFactory,
-        std::shared_ptr<network::BlockLoader> blockLoader)
+        std::shared_ptr<ametsuchi::MutableFactory> mutable_factory,
+        std::shared_ptr<ametsuchi::BlockQueryFactory> block_query_factory,
+        std::shared_ptr<network::BlockLoader> block_loader)
         : validator_(std::move(validator)),
-          mutable_factory_(std::move(mutableFactory)),
-          block_loader_(std::move(blockLoader)),
+          mutable_factory_(std::move(mutable_factory)),
+          block_query_factory_(std::move(block_query_factory)),
+          block_loader_(std::move(block_loader)),
           log_(logger::log("synchronizer")) {
       consensus_gate->onOutcome().subscribe(
           subscription_, [this](consensus::GateObject object) {
@@ -62,12 +65,16 @@ namespace iroha {
 
     SynchronizationEvent SynchronizerImpl::downloadMissingBlocks(
         const consensus::VoteOther &msg,
-        std::unique_ptr<ametsuchi::MutableStorage> storage) {
+        std::unique_ptr<ametsuchi::MutableStorage> storage,
+        const shared_model::interface::types::HeightType height) {
+      auto expected_height = msg.round.block_round;
+
       // while blocks are not loaded and not committed
       while (true) {
         // TODO andrei 17.10.18 IR-1763 Add delay strategy for loading blocks
         for (const auto &public_key : msg.public_keys) {
-          auto network_chain = block_loader_->retrieveBlocks(public_key);
+          auto network_chain =
+              block_loader_->retrieveBlocks(height, public_key);
 
           std::vector<std::shared_ptr<shared_model::interface::Block>> blocks;
           network_chain.as_blocking().subscribe(
@@ -75,12 +82,14 @@ namespace iroha {
           if (blocks.empty()) {
             log_->info("Downloaded an empty chain");
             continue;
+          } else {
+            log_->info("Successfully downloaded {} blocks", blocks.size());
           }
 
           auto chain =
               rxcpp::observable<>::iterate(blocks, rxcpp::identity_immediate());
 
-          if (blocks.back()->hash() == msg.hash
+          if (blocks.back()->height() >= expected_height
               and validator_->validateAndApply(chain, *storage)) {
             mutable_factory_->commit(std::move(storage));
 
@@ -125,6 +134,23 @@ namespace iroha {
 
     void SynchronizerImpl::processDifferent(const consensus::VoteOther &msg) {
       log_->info("at handleDifferent");
+
+      shared_model::interface::types::HeightType top_block_height{0};
+      if (auto block_query = block_query_factory_->createBlockQuery()) {
+        top_block_height = (*block_query)->getTopBlockHeight();
+      } else {
+        log_->error(
+            "Unable to create block query and retrieve top block height");
+        return;
+      }
+
+      if (top_block_height >= msg.round.block_round) {
+        log_->info(
+            "Storage is already in synchronized state. Top block height is {}",
+            top_block_height);
+        return;
+      }
+
       auto opt_storage = getStorage();
       if (opt_storage == boost::none) {
         return;
@@ -132,7 +158,7 @@ namespace iroha {
       std::unique_ptr<ametsuchi::MutableStorage> storage =
           std::move(opt_storage.value());
       SynchronizationEvent result =
-          downloadMissingBlocks(msg, std::move(storage));
+          downloadMissingBlocks(msg, std::move(storage), top_block_height);
       notifier_.get_subscriber().on_next(result);
     }
 
