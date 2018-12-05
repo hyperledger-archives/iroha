@@ -3,8 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import iroha
+import irohalib
 import commons
+import primitive_pb2
 
 admin = commons.new_user('admin@test')
 alice = commons.new_user('alice@test')
@@ -12,29 +13,32 @@ alice = commons.new_user('alice@test')
 
 @commons.hex
 def genesis_tx():
-    test_permissions = iroha.RolePermissionSet([iroha.Role_kAddAssetQty])
-    tx = iroha.ModelTransactionBuilder() \
-        .createdTime(commons.now()) \
-        .creatorAccountId(admin['id']) \
-        .addPeer('0.0.0.0:50541', admin['key'].publicKey()) \
-        .createRole('admin_role', commons.all_permissions()) \
-        .createRole('test_role', test_permissions) \
-        .createDomain('test', 'test_role') \
-        .createAccount('admin', 'test', admin['key'].publicKey()) \
-        .createAccount('alice', 'test', alice['key'].publicKey()) \
-        .appendRole(admin['id'], 'admin_role') \
-        .createAsset('coin', 'test', 2) \
-        .build()
-    return iroha.ModelProtoTransaction(tx) \
-        .signAndAddSignature(admin['key']).finish()
+    iroha = irohalib.Iroha(admin['id'])
+    peer = primitive_pb2.Peer()
+    peer.address = '0.0.0.0:50541'
+    peer.peer_key = commons.public_key_bytes(admin['key'])
+    test_permissions = [primitive_pb2.can_add_asset_qty]
+    tx = iroha.transaction([
+        iroha.command('AddPeer', peer=peer),
+        iroha.command('CreateRole', role_name='admin_role', permissions=commons.all_permissions()),
+        iroha.command('CreateRole', role_name='test_role', permissions=test_permissions),
+        iroha.command('CreateDomain', domain_id='test', default_role='test_role'),
+        iroha.command('CreateAccount', account_name='admin', domain_id='test',
+                      public_key=commons.public_key_bytes(admin['key'])),
+        iroha.command('CreateAccount', account_name='alice', domain_id='test',
+                      public_key=commons.public_key_bytes(alice['key'])),
+        iroha.command('AppendRole', account_id=admin['id'], role_name='admin_role'),
+        iroha.command('CreateAsset', asset_name='coin', domain_id='test', precision=2)
+    ])
+    irohalib.IrohaCrypto.sign_transaction(tx, admin['key'])
+    return tx
 
 
 @commons.hex
 def add_asset_tx():
-    tx = iroha.ModelTransactionBuilder() \
-        .createdTime(commons.now()) \
-        .creatorAccountId(alice['id']) \
-        .addAssetQuantity('coin#test', '5000.99') \
-        .build()
-    return iroha.ModelProtoTransaction(tx) \
-        .signAndAddSignature(alice['key']).finish()
+    iroha = irohalib.Iroha(alice['id'])
+    tx = iroha.transaction([
+        iroha.command('AddAssetQuantity', asset_id='coin#test', amount='5000.99')
+    ])
+    irohalib.IrohaCrypto.sign_transaction(tx, alice['key'])
+    return tx
