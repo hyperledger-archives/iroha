@@ -19,7 +19,6 @@
 #include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/transaction.hpp"
-#include "ordering/impl/on_demand_common.hpp"
 
 using namespace iroha::ordering;
 
