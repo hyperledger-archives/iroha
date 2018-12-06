@@ -10,7 +10,6 @@
 #include "backend/protobuf/proto_block_factory.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "builders/protobuf/transaction.hpp"
-#include "framework/specified_visitor.hpp"
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
@@ -307,7 +306,7 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
   for (auto rejected_tx = txs.begin() + 1; rejected_tx != txs.end();
        ++rejected_tx) {
     verified_proposal_and_errors->rejected_transactions.emplace(
-        rejected_tx->hash(), validation::CommandError{"SomeCommand", 1, true});
+        rejected_tx->hash(), validation::CommandError{"SomeCommand", 1, "", true});
   }
   shared_model::proto::Block block = makeBlock(proposal->height() - 1);
 
