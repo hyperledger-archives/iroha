@@ -8,6 +8,8 @@ import primitive_pb2
 import binascii
 from time import time
 
+command = irohalib.Iroha.command
+
 
 def now():
     return int(time() * 1000)
@@ -58,6 +60,30 @@ def all_permissions():
         primitive_pb2.can_grant_can_remove_my_signatory,
         primitive_pb2.can_grant_can_transfer_my_assets,
         primitive_pb2.can_grant_can_set_my_account_detail
+    ]
+
+
+def genesis_block(admin, alice, test_permissions):
+    """
+    Compose a set of common for all tests' genesis block transactions
+    :param admin: dict of id and private key of admin
+    :param alice: dict of id and private key of alice
+    :param test_permissions: permissions for users in test domain
+    :return: a list of irohalib.Iroha.command's
+    """
+    peer = primitive_pb2.Peer()
+    peer.address = '0.0.0.0:50541'
+    peer.peer_key = public_key_bytes(admin['key'])
+    return [
+        command('AddPeer', peer=peer),
+        command('CreateRole', role_name='admin_role', permissions=all_permissions()),
+        command('CreateRole', role_name='test_role', permissions=test_permissions),
+        command('CreateDomain', domain_id='test', default_role='test_role'),
+        command('CreateAccount', account_name='admin', domain_id='test',
+                public_key=public_key_bytes(admin['key'])),
+        command('CreateAccount', account_name='alice', domain_id='test',
+                public_key=public_key_bytes(alice['key'])),
+        command('AppendRole', account_id=admin['id'], role_name='admin_role')
     ]
 
 
