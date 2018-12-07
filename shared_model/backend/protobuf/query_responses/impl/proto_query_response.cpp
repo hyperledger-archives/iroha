@@ -16,7 +16,6 @@
 #include "backend/protobuf/query_responses/proto_transaction_page_response.hpp"
 #include "backend/protobuf/query_responses/proto_transaction_response.hpp"
 #include "common/byteutils.hpp"
-#include "utils/reference_holder.hpp"
 #include "utils/variant_deserializer.hpp"
 
 namespace {
