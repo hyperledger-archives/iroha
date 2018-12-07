@@ -157,6 +157,12 @@ CREATE TABLE IF NOT EXISTS position_by_hash (
     height text,
     index text
 );
+
+CREATE TABLE IF NOT EXISTS tx_status_by_hash (
+    hash varchar,
+    status boolean
+);
+
 CREATE TABLE IF NOT EXISTS height_by_account_set (
     account_id text,
     height text

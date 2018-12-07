@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "ametsuchi/impl/mutable_storage_impl.hpp"
+#include "mutable_storage_impl.hpp"
 
 #include <boost/variant/apply_visitor.hpp>
 #include "ametsuchi/impl/peer_query_wsv.hpp"

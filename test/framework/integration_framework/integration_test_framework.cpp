@@ -33,6 +33,7 @@
 #include "interfaces/iroha_internal/transaction_batch_factory_impl.hpp"
 #include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
 #include "interfaces/permissions.hpp"
+#include "module/irohad/ametsuchi/tx_presence_cache_stub.hpp"
 #include "module/shared_model/builders/protobuf/block.hpp"
 #include "module/shared_model/builders/protobuf/proposal.hpp"
 #include "module/shared_model/validators/always_valid_validators.hpp"
@@ -56,9 +57,11 @@ using AbstractTransactionValidator =
 using AlwaysValidInterfaceTransactionValidator =
     shared_model::validation::AlwaysValidModelValidator<
         shared_model::interface::Transaction>;
-using AlwaysValidProtoTransactionValudator =
+using AlwaysValidProtoTransactionValidator =
     shared_model::validation::AlwaysValidModelValidator<
         iroha::protocol::Transaction>;
+using AlwaysMissingTxPresenceCache = iroha::ametsuchi::TxPresenceCacheStub<
+    iroha::ametsuchi::tx_cache_status_responses::Missing>;
 
 namespace {
   std::string kLocalHost = "127.0.0.1";
@@ -97,12 +100,13 @@ namespace integration_framework {
             std::make_shared<AlwaysValidProtoCommonObjectsFactory>()),
         transaction_factory_(std::make_shared<ProtoTransactionFactory>(
             std::make_unique<AlwaysValidInterfaceTransactionValidator>(),
-            std::make_unique<AlwaysValidProtoTransactionValudator>())),
+            std::make_unique<AlwaysValidProtoTransactionValidator>())),
         batch_parser_(std::make_shared<
                       shared_model::interface::TransactionBatchParserImpl>()),
         transaction_batch_factory_(
             std::make_shared<
                 shared_model::interface::TransactionBatchFactoryImpl>()),
+        tx_presence_cache_(std::make_shared<AlwaysMissingTxPresenceCache>()),
         yac_transport_(
             std::make_shared<iroha::consensus::yac::NetworkImpl>(async_call_)),
         cleanup_on_exit_(cleanup_on_exit) {}
@@ -141,7 +145,8 @@ namespace integration_framework {
                                      common_objects_factory_,
                                      transaction_factory_,
                                      batch_parser_,
-                                     transaction_batch_factory_);
+                                     transaction_batch_factory_,
+                                     tx_presence_cache_);
       fake_peers_.emplace_back(fake_peer);
       promise_and_key.first.set_value(fake_peer);
     }
@@ -354,7 +359,7 @@ namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::sendTxWithoutValidation(
       const shared_model::proto::Transaction &tx) {
     log_->info("sending transaction");
-    log_->debug(tx.toString());
+    log_->debug("{}", tx);
 
     command_client_.Torii(tx.getTransport());
     return *this;
@@ -494,7 +499,7 @@ namespace integration_framework {
       std::function<void(const shared_model::proto::QueryResponse &)>
           validation) {
     log_->info("send query");
-    log_->debug(qry.toString());
+    log_->debug("{}", qry);
 
     iroha::protocol::QueryResponse response;
     query_client_.Find(qry.getTransport(), response);
