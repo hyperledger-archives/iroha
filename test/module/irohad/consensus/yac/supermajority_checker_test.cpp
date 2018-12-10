@@ -38,20 +38,22 @@ TEST_F(SupermajorityCheckerTest, SuperMajorityCheckWithSize2) {
 }
 
 /**
- * @given 4 participants
+ * @given 6 participants
  * @when check range of voted participants
  * @then correct result
  */
 TEST_F(SupermajorityCheckerTest, SuperMajorityCheckWithSize4) {
-  log_->info("-----------| F(x, 4), x in {0..5} |-----------");
+  log_->info("-----------| F(x, 6), x in {0..7} |-----------");
 
-  int N = 4;
+  int N = 6;
   ASSERT_FALSE(checkSize(0, N));
   ASSERT_FALSE(checkSize(1, N));
   ASSERT_FALSE(checkSize(2, N));
-  ASSERT_TRUE(checkSize(3, N));
-  ASSERT_TRUE(checkSize(4, N));
-  ASSERT_FALSE(checkSize(5, N));
+  ASSERT_FALSE(checkSize(3, N));
+  ASSERT_FALSE(checkSize(4, N));
+  ASSERT_TRUE(checkSize(5, N));
+  ASSERT_TRUE(checkSize(6, N));
+  ASSERT_FALSE(checkSize(7, N));
 }
 
 /**
@@ -59,26 +61,33 @@ TEST_F(SupermajorityCheckerTest, SuperMajorityCheckWithSize4) {
  * @when check range of frequent elements
  * @then correct result
  */
-TEST_F(SupermajorityCheckerTest, RejectProofSuccessfulCase) {
-  log_->info("-----------| RejectProof(x, 6, 7) in {1..3} |-----------");
+TEST_F(SupermajorityCheckerTest, ProofOfRejectWithSize7Voted6) {
+  log_->info("-----------| RejectProof(x, 6, 7) in {1..7} |-----------");
 
   ASSERT_TRUE(hasReject(1, 6, 7));
   ASSERT_TRUE(hasReject(2, 6, 7));
   ASSERT_TRUE(hasReject(3, 6, 7));
-}
-
-/**
- * @given 7 participants, 6 voted
- * @when check range of frequent elements
- * @then correct result
- */
-TEST_F(SupermajorityCheckerTest, RejectProofNegativeCase) {
-  log_->info("-----------| RejectProof(x, 6, 7) in {4..6}|-----------");
-
-  ASSERT_FALSE(hasReject(4, 6, 7));
+  ASSERT_TRUE(hasReject(4, 6, 7));
   ASSERT_FALSE(hasReject(5, 6, 7));
   ASSERT_FALSE(hasReject(6, 6, 7));
 }
+/**
+ * @given 12 participants, 8 voted
+ * @when check range of frequent elements
+ * @then correct result
+ */
+TEST_F(SupermajorityCheckerTest, ProofOfRejectWithSize12Voted8) {
+  log_->info("-----------| RejectProof(x, 8, 12) in {1..7} |-----------");
+
+  ASSERT_TRUE(hasReject(1, 8, 12));
+  ASSERT_TRUE(hasReject(2, 8, 12));
+  ASSERT_TRUE(hasReject(3, 8, 12));
+  ASSERT_TRUE(hasReject(4, 8, 12));
+  ASSERT_TRUE(hasReject(5, 8, 12));
+  ASSERT_FALSE(hasReject(6, 8, 12));
+  ASSERT_FALSE(hasReject(7, 8, 12));
+}
+
 
 /**
  * @given a pair of peers and a pair different signatures by the first peer
