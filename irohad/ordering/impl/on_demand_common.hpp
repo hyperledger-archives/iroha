@@ -20,6 +20,10 @@ namespace iroha {
 
     extern const consensus::RejectRoundType kNextCommitRoundConsumer;
 
+    consensus::Round nextCommitRound(const consensus::Round &round);
+
+    consensus::Round nextRejectRound(const consensus::Round &round);
+
   }  // namespace ordering
 }  // namespace iroha
 
