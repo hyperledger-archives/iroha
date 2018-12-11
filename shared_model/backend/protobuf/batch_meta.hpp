@@ -34,7 +34,7 @@ namespace shared_model {
                 boost::accumulate(proto_->reduced_hashes(),
                                   ReducedHashesType{},
                                   [](auto &&acc, const auto &hash) {
-                                    acc.emplace_back(hash);
+                                    acc.emplace_back(crypto::Hash::fromHexString(hash));
                                     return std::forward<decltype(acc)>(acc);
                                   })} {}
 
