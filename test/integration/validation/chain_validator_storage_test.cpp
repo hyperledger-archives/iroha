@@ -126,7 +126,8 @@ namespace iroha {
     auto block2 = completeBlock(baseBlock({add_peer}, 2, block1.hash())
                                     .signAndAddSignature(keys.at(0))
                                     .signAndAddSignature(keys.at(1))
-                                    .signAndAddSignature(keys.at(2)));
+                                    .signAndAddSignature(keys.at(2))
+                                    .signAndAddSignature(keys.at(3)));
 
     auto block3 = completeBlock(baseBlock({dummyTx(3)}, 3, block2.hash())
                                     .signAndAddSignature(keys.at(0))
@@ -152,7 +153,8 @@ namespace iroha {
     auto block2 = completeBlock(baseBlock({dummyTx(2)}, 2, block1.hash())
                                     .signAndAddSignature(keys.at(0))
                                     .signAndAddSignature(keys.at(1))
-                                    .signAndAddSignature(keys.at(2)));
+                                    .signAndAddSignature(keys.at(2))
+                                    .signAndAddSignature(keys.at(3)));
 
     auto block3 = completeBlock(baseBlock({dummyTx(3)}, 3, block2.hash())
                                     .signAndAddSignature(keys.at(0))

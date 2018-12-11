@@ -49,8 +49,8 @@ TEST_F(YacTest, UnknownVoteBeforeCommit) {
  */
 TEST_F(YacTest, UnknownVoteAfterCommit) {
   auto my_peers = decltype(default_peers)(
-      {default_peers.begin(), default_peers.begin() + 4});
-  ASSERT_EQ(4, my_peers.size());
+      {default_peers.begin(), default_peers.begin() + 6});
+  ASSERT_EQ(6, my_peers.size());
 
   auto my_order = ClusterOrdering::create(my_peers);
   ASSERT_TRUE(my_order);
@@ -67,7 +67,7 @@ TEST_F(YacTest, UnknownVoteAfterCommit) {
 
   std::vector<VoteMessage> votes;
 
-  for (auto i = 0; i < 3; ++i) {
+  for (auto i = 0; i < 5; ++i) {
     votes.push_back(create_vote(my_hash, std::to_string(i)));
   };
   yac->onState(votes);

@@ -23,8 +23,8 @@ using namespace framework::test_subscriber;
  */
 TEST_F(YacTest, InvalidCaseWhenNotReceiveSupermajority) {
   auto my_peers = decltype(default_peers)(
-      {default_peers.begin(), default_peers.begin() + 4});
-  ASSERT_EQ(4, my_peers.size());
+      {default_peers.begin(), default_peers.begin() + 6});
+  ASSERT_EQ(6, my_peers.size());
 
   auto my_order = ClusterOrdering::create(my_peers);
   ASSERT_TRUE(my_order);
@@ -41,10 +41,10 @@ TEST_F(YacTest, InvalidCaseWhenNotReceiveSupermajority) {
   YacHash hash2(iroha::consensus::Round{1, 1}, "proposal_hash", "block_hash2");
   yac->vote(hash1, my_order.value());
 
-  for (auto i = 0; i < 2; ++i) {
+  for (auto i = 0; i < 4; ++i) {
     yac->onState({create_vote(hash1, std::to_string(i))});
   };
-  for (auto i = 2; i < 4; ++i) {
+  for (auto i = 4; i < 6; ++i) {
     yac->onState({create_vote(hash2, std::to_string(i))});
   };
 }
