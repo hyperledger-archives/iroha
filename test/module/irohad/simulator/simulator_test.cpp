@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include <boost/range/adaptor/map.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/algorithm/find.hpp>
 #include "backend/protobuf/proto_block_factory.hpp"
 #include "backend/protobuf/transaction.hpp"
@@ -31,9 +31,9 @@ using namespace framework::test_subscriber;
 using ::testing::_;
 using ::testing::A;
 using ::testing::Invoke;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::ReturnArg;
-using ::testing::NiceMock;
 
 using wBlock = std::shared_ptr<shared_model::interface::Block>;
 
@@ -305,8 +305,10 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
               .build());
   for (auto rejected_tx = txs.begin() + 1; rejected_tx != txs.end();
        ++rejected_tx) {
-    verified_proposal_and_errors->rejected_transactions.emplace(
-        rejected_tx->hash(), validation::CommandError{"SomeCommand", 1, "", true});
+    verified_proposal_and_errors->rejected_transactions.emplace_back(
+        validation::TransactionError{
+            rejected_tx->hash(),
+            validation::CommandError{"SomeCommand", 1, "", true}});
   }
   shared_model::proto::Block block = makeBlock(proposal->height() - 1);
 
@@ -342,7 +344,9 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
     ASSERT_TRUE(verified_proposal_->rejected_transactions.size()
                 == kNumTransactions - 1);
     const auto verified_proposal_rejected_tx_hashes =
-        verified_proposal_->rejected_transactions | boost::adaptors::map_keys;
+        verified_proposal_->rejected_transactions
+        | boost::adaptors::transformed(
+              [](const auto &tx_error) { return tx_error.tx_hash; });
     for (auto rejected_tx = txs.begin() + 1; rejected_tx != txs.end();
          ++rejected_tx) {
       ASSERT_NE(boost::range::find(verified_proposal_rejected_tx_hashes,

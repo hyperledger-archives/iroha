@@ -21,8 +21,8 @@ namespace iroha {
     namespace {
       std::string composeErrorMessage(
           const validation::TransactionError &tx_hash_and_error) {
-        const auto tx_hash = tx_hash_and_error.first.hex();
-        const auto &cmd_error = tx_hash_and_error.second;
+        const auto tx_hash = tx_hash_and_error.tx_hash.hex();
+        const auto &cmd_error = tx_hash_and_error.error;
         if (not cmd_error.tx_passed_initial_validation) {
           return (boost::format(
                       "Stateful validation error: transaction %s "
@@ -63,8 +63,8 @@ namespace iroha {
             for (const auto &tx_error : errors) {
               log_->info(composeErrorMessage(tx_error));
               this->publishStatus(TxStatusType::kStatefulFailed,
-                                  tx_error.first,
-                                  tx_error.second);
+                                  tx_error.tx_hash,
+                                  tx_error.error);
             }
             // notify about success txs
             for (const auto &successful_tx :

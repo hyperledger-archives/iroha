@@ -5,7 +5,6 @@
 
 #include "simulator/impl/simulator.hpp"
 
-#include <boost/range/adaptor/map.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
 #include "common/bind.hpp"
@@ -122,7 +121,8 @@ namespace iroha {
       const auto &proposal = verified_proposal_and_errors->verified_proposal;
       const auto &rejected_tx_hashes =
           verified_proposal_and_errors->rejected_transactions
-          | boost::adaptors::map_keys;
+          | boost::adaptors::transformed(
+                [](const auto &tx_error) { return tx_error.tx_hash; });
       std::shared_ptr<shared_model::interface::Block> block =
           block_factory_->unsafeCreateBlock(height,
                                             last_block->hash(),
