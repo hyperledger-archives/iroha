@@ -56,7 +56,9 @@ class SimulatorTest : public ::testing::Test {
             std::shared_ptr<iroha::ametsuchi::BlockQuery>(query))));
     block_factory = std::make_unique<shared_model::proto::ProtoBlockFactory>(
         std::make_unique<shared_model::validation::MockValidator<
-            shared_model::interface::Block>>());
+            shared_model::interface::Block>>(),
+        std::make_unique<
+            shared_model::validation::MockValidator<iroha::protocol::Block>>());
   }
 
   void TearDown() override {
