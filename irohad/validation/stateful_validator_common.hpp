@@ -57,7 +57,7 @@ namespace iroha {
     // TODO mboldyrev 27.10.2018: create a special class for VerifiedProposal
     //      IR-1849               which will include the rejected tx hashes
     struct VerifiedProposalAndErrors {
-      std::unique_ptr<shared_model::interface::Proposal> verified_proposal;
+      std::shared_ptr<shared_model::interface::Proposal> verified_proposal;
       TransactionsErrors rejected_transactions;
     };
 

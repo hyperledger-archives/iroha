@@ -54,9 +54,14 @@ namespace iroha {
           status_factory_(std::move(status_factory)),
           log_(logger::log("TxProcessor")) {
       // process stateful validation results
-      pcs_->on_verified_proposal().subscribe(
-          [this](std::shared_ptr<validation::VerifiedProposalAndErrors>
-                     proposal_and_errors) {
+      pcs_->onVerifiedProposal().subscribe(
+          [this](const simulator::VerifiedProposalCreatorEvent &event) {
+            if (not event.verified_proposal_result) {
+              return;
+            }
+
+            const auto &proposal_and_errors = getVerifiedProposalUnsafe(event);
+
             // notify about failed txs
             const auto &errors = proposal_and_errors->rejected_transactions;
             std::lock_guard<std::mutex> lock(notifier_mutex_);
