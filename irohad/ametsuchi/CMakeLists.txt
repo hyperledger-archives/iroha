@@ -12,16 +12,16 @@ add_library(ametsuchi
     impl/postgres_ordering_service_persistent_state.cpp
     impl/wsv_restorer_impl.cpp
     impl/postgres_options.cpp
+    impl/postgres_query_executor.cpp
+    impl/tx_presence_cache_impl.cpp
     )
 
 target_link_libraries(ametsuchi
     logger
     rxcpp
-    libs_common
-    command_execution
-    query_execution
+    libs_files
+    common
     shared_model_interfaces
-    shared_model_proto_backend
     shared_model_stateless_validation
     SOCI::core
     SOCI::postgresql

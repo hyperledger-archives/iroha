@@ -18,6 +18,7 @@
 #ifndef IROHA_SHARED_MODEL_PROPOSAL_HPP
 #define IROHA_SHARED_MODEL_PROPOSAL_HPP
 
+#include "cryptography/default_hash_provider.hpp"
 #include "interfaces/base/model_primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/transaction.hpp"
@@ -47,14 +48,17 @@ namespace shared_model {
             and createdTime() == rhs.createdTime();
       }
 
+      virtual const types::BlobType &blob() const = 0;
+
+      virtual const types::HashType &hash() const = 0;
+
       std::string toString() const override {
         return detail::PrettyStringBuilder()
             .init("Proposal")
             .append("height", std::to_string(height()))
             .append("transactions")
-            .appendAll(
-                transactions(),
-                [](auto &transaction) { return transaction.toString(); })
+            .appendAll(transactions(),
+                       [](auto &transaction) { return transaction.toString(); })
             .finalize();
       }
     };

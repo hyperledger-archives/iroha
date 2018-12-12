@@ -19,6 +19,7 @@
 #define IROHA_MST_PROCESSOR_IMPL_HPP
 
 #include <memory>
+#include "cryptography/public_key.hpp"
 #include "logger/logger.hpp"
 #include "multi_sig_transactions/mst_processor.hpp"
 #include "multi_sig_transactions/mst_propagation_strategy.hpp"
@@ -50,20 +51,19 @@ namespace iroha {
 
     // ------------------------| MstProcessor override |------------------------
 
-    auto propagateTransactionImpl(const DataType transaction)
-        -> decltype(propagateTransaction(transaction)) override;
+    auto propagateBatchImpl(const DataType &batch)
+        -> decltype(propagateBatch(batch)) override;
 
     auto onStateUpdateImpl() const -> decltype(onStateUpdate()) override;
 
-    auto onPreparedTransactionsImpl() const
-        -> decltype(onPreparedTransactions()) override;
+    auto onPreparedBatchesImpl() const
+        -> decltype(onPreparedBatches()) override;
 
-    auto onExpiredTransactionsImpl() const
-        -> decltype(onExpiredTransactions()) override;
+    auto onExpiredBatchesImpl() const -> decltype(onExpiredBatches()) override;
 
     // ------------------| MstTransportNotification override |------------------
 
-    void onNewState(const std::shared_ptr<shared_model::interface::Peer> &from,
+    void onNewState(const shared_model::crypto::PublicKey &from,
                     ConstRefState new_state) override;
 
     // ----------------------------| end override |-----------------------------
@@ -77,6 +77,26 @@ namespace iroha {
      */
     void onPropagate(const PropagationStrategy::PropagationData &data);
 
+    /**
+     * Notify subscribers when some of the batches received all necessary
+     * signatures and ready to move forward
+     * @param state with those batches
+     */
+    void completedBatchesNotify(ConstRefState state) const;
+
+    /**
+     * Notify subscribers when some of the batches received new signatures, but
+     * still are not completed
+     * @param state with those batches
+     */
+    void updatedBatchesNotify(ConstRefState state) const;
+
+    /**
+     * Notify subscribers when some of the bathes get expired
+     * @param state with those batches
+     */
+    void expiredBatchesNotify(ConstRefState state) const;
+
     // -------------------------------| fields |--------------------------------
     std::shared_ptr<iroha::network::MstTransport> transport_;
     std::shared_ptr<MstStorage> storage_;
@@ -88,13 +108,14 @@ namespace iroha {
     /// use for share new states from other peers
     rxcpp::subjects::subject<std::shared_ptr<MstState>> state_subject_;
 
-    /// use for share completed transactions
-    rxcpp::subjects::subject<DataType> transactions_subject_;
+    /// use for share completed batches
+    rxcpp::subjects::subject<DataType> batches_subject_;
 
-    /// use for share expired transactions
+    /// use for share expired batches
     rxcpp::subjects::subject<DataType> expired_subject_;
 
     /// use for tracking the propagation subscription
+
     rxcpp::composite_subscription propagation_subscriber_;
   };
 }  // namespace iroha

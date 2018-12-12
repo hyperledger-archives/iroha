@@ -31,7 +31,6 @@
 
 namespace shared_model {
   namespace interface {
-    class Transaction;
     class Proposal;
   }  // namespace interface
 }  // namespace shared_model
@@ -68,16 +67,11 @@ namespace iroha {
           shared_model::interface::types::HeightType initial_height,
           bool run_async = true);
 
-      void propagateTransaction(
-          std::shared_ptr<const shared_model::interface::Transaction>
-              transaction) const override;
-
       void propagateBatch(
-          const shared_model::interface::TransactionBatch &batch)
-          const override;
+          std::shared_ptr<shared_model::interface::TransactionBatch> batch)
+          override;
 
-      rxcpp::observable<std::shared_ptr<shared_model::interface::Proposal>>
-      on_proposal() override;
+      rxcpp::observable<network::OrderingEvent> onProposal() override;
 
       void setPcs(const iroha::network::PeerCommunicationService &pcs) override;
 
@@ -97,10 +91,12 @@ namespace iroha {
       void tryNextRound(
           shared_model::interface::types::HeightType last_block_height);
 
-      rxcpp::subjects::subject<
-          std::shared_ptr<shared_model::interface::Proposal>>
-          proposals_;
+      rxcpp::subjects::subject<network::OrderingEvent> proposals_;
 
+      /**
+       * Notification subject which is used only for notification purposes
+       * without semantic for emitted values
+       */
       rxcpp::subjects::subject<shared_model::interface::types::HeightType>
           net_proposals_;
       std::shared_ptr<iroha::network::OrderingGateTransport> transport_;

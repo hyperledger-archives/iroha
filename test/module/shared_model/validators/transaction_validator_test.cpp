@@ -39,7 +39,7 @@ class TransactionValidatorTest : public ValidatorsTest {
         .getTransport();
     return tx;
   }
-  shared_model::validation::DefaultTransactionValidator transaction_validator;
+  shared_model::validation::DefaultUnsignedTransactionValidator transaction_validator;
 };
 
 /**
@@ -51,27 +51,6 @@ TEST_F(TransactionValidatorTest, EmptyTransactionTest) {
   auto tx = generateEmptyTransaction();
   tx.mutable_payload()->mutable_reduced_payload()->set_created_time(
       created_time);
-  auto result = proto::Transaction(iroha::protocol::Transaction(tx));
-  auto answer = transaction_validator.validate(result);
-  ASSERT_EQ(answer.getReasonsMap().size(), 1);
-}
-
-/**
- * @given transaction without any commands
- * @when commands validator is invoked
- * @then answer has error about empty transaction
- */
-TEST_F(TransactionValidatorTest, InvalidCreateRolePermission) {
-  auto tx = generateEmptyTransaction();
-  tx.mutable_payload()->mutable_reduced_payload()->set_created_time(
-      created_time);
-  iroha::protocol::Command cmd;
-  cmd.mutable_create_role()->set_role_name("role");
-  cmd.mutable_create_role()->add_permissions(
-      static_cast<iroha::protocol::RolePermission>(-1));
-  *tx.mutable_payload()->mutable_reduced_payload()->add_commands() =
-      std::move(cmd);
-  shared_model::validation::DefaultTransactionValidator transaction_validator;
   auto result = proto::Transaction(iroha::protocol::Transaction(tx));
   auto answer = transaction_validator.validate(result);
   ASSERT_EQ(answer.getReasonsMap().size(), 1);
@@ -181,7 +160,7 @@ TEST_F(TransactionValidatorTest, BatchValidTest) {
       .createDomain("test", "test")
       .build()
       .getTransport();
-  shared_model::validation::DefaultTransactionValidator transaction_validator;
+  shared_model::validation::DefaultUnsignedTransactionValidator transaction_validator;
   auto result = proto::Transaction(iroha::protocol::Transaction(tx));
   auto answer = transaction_validator.validate(result);
 

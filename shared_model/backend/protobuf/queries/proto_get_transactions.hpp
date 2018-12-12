@@ -18,8 +18,10 @@
 #ifndef IROHA_PROTO_GET_TRANSACTIONS_HPP
 #define IROHA_PROTO_GET_TRANSACTIONS_HPP
 
-#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "interfaces/queries/get_transactions.hpp"
+
+#include "backend/protobuf/common_objects/trivial_proto.hpp"
+#include "cryptography/hash.hpp"
 #include "queries.pb.h"
 
 namespace shared_model {
@@ -43,10 +45,7 @@ namespace shared_model {
 
       const iroha::protocol::GetTransactions &get_transactions_;
 
-      template <typename T>
-      using Lazy = detail::LazyInitializer<T>;
-
-      const Lazy<TransactionHashesType> transaction_hashes_;
+      const TransactionHashesType transaction_hashes_;
     };
 
   }  // namespace proto

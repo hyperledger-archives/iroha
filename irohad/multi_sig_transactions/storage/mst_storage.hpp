@@ -19,7 +19,7 @@
 #define IROHA_MST_STORAGE_HPP
 
 #include <mutex>
-#include "interfaces/common_objects/peer.hpp"
+#include "cryptography/public_key.hpp"
 #include "logger/logger.hpp"
 #include "multi_sig_transactions/mst_types.hpp"
 #include "multi_sig_transactions/state/mst_state.hpp"
@@ -37,22 +37,22 @@ namespace iroha {
 
     /**
      * Apply new state for peer
-     * @param target_peer - key for for updating state
+     * @param target_peer_key - key for for updating state
      * @param new_state - state with new data
-     * @return State with completed transaction
+     * @return State with completed or updated batches
      * General note: implementation of method covered by lock
      */
-    MstState apply(
-        const std::shared_ptr<shared_model::interface::Peer> &target_peer,
+    StateUpdateResult apply(
+        const shared_model::crypto::PublicKey &target_peer_key,
         const MstState &new_state);
 
     /**
      * Provide updating state of current peer with new transaction
      * @param tx - new transaction for insertion in state
-     * @return State with completed transaction
+     * @return completed and updated mst states
      * General note: implementation of method covered by lock
      */
-    MstState updateOwnState(const DataType &tx);
+    StateUpdateResult updateOwnState(const DataType &tx);
 
     /**
      * Remove expired transactions and return them
@@ -68,7 +68,7 @@ namespace iroha {
      * General note: implementation of method covered by lock
      */
     MstState getDiffState(
-        const std::shared_ptr<shared_model::interface::Peer> &target_peer,
+        const shared_model::crypto::PublicKey &target_peer_key,
         const TimeType &current_time);
 
     /**
@@ -91,9 +91,9 @@ namespace iroha {
 
    private:
     virtual auto applyImpl(
-        const std::shared_ptr<shared_model::interface::Peer> target_peer,
+        const shared_model::crypto::PublicKey &target_peer_key,
         const MstState &new_state)
-        -> decltype(apply(target_peer, new_state)) = 0;
+        -> decltype(apply(target_peer_key, new_state)) = 0;
 
     virtual auto updateOwnStateImpl(const DataType &tx)
         -> decltype(updateOwnState(tx)) = 0;
@@ -102,9 +102,9 @@ namespace iroha {
         -> decltype(getExpiredTransactions(current_time)) = 0;
 
     virtual auto getDiffStateImpl(
-        const std::shared_ptr<shared_model::interface::Peer> target_peer,
+        const shared_model::crypto::PublicKey &target_peer_key,
         const TimeType &current_time)
-        -> decltype(getDiffState(target_peer, current_time)) = 0;
+        -> decltype(getDiffState(target_peer_key, current_time)) = 0;
 
     virtual auto whatsNewImpl(ConstRefState new_state) const
         -> decltype(whatsNew(new_state)) = 0;

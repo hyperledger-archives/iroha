@@ -18,12 +18,13 @@
 #ifndef IROHA_GOSSIP_PROPAGATION_STRATEGY_HPP
 #define IROHA_GOSSIP_PROPAGATION_STRATEGY_HPP
 
-#include "multi_sig_transactions/mst_propagation_strategy.hpp"
-
 #include <boost/optional.hpp>
 #include <chrono>
 #include <mutex>
-#include "ametsuchi/peer_query.hpp"
+
+#include "ametsuchi/peer_query_factory.hpp"
+#include "multi_sig_transactions/gossip_propagation_strategy_params.hpp"
+#include "multi_sig_transactions/mst_propagation_strategy.hpp"
 
 namespace iroha {
 
@@ -35,17 +36,17 @@ namespace iroha {
    */
   class GossipPropagationStrategy : public PropagationStrategy {
    public:
-    using PeerProvider = std::shared_ptr<ametsuchi::PeerQuery>;
+    using PeerProviderFactory = std::shared_ptr<ametsuchi::PeerQueryFactory>;
     using OptPeer = boost::optional<PropagationData::value_type>;
     /**
      * Initialize strategy with
-     * @param query is a provider of peer list
-     * @param period of emitting data in ms
-     * @param amount of peers emitted per once
+     * @param peer_factory is a provider of peer list
+     * @param emit_worker is the coordinator for the data emitting
+     * @param params configuration parameters
      */
-    GossipPropagationStrategy(PeerProvider query,
-                              std::chrono::milliseconds period,
-                              uint32_t amount);
+    GossipPropagationStrategy(PeerProviderFactory peer_factory,
+                              rxcpp::observe_on_one_worker emit_worker,
+                              const GossipPropagationStrategyParams &params);
 
     ~GossipPropagationStrategy();
 
@@ -58,7 +59,7 @@ namespace iroha {
     /**
      * Source of peers for propagation
      */
-    PeerProvider query;
+    PeerProviderFactory peer_factory;
 
     /**
      * Cache of peer provider's data
@@ -69,6 +70,11 @@ namespace iroha {
      * Queue that contains non-emitted indexes of peers
      */
     std::vector<size_t> non_visited;
+
+    /**
+     * Worker that performs internal loop handling
+     */
+    rxcpp::observe_on_one_worker emit_worker;
 
     /*
      * Observable for the emitting propagated data

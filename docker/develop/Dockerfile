@@ -9,18 +9,22 @@ ENV IROHA_HOME /opt/iroha
 ENV IROHA_BUILD /opt/iroha/build
 
 RUN apt-get update && \
-    apt-get -y --no-install-recommends install apt-utils software-properties-common; \
+    apt-get -y --no-install-recommends install apt-utils software-properties-common wget; \
     apt-get -y clean
 
-
-# add git repository
-RUN add-apt-repository -y ppa:git-core/ppa && \
+# add repos
+RUN set -e; \
+    add-apt-repository -y ppa:git-core/ppa; \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test; \
+    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -; \
+    echo 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main' >> /etc/apt/sources.list; \
     apt-get update
 
-
 RUN set -e; \
-    apt-get -y --no-install-recommends install build-essential python-software-properties \
+    apt-get -y --no-install-recommends install python-software-properties \
         automake libtool \
+        # compilers (gcc-5, gcc-7, clang-6)
+        build-essential clang-6.0 lldb-6.0 lld-6.0 g++-7 \
         # dev dependencies
         libssl-dev zlib1g-dev libcurl4-openssl-dev libc6-dbg golang \
         # CI dependencies
@@ -30,14 +34,14 @@ RUN set -e; \
         # SWIG dependencies
         libpcre3-dev autoconf bison  \
         # other
-        wget curl file gdb gdbserver ccache \
-        gcovr cppcheck doxygen rsync graphviz graphviz-dev unzip zip; \
+        curl file gdb gdbserver ccache \
+        gcovr cppcheck doxygen rsync graphviz graphviz-dev unzip vim zip; \
     apt-get -y clean
 
-# install cmake 3.10.2
+# install cmake 3.11.4
 RUN set -e; \
     git clone https://gitlab.kitware.com/cmake/cmake.git /tmp/cmake; \
-    (cd /tmp/cmake ; git checkout c1e087a9d3af74299d7681c9f9de59e5977a1539); \
+    (cd /tmp/cmake ; git checkout 316bd45439ad8ced6b31bcb10303a788038387ef); \
     (cd /tmp/cmake ; /tmp/cmake/bootstrap --system-curl --parallel=${PARALLELISM} --enable-ccache); \
     make -j${PARALLELISM} -C /tmp/cmake; \
     make -C /tmp/cmake install; \
@@ -137,7 +141,8 @@ RUN set -e; \
 # install rxcpp
 RUN set -e; \
     git clone https://github.com/Reactive-Extensions/RxCpp /tmp/RxCpp; \
-    (cd /tmp/RxCpp ; git checkout 1b2e0589f19cb34d8cd58803677701dcf2161876); \
+    # this version is chosen, because it fixes 100% node overload [IR-1736] bug
+    (cd /tmp/RxCpp ; git checkout a7d5856385f126e874db6010d9dbfd37290c61de); \
     cmake \
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
         -H/tmp/RxCpp \
@@ -212,7 +217,7 @@ RUN set -e; \
 ENV SONAR_CLI_VERSION=3.0.3.778
 RUN set -e; \
     mkdir -p /opt/sonar; \
-    curl -L -o /tmp/sonar.zip https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_CLI_VERSION}-linux.zip; \
+    curl -L -o /tmp/sonar.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_CLI_VERSION}-linux.zip; \
     unzip -o -d /tmp/sonar-scanner /tmp/sonar.zip; \
     mv /tmp/sonar-scanner/sonar-scanner-${SONAR_CLI_VERSION}-linux /opt/sonar/scanner; \
     ln -s -f /opt/sonar/scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner; \

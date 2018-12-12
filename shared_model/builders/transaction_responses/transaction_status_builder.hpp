@@ -49,6 +49,18 @@ namespace shared_model {
         return copy;
       }
 
+      TransactionStatusBuilder mstPending() {
+        TransactionStatusBuilder copy(*this);
+        copy.builder_ = this->builder_.mstPending();
+        return copy;
+      }
+
+      TransactionStatusBuilder enoughSignaturesCollected() {
+        TransactionStatusBuilder copy(*this);
+        copy.builder_ = this->builder_.enoughSignaturesCollected();
+        return copy;
+      }
+
       TransactionStatusBuilder statefulValidationSuccess() {
         TransactionStatusBuilder copy(*this);
         copy.builder_ = this->builder_.statefulValidationSuccess();
@@ -85,9 +97,22 @@ namespace shared_model {
         return copy;
       }
 
-      TransactionStatusBuilder errorMsg(const std::string &msg) {
+      TransactionStatusBuilder statelessErrorOrCmdName(
+          const std::string &name) {
         TransactionStatusBuilder copy(*this);
-        copy.builder_ = this->builder_.errorMsg(msg);
+        copy.builder_ = this->builder_.statelessErrorOrCmdName(name);
+        return copy;
+      }
+
+      TransactionStatusBuilder failedCmdIndex(size_t index) {
+        TransactionStatusBuilder copy(*this);
+        copy.builder_ = this->builder_.failedCmdIndex(index);
+        return copy;
+      }
+
+      TransactionStatusBuilder errorCode(uint32_t code) {
+        TransactionStatusBuilder copy(*this);
+        copy.builder_ = this->builder_.errorCode(code);
         return copy;
       }
 

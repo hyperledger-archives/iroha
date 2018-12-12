@@ -1,28 +1,20 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "validators/field_validator.hpp"
 
+#include <limits>
+
 #include <boost/algorithm/string_regex.hpp>
 #include <boost/format.hpp>
-#include <limits>
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "cryptography/crypto_provider/crypto_verifier.hpp"
+#include "interfaces/common_objects/amount.hpp"
+#include "interfaces/common_objects/peer.hpp"
 #include "interfaces/queries/query_payload_meta.hpp"
+#include "interfaces/queries/tx_pagination_meta.hpp"
 #include "validators/field_validator.hpp"
 
 // TODO: 15.02.18 nickaleks Change structure to compositional IR-978
@@ -119,12 +111,9 @@ namespace shared_model {
     void FieldValidator::validatePubkey(
         ReasonsGroupType &reason,
         const interface::types::PubkeyType &pubkey) const {
-      if (pubkey.blob().size() != public_key_size) {
-        auto message = (boost::format("Public key has wrong size, passed size: "
-                                      "%d. Expected size: %d")
-                        % pubkey.blob().size() % public_key_size)
-                           .str();
-        reason.second.push_back(std::move(message));
+      auto opt_reason = shared_model::validation::validatePubkey(pubkey);
+      if (opt_reason) {
+        reason.second.push_back(std::move(*opt_reason));
       }
     }
 
@@ -240,7 +229,7 @@ namespace shared_model {
         ReasonsGroupType &reason,
         const interface::permissions::Role &permission) const {
       if (not isValid(permission)) {
-        reason.second.push_back("Provided role permission does not exist");
+        reason.second.emplace_back("Provided role permission does not exist");
       }
     }
 
@@ -248,7 +237,7 @@ namespace shared_model {
         ReasonsGroupType &reason,
         const interface::permissions::Grantable &permission) const {
       if (not isValid(permission)) {
-        reason.second.push_back("Provided grantable permission does not exist");
+        reason.second.emplace_back("Provided grantable permission does not exist");
       }
     }
 
@@ -256,7 +245,7 @@ namespace shared_model {
         ReasonsGroupType &reason,
         const interface::types::QuorumType &quorum) const {
       if (quorum == 0 or quorum > 128) {
-        reason.second.push_back("Quorum should be within range (0, 128]");
+        reason.second.emplace_back("Quorum should be within range (0, 128]");
       }
     }
 
@@ -275,9 +264,8 @@ namespace shared_model {
 
     void FieldValidator::validateCreatedTime(
         ReasonsGroupType &reason,
-        const interface::types::TimestampType &timestamp) const {
-      iroha::ts64_t now = time_provider_();
-
+        interface::types::TimestampType timestamp,
+        interface::types::TimestampType now) const {
       if (now + future_gap_ < timestamp) {
         auto message = (boost::format("bad timestamp: sent from future, "
                                       "timestamp: %llu, now: %llu")
@@ -293,6 +281,12 @@ namespace shared_model {
                 .str();
         reason.second.push_back(std::move(message));
       }
+    }
+
+    void FieldValidator::validateCreatedTime(
+        ReasonsGroupType &reason,
+        interface::types::TimestampType timestamp) const {
+      validateCreatedTime(reason, timestamp, time_provider_());
     }
 
     void FieldValidator::validateCounter(
@@ -311,7 +305,7 @@ namespace shared_model {
         const interface::types::SignatureRangeType &signatures,
         const crypto::Blob &source) const {
       if (boost::empty(signatures)) {
-        reason.second.push_back("Signatures cannot be empty");
+        reason.second.emplace_back("Signatures cannot be empty");
       }
       for (const auto &signature : signatures) {
         const auto &sign = signature.signedData();
@@ -377,5 +371,34 @@ namespace shared_model {
             (boost::format("Hash has invalid size: %d") % hash.size()).str());
       }
     }
+
+    boost::optional<ConcreteReasonType> validatePubkey(
+        const interface::types::PubkeyType &pubkey) {
+      if (pubkey.blob().size() != FieldValidator::public_key_size) {
+        return (boost::format("Public key has wrong size, passed size: "
+                              "%d. Expected size: %d")
+                % pubkey.blob().size() % FieldValidator::public_key_size)
+            .str();
+      }
+      return boost::none;
+    }
+
+    void FieldValidator::validateTxPaginationMeta(
+        ReasonsGroupType &reason,
+        const interface::TxPaginationMeta &tx_pagination_meta) const {
+      const auto page_size = tx_pagination_meta.pageSize();
+      if (page_size <= 0) {
+        reason.second.push_back(
+            (boost::format(
+                 "Page size is %s (%d), while it must be a non-zero positive.")
+             % (page_size == 0 ? "zero" : "negative") % page_size)
+                .str());
+      }
+      const auto first_hash = tx_pagination_meta.firstTxHash();
+      if (first_hash) {
+        validateHash(reason, *first_hash);
+      }
+    }
+
   }  // namespace validation
 }  // namespace shared_model

@@ -1,31 +1,24 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "torii/query_service.hpp"
+
 #include "backend/protobuf/query_responses/proto_block_query_response.hpp"
 #include "backend/protobuf/query_responses/proto_query_response.hpp"
 #include "cryptography/default_hash_provider.hpp"
+#include "interfaces/iroha_internal/abstract_transport_factory.hpp"
 #include "validators/default_validator.hpp"
 
 namespace torii {
 
   QueryService::QueryService(
-      std::shared_ptr<iroha::torii::QueryProcessor> query_processor)
-      : query_processor_(query_processor), log_(logger::log("Query Service")) {}
+      std::shared_ptr<iroha::torii::QueryProcessor> query_processor,
+      std::shared_ptr<QueryFactoryType> query_factory)
+      : query_processor_{std::move(query_processor)},
+        query_factory_{std::move(query_factory)},
+        log_{logger::log("Query Service")} {}
 
   void QueryService::Find(iroha::protocol::Query const &request,
                           iroha::protocol::QueryResponse &response) {
@@ -40,30 +33,24 @@ namespace torii {
       return;
     }
 
-    shared_model::proto::TransportBuilder<
-        shared_model::proto::Query,
-        shared_model::validation::DefaultSignableQueryValidator>()
-        .build(request)
-        .match(
-            [this, &hash, &response](
-                const iroha::expected::Value<shared_model::proto::Query>
-                    &query) {
-              // Send query to iroha
-              auto result_response =
-                  static_cast<shared_model::proto::QueryResponse &>(
-                      *query_processor_->queryHandle(query.value))
-                      .getTransport();
-              response.CopyFrom(result_response);
-              cache_.addItem(hash, response);
-            },
-            [&hash,
-             &response](const iroha::expected::Error<std::string> &error) {
-              response.set_query_hash(hash.hex());
-              response.mutable_error_response()->set_reason(
-                  iroha::protocol::ErrorResponse::STATELESS_INVALID);
-              response.mutable_error_response()->set_message(
-                  std::move(error.error));
-            });
+    query_factory_->build(request).match(
+        [this, &hash, &response](
+            const iroha::expected::Value<
+                std::unique_ptr<shared_model::interface::Query>> &query) {
+          // Send query to iroha
+          response = static_cast<shared_model::proto::QueryResponse &>(
+                         *query_processor_->queryHandle(*query.value))
+                         .getTransport();
+          cache_.addItem(hash, response);
+        },
+        [&hash, &response](
+            const iroha::expected::Error<QueryFactoryType::Error> &error) {
+          response.set_query_hash(hash.hex());
+          response.mutable_error_response()->set_reason(
+              iroha::protocol::ErrorResponse::STATELESS_INVALID);
+          response.mutable_error_response()->set_message(
+              std::move(error.error.error));
+        });
   }
 
   grpc::Status QueryService::Find(grpc::ServerContext *context,
@@ -80,7 +67,7 @@ namespace torii {
     log_->debug("Fetching commits");
     shared_model::proto::TransportBuilder<
         shared_model::proto::BlocksQuery,
-        shared_model::validation::DefaultSignableBlocksQueryValidator>()
+        shared_model::validation::DefaultSignedBlocksQueryValidator>()
         .build(*request)
         .match(
             [this, context, request, writer](
@@ -135,7 +122,7 @@ namespace torii {
             [this, writer](const auto &error) {
               log_->debug("Stateless invalid: {}", error.error);
               iroha::protocol::BlockQueryResponse response;
-              response.mutable_error_response()->set_message(
+              response.mutable_block_error_response()->set_message(
                   std::move(error.error));
               writer->WriteLast(response, grpc::WriteOptions());
             });

@@ -27,7 +27,7 @@ namespace shared_model {
     class SetQuorum;
     class SubtractAssetQuantity;
     class TransferAsset;
-  } // namespace interface
+  }  // namespace interface
 }  // namespace shared_model
 
 namespace iroha {
@@ -38,8 +38,11 @@ namespace iroha {
      * Contains command name, as well as an error message
      */
     struct CommandError {
+      using ErrorCodeType = uint32_t;
+
       std::string command_name;
-      std::string error_message;
+      ErrorCodeType error_code;
+      std::string error_extra;
 
       std::string toString() const;
     };
@@ -59,6 +62,8 @@ namespace iroha {
       virtual void setCreatorAccountId(
           const shared_model::interface::types::AccountIdType
               &creator_account_id) = 0;
+
+      virtual void doValidation(bool do_validation) = 0;
 
       virtual CommandResult operator()(
           const shared_model::interface::AddAssetQuantity &command) = 0;

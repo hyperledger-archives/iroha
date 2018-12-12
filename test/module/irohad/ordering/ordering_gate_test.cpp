@@ -1,27 +1,16 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
+
 #include <grpc++/grpc++.h>
 #include <gtest/gtest.h>
 
 #include "framework/test_subscriber.hpp"
 
-#include "builders/protobuf/proposal.hpp"
 #include "builders/protobuf/transaction.hpp"
 #include "module/irohad/network/network_mocks.hpp"
+#include "module/shared_model/builders/protobuf/proposal.hpp"
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
@@ -33,6 +22,7 @@ using namespace iroha::ordering;
 using namespace iroha::network;
 using namespace framework::test_subscriber;
 using namespace std::chrono_literals;
+using namespace iroha::synchronizer;
 
 using ::testing::_;
 using ::testing::InvokeWithoutArgs;
@@ -41,21 +31,13 @@ using ::testing::Return;
 using shared_model::interface::types::HeightType;
 
 class MockOrderingGateTransportGrpcService
-    : public proto::OrderingServiceTransportGrpc::Service {
- public:
-  MOCK_METHOD3(onTransaction,
-               ::grpc::Status(::grpc::ServerContext *,
-                              const iroha::protocol::Transaction *,
-                              ::google::protobuf::Empty *));
-};
+    : public proto::OrderingServiceTransportGrpc::Service {};
 
 class MockOrderingGateTransport : public OrderingGateTransport {
   MOCK_METHOD1(subscribe, void(std::shared_ptr<OrderingGateNotification>));
   MOCK_METHOD1(
-      propagateTransaction,
-      void(std::shared_ptr<const shared_model::interface::Transaction>));
-  MOCK_METHOD1(propagateBatch,
-               void(const shared_model::interface::TransactionBatch &));
+      propagateBatch,
+      void(std::shared_ptr<shared_model::interface::TransactionBatch>));
 };
 
 class OrderingGateTest : public ::testing::Test {
@@ -75,7 +57,10 @@ class OrderingGateTest : public ::testing::Test {
     server = builder.BuildAndStart();
     auto address = "0.0.0.0:" + std::to_string(port);
     // Initialize components after port has been bind
-    transport = std::make_shared<OrderingGateTransportGrpc>(address);
+    async_call_ =
+        std::make_shared<network::AsyncGrpcClient<google::protobuf::Empty>>();
+    transport =
+        std::make_shared<OrderingGateTransportGrpc>(address, async_call_);
     gate_impl = std::make_shared<OrderingGateImpl>(transport, 1, false);
     transport->subscribe(gate_impl);
 
@@ -94,32 +79,9 @@ class OrderingGateTest : public ::testing::Test {
   std::shared_ptr<MockOrderingGateTransportGrpcService> fake_service;
   std::condition_variable cv;
   std::mutex m;
+  std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
+      async_call_;
 };
-
-/**
- * @given Initialized OrderingGate
- * @when  Send 5 transactions to Ordering Gate
- * @then  Check that transactions are received
- */
-TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {
-  size_t call_count = 0;
-  EXPECT_CALL(*fake_service, onTransaction(_, _, _))
-      .Times(5)
-      .WillRepeatedly(InvokeWithoutArgs([&] {
-        ++call_count;
-        cv.notify_one();
-        return grpc::Status::OK;
-      }));
-
-  for (size_t i = 0; i < 5; ++i) {
-    auto tx = std::make_shared<shared_model::proto::Transaction>(
-        TestTransactionBuilder().build());
-    gate_impl->propagateTransaction(tx);
-  }
-
-  std::unique_lock<std::mutex> lock(m);
-  cv.wait_for(lock, 10s, [&] { return call_count == 5; });
-}
 
 /**
  * @given Initialized OrderingGate
@@ -127,27 +89,28 @@ TEST_F(OrderingGateTest, TransactionReceivedByServerWhenSent) {
  * @then  Round starts <==> proposal is emitted to subscribers
  */
 TEST_F(OrderingGateTest, ProposalReceivedByGateWhenSent) {
-  auto wrapper = make_test_subscriber<CallExact>(gate_impl->on_proposal(), 1);
+  auto wrapper = make_test_subscriber<CallExact>(gate_impl->onProposal(), 1);
   wrapper.subscribe();
 
   auto pcs = std::make_shared<MockPeerCommunicationService>();
-  rxcpp::subjects::subject<Commit> commit_subject;
+  rxcpp::subjects::subject<SynchronizationEvent> commit_subject;
   EXPECT_CALL(*pcs, on_commit())
       .WillOnce(Return(commit_subject.get_observable()));
   gate_impl->setPcs(*pcs);
 
   grpc::ServerContext context;
-  auto tx = shared_model::proto::TransactionBuilder()
-                .createdTime(iroha::time::now())
-                .creatorAccountId("admin@ru")
-                .addAssetQuantity("coin#coin", "1.0")
-                .quorum(1)
-                .build()
-                .signAndAddSignature(
-                    shared_model::crypto::DefaultCryptoAlgorithmType::
-                        generateKeypair())
-                .finish();
-  std::vector<shared_model::proto::Transaction> txs = {tx, tx};
+
+  std::vector<shared_model::proto::Transaction> txs;
+  txs.push_back(shared_model::proto::TransactionBuilder()
+                    .createdTime(iroha::time::now())
+                    .creatorAccountId("admin@ru")
+                    .addAssetQuantity("coin#coin", "1.0")
+                    .quorum(1)
+                    .build()
+                    .signAndAddSignature(
+                        shared_model::crypto::DefaultCryptoAlgorithmType::
+                            generateKeypair())
+                    .finish());
   iroha::protocol::Proposal proposal = shared_model::proto::ProposalBuilder()
                                            .height(2)
                                            .createdTime(iroha::time::now())
@@ -173,21 +136,24 @@ class QueueBehaviorTest : public ::testing::Test {
         .WillOnce(Return(commit_subject.get_observable()));
 
     ordering_gate.setPcs(*pcs);
-    ordering_gate.on_proposal().subscribe(
+    ordering_gate.onProposal().subscribe(
         [&](auto val) { messages.push_back(val); });
   }
 
   std::shared_ptr<MockOrderingGateTransport> transport;
   std::shared_ptr<MockPeerCommunicationService> pcs;
-  rxcpp::subjects::subject<Commit> commit_subject;
+  rxcpp::subjects::subject<SynchronizationEvent> commit_subject;
   OrderingGateImpl ordering_gate;
-  std::vector<decltype(ordering_gate.on_proposal())::value_type> messages;
+  std::vector<decltype(ordering_gate.onProposal())::value_type> messages;
 
   void pushCommit(HeightType height) {
-    commit_subject.get_subscriber().on_next(rxcpp::observable<>::just(
-        std::static_pointer_cast<shared_model::interface::Block>(
-            std::make_shared<shared_model::proto::Block>(
-                TestBlockBuilder().height(height).build()))));
+    commit_subject.get_subscriber().on_next(SynchronizationEvent{
+        rxcpp::observable<>::just(
+            std::static_pointer_cast<shared_model::interface::Block>(
+                std::make_shared<shared_model::proto::Block>(
+                    TestBlockBuilder().height(height).build()))),
+        SynchronizationOutcomeType::kCommit,
+        {height, 1}});
   }
 
   void pushProposal(HeightType height) {
@@ -205,23 +171,23 @@ class QueueBehaviorTest : public ::testing::Test {
  */
 TEST_F(QueueBehaviorTest, SendManyProposals) {
   auto wrapper_before =
-      make_test_subscriber<CallExact>(ordering_gate.on_proposal(), 1);
+      make_test_subscriber<CallExact>(ordering_gate.onProposal(), 1);
   wrapper_before.subscribe();
   auto wrapper_after =
-      make_test_subscriber<CallExact>(ordering_gate.on_proposal(), 2);
+      make_test_subscriber<CallExact>(ordering_gate.onProposal(), 2);
   wrapper_after.subscribe();
 
-  auto tx = shared_model::proto::TransactionBuilder()
-                .createdTime(iroha::time::now())
-                .creatorAccountId("admin@ru")
-                .addAssetQuantity("coin#coin", "1.0")
-                .quorum(1)
-                .build()
-                .signAndAddSignature(
-                    shared_model::crypto::DefaultCryptoAlgorithmType::
-                        generateKeypair())
-                .finish();
-  std::vector<shared_model::proto::Transaction> txs = {tx, tx};
+  std::vector<shared_model::proto::Transaction> txs;
+  txs.push_back(shared_model::proto::TransactionBuilder()
+                    .createdTime(iroha::time::now())
+                    .creatorAccountId("admin@ru")
+                    .addAssetQuantity("coin#coin", "1.0")
+                    .quorum(1)
+                    .build()
+                    .signAndAddSignature(
+                        shared_model::crypto::DefaultCryptoAlgorithmType::
+                            generateKeypair())
+                    .finish());
   auto proposal1 = std::make_shared<shared_model::proto::Proposal>(
       shared_model::proto::ProposalBuilder()
           .height(2)
@@ -244,7 +210,10 @@ TEST_F(QueueBehaviorTest, SendManyProposals) {
       std::make_shared<shared_model::proto::Block>(
           TestBlockBuilder().height(2).build());
 
-  commit_subject.get_subscriber().on_next(rxcpp::observable<>::just(block));
+  commit_subject.get_subscriber().on_next(
+      SynchronizationEvent{rxcpp::observable<>::just(block),
+                           SynchronizationOutcomeType::kCommit,
+                           {block->height(), 1}});
 
   ASSERT_TRUE(wrapper_after.validate());
 }
@@ -253,7 +222,7 @@ TEST_F(QueueBehaviorTest, SendManyProposals) {
  * @given Initialized OrderingGate
  * AND MockPeerCommunicationService
  * @when Receive proposals in random order
- * @then on_proposal output is ordered
+ * @then onProposal output is ordered
  */
 TEST_F(QueueBehaviorTest, ReceiveUnordered) {
   // this will set unlock_next_ to false, so proposals 3 and 4 are enqueued
@@ -266,16 +235,16 @@ TEST_F(QueueBehaviorTest, ReceiveUnordered) {
   pushCommit(3);
 
   ASSERT_EQ(3, messages.size());
-  ASSERT_EQ(2, messages.at(0)->height());
-  ASSERT_EQ(3, messages.at(1)->height());
-  ASSERT_EQ(4, messages.at(2)->height());
+  ASSERT_EQ(2, getProposalUnsafe(messages.at(0))->height());
+  ASSERT_EQ(3, getProposalUnsafe(messages.at(1))->height());
+  ASSERT_EQ(4, getProposalUnsafe(messages.at(2))->height());
 }
 
 /**
  * @given Initialized OrderingGate
  * AND MockPeerCommunicationService
  * @when Receive commits which are newer than existing proposals
- * @then on_proposal is not invoked on proposals
+ * @then onProposal is not invoked on proposals
  * which are older than last committed block
  */
 TEST_F(QueueBehaviorTest, DiscardOldProposals) {
@@ -288,8 +257,8 @@ TEST_F(QueueBehaviorTest, DiscardOldProposals) {
 
   // proposals 2 and 3 must not be forwarded down the pipeline.
   EXPECT_EQ(2, messages.size());
-  ASSERT_EQ(2, messages.at(0)->height());
-  ASSERT_EQ(5, messages.at(1)->height());
+  ASSERT_EQ(2, getProposalUnsafe(messages.at(0))->height());
+  ASSERT_EQ(5, getProposalUnsafe(messages.at(1))->height());
 }
 
 /**
@@ -307,13 +276,13 @@ TEST_F(QueueBehaviorTest, KeepNewerProposals) {
 
   // proposal 3 must  be forwarded down the pipeline, 4 kept in queue.
   EXPECT_EQ(2, messages.size());
-  EXPECT_EQ(2, messages.at(0)->height());
-  EXPECT_EQ(3, messages.at(1)->height());
+  EXPECT_EQ(2, getProposalUnsafe(messages.at(0))->height());
+  EXPECT_EQ(3, getProposalUnsafe(messages.at(1))->height());
 
   pushCommit(3);
   // Now proposal 4 is forwarded to the pipeline
   EXPECT_EQ(3, messages.size());
-  EXPECT_EQ(4, messages.at(2)->height());
+  EXPECT_EQ(4, getProposalUnsafe(messages.at(2))->height());
 }
 
 /**
@@ -339,7 +308,7 @@ TEST_F(QueueBehaviorTest, CommitBeforeProposal) {
   pushProposal(6);
 
   EXPECT_EQ(1, messages.size());
-  EXPECT_EQ(5, messages.at(0)->height());
+  EXPECT_EQ(5, getProposalUnsafe(messages.at(0))->height());
 }
 
 /**
@@ -356,5 +325,5 @@ TEST_F(QueueBehaviorTest, CommitNewerThanAllProposals) {
 
   pushCommit(4);
   EXPECT_EQ(1, messages.size());
-  EXPECT_EQ(2, messages.at(0)->height());
+  EXPECT_EQ(2, getProposalUnsafe(messages.at(0))->height());
 }

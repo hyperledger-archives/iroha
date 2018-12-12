@@ -9,6 +9,7 @@
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
+#include "synchronizer/synchronizer_common.hpp"
 #include "torii/command_service.hpp"
 #include "torii/processor/transaction_processor_impl.hpp"
 
@@ -29,16 +30,17 @@ struct CommandFixture {
   rxcpp::subjects::subject<
       std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>>
       vprop_notifier_;
-  rxcpp::subjects::subject<iroha::Commit> commit_notifier_;
+  rxcpp::subjects::subject<iroha::synchronizer::SynchronizationEvent>
+      commit_notifier_;
   rxcpp::subjects::subject<iroha::DataType> mst_notifier_;
 
   CommandFixture() {
     pcs_ = std::make_shared<iroha::network::MockPeerCommunicationService>();
-    EXPECT_CALL(*pcs_, on_proposal())
+    EXPECT_CALL(*pcs_, onProposal())
         .WillRepeatedly(Return(prop_notifier_.get_observable()));
     EXPECT_CALL(*pcs_, on_commit())
         .WillRepeatedly(Return(commit_notifier_.get_observable()));
-    EXPECT_CALL(*pcs_, on_verified_proposal())
+    EXPECT_CALL(*pcs_, onVerifiedProposal())
         .WillRepeatedly(Return(vprop_notifier_.get_observable()));
 
     mst_processor_ = std::make_shared<iroha::MockMstProcessor>();

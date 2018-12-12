@@ -19,8 +19,8 @@
 #include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include "common/byteutils.hpp"
 #include "common/files.hpp"
-#include "common/types.hpp"
 
 #include "logger/logger.hpp"
 
@@ -41,6 +41,7 @@ class BlStore_Test : public ::testing::Test {
   }
   std::string block_store_path =
       (fs::temp_directory_path() / fs::unique_path()).string();
+
   std::vector<uint8_t> block;
 };
 

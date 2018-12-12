@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include "builders/protobuf/block.hpp"
+#include "module/shared_model/builders/protobuf/block.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
 
 using namespace shared_model::proto;
@@ -16,13 +16,17 @@ using namespace shared_model::proto;
  * @then no exception is thrown
  */
 TEST(BlockBuilderTest, BlockWithTransactions) {
-  shared_model::proto::Transaction tx =
-      TestTransactionBuilder()
-          .createdTime(iroha::time::now())
-          .creatorAccountId("admin@test")
-          .quorum(1)
-          .addAssetQuantity("coin#test", "1.0")
-          .build();
+  std::vector<shared_model::proto::Transaction> txs;
+  txs.push_back(TestUnsignedTransactionBuilder()
+                    .createdTime(iroha::time::now())
+                    .creatorAccountId("admin@test")
+                    .quorum(1)
+                    .addAssetQuantity("coin#test", "1.0")
+                    .build()
+                    .signAndAddSignature(
+                        shared_model::crypto::DefaultCryptoAlgorithmType::
+                            generateKeypair())
+                    .finish());
 
   ASSERT_NO_THROW(
       BlockBuilder()
@@ -31,7 +35,7 @@ TEST(BlockBuilderTest, BlockWithTransactions) {
               shared_model::crypto::DefaultCryptoAlgorithmType::kHashLength,
               '0')))
           .height(1)
-          .transactions(std::vector<decltype(tx)>{tx})
+          .transactions(txs)
           .build());
 }
 

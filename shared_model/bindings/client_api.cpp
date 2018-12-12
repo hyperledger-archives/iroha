@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "bindings/client_api.hpp"
+#include <boost/optional.hpp>
+
 #include "backend/protobuf/transaction.hpp"
 #include "backend/protobuf/util.hpp"
-#include "common/types.hpp"
+#include "bindings/client_api.hpp"
+#include "common/bind.hpp"
 #include "cryptography/crypto_provider/crypto_signer.hpp"
 #include "cryptography/ed25519_sha3_impl/internal/sha3_hash.hpp"
 #include "validators/default_validator.hpp"
@@ -48,7 +50,7 @@ namespace shared_model {
     void validateQuery(const Blob &b) {
       auto blob = convert(b);
       auto s = get<iroha::protocol::Query>(blob) | [](auto qry) {
-        static validation::DefaultSignableQueryValidator val;
+        static validation::DefaultSignedQueryValidator val;
         return boost::make_optional(val.validate(proto::Query(qry)).reason());
       };
       if (s) {
@@ -69,7 +71,7 @@ namespace shared_model {
 
         auto sig = tx.add_signatures();
         sig->set_signature(crypto::toBinaryString(signature));
-        sig->set_pubkey(crypto::toBinaryString(key.publicKey()));
+        sig->set_public_key(crypto::toBinaryString(key.publicKey()));
         return boost::make_optional(tx);
       };
       if (s) {
@@ -86,7 +88,7 @@ namespace shared_model {
 
         auto sig = qry.mutable_signature();
         sig->set_signature(crypto::toBinaryString(signature));
-        sig->set_pubkey(crypto::toBinaryString(key.publicKey()));
+        sig->set_public_key(crypto::toBinaryString(key.publicKey()));
         return boost::make_optional(qry);
       };
       if (s) {
@@ -119,6 +121,12 @@ namespace shared_model {
         return Blob(s->begin(), s->end());
       }
       throw std::invalid_argument("unknown object");
+    }
+
+    interface::types::HashType utxReducedHash(
+        const shared_model::proto::UnsignedWrapper<
+            shared_model::proto::Transaction> &utx) {
+      return utx.reducedHash();
     }
   }  // namespace bindings
 }  // namespace shared_model

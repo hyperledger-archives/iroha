@@ -10,16 +10,40 @@
 
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
+#include "ametsuchi/impl/peer_query_wsv.hpp"
+#include "ametsuchi/impl/postgres_block_index.hpp"
 #include "ametsuchi/impl/postgres_block_query.hpp"
+#include "ametsuchi/impl/postgres_command_executor.hpp"
+#include "ametsuchi/impl/postgres_query_executor.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/impl/temporary_wsv_impl.hpp"
 #include "backend/protobuf/permissions.hpp"
+#include "common/bind.hpp"
+#include "common/byteutils.hpp"
 #include "converters/protobuf/json_proto_converter.hpp"
 #include "postgres_ordering_service_persistent_state.hpp"
 
+namespace {
+  void prepareStatements(soci::connection_pool &connections, size_t pool_size) {
+    for (size_t i = 0; i != pool_size; i++) {
+      soci::session &session = connections.at(i);
+      iroha::ametsuchi::PostgresCommandExecutor::prepareStatements(session);
+    }
+  }
+
+  /**
+   * Verify whether postgres supports prepared transactions
+   */
+  bool preparedTransactionsAvailable(soci::session &sql) {
+    int prepared_txs_count = 0;
+    sql << "SHOW max_prepared_transactions;", soci::into(prepared_txs_count);
+    return prepared_txs_count != 0;
+  }
+
+}  // namespace
+
 namespace iroha {
   namespace ametsuchi {
-
     const char *kCommandExecutorError = "Cannot create CommandExecutorFactory";
     const char *kPsqlBroken = "Connection to PostgreSQL broken: %s";
     const char *kTmpWsv = "TemporaryWsv";
@@ -33,15 +57,33 @@ namespace iroha {
         PostgresOptions postgres_options,
         std::unique_ptr<KeyValueStorage> block_store,
         std::shared_ptr<soci::connection_pool> connection,
-        std::shared_ptr<shared_model::interface::CommonObjectsFactory> factory)
+        std::shared_ptr<shared_model::interface::CommonObjectsFactory> factory,
+        std::shared_ptr<shared_model::interface::BlockJsonConverter> converter,
+        std::shared_ptr<shared_model::interface::PermissionToString>
+            perm_converter,
+        size_t pool_size,
+        bool enable_prepared_blocks)
         : block_store_dir_(std::move(block_store_dir)),
           postgres_options_(std::move(postgres_options)),
           block_store_(std::move(block_store)),
-          connection_(connection),
-          factory_(factory),
-          log_(logger::log("StorageImpl")) {
+          connection_(std::move(connection)),
+          factory_(std::move(factory)),
+          converter_(std::move(converter)),
+          perm_converter_(std::move(perm_converter)),
+          log_(logger::log("StorageImpl")),
+          pool_size_(pool_size),
+          prepared_blocks_enabled_(enable_prepared_blocks),
+          block_is_prepared(false) {
+      prepared_block_name_ =
+          "prepared_block" + postgres_options_.dbname().value_or("");
       soci::session sql(*connection_);
+      // rollback current prepared transaction
+      // if there exists any since last session
+      if (prepared_blocks_enabled_) {
+        rollbackPrepared(sql);
+      }
       sql << init_;
+      prepareStatements(*connection_, pool_size_);
     }
 
     expected::Result<std::unique_ptr<TemporaryWsv>, std::string>
@@ -53,7 +95,8 @@ namespace iroha {
       auto sql = std::make_unique<soci::session>(*connection_);
 
       return expected::makeValue<std::unique_ptr<TemporaryWsv>>(
-          std::make_unique<TemporaryWsvImpl>(std::move(sql), factory_));
+          std::make_unique<TemporaryWsvImpl>(
+              std::move(sql), factory_, perm_converter_));
     }
 
     expected::Result<std::unique_ptr<MutableStorage>, std::string>
@@ -66,6 +109,12 @@ namespace iroha {
       }
 
       auto sql = std::make_unique<soci::session>(*connection_);
+      // if we create mutable storage, then we intend to mutate wsv
+      // this means that any state prepared before that moment is not needed
+      // and must be removed to preventy locking
+      if (block_is_prepared) {
+        rollbackPrepared(*sql);
+      }
       auto block_result = getBlockQuery()->getTopBlock();
       return expected::makeValue<std::unique_ptr<MutableStorage>>(
           std::make_unique<MutableStorageImpl>(
@@ -77,8 +126,62 @@ namespace iroha {
                   [](expected::Error<std::string> &) {
                     return shared_model::interface::types::HashType("");
                   }),
+              std::make_shared<PostgresCommandExecutor>(*sql, perm_converter_),
               std::move(sql),
               factory_));
+    }
+
+    boost::optional<std::shared_ptr<PeerQuery>> StorageImpl::createPeerQuery()
+        const {
+      auto wsv = getWsvQuery();
+      if (not wsv) {
+        return boost::none;
+      }
+      return boost::make_optional<std::shared_ptr<PeerQuery>>(
+          std::make_shared<PeerQueryWsv>(wsv));
+    }
+
+    boost::optional<std::shared_ptr<BlockQuery>> StorageImpl::createBlockQuery()
+        const {
+      auto block_query = getBlockQuery();
+      if (not block_query) {
+        return boost::none;
+      }
+      return boost::make_optional(block_query);
+    }
+
+    boost::optional<std::shared_ptr<OrderingServicePersistentState>>
+    StorageImpl::createOsPersistentState() const {
+      log_->info("create ordering service persistent state");
+      std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
+      if (not connection_) {
+        log_->info("connection to database is not initialised");
+        return boost::none;
+      }
+      return boost::make_optional<
+          std::shared_ptr<OrderingServicePersistentState>>(
+          std::make_shared<PostgresOrderingServicePersistentState>(
+              std::make_unique<soci::session>(*connection_)));
+    }
+
+    boost::optional<std::shared_ptr<QueryExecutor>>
+    StorageImpl::createQueryExecutor(
+        std::shared_ptr<PendingTransactionStorage> pending_txs_storage,
+        std::shared_ptr<shared_model::interface::QueryResponseFactory>
+            response_factory) const {
+      std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
+      if (not connection_) {
+        log_->info("connection to database is not initialised");
+        return boost::none;
+      }
+      return boost::make_optional<std::shared_ptr<QueryExecutor>>(
+          std::make_shared<PostgresQueryExecutor>(
+              std::make_unique<soci::session>(*connection_),
+              *block_store_,
+              std::move(pending_txs_storage),
+              converter_,
+              std::move(response_factory),
+              perm_converter_));
     }
 
     bool StorageImpl::insertBlock(const shared_model::interface::Block &block) {
@@ -88,11 +191,7 @@ namespace iroha {
       storageResult.match(
           [&](expected::Value<std::unique_ptr<ametsuchi::MutableStorage>>
                   &storage) {
-            inserted =
-                storage.value->apply(block,
-                                     [](const auto &current_block,
-                                        auto &query,
-                                        const auto &top_hash) { return true; });
+            inserted = storage.value->apply(block);
             log_->info("block inserted: {}", inserted);
             commit(std::move(storage.value));
           },
@@ -113,10 +212,7 @@ namespace iroha {
           [&](iroha::expected::Value<std::unique_ptr<MutableStorage>>
                   &mutableStorage) {
             std::for_each(blocks.begin(), blocks.end(), [&](auto block) {
-              inserted &= mutableStorage.value->apply(
-                  *block, [](const auto &block, auto &query, const auto &hash) {
-                    return true;
-                  });
+              inserted &= mutableStorage.value->apply(*block);
             });
             commit(std::move(mutableStorage.value));
           },
@@ -130,11 +226,12 @@ namespace iroha {
     }
 
     void StorageImpl::reset() {
-      // erase db
-      log_->info("drop db");
-
+      log_->info("drop wsv records from db tables");
       soci::session sql(*connection_);
       sql << reset_;
+
+      log_->info("drop blocks from disk");
+      block_store_->dropAll();
     }
 
     void StorageImpl::dropStorage() {
@@ -148,16 +245,9 @@ namespace iroha {
         auto &db = dbname.value();
         std::unique_lock<std::shared_timed_mutex> lock(drop_mutex);
         log_->info("Drop database {}", db);
-        connection_.reset();
+        freeConnections();
         soci::session sql(soci::postgresql,
                           postgres_options_.optionsStringWithoutDbName());
-        // kill active connections
-        sql << R"(
-SELECT pg_terminate_backend(pg_stat_activity.pid)
-FROM pg_stat_activity
-WHERE pg_stat_activity.datname = :dbname
-  AND pid <> pg_backend_pid();)",
-            soci::use(dbname.value());
         // perform dropping
         sql << "DROP DATABASE " + db;
       } else {
@@ -167,6 +257,26 @@ WHERE pg_stat_activity.datname = :dbname
       // erase blocks
       log_->info("drop block store");
       block_store_->dropAll();
+    }
+
+    void StorageImpl::freeConnections() {
+      if (connection_ == nullptr) {
+        log_->warn("Tried to free connections without active connection");
+        return;
+      }
+      // rollback possible prepared transaction
+      if (block_is_prepared) {
+        soci::session sql(*connection_);
+        rollbackPrepared(sql);
+      }
+      std::vector<std::shared_ptr<soci::session>> connections;
+      for (size_t i = 0; i < pool_size_; i++) {
+        connections.push_back(std::make_shared<soci::session>(*connection_));
+        connections[i]->close();
+        log_->debug("Closed connection {}", i);
+      }
+      connections.clear();
+      connection_.reset();
     }
 
     expected::Result<bool, std::string> StorageImpl::createDatabaseIfNotExist(
@@ -227,8 +337,11 @@ WHERE pg_stat_activity.datname = :dbname
     StorageImpl::create(
         std::string block_store_dir,
         std::string postgres_options,
-        std::shared_ptr<shared_model::interface::CommonObjectsFactory>
-            factory) {
+        std::shared_ptr<shared_model::interface::CommonObjectsFactory> factory,
+        std::shared_ptr<shared_model::interface::BlockJsonConverter> converter,
+        std::shared_ptr<shared_model::interface::PermissionToString>
+            perm_converter,
+        size_t pool_size) {
       boost::optional<std::string> string_res = boost::none;
 
       PostgresOptions options(postgres_options);
@@ -247,19 +360,26 @@ WHERE pg_stat_activity.datname = :dbname
       }
 
       auto ctx_result = initConnections(block_store_dir);
-      auto db_result = initPostgresConnection(postgres_options);
+      auto db_result = initPostgresConnection(postgres_options, pool_size);
       expected::Result<std::shared_ptr<StorageImpl>, std::string> storage;
       ctx_result.match(
           [&](expected::Value<ConnectionContext> &ctx) {
             db_result.match(
                 [&](expected::Value<std::shared_ptr<soci::connection_pool>>
                         &connection) {
+                  soci::session sql(*connection.value);
+                  bool enable_prepared_transactions =
+                      preparedTransactionsAvailable(sql);
                   storage = expected::makeValue(std::shared_ptr<StorageImpl>(
                       new StorageImpl(block_store_dir,
                                       options,
                                       std::move(ctx.value.block_store),
                                       connection.value,
-                                      factory)));
+                                      factory,
+                                      converter,
+                                      perm_converter,
+                                      pool_size,
+                                      enable_prepared_transactions)));
                 },
                 [&](expected::Error<std::string> &error) { storage = error; });
           },
@@ -271,86 +391,117 @@ WHERE pg_stat_activity.datname = :dbname
       auto storage_ptr = std::move(mutableStorage);  // get ownership of storage
       auto storage = static_cast<MutableStorageImpl *>(storage_ptr.get());
       for (const auto &block : storage->block_store_) {
-        block_store_->add(
-            block.first,
-            stringToBytes(shared_model::converters::protobuf::modelToJson(
-                *std::static_pointer_cast<shared_model::proto::Block>(
-                    block.second))));
-        notifier_.get_subscriber().on_next(block.second);
+        storeBlock(*block.second);
       }
-
       *(storage->sql_) << "COMMIT";
       storage->committed = true;
     }
 
-    namespace {
-      /**
-       * Deleter for an object which uses connection_pool
-       * @tparam Query object type to delete
-       */
-      template <typename Query>
-      class Deleter {
-       public:
-        Deleter(std::shared_ptr<soci::connection_pool> conn, size_t pool_pos)
-            : conn_(std::move(conn)), pool_pos_(pool_pos) {}
-
-        void operator()(Query *q) const {
-          if (conn_ != nullptr) {
-            conn_->give_back(pool_pos_);
-          }
-          delete q;
-        }
-
-       private:
-        std::shared_ptr<soci::connection_pool> conn_;
-        const size_t pool_pos_;
-      };
-
-      /**
-       * Factory method for query object creation which uses connection_pool
-       * @tparam Query object type to create
-       * @tparam Backend object type to use as a backend for Query
-       * @param b is a backend obj
-       * @param conn is pointer to connection pool for getting and releaseing
-       * the session
-       * @param log is a logger
-       * @param drop_mutex is mutex for preventing connection destruction
-       *        during the function
-       * @return pointer to created query object
-       * note: blocks untils connection can be leased from the pool
-       */
-      template <typename Query, typename Backend>
-      std::shared_ptr<Query> setupQuery(
-          Backend &b,
-          std::shared_ptr<soci::connection_pool> conn,
-          const logger::Logger &log,
-          std::shared_timed_mutex &drop_mutex) {
-        std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
-        if (conn == nullptr) {
-          log->warn("Storage was deleted, cannot perform setup");
-          return nullptr;
-        }
-        auto pool_pos = conn->lease();
-        soci::session &session = conn->at(pool_pos);
-        lock.unlock();
-        return {new Query(session, b),
-                Deleter<Query>(std::move(conn), pool_pos)};
+    bool StorageImpl::commitPrepared(
+        const shared_model::interface::Block &block) {
+      if (not prepared_blocks_enabled_) {
+        log_->warn("prepared blocks are not enabled");
+        return false;
       }
-    }  // namespace
+
+      if (not block_is_prepared) {
+        log_->info("there are no prepared blocks");
+        return false;
+      }
+      log_->info("applying prepared block");
+
+      try {
+        std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
+        if (not connection_) {
+          log_->info("connection to database is not initialised");
+          return false;
+        }
+        soci::session sql(*connection_);
+        sql << "COMMIT PREPARED '" + prepared_block_name_ + "';";
+        PostgresBlockIndex block_index(sql);
+        block_index.index(block);
+        block_is_prepared = false;
+      } catch (const std::exception &e) {
+        log_->warn("failed to apply prepared block {}: {}",
+                   block.hash().hex(),
+                   e.what());
+        return false;
+      }
+
+      return storeBlock(block);
+    }
 
     std::shared_ptr<WsvQuery> StorageImpl::getWsvQuery() const {
-      return setupQuery<PostgresWsvQuery>(
-          factory_, connection_, log_, drop_mutex);
+      std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
+      if (not connection_) {
+        log_->info("connection to database is not initialised");
+        return nullptr;
+      }
+      return std::make_shared<PostgresWsvQuery>(
+          std::make_unique<soci::session>(*connection_), factory_);
     }
 
     std::shared_ptr<BlockQuery> StorageImpl::getBlockQuery() const {
-      return setupQuery<PostgresBlockQuery>(
-          *block_store_, connection_, log_, drop_mutex);
+      std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
+      if (not connection_) {
+        log_->info("connection to database is not initialised");
+        return nullptr;
+      }
+      return std::make_shared<PostgresBlockQuery>(
+          std::make_unique<soci::session>(*connection_),
+          *block_store_,
+          converter_);
     }
 
     rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
     StorageImpl::on_commit() {
       return notifier_.get_observable();
+    }
+
+    void StorageImpl::prepareBlock(std::unique_ptr<TemporaryWsv> wsv) {
+      auto &wsv_impl = static_cast<TemporaryWsvImpl &>(*wsv);
+      if (not prepared_blocks_enabled_) {
+        log_->warn("prepared block are not enabled");
+        return;
+      }
+      if (not block_is_prepared) {
+        soci::session &sql = *wsv_impl.sql_;
+        try {
+          sql << "PREPARE TRANSACTION '" + prepared_block_name_ + "';";
+          block_is_prepared = true;
+        } catch (const std::exception &e) {
+          log_->warn("failed to prepare state: {}", e.what());
+        }
+
+        log_->info("state prepared successfully");
+      }
+    }
+
+    StorageImpl::~StorageImpl() {
+      freeConnections();
+    }
+
+    void StorageImpl::rollbackPrepared(soci::session &sql) {
+      try {
+        sql << "ROLLBACK PREPARED '" + prepared_block_name_ + "';";
+        block_is_prepared = false;
+      } catch (const std::exception &e) {
+        log_->info(e.what());
+      }
+    }
+
+    bool StorageImpl::storeBlock(const shared_model::interface::Block &block) {
+      auto json_result = converter_->serialize(block);
+      return json_result.match(
+          [this, &block](const expected::Value<std::string> &v) {
+            block_store_->add(block.height(), stringToBytes(v.value));
+            notifier_.get_subscriber().on_next(clone(block));
+            return true;
+          },
+          [this](const expected::Error<std::string> &e) {
+            log_->error(e.error);
+            return false;
+          });
     }
 
     const std::string &StorageImpl::drop_ = R"(
@@ -366,9 +517,10 @@ DROP TABLE IF EXISTS signatory;
 DROP TABLE IF EXISTS peer;
 DROP TABLE IF EXISTS role;
 DROP TABLE IF EXISTS height_by_hash;
+DROP TABLE IF EXISTS tx_status_by_hash;
 DROP TABLE IF EXISTS height_by_account_set;
 DROP TABLE IF EXISTS index_by_creator_height;
-DROP TABLE IF EXISTS index_by_id_height_asset;
+DROP TABLE IF EXISTS position_by_account_asset;
 )";
 
     const std::string &StorageImpl::reset_ = R"(
@@ -383,10 +535,11 @@ DELETE FROM domain;
 DELETE FROM signatory;
 DELETE FROM peer;
 DELETE FROM role;
-DELETE FROM height_by_hash;
+DELETE FROM position_by_hash;
+DELETE FROM tx_status_by_hash;
 DELETE FROM height_by_account_set;
 DELETE FROM index_by_creator_height;
-DELETE FROM index_by_id_height_asset;
+DELETE FROM position_by_account_asset;
 )";
 
     const std::string &StorageImpl::init_ =
@@ -455,10 +608,17 @@ CREATE TABLE IF NOT EXISTS account_has_grantable_permissions (
         + R"() NOT NULL,
     PRIMARY KEY (permittee_account_id, account_id)
 );
-CREATE TABLE IF NOT EXISTS height_by_hash (
+CREATE TABLE IF NOT EXISTS position_by_hash (
     hash varchar,
-    height text
+    height text,
+    index text
 );
+
+CREATE TABLE IF NOT EXISTS tx_status_by_hash (
+    hash varchar,
+    status boolean
+);
+
 CREATE TABLE IF NOT EXISTS height_by_account_set (
     account_id text,
     height text
@@ -469,10 +629,10 @@ CREATE TABLE IF NOT EXISTS index_by_creator_height (
     height text,
     index text
 );
-CREATE TABLE IF NOT EXISTS index_by_id_height_asset (
-    id text,
-    height text,
+CREATE TABLE IF NOT EXISTS position_by_account_asset (
+    account_id text,
     asset_id text,
+    height text,
     index text
 );
 )";

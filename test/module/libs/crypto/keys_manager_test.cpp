@@ -1,18 +1,7 @@
-/*
-Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+/**
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include "crypto/keys_manager.hpp"
 #include <gtest/gtest.h>
@@ -51,7 +40,8 @@ class KeyManager : public ::testing::Test {
 
   const path test_dir = boost::filesystem::temp_directory_path()
       / boost::filesystem::unique_path();
-  const std::string filepath = (test_dir / "keymanager_test_file").string();
+  const std::string filepath =
+      (test_dir / boost::filesystem::unique_path()).string();
   const path pub_key_path = filepath + KeysManagerImpl::kPublicKeyExtension;
   const path pri_key_path = filepath + KeysManagerImpl::kPrivateKeyExtension;
   const std::string pubkey =
@@ -60,10 +50,9 @@ class KeyManager : public ::testing::Test {
       "36f028580bb02cc8272a9a020f4200e346e276ae664e45ee80745574e2f5ab80"s;
   KeysManagerImpl manager = KeysManagerImpl(filepath);
   const std::string passphrase = "test";
-  const std::string nonexistent =
-      (boost::filesystem::temp_directory_path() / "path" / "that" / "doesnt"
-       / "exist")
-          .string();
+  const std::string nonexistent = (boost::filesystem::temp_directory_path()
+                                   / boost::filesystem::unique_path())
+                                      .string();
 };
 
 TEST_F(KeyManager, LoadNonExistentKeyFile) {
@@ -135,6 +124,7 @@ TEST_F(KeyManager, LoadInaccessiblePrikey) {
 }
 
 TEST_F(KeyManager, CreateKeypairInNonexistentDir) {
-  KeysManagerImpl manager = KeysManagerImpl(nonexistent);
+  KeysManagerImpl manager =
+      KeysManagerImpl(boost::filesystem::unique_path().string(), nonexistent);
   ASSERT_FALSE(manager.createKeys(passphrase));
 }

@@ -17,7 +17,7 @@
 #include <numeric>
 #include <utility>
 
-#include "common/types.hpp"
+#include "common/bind.hpp"
 #include "interactive/interactive_common_cli.hpp"
 #include "parser/parser.hpp"
 
@@ -143,7 +143,7 @@ namespace iroha_cli {
                       params_description.value().end(),
                       [&params](auto &param) {
                         using namespace iroha;
-                        promptString(param) | [&](auto &val) {
+                        promptString(param) | [&](auto &&val) {
                           if (not val.empty()) {
                             // Update input cache
                             param.cache = val;

@@ -50,12 +50,10 @@ class ValidatorsTest : public ::testing::Test {
     for (const auto &id : {"account_id", "src_account_id"}) {
       field_setters[id] = setString(account_id);
     }
-    for (const auto &id : {"public_key", "main_pubkey"}) {
-      field_setters[id] = setString(public_key);
-    }
     for (const auto &id : {"role_name", "default_role", "role_id"}) {
       field_setters[id] = setString(role_name);
     }
+    field_setters["public_key"] = setString(public_key);
     field_setters["dest_account_id"] = setString(dest_id);
     field_setters["asset_id"] = setString(asset_id);
     field_setters["account_name"] = setString(account_name);
@@ -76,6 +74,9 @@ class ValidatorsTest : public ::testing::Test {
     field_setters["amount"] = setString(amount);
     field_setters["peer"] = [&](auto refl, auto msg, auto field) {
       refl->MutableMessage(msg, field)->CopyFrom(peer);
+    };
+    field_setters["pagination_meta"] = [&](auto refl, auto msg, auto field) {
+      refl->MutableMessage(msg, field)->CopyFrom(tx_pagination_meta);
     };
   }
 
@@ -194,6 +195,7 @@ class ValidatorsTest : public ::testing::Test {
     quorum = 2;
     peer.set_address(address_localhost);
     peer.set_peer_key(public_key);
+    tx_pagination_meta.set_page_size(10);
   }
 
   size_t public_key_size{0};
@@ -226,6 +228,7 @@ class ValidatorsTest : public ::testing::Test {
   iroha::protocol::Peer peer;
   decltype(iroha::time::now()) created_time;
   iroha::protocol::QueryPayloadMeta meta;
+  iroha::protocol::TxPaginationMeta tx_pagination_meta;
 
   // List all used fields in commands
   std::unordered_map<

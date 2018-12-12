@@ -20,7 +20,9 @@ key_pair = crypto.convertFromExisting(admin_pub, admin_priv)
 
 user1_kp = crypto.generateKeypair()
 
-current_time = int(round(time.time() * 1000)) - 10**5
+def current_time():
+    return int(round(time.time() * 1000))
+
 creator = "admin@test"
 
 query_counter = 1
@@ -41,7 +43,7 @@ def get_status(tx):
     request.tx_hash = tx_hash
 
     channel = grpc.insecure_channel('127.0.0.1:50051')
-    stub = endpoint_pb2_grpc.CommandServiceStub(channel)
+    stub = endpoint_pb2_grpc.CommandService_v1Stub(channel)
 
     response = stub.Status(request)
     status = endpoint_pb2.TxStatus.Name(response.tx_status)
@@ -70,7 +72,7 @@ def print_status_streaming(tx):
 
     # Create connection to Iroha
     channel = grpc.insecure_channel('127.0.0.1:50051')
-    stub = endpoint_pb2_grpc.CommandServiceStub(channel)
+    stub = endpoint_pb2_grpc.CommandService_v1Stub(channel)
 
     # Send request
     response = stub.StatusStream(request)
@@ -92,7 +94,7 @@ def send_tx(tx, key_pair):
     proto_tx.ParseFromString(tmp)
 
     channel = grpc.insecure_channel('127.0.0.1:50051')
-    stub = endpoint_pb2_grpc.CommandServiceStub(channel)
+    stub = endpoint_pb2_grpc.CommandService_v1Stub(channel)
 
     stub.Torii(proto_tx)
 
@@ -110,7 +112,7 @@ def send_query(query, key_pair):
     proto_query.ParseFromString(tmp)
 
     channel = grpc.insecure_channel('127.0.0.1:50051')
-    query_stub = endpoint_pb2_grpc.QueryServiceStub(channel)
+    query_stub = endpoint_pb2_grpc.QueryService_v1Stub(channel)
     query_response = query_stub.Find(proto_query)
 
     return query_response
@@ -121,7 +123,7 @@ def create_asset_coin():
     Create domain "domain" and asset "coin#domain" with precision 2
     """
     tx = tx_builder.creatorAccountId(creator) \
-            .createdTime(current_time) \
+            .createdTime(current_time()) \
             .createDomain("domain", "user") \
             .createAsset("coin", "domain", 2).build()
 
@@ -134,7 +136,7 @@ def add_coin_to_admin():
     Add 1000.00 asset quantity of asset coin to admin
     """
     tx = tx_builder.creatorAccountId(creator) \
-        .createdTime(current_time) \
+        .createdTime(current_time()) \
         .addAssetQuantity("coin#domain", "1000.00").build()
 
     send_tx(tx, key_pair)
@@ -146,7 +148,7 @@ def create_account_userone():
     Create account "userone@domain"
     """
     tx = tx_builder.creatorAccountId(creator) \
-        .createdTime(current_time) \
+        .createdTime(current_time()) \
         .createAccount("userone", "domain", user1_kp.publicKey()).build()
 
     send_tx(tx, key_pair)
@@ -157,7 +159,7 @@ def transfer_coin_from_admin_to_userone():
     Transfer 2.00 of coin from admin@test to userone@domain
     """
     tx = tx_builder.creatorAccountId(creator) \
-        .createdTime(current_time) \
+        .createdTime(current_time()) \
         .transferAsset("admin@test", "userone@domain", "coin#domain", "Some message", "2.00").build()
 
     send_tx(tx, key_pair)
@@ -168,7 +170,7 @@ def grant_admin_to_add_detail_to_userone():
     Grant admin@test to be able to set details information to userone@domain
     """
     tx = tx_builder.creatorAccountId("userone@domain") \
-        .createdTime(current_time) \
+        .createdTime(current_time()) \
         .grantPermission(creator, iroha.Grantable_kSetMyAccountDetail) \
         .build()
 
@@ -180,7 +182,7 @@ def set_age_to_userone_by_admin():
     Set age to userone@domain by admin@test
     """
     tx = tx_builder.creatorAccountId(creator) \
-        .createdTime(current_time) \
+        .createdTime(current_time()) \
         .setAccountDetail("userone@domain", "age", "18") \
         .build()
 
@@ -194,7 +196,7 @@ def get_coin_info():
     global query_counter
     query_counter += 1
     query = query_builder.creatorAccountId(creator) \
-        .createdTime(current_time) \
+        .createdTime(current_time()) \
         .queryCounter(query_counter) \
         .getAssetInfo("coin#domain") \
         .build()
@@ -219,7 +221,7 @@ def get_account_asset():
     global query_counter
     query_counter += 1
     query = query_builder.creatorAccountId(creator) \
-        .createdTime(current_time) \
+        .createdTime(current_time()) \
         .queryCounter(query_counter) \
         .getAccountAssets("userone@domain") \
         .build()
@@ -235,7 +237,7 @@ def get_userone_info():
     global query_counter
     query_counter += 1
     query = query_builder.creatorAccountId(creator) \
-        .createdTime(current_time) \
+        .createdTime(current_time()) \
         .queryCounter(query_counter) \
         .getAccountDetail("userone@domain") \
         .build()

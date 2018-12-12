@@ -9,6 +9,7 @@
 
 using namespace integration_framework;
 using namespace shared_model;
+using namespace common_constants;
 
 class CreateDomain : public AcceptanceFixture {
  public:
@@ -31,35 +32,35 @@ TEST_F(CreateDomain, Basic) {
       .sendTx(makeUserWithPerms())
       .skipProposal()
       .skipBlock()
-      .sendTx(complete(baseTx().createDomain(kNewDomain, kRole)))
-      .skipProposal()
-      .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); })
-      .done();
+      .sendTxAwait(
+          complete(baseTx().createDomain(kNewDomain, kRole)),
+          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); });
 }
 
 /**
  * @given some user without can_create_domain permission
  * @when execute tx with CreateDomain command
- * @then there is no tx in proposal
+ * @then verified proposal is empty
  */
 TEST_F(CreateDomain, NoPermissions) {
   IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms({interface::permissions::Role::kGetMyTxs}))
       .skipProposal()
+      .skipVerifiedProposal()
       .skipBlock()
       .sendTx(complete(baseTx().createDomain(kNewDomain, kRole)))
       .skipProposal()
+      .checkVerifiedProposal(
+          [](auto &proposal) { ASSERT_EQ(proposal->transactions().size(), 0); })
       .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 0); })
-      .done();
+          [](auto block) { ASSERT_EQ(block->transactions().size(), 0); });
 }
 
 /**
  * @given some user with can_create_domain permission
  * @when execute tx with CreateDomain command with nonexistent role
- * @then there is no tx in proposal
+ * @then verified proposal is empty
  */
 TEST_F(CreateDomain, NoRole) {
   const std::string nonexistent_role = "asdf";
@@ -67,31 +68,34 @@ TEST_F(CreateDomain, NoRole) {
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms())
       .skipProposal()
+      .skipVerifiedProposal()
       .skipBlock()
       .sendTx(complete(baseTx().createDomain(kNewDomain, nonexistent_role)))
       .skipProposal()
+      .checkVerifiedProposal(
+          [](auto &proposal) { ASSERT_EQ(proposal->transactions().size(), 0); })
       .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 0); })
-      .done();
+          [](auto block) { ASSERT_EQ(block->transactions().size(), 0); });
 }
 
 /**
  * @given some user with can_create_domain permission
  * @when execute tx with CreateDomain command with already existing domain
- * @then there is no tx in proposal
+ * @then verified proposal is empty
  */
 TEST_F(CreateDomain, ExistingName) {
-  std::string existing_domain = IntegrationTestFramework::kDefaultDomain;
   IntegrationTestFramework(1)
       .setInitialState(kAdminKeypair)
       .sendTx(makeUserWithPerms())
       .skipProposal()
+      .skipVerifiedProposal()
       .skipBlock()
-      .sendTx(complete(baseTx().createDomain(existing_domain, kRole)))
+      .sendTx(complete(baseTx().createDomain(kDomain, kRole)))
       .skipProposal()
+      .checkVerifiedProposal(
+          [](auto &proposal) { ASSERT_EQ(proposal->transactions().size(), 0); })
       .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 0); })
-      .done();
+          [](auto block) { ASSERT_EQ(block->transactions().size(), 0); });
 }
 
 /**
@@ -111,11 +115,9 @@ TEST_F(CreateDomain, MaxLenName) {
       .sendTx(makeUserWithPerms())
       .skipProposal()
       .skipBlock()
-      .sendTx(complete(baseTx().createDomain(maxLongDomain, kRole)))
-      .skipProposal()
-      .checkBlock(
-          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); })
-      .done();
+      .sendTxAwait(
+          complete(baseTx().createDomain(maxLongDomain, kRole)),
+          [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); });
 }
 
 /**
@@ -131,7 +133,7 @@ TEST_F(CreateDomain, TooLongName) {
       .skipProposal()
       .skipBlock()
       .sendTx(complete(baseTx().createDomain(std::string(257, 'a'), kRole)),
-              checkStatelessInvalid);
+              CHECK_STATELESS_INVALID);
 }
 
 /**
@@ -148,7 +150,7 @@ TEST_F(CreateDomain, EmptyName) {
       .skipProposal()
       .skipBlock()
       .sendTx(complete(baseTx().createDomain(empty_name, kRole)),
-              checkStatelessInvalid);
+              CHECK_STATELESS_INVALID);
 }
 
 /**
@@ -165,5 +167,5 @@ TEST_F(CreateDomain, DISABLED_EmptyRoleName) {
       .skipProposal()
       .skipBlock()
       .sendTx(complete(baseTx().createDomain(kNewDomain, empty_name)),
-              checkStatelessInvalid);
+              CHECK_STATELESS_INVALID);
 }

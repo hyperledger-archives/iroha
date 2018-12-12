@@ -1,29 +1,33 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef IROHA_SHARED_MODEL_TRANSACTION_VALIDATOR_HPP
 #define IROHA_SHARED_MODEL_TRANSACTION_VALIDATOR_HPP
 
 #include <boost/format.hpp>
-#include <boost/variant/static_visitor.hpp>
+#include <boost/variant.hpp>
 
-#include "backend/protobuf/commands/proto_command.hpp"
-#include "backend/protobuf/permissions.hpp"
-#include "backend/protobuf/transaction.hpp"
+#include "interfaces/commands/add_asset_quantity.hpp"
+#include "interfaces/commands/add_peer.hpp"
+#include "interfaces/commands/add_signatory.hpp"
+#include "interfaces/commands/append_role.hpp"
+#include "interfaces/commands/command.hpp"
+#include "interfaces/commands/create_account.hpp"
+#include "interfaces/commands/create_asset.hpp"
+#include "interfaces/commands/create_domain.hpp"
+#include "interfaces/commands/create_role.hpp"
+#include "interfaces/commands/detach_role.hpp"
+#include "interfaces/commands/grant_permission.hpp"
+#include "interfaces/commands/remove_signatory.hpp"
+#include "interfaces/commands/revoke_permission.hpp"
+#include "interfaces/commands/set_account_detail.hpp"
+#include "interfaces/commands/set_quorum.hpp"
+#include "interfaces/commands/subtract_asset_quantity.hpp"
+#include "interfaces/commands/transfer_asset.hpp"
+#include "interfaces/transaction.hpp"
+#include "validators/abstract_validator.hpp"
 #include "validators/answer.hpp"
 
 namespace shared_model {
@@ -118,14 +122,9 @@ namespace shared_model {
         addInvalidCommand(reason, "CreateRole");
 
         validator_.validateRoleId(reason, cr.roleName());
-        for (auto i : static_cast<const shared_model::proto::CreateRole &>(cr)
-                          .getTransport()
-                          .create_role()
-                          .permissions()) {
-          validator_.validateRolePermission(
-              reason,
-              static_cast<shared_model::interface::permissions::Role>(i));
-        }
+        cr.rolePermissions().iterate([&reason, this](auto i) {
+          validator_.validateRolePermission(reason, i);
+        });
 
         return reason;
       }
@@ -207,7 +206,7 @@ namespace shared_model {
         addInvalidCommand(reason, "TransferAsset");
 
         if (ta.srcAccountId() == ta.destAccountId()) {
-          reason.second.push_back(
+          reason.second.emplace_back(
               "Source and destination accounts cannot be the same");
         }
 
@@ -239,20 +238,12 @@ namespace shared_model {
      * @tparam CommandValidator
      */
     template <typename FieldValidator, typename CommandValidator>
-    class TransactionValidator {
-     public:
-      TransactionValidator(
-          const FieldValidator &field_validator = FieldValidator(),
-          const CommandValidator &command_validator = CommandValidator())
-          : field_validator_(field_validator),
-            command_validator_(command_validator) {}
-
-      /**
-       * Applies validation to given transaction
-       * @param tx - transaction to validate
-       * @return Answer containing found error if any
-       */
-      Answer validate(const interface::Transaction &tx) const {
+    class TransactionValidator
+        : public AbstractValidator<interface::Transaction> {
+     private:
+      template <typename CreatedTimeValidator>
+      Answer validateImpl(const interface::Transaction &tx,
+                          CreatedTimeValidator &&validator) const {
         Answer answer;
         std::string tx_reason_name = "Transaction";
         ReasonsGroupType tx_reason(tx_reason_name, GroupedReasons());
@@ -264,7 +255,8 @@ namespace shared_model {
 
         field_validator_.validateCreatorAccountId(tx_reason,
                                                   tx.creatorAccountId());
-        field_validator_.validateCreatedTime(tx_reason, tx.createdTime());
+        std::forward<CreatedTimeValidator>(validator)(tx_reason,
+                                                      tx.createdTime());
         field_validator_.validateQuorum(tx_reason, tx.quorum());
         if (tx.batchMeta() != boost::none)
           field_validator_.validateBatchMeta(tx_reason, **tx.batchMeta());
@@ -274,17 +266,6 @@ namespace shared_model {
         }
 
         for (const auto &command : tx.commands()) {
-          auto cmd_case =
-              static_cast<const shared_model::proto::Command &>(command)
-                  .getTransport()
-                  .command_case();
-          if (iroha::protocol::Command::COMMAND_NOT_SET == cmd_case) {
-            ReasonsGroupType reason;
-            reason.first = "Undefined";
-            reason.second.push_back("command is undefined");
-            answer.addReason(std::move(reason));
-            continue;
-          }
           auto reason = boost::apply_visitor(command_validator_, command.get());
           if (not reason.second.empty()) {
             answer.addReason(std::move(reason));
@@ -292,6 +273,37 @@ namespace shared_model {
         }
 
         return answer;
+      }
+
+     public:
+      explicit TransactionValidator(
+          const FieldValidator &field_validator = FieldValidator(),
+          const CommandValidator &command_validator = CommandValidator())
+          : field_validator_(field_validator),
+            command_validator_(command_validator) {}
+
+      /**
+       * Applies validation to given transaction
+       * @param tx - transaction to validate
+       * @return Answer containing found error if any
+       */
+      Answer validate(const interface::Transaction &tx) const override {
+        return validateImpl(tx, [this](auto &reason, auto time) {
+          field_validator_.validateCreatedTime(reason, time);
+        });
+      }
+
+      /**
+       * Validates transaction against current_timestamp instead of time
+       * provider
+       */
+      Answer validate(const interface::Transaction &tx,
+                      interface::types::TimestampType current_timestamp) const {
+        return validateImpl(tx,
+                            [this, current_timestamp](auto &reason, auto time) {
+                              field_validator_.validateCreatedTime(
+                                  reason, time, current_timestamp);
+                            });
       }
 
      protected:

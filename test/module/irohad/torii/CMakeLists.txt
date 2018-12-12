@@ -22,6 +22,8 @@ target_link_libraries(torii_service_test
     query_client
     server_runner
     processors
+    consensus_round
+    on_demand_common
     )
 
 addtest(torii_queries_test torii_queries_test.cpp)
@@ -31,7 +33,6 @@ target_link_libraries(torii_queries_test
     query_client
     server_runner
     processors
-    query_execution
     )
 
 addtest(query_service_test query_service_test.cpp)

@@ -19,8 +19,9 @@
 
 #include <fstream>
 
-#include "converters/protobuf/json_proto_converter.hpp"
 #include "backend/protobuf/block.hpp"
+#include "common/bind.hpp"
+#include "converters/protobuf/json_proto_converter.hpp"
 
 namespace iroha {
   namespace main {
@@ -34,7 +35,7 @@ namespace iroha {
         const std::string &data) {
       return jsonToProto<iroha::protocol::Block>(data) | [](auto &&block) {
         return boost::optional<std::shared_ptr<Block>>(
-            std::make_shared<shared_model::proto::Block>(std::move(block)));
+            std::make_shared<shared_model::proto::Block>(std::move(block.block_v1())));
       };
     }
 

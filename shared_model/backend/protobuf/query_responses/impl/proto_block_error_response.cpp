@@ -11,8 +11,8 @@ namespace shared_model {
     template <typename QueryResponseType>
     BlockErrorResponse::BlockErrorResponse(QueryResponseType &&queryResponse)
         : CopyableProto(std::forward<QueryResponseType>(queryResponse)),
-          block_error_response{proto_->error_response()},
-          message_{[this] { return block_error_response.message(); }} {}
+          block_error_response{proto_->block_error_response()},
+          message_{block_error_response.message()} {}
 
     template BlockErrorResponse::BlockErrorResponse(
         BlockErrorResponse::TransportType &);
@@ -27,8 +27,9 @@ namespace shared_model {
     BlockErrorResponse::BlockErrorResponse(BlockErrorResponse &&o)
         : BlockErrorResponse(std::move(o.proto_)) {}
 
-    const interface::types::DescriptionType &BlockErrorResponse::message() const {
-      return *message_;
+    const interface::types::DescriptionType &BlockErrorResponse::message()
+        const {
+      return message_;
     }
 
   }  // namespace proto

@@ -55,7 +55,7 @@ parts:
     source-commit: 436ad1dfcfc7e0246141beddd11c8a4e9c10b146
     plugin: nil
     build: |
-      ./bootstrap.sh --with-libraries=system,filesystem
+      ./bootstrap.sh --with-libraries=thread,system,filesystem
       ./b2 headers
       ./b2 cxxflags="-std=c++14" install
   protobuf:
@@ -97,7 +97,8 @@ parts:
     after: [cmake]
   rxcpp:
     source: https://github.com/Reactive-Extensions/RxCpp.git
-    source-commit: 1b2e0589f19cb34d8cd58803677701dcf2161876
+    # this version is chosen, because it fixes 100% node overload [IR-1736] bug
+    source-commit: a7d5856385f126e874db6010d9dbfd37290c61de
     plugin: cmake
     after: [cmake]
   rapidjson:

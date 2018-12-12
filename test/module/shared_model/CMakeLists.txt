@@ -1,19 +1,5 @@
-#
-# Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
-# http://soramitsu.co.jp
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+# Copyright Soramitsu Co., Ltd. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 add_subdirectory(backend_proto)
 add_subdirectory(bindings)
@@ -22,24 +8,11 @@ add_subdirectory(builders)
 add_subdirectory(validators)
 add_subdirectory(cryptography)
 
-AddTest(lazy_test
-    lazy_test.cpp
-    )
-target_link_libraries(lazy_test
-    boost
-    )
-
 AddTest(reference_holder_test
     reference_holder_test.cpp
     )
 target_link_libraries(reference_holder_test
     boost
-    )
-
-AddTest(amount_utils_test amount_utils_test.cpp)
-target_link_libraries(amount_utils_test
-    shared_model_default_builders
-    shared_model_amount_utils
     )
 
 AddTest(interface_test
