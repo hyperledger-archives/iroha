@@ -68,7 +68,7 @@ namespace shared_model {
       SignatureSetType<proto::Signature> signatures_{[this] {
         SignatureSetType<proto::Signature> set;
         if (proto_.has_signature()) {
-          set.emplace(crypto::Hash::fromHexString(proto_.signature()));
+          set.emplace(proto_.signature());
         }
         return set;
       }()};

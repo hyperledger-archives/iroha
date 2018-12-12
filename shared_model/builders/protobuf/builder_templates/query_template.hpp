@@ -87,7 +87,7 @@ namespace shared_model {
               boost::none) {
         page_meta_payload->set_page_size(page_size);
         if (first_hash) {
-          page_meta_payload->set_first_tx_hash(toBinaryString(*first_hash));
+          page_meta_payload->set_first_tx_hash(first_hash->hex());
         }
       }
 

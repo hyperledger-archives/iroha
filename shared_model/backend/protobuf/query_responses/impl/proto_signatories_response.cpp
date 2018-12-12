@@ -23,7 +23,7 @@ namespace shared_model {
                   acc.emplace_back(crypto::Hash::fromHexString(key));
                   return acc;
                 });
-          }} {}
+          }()} {}
 
     template SignatoriesResponse::SignatoriesResponse(
         SignatoriesResponse::TransportType &);

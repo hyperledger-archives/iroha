@@ -50,7 +50,8 @@ namespace shared_model {
             std::vector<interface::types::HashType> hashes;
             for (const auto &hash :
                  *payload_.mutable_rejected_transactions_hashes()) {
-              hashes.emplace_back(shared_model::crypto::Hash(hash));
+              hashes.emplace_back(
+                  shared_model::crypto::Hash::fromHexString(hash));
             }
             return hashes;
           }()};
