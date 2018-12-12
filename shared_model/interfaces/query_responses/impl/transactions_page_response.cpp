@@ -24,7 +24,9 @@ namespace shared_model {
     }
 
     bool TransactionsPageResponse::operator==(const ModelType &rhs) const {
-      return transactions() == rhs.transactions();
+      return transactions() == rhs.transactions()
+          and nextTxHash() == rhs.nextTxHash()
+          and allTransactionsSize() == rhs.allTransactionsSize();
     }
 
   }  // namespace interface

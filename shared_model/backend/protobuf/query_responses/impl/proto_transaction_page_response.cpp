@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "backend/protobuf/query_responses/proto_transaction_page_response.hpp"
+#include "backend/protobuf/query_responses/proto_transactions_page_response.hpp"
 #include "common/byteutils.hpp"
 
 namespace shared_model {
@@ -14,11 +14,8 @@ namespace shared_model {
         QueryResponseType &&queryResponse)
         : CopyableProto(std::forward<QueryResponseType>(queryResponse)),
           transactionPageResponse_{proto_->transactions_page_response()},
-          transactions_{[this] {
-            return std::vector<proto::Transaction>(
-                transactionPageResponse_.transactions().begin(),
-                transactionPageResponse_.transactions().end());
-          }()},
+          transactions_{transactionPageResponse_.transactions().begin(),
+                        transactionPageResponse_.transactions().end()},
           next_hash_{[this]() -> boost::optional<interface::types::HashType> {
             switch (transactionPageResponse_.next_page_tag_case()) {
               case iroha::protocol::TransactionsPageResponse::kNextTxHash:

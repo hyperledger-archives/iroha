@@ -6,12 +6,12 @@
 #ifndef IROHA_SHARED_MODEL_PROTO_TRANSACTION_PAGE_RESPONSE_HPP
 #define IROHA_SHARED_MODEL_PROTO_TRANSACTION_PAGE_RESPONSE_HPP
 
+#include "interfaces/query_responses/transactions_page_response.hpp"
+
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/query_responses/transactions_page_response.hpp"
 #include "qry_responses.pb.h"
-#include "utils/lazy_initializer.hpp"
 
 namespace shared_model {
   namespace proto {

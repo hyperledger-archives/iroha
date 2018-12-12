@@ -76,15 +76,6 @@ namespace {
                 .quorum(1)
                 .jsonData(R"({"id@domain": {"key": "value"}})")
                 .build());
-
-  template <typename T>
-  using ConstRef = const T &;
-
-  // old compilers fail to deduce that a variant contains reference
-  template <typename T, typename Variant>
-  ConstRef<T> getRef(Variant &&v) {
-    return boost::get<ConstRef<T>>(std::forward<Variant>(v));
-  }
 }  // namespace
 
 namespace iroha {

@@ -19,8 +19,7 @@ std::string TxPaginationMeta::toString() const {
                             .append("page_size", std::to_string(pageSize()));
   auto first_tx_hash = firstTxHash();
   if (first_tx_hash) {
-    pretty_builder = std::move(
-        pretty_builder.append("first_tx_hash", first_tx_hash->toString()));
+    pretty_builder.append("first_tx_hash", first_tx_hash->toString());
   }
   return pretty_builder.finalize();
 }

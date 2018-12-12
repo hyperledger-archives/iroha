@@ -426,8 +426,6 @@ namespace iroha {
               auto error = (boost::format("invalid pagination hash: %s")
                             % first_hash->hex())
                                .str();
-              // TODO: IR-82 nickaleks 7.12.18
-              // add status code for invalid pagination
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kStatefulFailed, error, 4);
             }
