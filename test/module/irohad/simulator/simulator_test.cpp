@@ -306,8 +306,9 @@ TEST_F(SimulatorTest, SomeFailingTxs) {
   for (auto rejected_tx = txs.begin() + 1; rejected_tx != txs.end();
        ++rejected_tx) {
     verified_proposal_and_errors->rejected_transactions.emplace_back(
-        validation::TransactionError{rejected_tx->hash(),
-        validation::CommandError{"SomeCommand", 1, "", true}});
+        validation::TransactionError{
+            rejected_tx->hash(),
+            validation::CommandError{"SomeCommand", 1, "", true}});
   }
   shared_model::proto::Block block = makeBlock(proposal->height() - 1);
 

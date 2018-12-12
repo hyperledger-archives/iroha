@@ -341,9 +341,10 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   size_t cmd_index = 2;
   uint32_t error_code = 3;
   validation_result->rejected_transactions.emplace_back(
-      iroha::validation::TransactionError{failed_tx_hash,
-      iroha::validation::CommandError{
-          cmd_name, error_code, "", true, cmd_index}});
+      iroha::validation::TransactionError{
+          failed_tx_hash,
+          iroha::validation::CommandError{
+              cmd_name, error_code, "", true, cmd_index}});
   verified_prop_notifier_.get_subscriber().on_next(
       iroha::simulator::VerifiedProposalCreatorEvent{validation_result, round});
 
