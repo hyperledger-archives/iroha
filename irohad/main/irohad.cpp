@@ -200,8 +200,6 @@ int main(int argc, char *argv[]) {
 
       // clear previous storage if any
       irohad.dropStorage();
-      // reset ordering service persistent counter
-      irohad.resetOrderingService();
 
       irohad.storage->insertBlock(*block.value());
       log->info("Genesis block inserted, number of transactions: {}",
