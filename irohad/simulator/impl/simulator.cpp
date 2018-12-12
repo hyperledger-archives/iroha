@@ -125,7 +125,7 @@ namespace iroha {
         return;
       }
       const auto &proposal = verified_proposal_and_errors->verified_proposal;
-      const auto &rejected_tx_hashes =
+      auto rejected_tx_hashes =
           verified_proposal_and_errors->rejected_transactions
           | boost::adaptors::transformed(
                 [](const auto &tx_error) { return tx_error.tx_hash; });
@@ -134,7 +134,7 @@ namespace iroha {
                                             last_block->hash(),
                                             proposal->createdTime(),
                                             proposal->transactions(),
-                                            rejected_tx_hashes);
+                                            std::move(rejected_tx_hashes));
       crypto_signer_->sign(*block);
       block_notifier_.get_subscriber().on_next(
           BlockCreatorEvent{RoundData{proposal, block}, round});
