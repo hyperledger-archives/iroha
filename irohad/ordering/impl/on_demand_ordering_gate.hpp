@@ -36,14 +36,19 @@ namespace iroha {
        * Represents storage modification. Proposal round increment
        */
       struct BlockEvent {
+        /// next round number
         consensus::Round round;
+        /// hashes of processed transactions
         cache::OrderingGateCache::HashesSetType hashes;
       };
 
       /**
        * Represents no storage modification. Reject round increment
        */
-      struct EmptyEvent {};
+      struct EmptyEvent {
+        /// next round number
+        consensus::Round round;
+      };
 
       using BlockRoundEventType = boost::variant<BlockEvent, EmptyEvent>;
 
