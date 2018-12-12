@@ -15,8 +15,7 @@ TxPaginationMeta::TxPaginationMeta(const TransportType &query)
     : CopyableProto(query) {}
 
 TxPaginationMeta::TxPaginationMeta(TransportType &&query)
-    : CopyableProto(
-          static_cast<std::remove_reference<TransportType>::type &&>(query)) {}
+    : CopyableProto(std::move(query)) {}
 
 TxPaginationMeta::TxPaginationMeta(const TxPaginationMeta &o)
     : TxPaginationMeta(*o.proto_) {}

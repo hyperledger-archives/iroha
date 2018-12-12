@@ -15,19 +15,25 @@
 namespace shared_model {
   namespace interface {
     /**
-     * Container of asset, for fetching data.
+     * Response for paginated queries
      */
     class TransactionsPageResponse
         : public ModelPrimitive<TransactionsPageResponse> {
      public:
       /**
-       * @return Attached transactions
+       * @return transactions from this page
        */
       virtual types::TransactionsCollectionType transactions() const = 0;
 
+      /**
+       * @return hash of the first transaction from the next page
+       */
       virtual boost::optional<interface::types::HashType> nextTxHash()
           const = 0;
 
+      /**
+       * @return total number of transactions for the query
+       */
       virtual interface::types::TransactionsNumberType allTransactionsSize()
           const = 0;
 

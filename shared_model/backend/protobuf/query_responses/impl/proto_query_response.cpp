@@ -13,7 +13,7 @@
 #include "backend/protobuf/query_responses/proto_role_permissions_response.hpp"
 #include "backend/protobuf/query_responses/proto_roles_response.hpp"
 #include "backend/protobuf/query_responses/proto_signatories_response.hpp"
-#include "backend/protobuf/query_responses/proto_transaction_page_response.hpp"
+#include "backend/protobuf/query_responses/proto_transactions_page_response.hpp"
 #include "backend/protobuf/query_responses/proto_transaction_response.hpp"
 #include "common/byteutils.hpp"
 #include "utils/variant_deserializer.hpp"
