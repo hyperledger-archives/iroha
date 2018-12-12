@@ -90,6 +90,47 @@ namespace {
 namespace iroha {
   namespace ametsuchi {
 
+    /**
+     * Check that query response meets defined requirements
+     * @tparam ExpectedQueryResponseType - expected type of that query
+     * response
+     * @tparam QueryResultCheckCallable - type of callable, which checks query
+     * response
+     * @param exec_result to be checked
+     * @param check_callable - that check callable
+     */
+    template <typename ExpectedQueryResponseType,
+              typename QueryResultCheckCallable>
+    void checkSuccessfulResult(QueryExecutorResult exec_result,
+                               QueryResultCheckCallable check_callable) {
+      ASSERT_NO_THROW({
+        const auto &cast_resp =
+            boost::get<const ExpectedQueryResponseType &>(exec_result->get());
+        check_callable(cast_resp);
+      }) << exec_result->toString();
+    }
+
+    /**
+     * Check that stateful error in query response is the one expected
+     * @tparam ExpectedQueryErrorType - expected sub-type of that query
+     * response
+     * @param exec_result to be checked
+     * @param expected_code, which is to be in the query response
+     */
+    template <typename ExpectedQueryErrorType>
+    void checkStatefulError(
+        QueryExecutorResult exec_result,
+        shared_model::interface::ErrorQueryResponse::ErrorCodeType
+            expected_code) {
+      ASSERT_NO_THROW({
+        const auto &error_qry_rsp =
+            boost::get<const shared_model::interface::ErrorQueryResponse &>(
+                exec_result->get());
+        ASSERT_EQ(error_qry_rsp.errorCode(), expected_code);
+        boost::get<const ExpectedQueryErrorType &>(error_qry_rsp.get());
+      }) << exec_result->toString();
+    }
+
     class QueryExecutorTest : public AmetsuchiTest {
      public:
       QueryExecutorTest() {
@@ -223,47 +264,6 @@ namespace iroha {
           ErrorCodeType kNoPermissions = 2;
       static constexpr shared_model::interface::ErrorQueryResponse::
           ErrorCodeType kInvalidPagination = 4;
-
-      /**
-       * Check that query response meets defined requirements
-       * @tparam ExpectedQueryResponseType - expected type of that query
-       * response
-       * @tparam QueryResultCheckCallable - type of callable, which checks query
-       * response
-       * @param exec_result to be checked
-       * @param check_callable - that check callable
-       */
-      template <typename ExpectedQueryResponseType,
-                typename QueryResultCheckCallable>
-      void checkSuccessfulResult(QueryExecutorResult exec_result,
-                                 QueryResultCheckCallable check_callable) {
-        ASSERT_NO_THROW({
-          const auto &cast_resp =
-              boost::get<const ExpectedQueryResponseType &>(exec_result->get());
-          check_callable(cast_resp);
-        }) << exec_result->toString();
-      }
-
-      /**
-       * Check that stateful error in query response is the one expected
-       * @tparam ExpectedQueryErrorType - expected sub-type of that query
-       * response
-       * @param exec_result to be checked
-       * @param expected_code, which is to be in the query response
-       */
-      template <typename ExpectedQueryErrorType>
-      void checkStatefulError(
-          QueryExecutorResult exec_result,
-          shared_model::interface::ErrorQueryResponse::ErrorCodeType
-              expected_code) {
-        ASSERT_NO_THROW({
-          const auto &error_qry_rsp =
-              boost::get<const shared_model::interface::ErrorQueryResponse &>(
-                  exec_result->get());
-          ASSERT_EQ(error_qry_rsp.errorCode(), expected_code);
-          boost::get<const ExpectedQueryErrorType &>(error_qry_rsp.get());
-        }) << exec_result->toString();
-      }
 
       std::string role = "role";
       shared_model::interface::RolePermissionSet role_permissions;
@@ -1498,7 +1498,7 @@ namespace iroha {
       auto &hash = this->tx_hashes_.at(1);
       auto size = 2;
       auto query_response = this->queryPage(size, hash);
-      BlocksQueryExecutorTest::checkSuccessfulResult<TransactionsPageResponse>(
+      checkSuccessfulResult<TransactionsPageResponse>(
           std::move(query_response),
           [this, &hash, size](const auto &tx_page_response) {
             EXPECT_EQ(tx_page_response.transactions().begin()->hash(), hash);
@@ -1520,7 +1520,7 @@ namespace iroha {
       this->createTransactionsAndCommit(3);
       auto size = 2;
       auto query_response = this->queryPage(size);
-      BlocksQueryExecutorTest::checkSuccessfulResult<TransactionsPageResponse>(
+      checkSuccessfulResult<TransactionsPageResponse>(
           std::move(query_response),
           [this, size](const auto &tx_page_response) {
             EXPECT_EQ(tx_page_response.transactions().begin()->hash(),
@@ -1541,7 +1541,7 @@ namespace iroha {
       auto size = 10;
       auto query_response = this->queryPage(size);
 
-      BlocksQueryExecutorTest::checkSuccessfulResult<TransactionsPageResponse>(
+      checkSuccessfulResult<TransactionsPageResponse>(
           std::move(query_response),
           [this, size](const auto &tx_page_response) {
             this->generalTransactionsPageResponseCheck(tx_page_response, size);
@@ -1562,7 +1562,7 @@ namespace iroha {
       auto query_response =
           this->queryPage(size, types::HashType(unknown_hash_string));
 
-      BlocksQueryExecutorTest::checkStatefulError<StatefulFailedErrorResponse>(
+      checkStatefulError<StatefulFailedErrorResponse>(
           std::move(query_response),
           BlocksQueryExecutorTest::kInvalidPagination);
     }
@@ -1579,7 +1579,7 @@ namespace iroha {
       auto size = 2;
       auto query_response = this->queryPage(size);
 
-      BlocksQueryExecutorTest::checkSuccessfulResult<TransactionsPageResponse>(
+      checkSuccessfulResult<TransactionsPageResponse>(
           std::move(query_response),
           [this, size](const auto &tx_page_response) {
             this->generalTransactionsPageResponseCheck(tx_page_response, size);
