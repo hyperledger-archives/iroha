@@ -112,6 +112,26 @@ namespace iroha {
       }
 
       /**
+       * Add one specific permission for account
+       * @param perm - role permission to add
+       * @param account_id - tester account_id, by default "id@domain"
+       * @param role_id - name of the role for tester, by default "all"
+       */
+      void addOnePerm(
+          const shared_model::interface::permissions::Role perm,
+          const shared_model::interface::types::AccountIdType account_id =
+              "id@domain",
+          const shared_model::interface::types::RoleIdType role_id = "all") {
+        shared_model::interface::RolePermissionSet permissions;
+        permissions.set(perm);
+        execute(
+            *mock_command_factory->constructCreateRole(role_id, permissions),
+            true);
+        execute(*mock_command_factory->constructAppendRole(account_id, role_id),
+                true);
+      }
+
+      /**
        * Check that command result contains specific error code and error
        * message
        * @param cmd_result to be checked
@@ -192,10 +212,11 @@ namespace iroha {
       /**
        * Add default asset and check that it is done
        */
-      void addAsset() {
-        execute(*mock_command_factory->constructCreateAsset(
-                    "coin", domain->domainId(), 1),
-                true);
+      void addAsset(const shared_model::interface::types::DomainIdType
+                        &domain_id = "domain") {
+        execute(
+            *mock_command_factory->constructCreateAsset("coin", domain_id, 1),
+            true);
       }
 
       shared_model::interface::types::AssetIdType asset_id =
@@ -203,8 +224,8 @@ namespace iroha {
     };
 
     /**
-     * @given command
-     * @when trying to add account asset
+     * @given addAccountAsset command
+     * @when trying to add asset to account
      * @then account asset is successfully added
      */
     TEST_F(AddAccountAssetTest, Valid) {
@@ -225,6 +246,71 @@ namespace iroha {
       account_asset = query->getAccountAsset(account->accountId(), asset_id);
       ASSERT_TRUE(account_asset);
       ASSERT_EQ("2.0", account_asset.get()->balance().toStringRepr());
+    }
+
+    /**
+     * @given addAccountAsset command
+     * @when trying to add asset to account with a domain permission
+     * @then account asset is successfully added
+     */
+    TEST_F(AddAccountAssetTest, DomainPermValid) {
+      addAsset();
+      addOnePerm(
+          shared_model::interface::permissions::Role::kAddDomainAssetQty);
+
+      execute(*mock_command_factory->constructAddAssetQuantity(
+          asset_id, asset_amount_one_zero));
+
+      auto account_asset =
+          query->getAccountAsset(account->accountId(), asset_id);
+      ASSERT_TRUE(account_asset);
+      ASSERT_EQ(asset_amount_one_zero, account_asset.get()->balance());
+
+      execute(*mock_command_factory->constructAddAssetQuantity(
+          asset_id, asset_amount_one_zero));
+
+      account_asset = query->getAccountAsset(account->accountId(), asset_id);
+      ASSERT_TRUE(account_asset);
+      ASSERT_EQ("2.0", account_asset.get()->balance().toStringRepr());
+    }
+
+    /**
+     * @given addAccountAsset command and invalid domain permission
+     * @when trying to add asset
+     * @then account asset is not added
+     */
+    TEST_F(AddAccountAssetTest, DomainPermInvalid) {
+      std::unique_ptr<shared_model::interface::Domain> domain2;
+      domain2 = clone(
+          TestDomainBuilder().domainId("domain2").defaultRole(role).build());
+      execute(*mock_command_factory->constructCreateDomain(domain2->domainId(),
+                                                           role),
+              true);
+      addAsset(domain2->domainId());
+      addOnePerm(
+          shared_model::interface::permissions::Role::kAddDomainAssetQty);
+
+      auto asset2_id = "coin#" + domain2->domainId();
+
+      execute(*mock_command_factory->constructAddAssetQuantity(
+                  asset2_id, asset_amount_one_zero),
+              true);
+
+      auto account_asset =
+          query->getAccountAsset(account->accountId(), asset2_id);
+      ASSERT_TRUE(account_asset);
+      ASSERT_EQ(asset_amount_one_zero,
+                account_asset.get()->balance());
+
+      auto cmd_result =
+          execute<false>(*mock_command_factory->constructAddAssetQuantity(
+              asset2_id, asset_amount_one_zero));
+
+      std::vector<std::string> query_args{account->accountId(),
+                                          asset_amount_one_zero.toStringRepr(),
+                                          asset2_id,
+                                          "1"};
+      CHECK_ERROR_CODE_AND_MESSAGE(cmd_result, 2, query_args);
     }
 
     /**
@@ -1499,16 +1585,17 @@ namespace iroha {
       /**
        * Add default asset and check that it is done
        */
-      void addAsset() {
+      void addAsset(const shared_model::interface::types::DomainIdType
+                        &domain_id = "domain") {
         auto asset = clone(TestAccountAssetBuilder()
-                               .domainId(domain->domainId())
+                               .domainId(domain_id)
                                .assetId(asset_id)
                                .precision(1)
                                .build());
 
-        execute(*mock_command_factory->constructCreateAsset(
-                    "coin", domain->domainId(), 1),
-                true);
+        execute(
+            *mock_command_factory->constructCreateAsset("coin", domain_id, 1),
+            true);
       }
 
       shared_model::interface::types::AssetIdType asset_id =
@@ -1571,6 +1658,86 @@ namespace iroha {
       account_asset = query->getAccountAsset(account->accountId(), asset_id);
       ASSERT_TRUE(account_asset);
       ASSERT_EQ(asset_amount_one_zero, account_asset.get()->balance());
+    }
+
+    /**
+     * @given command and domain permission
+     * @when trying to subtract account asset
+     * @then account asset is successfully subtracted
+     */
+    TEST_F(SubtractAccountAssetTest, DomainPermValid) {
+      addAsset();
+      addOnePerm(
+          shared_model::interface::permissions::Role::kSubtractDomainAssetQty);
+
+      execute(*mock_command_factory->constructAddAssetQuantity(
+                  asset_id, asset_amount_one_zero),
+              true);
+
+      auto account_asset =
+          query->getAccountAsset(account->accountId(), asset_id);
+      ASSERT_TRUE(account_asset);
+      ASSERT_EQ(asset_amount_one_zero,
+                account_asset.get()->balance());
+
+      execute(*mock_command_factory->constructAddAssetQuantity(
+                  asset_id, asset_amount_one_zero),
+              true);
+
+      account_asset = query->getAccountAsset(account->accountId(), asset_id);
+      ASSERT_TRUE(account_asset);
+      ASSERT_EQ("2.0", account_asset.get()->balance().toStringRepr());
+
+      execute(*mock_command_factory->constructSubtractAssetQuantity(
+                  asset_id, asset_amount_one_zero),
+              true);
+
+      account_asset = query->getAccountAsset(account->accountId(), asset_id);
+      ASSERT_TRUE(account_asset);
+      ASSERT_EQ(asset_amount_one_zero,
+                account_asset.get()->balance());
+    }
+
+    /**
+     * @given command and invalid domain permission/ permission in other domain
+     * @when trying to subtract asset
+     * @then no account asset is subtracted
+     */
+    TEST_F(SubtractAccountAssetTest, DomainPermInvalid) {
+      std::unique_ptr<shared_model::interface::Domain> domain2;
+      domain2 = clone(
+          TestDomainBuilder().domainId("domain2").defaultRole(role).build());
+      execute(*mock_command_factory->constructCreateDomain(domain2->domainId(),
+                                                           role),
+              true);
+      addAsset(domain2->domainId());
+      addOnePerm(
+          shared_model::interface::permissions::Role::kSubtractDomainAssetQty);
+
+      auto asset2_id = "coin#" + domain2->domainId();
+      execute(*mock_command_factory->constructAddAssetQuantity(
+                  asset2_id, asset_amount_one_zero),
+              true);
+      auto account_asset =
+          query->getAccountAsset(account->accountId(), asset2_id);
+      ASSERT_TRUE(account_asset);
+      ASSERT_EQ(asset_amount_one_zero,
+                account_asset.get()->balance());
+
+      auto cmd_result =
+          execute<false>(*mock_command_factory->constructSubtractAssetQuantity(
+              asset2_id, asset_amount_one_zero));
+
+      std::vector<std::string> query_args{account->accountId(),
+                                          asset2_id,
+                                          asset_amount_one_zero.toStringRepr(),
+                                          "1"};
+      CHECK_ERROR_CODE_AND_MESSAGE(cmd_result, 2, query_args);
+
+      account_asset = query->getAccountAsset(account->accountId(), asset2_id);
+      ASSERT_TRUE(account_asset);
+      ASSERT_EQ(asset_amount_one_zero,
+                account_asset.get()->balance());
     }
 
     /**

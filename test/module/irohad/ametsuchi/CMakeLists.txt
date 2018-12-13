@@ -50,13 +50,16 @@ target_link_libraries(postgres_options_test
 
 addtest(postgres_executor_test postgres_executor_test.cpp)
 target_link_libraries(postgres_executor_test
-    integration_framework
+    integration_framework_config_helper
+    shared_model_proto_backend
+    shared_model_default_builders
     ametsuchi
     commands_mocks_factory
     )
 
 addtest(postgres_query_executor_test postgres_query_executor_test.cpp)
 target_link_libraries(postgres_query_executor_test
+    shared_model_proto_backend
     ametsuchi_fixture
     ametsuchi
     commands_mocks_factory
