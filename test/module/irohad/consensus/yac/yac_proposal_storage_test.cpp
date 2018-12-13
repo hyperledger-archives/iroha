@@ -11,6 +11,7 @@
 #include "module/irohad/consensus/yac/yac_mocks.hpp"
 
 using namespace iroha::consensus::yac;
+using namespace ::testing;
 
 static logger::Logger log_ = logger::testLog("YacProposalStorage");
 
@@ -18,19 +19,24 @@ class YacProposalStorageTest : public ::testing::Test {
  public:
   const PeersNumberType number_of_peers = 7;
   const PeersNumberType supermajority =
-      number_of_peers - (number_of_peers - 1) / 5;  // `5f+1' consistency model
-  const YacHash hash =
-      YacHash(iroha::consensus::Round{1, 1}, "proposal", "commit");
-  YacProposalStorage storage =
-      YacProposalStorage(iroha::consensus::Round{1, 1}, number_of_peers);
+      number_of_peers - number_of_peers / 5;  // `5f+1' consistency model
+  YacHash hash = YacHash(iroha::consensus::Round{1, 1}, "proposal", "commit");
+  const std::shared_ptr<MockSupermajorityChecker> supermajority_checker =
+      std::make_shared<MockSupermajorityChecker>();
+  YacProposalStorage storage = YacProposalStorage(
+      iroha::consensus::Round{1, 1}, number_of_peers, supermajority_checker);
   std::vector<VoteMessage> valid_votes;
 
   void SetUp() override {
-    storage =
-        YacProposalStorage(iroha::consensus::Round{1, 1}, number_of_peers);
     std::generate_n(std::back_inserter(valid_votes), number_of_peers, [this] {
       return create_vote(this->hash, std::to_string(this->valid_votes.size()));
     });
+
+    EXPECT_CALL(*supermajority_checker, hasSupermajority(_, _))
+        .WillRepeatedly(
+            Invoke([this](auto c, auto) { return c >= supermajority; }));
+    EXPECT_CALL(*supermajority_checker, canHaveSupermajority(_, _))
+        .WillRepeatedly(Return(true));
   }
 };
 
@@ -73,22 +79,18 @@ TEST_F(YacProposalStorageTest, YacProposalStorageWhenRejectCase) {
       "Init storage => insert votes for reject case => "
       "expected absence of commit");
 
-  auto other_hash = YacHash(iroha::consensus::Round{1, 1},
-                            hash.vote_hashes.proposal_hash,
-                            "other_commit");
+  size_t num_inserted = 0;
+  const size_t super_reject = number_of_peers - 2;
 
-  const size_t num_inserted_first_hash = supermajority / 2;
-  // insert votes for hash 1
-  for (size_t num_inserted = 0; num_inserted < num_inserted_first_hash;) {
-    ASSERT_EQ(boost::none, storage.insert(valid_votes.at(num_inserted++)));
-  }
+  EXPECT_CALL(*supermajority_checker, hasSupermajority(_, _))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*supermajority_checker, canHaveSupermajority(_, _))
+      .WillRepeatedly(Invoke([&num_inserted, &super_reject](auto, auto) {
+        return num_inserted < super_reject;
+      }));
 
-  // insert votes for hash 2
-  const size_t super_reject = number_of_peers - supermajority + 1;
-  for (size_t num_inserted = 0;
-       num_inserted < number_of_peers - num_inserted_first_hash;) {
-    auto insert_result =
-        storage.insert(create_vote(other_hash, std::to_string(num_inserted++)));
+  while (num_inserted < number_of_peers) {
+    auto insert_result = storage.insert(valid_votes.at(num_inserted++));
     if (num_inserted < super_reject) {
       EXPECT_EQ(boost::none, insert_result)
           << "Got an Answer after inserting " << num_inserted
@@ -99,7 +101,7 @@ TEST_F(YacProposalStorageTest, YacProposalStorageWhenRejectCase) {
       ASSERT_NE(boost::none, insert_result)
           << "Did not get an Answer after inserting " << num_inserted
           << " votes and the supermajority reject reached at " << super_reject;
-      ASSERT_EQ(num_inserted + num_inserted_first_hash,
+      ASSERT_EQ(num_inserted,
                 boost::get<RejectMessage>(*insert_result).votes.size())
           << " The reject message must have all the previously inserted votes.";
     }

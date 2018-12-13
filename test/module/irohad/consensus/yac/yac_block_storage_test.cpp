@@ -18,12 +18,15 @@ static logger::Logger log_ = logger::testLog("YacBlockStorage");
 
 class YacBlockStorageTest : public ::testing::Test {
  public:
-  const PeersNumberType number_of_peers = 6;
-  const PeersNumberType supermajority =
-      number_of_peers - (number_of_peers - 1) / 5;  // `5f+1' consistency model
-  const YacHash hash =
-      YacHash(iroha::consensus::Round{1, 1}, "proposal", "commit");
-  YacBlockStorage storage = YacBlockStorage(hash, number_of_peers);
+  PeersNumberType number_of_peers = 6;
+  PeersNumberType supermajority =
+      number_of_peers - number_of_peers / 5;  // `5f+1' consistency model
+  YacHash hash = YacHash(iroha::consensus::Round{1, 1}, "proposal", "commit");
+  YacBlockStorage storage =
+      YacBlockStorage(hash,
+                      number_of_peers,
+                      // todo mboldyrev 13.12.2018 IR- use mock super checker
+                      getSupermajorityChecker(kConsistencyModel));
   std::vector<VoteMessage> valid_votes;
 
   void SetUp() override {

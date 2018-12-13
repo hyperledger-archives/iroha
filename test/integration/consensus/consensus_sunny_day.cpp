@@ -85,7 +85,11 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     auto order = ClusterOrdering::create(default_peers);
     ASSERT_TRUE(order);
 
-    yac = Yac::create(YacVoteStorage(), network, crypto, timer, order.value());
+    yac = Yac::create(YacVoteStorage(kConsistencyModel),
+                      network,
+                      crypto,
+                      timer,
+                      order.value());
     network->subscribe(yac);
 
     grpc::ServerBuilder builder;

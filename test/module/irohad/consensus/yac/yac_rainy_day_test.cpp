@@ -17,21 +17,22 @@ using namespace iroha::consensus::yac;
 using namespace framework::test_subscriber;
 
 /**
- * @given yac consensus with four peers
- * @when two peers vote for one hash and two for another
+ * @given yac consensus with 6 peers
+ * @when half of peers vote for one hash and the rest for another
  * @then commit does not happen, instead send_reject is triggered on transport
  */
 TEST_F(YacTest, InvalidCaseWhenNotReceiveSupermajority) {
+  const size_t N = 6; // number of peers
   auto my_peers = decltype(default_peers)(
-      {default_peers.begin(), default_peers.begin() + 6});
-  ASSERT_EQ(6, my_peers.size());
+      {default_peers.begin(), default_peers.begin() + N});
+  ASSERT_EQ(N, my_peers.size());
 
   auto my_order = ClusterOrdering::create(my_peers);
   ASSERT_TRUE(my_order);
 
   initYac(my_order.value());
 
-  EXPECT_CALL(*network, sendState(_, _)).Times(2 * my_peers.size());
+  EXPECT_CALL(*network, sendState(_, _)).Times(2 * N);
 
   EXPECT_CALL(*timer, deny()).Times(0);
 
@@ -41,10 +42,10 @@ TEST_F(YacTest, InvalidCaseWhenNotReceiveSupermajority) {
   YacHash hash2(iroha::consensus::Round{1, 1}, "proposal_hash", "block_hash2");
   yac->vote(hash1, my_order.value());
 
-  for (auto i = 0; i < 4; ++i) {
+  for (size_t i = 0; i < N / 2; ++i) {
     yac->onState({create_vote(hash1, std::to_string(i))});
   };
-  for (auto i = 4; i < 6; ++i) {
+  for (size_t i = N / 2; i < N; ++i) {
     yac->onState({create_vote(hash2, std::to_string(i))});
   };
 }
@@ -84,8 +85,8 @@ TEST_F(YacTest, InvalidCaseWhenDoesNotVerify) {
 
 /**
  * @given yac consensus with 6 peers
- * @when on_reject happens due to 2 peers vote for one hash and 3 peers vote for
- * another and then last 6th peer votes for any hash, he directly receives
+ * @when on_reject happens due to all but one peers vote for different hashes
+ * and then last 6th peer votes for any hash, he directly receives
  * reject message, because on_reject already happened
  * @then reject message will be called in total 7 times (peers size + 1 who
  * receives reject directly)
@@ -110,19 +111,17 @@ TEST_F(YacTest, ValidCaseWhenReceiveOnVoteAfterReject) {
 
   EXPECT_CALL(*crypto, verify(_)).WillRepeatedly(Return(true));
 
-  YacHash hash1(iroha::consensus::Round{1, 1}, "proposal_hash", "block_hash");
-  YacHash hash2(iroha::consensus::Round{1, 1}, "proposal_hash", "block_hash2");
+  const auto makeYacHash = [](size_t i) {
+    return YacHash(iroha::consensus::Round{1, 1},
+                   "proposal_hash",
+                   "block_hash" + std::to_string(i));
+  };
 
   std::vector<VoteMessage> votes;
-  for (size_t i = 0; i < peers_number / 2; ++i) {
+  for (size_t i = 0; i < peers_number - 1; ++i) {
     auto peer = my_order->getPeers().at(i);
     auto pubkey = shared_model::crypto::toBinaryString(peer->pubkey());
-    votes.push_back(create_vote(hash1, pubkey));
-  };
-  for (size_t i = peers_number / 2; i < peers_number - 1; ++i) {
-    auto peer = my_order->getPeers().at(i);
-    auto pubkey = shared_model::crypto::toBinaryString(peer->pubkey());
-    votes.push_back(create_vote(hash2, pubkey));
+    votes.push_back(create_vote(makeYacHash(i), pubkey));
   };
 
   for (const auto &vote : votes) {
@@ -132,5 +131,5 @@ TEST_F(YacTest, ValidCaseWhenReceiveOnVoteAfterReject) {
   yac->onState(votes);
   auto peer = my_order->getPeers().back();
   auto pubkey = shared_model::crypto::toBinaryString(peer->pubkey());
-  yac->onState({create_vote(hash1, pubkey)});
+  yac->onState({create_vote(makeYacHash(peers_number), pubkey)});
 }

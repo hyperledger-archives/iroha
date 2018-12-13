@@ -22,6 +22,10 @@
 #include "interfaces/iroha_internal/block.hpp"
 #include "module/shared_model/interface_mocks.hpp"
 
+// TODO mboldyrev 13.12.2018 IR- Parametrize the tests with consistency models
+static const iroha::consensus::yac::ConsistencyModel kConsistencyModel =
+    iroha::consensus::yac::ConsistencyModel::kBft;
+
 namespace iroha {
   namespace consensus {
     namespace yac {
@@ -205,21 +209,9 @@ namespace iroha {
 
       class MockSupermajorityChecker : public SupermajorityChecker {
        public:
-        MOCK_CONST_METHOD2(
-            hasSupermajority,
-            bool(const shared_model::interface::types::SignatureRangeType
-                     &signatures,
-                 const std::vector<
-                     std::shared_ptr<shared_model::interface::Peer>> &peers));
-        MOCK_CONST_METHOD2(checkSize, bool(PeersNumberType, PeersNumberType));
-        MOCK_CONST_METHOD2(
-            peersSubset,
-            bool(const shared_model::interface::types::SignatureRangeType
-                     &signatures,
-                 const std::vector<
-                     std::shared_ptr<shared_model::interface::Peer>> &peers));
-        MOCK_CONST_METHOD3(
-            hasReject, bool(PeersNumberType, PeersNumberType, PeersNumberType));
+        MOCK_CONST_METHOD2(hasSupermajority, bool(PeersNumberType, PeersNumberType));
+        MOCK_CONST_METHOD2(canHaveSupermajority,
+                           bool(const VoteGroups &, PeersNumberType));
       };
 
       class YacTest : public ::testing::Test {
@@ -255,7 +247,11 @@ namespace iroha {
         }
 
         void initYac(ClusterOrdering ordering) {
-          yac = Yac::create(YacVoteStorage(), network, crypto, timer, ordering);
+          yac = Yac::create(YacVoteStorage(kConsistencyModel),
+                            network,
+                            crypto,
+                            timer,
+                            ordering);
           network->subscribe(yac);
         }
       };

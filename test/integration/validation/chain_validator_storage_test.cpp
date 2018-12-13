@@ -3,16 +3,20 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "consensus/yac/impl/supermajority_checker_impl.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_fixture.hpp"
 #include "validation/impl/chain_validator_impl.hpp"
 
 #include "ametsuchi/mutable_storage.hpp"
 #include "builders/protobuf/transaction.hpp"
+#include "consensus/yac/supermajority_checker.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "cryptography/default_hash_provider.hpp"
 #include "cryptography/keypair.hpp"
 #include "module/shared_model/builders/protobuf/block.hpp"
+
+// TODO mboldyrev 13.12.2018 IR- Parametrize the tests with consistency models
+static const iroha::consensus::yac::ConsistencyModel kConsistencyModel =
+    iroha::consensus::yac::ConsistencyModel::kBft;
 
 namespace iroha {
 
@@ -108,8 +112,11 @@ namespace iroha {
     std::shared_ptr<validation::ChainValidatorImpl> validator;
     std::vector<shared_model::crypto::Keypair> keys;
     std::shared_ptr<consensus::yac::SupermajorityChecker>
-        supermajority_checker =
-            std::make_shared<consensus::yac::SupermajorityCheckerImpl>();
+        supermajority_checker = consensus::yac::getSupermajorityChecker(
+            kConsistencyModel  // TODO mboldyrev 13.12.2018 IR-
+                               // Parametrize the tests with
+                               // consistency models
+        );
   };
 
   /**
@@ -200,7 +207,7 @@ namespace iroha {
   TEST_F(ChainValidatorStorageTest, NoSupermajority) {
     auto block1 = generateAndApplyFirstBlock();
 
-    ASSERT_FALSE(supermajority_checker->checkSize(2, 4))
+    ASSERT_FALSE(supermajority_checker->hasSupermajority(2, 4))
         << "This test assumes that 2 out of 4 peers do not have supermajority!";
     auto block2 = completeBlock(baseBlock({dummyTx(2)}, 2, block1.hash())
                                     .signAndAddSignature(keys.at(0))
