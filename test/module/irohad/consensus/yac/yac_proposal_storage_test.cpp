@@ -17,8 +17,10 @@ static logger::Logger log_ = logger::testLog("YacProposalStorage");
 class YacProposalStorageTest : public ::testing::Test {
  public:
   const PeersNumberType number_of_peers = 7;
-  const PeersNumberType supermajority = number_of_peers - number_of_peers / 5;
-  YacHash hash = YacHash(iroha::consensus::Round{1, 1}, "proposal", "commit");
+  const PeersNumberType supermajority =
+      number_of_peers - (number_of_peers - 1) / 5;  // `5f+1' consistency model
+  const YacHash hash =
+      YacHash(iroha::consensus::Round{1, 1}, "proposal", "commit");
   YacProposalStorage storage =
       YacProposalStorage(iroha::consensus::Round{1, 1}, number_of_peers);
   std::vector<VoteMessage> valid_votes;

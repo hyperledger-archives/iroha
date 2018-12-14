@@ -30,7 +30,7 @@ class SupermajorityCheckerTest : public ::testing::Test,
 TEST_F(SupermajorityCheckerTest, SuperMajorityCheckWithSize2) {
   log_->info("-----------| F(x, 2), x in {0..3} -----------");
 
-  int N = 2;
+  size_t N = 2;
   ASSERT_FALSE(checkSize(0, N));
   ASSERT_FALSE(checkSize(1, N));
   ASSERT_TRUE(checkSize(2, N));
@@ -45,7 +45,7 @@ TEST_F(SupermajorityCheckerTest, SuperMajorityCheckWithSize2) {
 TEST_F(SupermajorityCheckerTest, SuperMajorityCheckWithSize4) {
   log_->info("-----------| F(x, 6), x in {0..7} |-----------");
 
-  int N = 6;
+  size_t N = 6;
   ASSERT_FALSE(checkSize(0, N));
   ASSERT_FALSE(checkSize(1, N));
   ASSERT_FALSE(checkSize(2, N));
