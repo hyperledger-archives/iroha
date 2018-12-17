@@ -200,7 +200,7 @@ namespace iroha {
   TEST_F(ChainValidatorStorageTest, NoSupermajority) {
     auto block1 = generateAndApplyFirstBlock();
 
-    ASSERT_FALSE(checkSize(2, 4))
+    ASSERT_FALSE(supermajority_checker->checkSize(2, 4))
         << "This test assumes that 2 out of 4 peers do not have supermajority!";
     auto block2 = completeBlock(baseBlock({dummyTx(2)}, 2, block1.hash())
                                     .signAndAddSignature(keys.at(0))
