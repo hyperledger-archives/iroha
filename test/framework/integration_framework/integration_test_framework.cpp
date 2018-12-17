@@ -20,6 +20,7 @@
 #include "builders/protobuf/transaction.hpp"
 #include "builders/protobuf/transaction_sequence_builder.hpp"
 #include "common/files.hpp"
+#include "consensus/yac/consistency_model.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "cryptography/default_hash_provider.hpp"
@@ -67,6 +68,9 @@ namespace {
   std::string kLocalHost = "127.0.0.1";
   constexpr size_t kDefaultToriiPort = 11501;
   constexpr size_t kDefaultInternalPort = 50541;
+  /// Consensus consistency model type.
+  constexpr iroha::consensus::yac::ConsistencyModel kConsensusConsistencyModel =
+      iroha::consensus::yac::ConsistencyModel::kBft;
 }  // namespace
 
 namespace integration_framework {
@@ -83,12 +87,14 @@ namespace integration_framework {
       : port_guard_(std::make_unique<PortGuard>()),
         torii_port_(port_guard_->getPort(kDefaultToriiPort)),
         internal_port_(port_guard_->getPort(kDefaultInternalPort)),
-        iroha_instance_(std::make_shared<IrohaInstance>(mst_support,
-                                                        block_store_path,
-                                                        kLocalHost,
-                                                        torii_port_,
-                                                        internal_port_,
-                                                        dbname)),
+        iroha_instance_(
+            std::make_shared<IrohaInstance>(mst_support,
+                                            block_store_path,
+                                            kLocalHost,
+                                            torii_port_,
+                                            internal_port_,
+                                            kConsensusConsistencyModel,
+                                            dbname)),
         command_client_(kLocalHost, torii_port_),
         query_client_(kLocalHost, torii_port_),
         async_call_(std::make_shared<AsyncCall>()),

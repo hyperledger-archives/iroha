@@ -26,12 +26,14 @@ using namespace std::chrono_literals;
 
 namespace integration_framework {
 
-  IrohaInstance::IrohaInstance(bool mst_support,
-                               const std::string &block_store_path,
-                               const std::string &listen_ip,
-                               size_t torii_port,
-                               size_t internal_port,
-                               const boost::optional<std::string> &dbname)
+  IrohaInstance::IrohaInstance(
+      bool mst_support,
+      const std::string &block_store_path,
+      const std::string &listen_ip,
+      size_t torii_port,
+      size_t internal_port,
+      const iroha::consensus::yac::ConsistencyModel consistency_model,
+      const boost::optional<std::string> &dbname)
       : block_store_dir_(block_store_path),
         pg_conn_(getPostgreCredsOrDefault(dbname)),
         listen_ip_(listen_ip),
@@ -42,6 +44,7 @@ namespace integration_framework {
         proposal_delay_(1h),
         // not required due to solo consensus
         vote_delay_(0ms),
+        consistency_model_(consistency_model),
         opt_mst_gossip_params_(boost::make_optional(
             mst_support, iroha::GossipPropagationStrategyParams{})) {}
 
@@ -79,6 +82,7 @@ namespace integration_framework {
                                              proposal_delay_,
                                              vote_delay_,
                                              key_pair,
+                                             consistency_model_,
                                              opt_mst_gossip_params_);
   }
 

@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include "ametsuchi/impl/postgres_options.hpp"
+#include "consensus/yac/consistency_model.hpp"
 #include "multi_sig_transactions/gossip_propagation_strategy_params.hpp"
 
 namespace shared_model {
@@ -47,14 +48,17 @@ namespace integration_framework {
      * @param listen_ip - ip address for opening ports (internal & torii)
      * @param torii_port - port to bind Torii service to
      * @param internal_port - port for internal irohad communication
+     * @param consistency_model - the type of consistency model (CFT, BFT)
      * @param dbname is a name of postgres database
      */
-    IrohaInstance(bool mst_support,
-                  const std::string &block_store_path,
-                  const std::string &listen_ip,
-                  size_t torii_port,
-                  size_t internal_port,
-                  const boost::optional<std::string> &dbname = boost::none);
+    IrohaInstance(
+        bool mst_support,
+        const std::string &block_store_path,
+        const std::string &listen_ip,
+        size_t torii_port,
+        size_t internal_port,
+        const iroha::consensus::yac::ConsistencyModel consistency_model,
+        const boost::optional<std::string> &dbname = boost::none);
 
     void makeGenesis(const shared_model::interface::Block &block);
 
@@ -82,6 +86,7 @@ namespace integration_framework {
     const size_t internal_port_;
     const std::chrono::milliseconds proposal_delay_;
     const std::chrono::milliseconds vote_delay_;
+    const iroha::consensus::yac::ConsistencyModel consistency_model_;
     boost::optional<iroha::GossipPropagationStrategyParams>
         opt_mst_gossip_params_;
 

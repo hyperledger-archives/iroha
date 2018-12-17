@@ -36,6 +36,7 @@ namespace integration_framework {
                std::chrono::milliseconds proposal_delay,
                std::chrono::milliseconds vote_delay,
                const shared_model::crypto::Keypair &keypair,
+               const iroha::consensus::yac::ConsistencyModel consistency_model,
                const boost::optional<iroha::GossipPropagationStrategyParams>
                    &opt_mst_gossip_params = boost::none)
         : Irohad(block_store_dir,
@@ -47,6 +48,7 @@ namespace integration_framework {
                  proposal_delay,
                  vote_delay,
                  keypair,
+                 consistency_model,
                  opt_mst_gossip_params) {}
 
     auto &getCommandService() {
