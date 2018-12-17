@@ -68,7 +68,8 @@ namespace integration_framework {
         std::shared_ptr<shared_model::interface::TransactionBatchParser>
             batch_parser,
         std::shared_ptr<shared_model::interface::TransactionBatchFactory>
-            transaction_batch_factory)
+            transaction_batch_factory,
+        std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache)
         : common_objects_factory_(common_objects_factory),
           listen_ip_(listen_ip),
           internal_port_(internal_port),
@@ -83,6 +84,7 @@ namespace integration_framework {
                                              transaction_factory,
                                              batch_parser,
                                              transaction_batch_factory,
+                                             tx_presence_cache,
                                              keypair_->publicKey())),
           yac_transport_(std::make_shared<YacTransport>(async_call_)),
           os_transport_(std::make_shared<OsTransport>(transaction_batch_factory,
