@@ -44,10 +44,6 @@ using namespace iroha::consensus::yac;
 
 using namespace std::chrono_literals;
 
-/// Consensus consistency model type.
-static constexpr iroha::consensus::yac::ConsistencyModel
-    kConsensusConsistencyModel = iroha::consensus::yac::ConsistencyModel::kBft;
-
 /**
  * Configuring iroha daemon
  */
@@ -60,6 +56,7 @@ Irohad::Irohad(const std::string &block_store_dir,
                std::chrono::milliseconds proposal_delay,
                std::chrono::milliseconds vote_delay,
                const shared_model::crypto::Keypair &keypair,
+               const iroha::consensus::yac::ConsistencyModel consistency_model,
                const boost::optional<GossipPropagationStrategyParams>
                    &opt_mst_gossip_params)
     : block_store_dir_(block_store_dir),
@@ -72,7 +69,8 @@ Irohad::Irohad(const std::string &block_store_dir,
       vote_delay_(vote_delay),
       is_mst_supported_(opt_mst_gossip_params),
       opt_mst_gossip_params_(opt_mst_gossip_params),
-      keypair(keypair) {
+      keypair(keypair),
+      consistency_model_(consistency_model) {
   log_ = logger::log("IROHAD");
   log_->info("created");
   // Initializing storage at this point in order to insert genesis block before
@@ -185,7 +183,7 @@ void Irohad::initValidators() {
   stateful_validator =
       std::make_shared<StatefulValidatorImpl>(std::move(factory), batch_parser);
   chain_validator = std::make_shared<ChainValidatorImpl>(
-      getSupermajorityChecker(kConsensusConsistencyModel));
+      getSupermajorityChecker(consistency_model_));
 
   log_->info("[Init] => validators");
 }
@@ -317,7 +315,7 @@ void Irohad::initConsensusGate() {
                                               vote_delay_,
                                               async_call_,
                                               common_objects_factory_,
-                                              kConsensusConsistencyModel);
+                                              consistency_model_);
 
   log_->info("[Init] => consensus gate");
 }

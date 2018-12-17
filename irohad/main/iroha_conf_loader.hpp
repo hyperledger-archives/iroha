@@ -14,6 +14,8 @@
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/rapidjson.h>
 
+#include <boost/range/adaptor/map.hpp>
+#include "consensus/yac/consistency_model.hpp"
 #include "main/assert_config.hpp"
 
 namespace config_members {
@@ -26,7 +28,14 @@ namespace config_members {
   const char *ProposalDelay = "proposal_delay";
   const char *VoteDelay = "vote_delay";
   const char *MstSupport = "mst_enable";
+  const char *ConsistencyModelKey = "consistency_model";
 }  // namespace config_members
+
+using iroha::consensus::yac::ConsistencyModel;
+const std::unordered_map<std::string, ConsistencyModel> kConsistencyModels{
+  {"CFT", ConsistencyModel::kCft},
+  {"BFT", ConsistencyModel::kBft}
+};
 
 /**
  * parse and assert trusted peers json in `iroha.conf`
@@ -86,6 +95,16 @@ inline rapidjson::Document parse_iroha_config(const std::string &conf_path) {
                    ac::no_member_error(mbr::MstSupport));
   ac::assert_fatal(doc[mbr::MstSupport].IsBool(),
                    ac::type_error(mbr::MstSupport, kBoolType));
+
+  ac::assert_fatal(doc.HasMember(mbr::ConsistencyModelKey),
+                   ac::no_member_error(mbr::ConsistencyModelKey));
+  ac::assert_fatal(doc[mbr::ConsistencyModelKey].IsString(),
+                   ac::type_error(mbr::ConsistencyModelKey, kStrType));
+  ac::assert_fatal(
+      kConsistencyModels.count(doc[mbr::ConsistencyModelKey].GetString()),
+      ac::value_error(doc[mbr::ConsistencyModelKey].GetString(),
+                      kConsistencyModels | boost::adaptors::map_keys));
+
   return doc;
 }
 

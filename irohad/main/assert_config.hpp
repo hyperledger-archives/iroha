@@ -21,6 +21,9 @@
 #include <stdexcept>
 #include <string>
 
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/any_range.hpp>
+
 namespace assert_config {
   /**
    * error message helpers that are used in json validation.
@@ -32,6 +35,16 @@ namespace assert_config {
   inline std::string type_error(std::string const &value,
                                 std::string const &type) {
     return "'" + value + "' is not " + type;
+  }
+
+  inline std::string value_error(
+      std::string const &value,
+      const boost::any_range<std::string,
+                             boost::forward_traversal_tag,
+                             const std::string &,
+                             std::ptrdiff_t> permitted_values) {
+    return "`" + value + "' is not one of `"
+        + boost::algorithm::join(permitted_values, "', `") + "'";
   }
 
   inline std::string parse_error(std::string const &path) {

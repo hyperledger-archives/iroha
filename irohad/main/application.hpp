@@ -9,6 +9,7 @@
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/tx_presence_cache.hpp"
 #include "consensus/consensus_block_cache.hpp"
+#include "consensus/yac/consistency_model.hpp"
 #include "cryptography/crypto_provider/crypto_model_signer.hpp"
 #include "cryptography/keypair.hpp"
 #include "interfaces/common_objects/common_objects_factory.hpp"
@@ -65,6 +66,7 @@ class Irohad {
    * @param proposal_delay - maximum waiting time util emitting new proposal
    * @param vote_delay - waiting time before sending vote to next peer
    * @param keypair - public and private keys for crypto signer
+   * @param consistency_model - the type of consistency model to use (CFT, BFT)
    * @param opt_mst_gossip_params - parameters for Gossip MST propagation
    * (optional). If not provided, disables mst processing support
    *
@@ -79,6 +81,7 @@ class Irohad {
          std::chrono::milliseconds proposal_delay,
          std::chrono::milliseconds vote_delay,
          const shared_model::crypto::Keypair &keypair,
+         const iroha::consensus::yac::ConsistencyModel consistency_model,
          const boost::optional<iroha::GossipPropagationStrategyParams>
              &opt_mst_gossip_params = boost::none);
 
@@ -270,6 +273,7 @@ class Irohad {
   std::shared_ptr<iroha::ametsuchi::Storage> storage;
 
   shared_model::crypto::Keypair keypair;
+  const iroha::consensus::yac::ConsistencyModel consistency_model_;
   grpc::ServerBuilder builder;
 };
 
