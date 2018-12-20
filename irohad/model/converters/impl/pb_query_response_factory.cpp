@@ -249,7 +249,7 @@ namespace iroha {
           const protocol::SignatoriesResponse &signatoriesResponse) const {
         model::SignatoriesResponse res{};
         for (const auto &key : signatoriesResponse.keys()) {
-          iroha::hexstringToArray<32>(key) |
+          iroha::hexstringToArray<pubkey_t::size()>(key) |
               [&](const auto &pubkey) { res.keys.push_back(pubkey); };
         }
         return res;

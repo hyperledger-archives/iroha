@@ -214,7 +214,8 @@ namespace iroha {
           const protocol::AddSignatory &pb_add_signatory) {
         model::AddSignatory add_signatory;
         add_signatory.account_id = pb_add_signatory.account_id();
-        iroha::hexstringToArray<32>(pb_add_signatory.public_key()) |
+        iroha::hexstringToArray<pubkey_t::size()>(pb_add_signatory.public_key())
+            |
             [&add_signatory](const auto &blob) { add_signatory.pubkey = blob; };
         return add_signatory;
       }
@@ -253,10 +254,11 @@ namespace iroha {
         model::CreateAccount create_account;
         create_account.account_name = pb_create_account.account_name();
         create_account.domain_id = pb_create_account.domain_id();
-        iroha::hexstringToArray<32>(pb_create_account.public_key()) |
-            [&create_account](const auto &blob) {
-              create_account.pubkey = blob;
-            };
+        iroha::hexstringToArray<pubkey_t::size()>(
+            pb_create_account.public_key())
+            | [&create_account](const auto &blob) {
+                create_account.pubkey = blob;
+              };
         return create_account;
       }
 
@@ -291,10 +293,11 @@ namespace iroha {
           const protocol::RemoveSignatory &pb_remove_signatory) {
         model::RemoveSignatory remove_signatory;
         remove_signatory.account_id = pb_remove_signatory.account_id();
-        iroha::hexstringToArray<32>(pb_remove_signatory.public_key()) |
-            [&remove_signatory](const auto &blob) {
-              remove_signatory.pubkey = blob;
-            };
+        iroha::hexstringToArray<pubkey_t::size()>(
+            pb_remove_signatory.public_key())
+            | [&remove_signatory](const auto &blob) {
+                remove_signatory.pubkey = blob;
+              };
         return remove_signatory;
       }
       // set account quorum
