@@ -119,7 +119,7 @@
         ],
         "txNumber":1,
         "height":"1",
-        "prevBlockHash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "prevBlockHash":"0000000000000000000000000000000000000000000000000000000000000000"
      }
    }
 }
