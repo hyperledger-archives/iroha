@@ -1127,7 +1127,7 @@ namespace iroha {
     };
 
     struct GetAccountTxPaginationImpl {
-      static std::initializer_list<permissions::Role> getUserPermissions() {
+      static shared_model::interface::RolePermissionSet getUserPermissions() {
         return {permissions::Role::kSetDetail, permissions::Role::kGetMyAccTxs};
       }
 
@@ -1171,7 +1171,7 @@ namespace iroha {
     }
 
     struct GetAccountAssetTxPaginationImpl {
-      static std::initializer_list<permissions::Role> getUserPermissions() {
+      static shared_model::interface::RolePermissionSet getUserPermissions() {
         return {permissions::Role::kReceive,
                 permissions::Role::kGetMyAccAstTxs};
       }
