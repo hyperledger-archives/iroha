@@ -17,6 +17,16 @@ namespace iroha {
   namespace model {
     namespace converters {
 
+      /**
+       * convert hex string to pubkey
+       * @param dest reference to destination public key
+       * @param src source string
+       */
+      static void trySetHexKey(pubkey_t &dest, const std::string &src) {
+        iroha::hexstringToArray<pubkey_t::size()>(src) |
+            [&dest](const auto &blob) { dest = blob; };
+      }
+
       PbCommandFactory::PbCommandFactory() {
         boost::assign::insert(pb_role_map_)
             // Can append role
@@ -210,13 +220,12 @@ namespace iroha {
         pb_add_signatory.set_public_key(add_signatory.pubkey.to_hexstring());
         return pb_add_signatory;
       }
+
       model::AddSignatory PbCommandFactory::deserializeAddSignatory(
           const protocol::AddSignatory &pb_add_signatory) {
         model::AddSignatory add_signatory;
         add_signatory.account_id = pb_add_signatory.account_id();
-        iroha::hexstringToArray<pubkey_t::size()>(pb_add_signatory.public_key())
-            |
-            [&add_signatory](const auto &blob) { add_signatory.pubkey = blob; };
+        trySetHexKey(add_signatory.pubkey, pb_add_signatory.public_key());
         return add_signatory;
       }
 
@@ -254,11 +263,7 @@ namespace iroha {
         model::CreateAccount create_account;
         create_account.account_name = pb_create_account.account_name();
         create_account.domain_id = pb_create_account.domain_id();
-        iroha::hexstringToArray<pubkey_t::size()>(
-            pb_create_account.public_key())
-            | [&create_account](const auto &blob) {
-                create_account.pubkey = blob;
-              };
+        trySetHexKey(create_account.pubkey, pb_create_account.public_key());
         return create_account;
       }
 
@@ -293,11 +298,7 @@ namespace iroha {
           const protocol::RemoveSignatory &pb_remove_signatory) {
         model::RemoveSignatory remove_signatory;
         remove_signatory.account_id = pb_remove_signatory.account_id();
-        iroha::hexstringToArray<pubkey_t::size()>(
-            pb_remove_signatory.public_key())
-            | [&remove_signatory](const auto &blob) {
-                remove_signatory.pubkey = blob;
-              };
+        trySetHexKey(remove_signatory.pubkey, pb_remove_signatory.public_key());
         return remove_signatory;
       }
       // set account quorum
