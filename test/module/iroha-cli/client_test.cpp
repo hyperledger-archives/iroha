@@ -270,7 +270,7 @@ TEST_F(ClientServerTest, SendTxWhenStatelessInvalid) {
             iroha_cli::CliClient::OK);
   auto getAnswer = [&]() {
     return iroha_cli::CliClient(ip, port)
-        .getTxStatus(shared_model::crypto::toBinaryString(shm_tx.hash()))
+        .getTxStatus(shm_tx.hash().hex())
         .answer;
   };
   decltype(getAnswer()) answer;
@@ -336,10 +336,7 @@ TEST_F(ClientServerTest, SendTxWhenStatefulInvalid) {
       iroha::simulator::VerifiedProposalCreatorEvent{
           verified_proposal_and_errors, round});
 
-  auto getAnswer = [&]() {
-    return client.getTxStatus(shared_model::crypto::toBinaryString(tx.hash()))
-        .answer;
-  };
+  auto getAnswer = [&]() { return client.getTxStatus(tx.hash().hex()).answer; };
   decltype(getAnswer()) answer;
   auto read_attempt_counter(status_read_attempts);
   do {

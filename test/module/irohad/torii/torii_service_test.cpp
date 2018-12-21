@@ -237,8 +237,7 @@ TEST_F(ToriiServiceTest, StatusWhenTxWasNotReceivedBlocking) {
 
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     iroha::protocol::TxStatusRequest tx_request;
-    tx_request.set_tx_hash(
-        shared_model::crypto::toBinaryString(tx_hashes.at(i)));
+    tx_request.set_tx_hash(tx_hashes.at(i).hex());
     iroha::protocol::ToriiResponse toriiResponse;
     // this test does not require the fix for thread scheduling issues
     client.Status(tx_request, toriiResponse);
@@ -305,8 +304,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   // check if stateless validation passed
   for (size_t i = 0; i < TimesToriiBlocking; ++i) {
     iroha::protocol::TxStatusRequest tx_request;
-    tx_request.set_tx_hash(
-        shared_model::crypto::toBinaryString(tx_hashes.at(i)));
+    tx_request.set_tx_hash(tx_hashes.at(i).hex());
     iroha::protocol::ToriiResponse toriiResponse;
     client2.Status(tx_request, toriiResponse);
 
@@ -363,8 +361,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   // check if all transactions but the last one passed stateful validation
   for (size_t i = 0; i < TimesToriiBlocking - 1; ++i) {
     iroha::protocol::TxStatusRequest tx_request;
-    tx_request.set_tx_hash(
-        shared_model::crypto::toBinaryString(tx_hashes.at(i)));
+    tx_request.set_tx_hash(tx_hashes.at(i).hex());
     iroha::protocol::ToriiResponse toriiResponse;
 
     auto resub_counter(resubscribe_attempts);
@@ -385,8 +382,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   // check if all transactions but the last have committed state
   for (size_t i = 0; i < TimesToriiBlocking - 1; ++i) {
     iroha::protocol::TxStatusRequest tx_request;
-    tx_request.set_tx_hash(
-        shared_model::crypto::toBinaryString(tx_hashes.at(i)));
+    tx_request.set_tx_hash(tx_hashes.at(i).hex());
     iroha::protocol::ToriiResponse toriiResponse;
     client4.Status(tx_request, toriiResponse);
 
@@ -396,8 +392,7 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
   torii::CommandSyncClient client5(client4);
   // check if the last transaction from txs has failed stateful validation
   iroha::protocol::TxStatusRequest last_tx_request;
-  last_tx_request.set_tx_hash(shared_model::crypto::toBinaryString(
-      tx_hashes.at(TimesToriiBlocking - 1)));
+  last_tx_request.set_tx_hash(tx_hashes.at(TimesToriiBlocking - 1).hex());
   iroha::protocol::ToriiResponse stful_invalid_response;
   client5.Status(last_tx_request, stful_invalid_response);
   ASSERT_EQ(stful_invalid_response.tx_status(),
@@ -428,14 +423,14 @@ TEST_F(ToriiServiceTest, CheckHash) {
   // get statuses of transactions
   for (auto &hash : tx_hashes) {
     iroha::protocol::TxStatusRequest tx_request;
-    tx_request.set_tx_hash(shared_model::crypto::toBinaryString(hash));
+    tx_request.set_tx_hash(hash.hex());
     iroha::protocol::ToriiResponse toriiResponse;
-    const auto binary_hash = shared_model::crypto::toBinaryString(hash);
+    const auto hex_hash = hash.hex();
     auto resub_counter(resubscribe_attempts);
     do {
       client.Status(tx_request, toriiResponse);
-    } while (toriiResponse.tx_hash() != binary_hash and --resub_counter);
-    ASSERT_EQ(toriiResponse.tx_hash(), binary_hash);
+    } while (toriiResponse.tx_hash() != hex_hash and --resub_counter);
+    ASSERT_EQ(toriiResponse.tx_hash(), hex_hash);
   }
 }
 
@@ -459,7 +454,7 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
                       .signAndAddSignature(keypair)
                       .finish();
 
-  std::string txhash = crypto::toBinaryString(iroha_tx.hash());
+  std::string txhash = iroha_tx.hash().hex();
 
   std::vector<iroha::protocol::ToriiResponse> torii_response;
   // StatusStream is a blocking call and returns only when the last status
@@ -495,14 +490,15 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
   verified_prop_notifier_.get_subscriber().on_next(
       iroha::simulator::VerifiedProposalCreatorEvent{validation_result, round});
 
-  auto block = clone(proto::BlockBuilder()
-                         .height(1)
-                         .createdTime(iroha::time::now())
-                         .transactions(txs)
-                         .prevHash(crypto::Hash(std::string(32, '0')))
-                         .build()
-                         .signAndAddSignature(keypair)
-                         .finish());
+  auto block =
+      clone(proto::BlockBuilder()
+                .height(1)
+                .createdTime(iroha::time::now())
+                .transactions(txs)
+                .prevHash(crypto::Hash::fromHexString(std::string(64, '0')))
+                .build()
+                .signAndAddSignature(keypair)
+                .finish());
 
   // create commit from block notifier's observable
   rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
@@ -585,7 +581,7 @@ TEST_F(ToriiServiceTest, ListOfTxs) {
   std::for_each(
       std::begin(tx_hashes), std::end(tx_hashes), [&client](auto &hash) {
         iroha::protocol::TxStatusRequest tx_request;
-        tx_request.set_tx_hash(shared_model::crypto::toBinaryString(hash));
+        tx_request.set_tx_hash(hash.hex());
         iroha::protocol::ToriiResponse toriiResponse;
 
         auto resub_counter(resubscribe_attempts);
@@ -638,7 +634,7 @@ TEST_F(ToriiServiceTest, FailedListOfTxs) {
   std::for_each(
       std::begin(tx_hashes), std::end(tx_hashes), [&client](auto &hash) {
         iroha::protocol::TxStatusRequest tx_request;
-        tx_request.set_tx_hash(shared_model::crypto::toBinaryString(hash));
+        tx_request.set_tx_hash(hash.hex());
         iroha::protocol::ToriiResponse toriiResponse;
         auto resub_counter(resubscribe_attempts);
         do {
