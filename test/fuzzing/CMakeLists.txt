@@ -46,6 +46,8 @@ target_link_libraries(send_batches_fuzz
 
 add_executable(request_proposal_fuzz request_proposal_fuzz.cpp)
 target_link_libraries(request_proposal_fuzz
+  ametsuchi
+  rxcpp
   gtest::gtest
   gmock::gmock
   on_demand_ordering_service
