@@ -130,7 +130,11 @@ namespace iroha {
     }
 
     TemporaryWsvImpl::~TemporaryWsvImpl() {
-      *sql_ << "ROLLBACK";
+      try {
+        *sql_ << "ROLLBACK";
+      } catch (std::exception &e) {
+        log_->error("Rollback did not happen: {}", e.what());
+      }
     }
 
     TemporaryWsvImpl::SavepointWrapperImpl::SavepointWrapperImpl(
@@ -138,19 +142,24 @@ namespace iroha {
         std::string savepoint_name)
         : sql_{*wsv.sql_},
           savepoint_name_{std::move(savepoint_name)},
-          is_released_{false} {
+          is_released_{false},
+          log_(logger::log("Temporary wsv's savepoint wrapper")) {
       sql_ << "SAVEPOINT " + savepoint_name_ + ";";
-    };
+    }
 
     void TemporaryWsvImpl::SavepointWrapperImpl::release() {
       is_released_ = true;
     }
 
     TemporaryWsvImpl::SavepointWrapperImpl::~SavepointWrapperImpl() {
-      if (not is_released_) {
-        sql_ << "ROLLBACK TO SAVEPOINT " + savepoint_name_ + ";";
-      } else {
-        sql_ << "RELEASE SAVEPOINT " + savepoint_name_ + ";";
+      try {
+        if (not is_released_) {
+          sql_ << "ROLLBACK TO SAVEPOINT " + savepoint_name_ + ";";
+        } else {
+          sql_ << "RELEASE SAVEPOINT " + savepoint_name_ + ";";
+        }
+      } catch (std::exception &e) {
+        log_->error("SQL error. Reason: {}", e.what());
       }
     }
 
