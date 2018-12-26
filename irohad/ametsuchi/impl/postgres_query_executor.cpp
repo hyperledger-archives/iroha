@@ -228,7 +228,7 @@ namespace iroha {
                   query_range, perms...);
             });
       } catch (const std::exception &e) {
-        return logAndReturnErrorResponse(
+        return this->logAndReturnErrorResponse(
             QueryErrorType::kStatefulFailed, e.what(), 1);
       }
     }
@@ -343,9 +343,13 @@ namespace iroha {
           error_type, error, error_code, query_hash_);
     }
 
-    template <typename Query, typename QueryApplier, typename... Permissions>
+    template <typename Query,
+              typename QueryChecker,
+              typename QueryApplier,
+              typename... Permissions>
     QueryExecutorResult PostgresQueryExecutorVisitor::executeTransactionsQuery(
         const Query &q,
+        QueryChecker &&qry_checker,
         const std::string &related_txs,
         QueryApplier applier,
         Permissions... perms) {
@@ -422,15 +426,29 @@ namespace iroha {
               std::move(
                   txs.begin(), txs.end(), std::back_inserter(response_txs));
             }
-            // If 0 transactions are returned, we assume that hash is invalid.
-            // Since query with valid hash is guaranteed to return at least one
-            // transaction
-            if (first_hash and response_txs.empty()) {
-              auto error = (boost::format("invalid pagination hash: %s")
-                            % first_hash->hex())
-                               .str();
-              return this->logAndReturnErrorResponse(
-                  QueryErrorType::kStatefulFailed, error, 4);
+
+            if (response_txs.empty()) {
+              if (first_hash) {
+                // if 0 transactions are returned, and there is a specified
+                // paging hash, we assume it's invalid, since query with valid
+                // hash is guaranteed to return at least one transaction
+                auto error = (boost::format("invalid pagination hash: %s")
+                              % first_hash->hex())
+                                 .str();
+                return this->logAndReturnErrorResponse(
+                    QueryErrorType::kStatefulFailed, error, 4);
+              }
+              // if paging hash is not specified, we should check, why 0
+              // transactions are returned - it can be because there are
+              // actually no transactions for this query or some of the
+              // parameters were wrong
+              if (auto query_incorrect =
+                      std::forward<QueryChecker>(qry_checker)(q)) {
+                return this->logAndReturnErrorResponse(
+                    QueryErrorType::kStatefulFailed,
+                    query_incorrect.error_message,
+                    query_incorrect.error_code);
+              }
             }
 
             // if the number of returned transactions is equal to the
@@ -583,7 +601,16 @@ namespace iroha {
         };
       };
 
+      auto check_query = [this](const auto &q) {
+        if (this->existsInDb<int>("account", "account_id", "quorum", q.accountId())) {
+          return QueryFallbackCheckResult{};
+        }
+        return QueryFallbackCheckResult{
+            5, "no account with such id found: " + q.accountId()};
+      };
+
       return executeTransactionsQuery(q,
+                                      std::move(check_query),
                                       related_txs,
                                       apply_query,
                                       Role::kGetMyAccTxs,
@@ -694,7 +721,23 @@ namespace iroha {
         };
       };
 
+      auto check_query = [this](const auto &q) {
+        if (not this->existsInDb<int>(
+                "account", "account_id", "quorum", q.accountId())) {
+          return QueryFallbackCheckResult{
+              5, "no account with such id found: " + q.accountId()};
+        }
+        if (not this->existsInDb<int>(
+                "asset", "asset_id", "precision", q.assetId())) {
+          return QueryFallbackCheckResult{
+              6, "no asset with such id found: " + q.assetId()};
+        }
+
+        return QueryFallbackCheckResult{};
+      };
+
       return executeTransactionsQuery(q,
+                                      std::move(check_query),
                                       related_txs,
                                       apply_query,
                                       Role::kGetMyAccAstTxs,
@@ -940,6 +983,22 @@ namespace iroha {
                      [](auto &tx) { return clone(*tx); });
       return query_response_factory_->createTransactionsResponse(
           std::move(response_txs), query_hash_);
+    }
+
+    template <typename ReturnValueType>
+    bool PostgresQueryExecutorVisitor::existsInDb(
+        const std::string &table_name,
+        const std::string &key_name,
+        const std::string &value_name,
+        const std::string &value) const {
+      auto cmd = (boost::format(R"(SELECT %s
+                                   FROM %s
+                                   WHERE %s = '%s'
+                                   LIMIT 1)")
+                  % value_name % table_name % key_name % value)
+                     .str();
+      soci::rowset<ReturnValueType> result = this->sql_.prepare << cmd;
+      return result.begin() != result.end();
     }
 
   }  // namespace ametsuchi
