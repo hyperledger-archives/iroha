@@ -7,39 +7,44 @@
 
 #include "torii/impl/command_service_transport_grpc.hpp"
 
+#include <atomic>
 #include <iterator>
 
 #include <boost/format.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include "backend/protobuf/transaction_responses/proto_tx_response.hpp"
-#include "common/timeout.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "interfaces/iroha_internal/transaction_batch_factory.hpp"
+#include "interfaces/iroha_internal/transaction_batch_parser.hpp"
+#include "interfaces/iroha_internal/tx_status_factory.hpp"
 #include "interfaces/transaction.hpp"
+#include "network/consensus_gate.hpp"
+#include "torii/status_bus.hpp"
 
 namespace torii {
 
   CommandServiceTransportGrpc::CommandServiceTransportGrpc(
       std::shared_ptr<CommandService> command_service,
       std::shared_ptr<iroha::torii::StatusBus> status_bus,
-      std::chrono::milliseconds initial_timeout,
-      std::chrono::milliseconds nonfinal_timeout,
       std::shared_ptr<shared_model::interface::TxStatusFactory> status_factory,
       std::shared_ptr<TransportFactoryType> transaction_factory,
       std::shared_ptr<shared_model::interface::TransactionBatchParser>
           batch_parser,
       std::shared_ptr<shared_model::interface::TransactionBatchFactory>
           transaction_batch_factory,
+      std::shared_ptr<iroha::network::ConsensusGate> consensus_gate,
+      int maximum_rounds_without_update,
       logger::Logger log)
       : command_service_(std::move(command_service)),
         status_bus_(std::move(status_bus)),
-        initial_timeout_(initial_timeout),
-        nonfinal_timeout_(nonfinal_timeout),
         status_factory_(std::move(status_factory)),
         transaction_factory_(std::move(transaction_factory)),
         batch_parser_(std::move(batch_parser)),
         batch_factory_(std::move(transaction_batch_factory)),
-        log_(std::move(log)) {}
+        log_(std::move(log)),
+        consensus_gate_(std::move(consensus_gate)),
+        maximum_rounds_without_update_(maximum_rounds_without_update) {}
 
   grpc::Status CommandServiceTransportGrpc::Torii(
       grpc::ServerContext *context,
@@ -180,6 +185,20 @@ namespace torii {
     std::string client_id =
         (client_id_format % context->peer() % hash.toString()).str();
 
+    // in each round, increment the round counter, showing number of consecutive
+    // rounds without status update; if it becomes greater than some predefined
+    // value, stop the status streaming
+    std::atomic_int round_counter{0};
+    consensus_gate_->onOutcome().subscribe(
+        [this, &subscription, &round_counter](const auto &) {
+          auto new_val = round_counter.load() + 1;
+          if (new_val >= maximum_rounds_without_update_) {
+            subscription.unsubscribe();
+          } else {
+            round_counter++;
+          }
+        });
+
     command_service_
         ->getStatusStream(hash)
         // convert to transport objects
@@ -189,16 +208,6 @@ namespace torii {
                      shared_model::proto::TransactionResponse>(response)
               ->getTransport();
         })
-        // set a corresponding observable timeout based on status value
-        .lift<iroha::protocol::ToriiResponse>(
-            iroha::makeTimeout<iroha::protocol::ToriiResponse>(
-                [&](const auto &response) {
-                  return response.tx_status()
-                          == iroha::protocol::TxStatus::NOT_RECEIVED
-                      ? initial_timeout_
-                      : nonfinal_timeout_;
-                },
-                current_thread))
         // complete the observable if client is disconnected
         .take_while([=](const auto &) {
           auto is_cancelled = context->IsCancelled();
@@ -208,13 +217,17 @@ namespace torii {
           return not is_cancelled;
         })
         .subscribe(subscription,
-                   [&](iroha::protocol::ToriiResponse response) {
+                   [this, &response_writer, &client_id, &round_counter](
+                       iroha::protocol::ToriiResponse response) {
                      if (response_writer->Write(response)) {
                        log_->debug("status written, {}", client_id);
+                       // reset consecutive rounds counter for this tx
+                       round_counter.store(0);
                      }
                    },
                    [&](std::exception_ptr ep) {
-                     log_->debug("processing timeout, {}", client_id);
+                     log_->error("something bad happened, client_id {}",
+                                 client_id);
                    },
                    [&] { log_->debug("stream done, {}", client_id); });
 
