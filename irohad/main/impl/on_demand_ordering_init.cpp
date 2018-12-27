@@ -132,9 +132,11 @@ namespace iroha {
           // with number of peers
           auto &peer =
               current_peers_[permutation[reject_round % permutation.size()]];
-          log_->debug("For round {}, using OS on peer: {}",
-                      consensus::Round{current_round.block_round, reject_round},
-                      peer->toString());
+          log_->debug(
+              "For {}, using OS on peer: {}",
+              consensus::Round{current_round.block_round + block_round_advance,
+                               reject_round},
+              *peer);
           return peer;
         };
 
@@ -192,6 +194,7 @@ namespace iroha {
       auto delay = [reject_counter = kCounter,
                     local_counter = kCounter,
                     &time_generator,
+                    // MSVC requires const variables to be captured
                     kMaxLocalCounter](const auto &commit) mutable {
         using iroha::synchronizer::SynchronizationOutcomeType;
         if (commit.sync_outcome == SynchronizationOutcomeType::kReject
@@ -263,6 +266,10 @@ namespace iroha {
         std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache) {
       return std::make_shared<ordering::OnDemandOrderingServiceImpl>(
           max_size, std::move(proposal_factory), std::move(tx_cache));
+    }
+
+    OnDemandOrderingInit::~OnDemandOrderingInit() {
+      notifier.get_subscriber().unsubscribe();
     }
 
     std::shared_ptr<iroha::network::OrderingGate>

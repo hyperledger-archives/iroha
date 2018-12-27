@@ -29,7 +29,8 @@ namespace torii {
       std::shared_ptr<shared_model::interface::TransactionBatchParser>
           batch_parser,
       std::shared_ptr<shared_model::interface::TransactionBatchFactory>
-          transaction_batch_factory)
+          transaction_batch_factory,
+      logger::Logger log)
       : command_service_(std::move(command_service)),
         status_bus_(std::move(status_bus)),
         initial_timeout_(initial_timeout),
@@ -38,7 +39,7 @@ namespace torii {
         transaction_factory_(std::move(transaction_factory)),
         batch_parser_(std::move(batch_parser)),
         batch_factory_(std::move(transaction_batch_factory)),
-        log_(logger::log("CommandServiceTransportGrpc")) {}
+        log_(std::move(log)) {}
 
   grpc::Status CommandServiceTransportGrpc::Torii(
       grpc::ServerContext *context,
@@ -85,32 +86,22 @@ namespace torii {
   shared_model::interface::types::SharedTxsCollectionType
   CommandServiceTransportGrpc::deserializeTransactions(
       const iroha::protocol::TxList *request) {
-    return boost::copy_range<
-        shared_model::interface::types::SharedTxsCollectionType>(
-        request->transactions()
-        | boost::adaptors::transformed(
-              [&](const auto &tx) { return transaction_factory_->build(tx); })
-        | boost::adaptors::filtered([&](const auto &result) {
-            return result.match(
-                [](const iroha::expected::Value<
-                    std::unique_ptr<shared_model::interface::Transaction>> &) {
-                  return true;
-                },
-                [&](const iroha::expected::Error<TransportFactoryType::Error>
-                        &error) {
-                  status_bus_->publish(status_factory_->makeStatelessFail(
-                      error.error.hash,
-                      shared_model::interface::TxStatusFactory::
-                          TransactionError{error.error.error, 0, 0}));
-                  return false;
-                });
-          })
-        | boost::adaptors::transformed([&](auto result) {
-            return std::move(
-                       boost::get<iroha::expected::ValueOf<decltype(result)>>(
-                           result))
-                .value;
-          }));
+    shared_model::interface::types::SharedTxsCollectionType tx_collection;
+    for (const auto &tx : request->transactions()) {
+      transaction_factory_->build(tx).match(
+          [&tx_collection](
+              iroha::expected::Value<
+                  std::unique_ptr<shared_model::interface::Transaction>> &v) {
+            tx_collection.emplace_back(std::move(v).value);
+          },
+          [this](iroha::expected::Error<TransportFactoryType::Error> &error) {
+            status_bus_->publish(status_factory_->makeStatelessFail(
+                error.error.hash,
+                shared_model::interface::TxStatusFactory::TransactionError{
+                    error.error.error, 0, 0}));
+          });
+    }
+    return tx_collection;
   }
 
   grpc::Status CommandServiceTransportGrpc::ListTorii(
@@ -185,7 +176,7 @@ namespace torii {
 
     auto hash = shared_model::crypto::Hash::fromHexString(request->tx_hash());
 
-    static auto client_id_format = boost::format("Peer: '%s', %s");
+    auto client_id_format = boost::format("Peer: '%s', %s");
     std::string client_id =
         (client_id_format % context->peer() % hash.toString()).str();
 
@@ -193,7 +184,7 @@ namespace torii {
         ->getStatusStream(hash)
         // convert to transport objects
         .map([&](auto response) {
-          log_->info("mapped {}, {}", response->toString(), client_id);
+          log_->info("mapped {}, {}", *response, client_id);
           return std::static_pointer_cast<
                      shared_model::proto::TransactionResponse>(response)
               ->getTransport();
