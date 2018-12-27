@@ -118,7 +118,7 @@ TEST_F(CommandServiceTransportGrpcTest, Status) {
 
   iroha::protocol::TxStatusRequest tx_request;
   const shared_model::crypto::Hash hash(std::string(kHashLength, '1'));
-  tx_request.set_tx_hash(shared_model::crypto::toBinaryString(hash));
+  tx_request.set_tx_hash(hash.hex());
 
   iroha::protocol::ToriiResponse toriiResponse;
   std::shared_ptr<shared_model::interface::TransactionResponse> response =
