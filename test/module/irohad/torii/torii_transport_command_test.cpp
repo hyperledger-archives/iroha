@@ -272,7 +272,7 @@ TEST_F(CommandServiceTransportGrpcTest, StatusStreamOnNotReceived) {
       .WillOnce(Return(rxcpp::observable<>::iterate(responses)));
   EXPECT_CALL(response_writer,
               Write(Property(&iroha::protocol::ToriiResponse::tx_hash,
-                             StrEq(shared_model::crypto::toBinaryString(hash))),
+                             StrEq(hash.hex())),
                     _))
       .WillOnce(Return(true));
   ASSERT_TRUE(transport_grpc
