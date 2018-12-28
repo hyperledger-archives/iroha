@@ -10,8 +10,8 @@
 namespace shared_model {
   namespace validation {
 
-    void validateHexField(const std::string &public_key,
-                          ReasonsGroupType &reason) {
+    void validatePublicKey(const std::string &public_key,
+                           ReasonsGroupType &reason) {
       if (not validateHexString(public_key)) {
         reason.second.emplace_back("Public key is not in hex format");
       }
@@ -31,22 +31,22 @@ namespace shared_model {
           }
           case iroha::protocol::Command::kAddSignatory: {
             const auto &as = command.add_signatory();
-            validateHexField(as.public_key(), reason);
+            validatePublicKey(as.public_key(), reason);
             break;
           }
           case iroha::protocol::Command::kCreateAccount: {
             const auto &ca = command.create_account();
-            validateHexField(ca.public_key(), reason);
+            validatePublicKey(ca.public_key(), reason);
             break;
           }
           case iroha::protocol::Command::kRemoveSignatory: {
             const auto &rs = command.remove_signatory();
-            validateHexField(rs.public_key(), reason);
+            validatePublicKey(rs.public_key(), reason);
             break;
           }
           case iroha::protocol::Command::kAddPeer: {
             const auto &ap = command.add_peer();
-            validateHexField(ap.peer().peer_key(), reason);
+            validatePublicKey(ap.peer().peer_key(), reason);
             break;
           }
           case iroha::protocol::Command::kCreateRole: {

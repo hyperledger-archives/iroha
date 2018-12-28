@@ -24,6 +24,7 @@ namespace shared_model {
           == iroha::protocol::Block::BLOCK_VERSION_NOT_SET) {
         reason.second.emplace_back("Block version is not set");
         answer.addReason(std::move(reason));
+        return answer;
       }
 
       const auto &rejected_hashes =
