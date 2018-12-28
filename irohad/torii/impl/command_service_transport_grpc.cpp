@@ -154,7 +154,7 @@ namespace torii {
     *response =
         std::static_pointer_cast<shared_model::proto::TransactionResponse>(
             command_service_->getStatus(
-                shared_model::crypto::Hash(request->tx_hash())))
+                shared_model::crypto::Hash::fromHexString(request->tx_hash())))
             ->getTransport();
     return grpc::Status::OK;
   }
@@ -179,7 +179,7 @@ namespace torii {
 
     rxcpp::composite_subscription subscription;
 
-    auto hash = shared_model::crypto::Hash(request->tx_hash());
+    auto hash = shared_model::crypto::Hash::fromHexString(request->tx_hash());
 
     auto client_id_format = boost::format("Peer: '%s', %s");
     std::string client_id =
@@ -203,7 +203,7 @@ namespace torii {
         ->getStatusStream(hash)
         // convert to transport objects
         .map([&](auto response) {
-          log_->debug("mapped {}, {}", *response, client_id);
+          log_->info("mapped {}, {}", *response, client_id);
           return std::static_pointer_cast<
                      shared_model::proto::TransactionResponse>(response)
               ->getTransport();
