@@ -1,25 +1,14 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2017 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <gflags/gflags.h>
-#include <grpc++/grpc++.h>
 #include <csignal>
 #include <fstream>
 #include <thread>
+
+#include <gflags/gflags.h>
+#include <grpc++/grpc++.h>
 #include "common/result.hpp"
 #include "crypto/keys_manager_impl.hpp"
 #include "main/application.hpp"
@@ -96,6 +85,9 @@ DEFINE_validator(verbosity, validateVerbosity);
 std::promise<void> exit_requested;
 
 int main(int argc, char *argv[]) {
+  // Parsing command line arguments
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+
   spdlog::set_level(spdlog::level::level_enum(FLAGS_verbosity));
 
   auto log = logger::log("MAIN");
@@ -110,10 +102,6 @@ int main(int argc, char *argv[]) {
   }
 
   namespace mbr = config_members;
-
-  // Parsing command line arguments
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
-  gflags::ShutDownCommandLineFlags();
 
   // Reading iroha configuration file
   auto config = parse_iroha_config(FLAGS_config);
@@ -200,8 +188,6 @@ int main(int argc, char *argv[]) {
 
       // clear previous storage if any
       irohad.dropStorage();
-      // reset ordering service persistent counter
-      irohad.resetOrderingService();
 
       irohad.storage->insertBlock(*block.value());
       log->info("Genesis block inserted, number of transactions: {}",
@@ -243,7 +229,9 @@ int main(int argc, char *argv[]) {
   auto handler = [](int s) { exit_requested.set_value(); };
   std::signal(SIGINT, handler);
   std::signal(SIGTERM, handler);
+#ifdef SIGQUIT
   std::signal(SIGQUIT, handler);
+#endif
 
   // runs iroha
   log->info("Running iroha");
@@ -253,6 +241,8 @@ int main(int argc, char *argv[]) {
   // We do not care about shutting down grpc servers
   // They do all necessary work in their destructors
   log->info("shutting down...");
+
+  gflags::ShutDownCommandLineFlags();
 
   return 0;
 }

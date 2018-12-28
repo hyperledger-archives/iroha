@@ -39,10 +39,9 @@ namespace shared_model {
       interface::types::HashType reduced_hash_{
           shared_model::crypto::Sha3_256::makeHash(reduced_payload_blob_)};
 
-      std::vector<proto::Command> commands_{[this] {
-        return std::vector<proto::Command>(reduced_payload_.commands().begin(),
-                                           reduced_payload_.commands().end());
-      }()};
+      std::vector<proto::Command> commands_{
+          reduced_payload_.mutable_commands()->begin(),
+          reduced_payload_.mutable_commands()->end()};
 
       boost::optional<std::shared_ptr<interface::BatchMeta>> meta_{
           [this]() -> boost::optional<std::shared_ptr<interface::BatchMeta>> {
@@ -62,7 +61,7 @@ namespace shared_model {
         return SignatureSetType<proto::Signature>(signatures.begin(),
                                                   signatures.end());
       }()};
-    };
+    };  // namespace proto
 
     Transaction::Transaction(const TransportType &transaction) {
       impl_ = std::make_unique<Transaction::Impl>(transaction);
@@ -123,8 +122,8 @@ namespace shared_model {
       }
 
       auto sig = impl_->proto_->add_signatures();
-      sig->set_signature(crypto::toBinaryString(signed_blob));
-      sig->set_public_key(crypto::toBinaryString(public_key));
+      sig->set_signature(signed_blob.hex());
+      sig->set_public_key(public_key.hex());
 
       impl_->signatures_ = [this] {
         auto signatures = impl_->proto_->signatures()
