@@ -132,7 +132,7 @@ TEST_F(YacGateTest, YacGateSubscriptionTest) {
   EXPECT_CALL(*hash_provider, makeHash(_)).WillOnce(Return(expected_hash));
 
   block_notifier.get_subscriber().on_next(
-      BlockCreatorEvent{RoundData{expected_proposal, expected_block}, round});
+      BlockCreatorEvent{nullptr, RoundData{expected_proposal, expected_block}, round});
 
   // verify that block we voted for is in the cache
   auto cache_block = block_cache->get();
@@ -170,7 +170,7 @@ TEST_F(YacGateTest, YacGateSubscribtionTestFailCase) {
   EXPECT_CALL(*hash_provider, makeHash(_)).WillOnce(Return(expected_hash));
 
   block_notifier.get_subscriber().on_next(
-      BlockCreatorEvent{RoundData{expected_proposal, expected_block}, round});
+      BlockCreatorEvent{nullptr, RoundData{expected_proposal, expected_block}, round});
 }
 
 /**
@@ -186,7 +186,7 @@ TEST_F(YacGateTest, AgreementOnNone) {
 
   ASSERT_EQ(block_cache->get(), nullptr);
 
-  gate->vote({boost::none, round});
+  gate->vote({}, {nullptr, boost::none, round});
 
   ASSERT_EQ(block_cache->get(), nullptr);
 }
@@ -207,7 +207,7 @@ TEST_F(YacGateTest, DifferentCommit) {
   EXPECT_CALL(*hash_gate, vote(expected_hash, _)).Times(1);
 
   block_notifier.get_subscriber().on_next(
-      BlockCreatorEvent{RoundData{expected_proposal, expected_block}, round});
+      BlockCreatorEvent{nullptr, RoundData{expected_proposal, expected_block}, round});
 
   // create another block, which will be "received", and generate a commit
   // message with it
@@ -260,7 +260,7 @@ class YacGateOlderTest : public YacGateTest {
     ON_CALL(*hash_provider, makeHash(_)).WillByDefault(Return(expected_hash));
 
     block_notifier.get_subscriber().on_next(
-        BlockCreatorEvent{RoundData{expected_proposal, expected_block}, round});
+        BlockCreatorEvent{nullptr, RoundData{expected_proposal, expected_block}, round});
   }
 };
 
@@ -276,7 +276,7 @@ TEST_F(YacGateOlderTest, OlderVote) {
 
   EXPECT_CALL(*hash_provider, makeHash(_)).Times(0);
 
-  block_notifier.get_subscriber().on_next(BlockCreatorEvent{
+  block_notifier.get_subscriber().on_next(BlockCreatorEvent{{},
       boost::none, {round.block_round - 1, round.reject_round}});
 }
 

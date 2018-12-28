@@ -233,13 +233,13 @@ namespace iroha {
                               rejected.end(),
                               std::inserter(hashes, hashes.end()));
                   });
-              return ordering::OnDemandOrderingGate::BlockEvent{
-                  ordering::nextCommitRound(commit.round), hashes};
+              return {nullptr, ordering::OnDemandOrderingGate::BlockEvent{
+                  ordering::nextCommitRound(commit.round), hashes}};
             },
             [](const auto &nothing)
                 -> ordering::OnDemandOrderingGate::BlockRoundEventType {
-              return ordering::OnDemandOrderingGate::EmptyEvent{
-                  ordering::nextRejectRound(nothing.round)};
+              return {nullptr, ordering::OnDemandOrderingGate::EmptyEvent{
+                  ordering::nextRejectRound(nothing.round)}};
             });
       };
 

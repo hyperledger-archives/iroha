@@ -36,11 +36,13 @@ namespace iroha {
             consensus_result_cache_(std::move(consensus_result_cache)),
             log_(std::move(log)),
             current_hash_() {
-        block_creator_->onBlock().subscribe(
-            [this](const auto &event) { this->vote(event); });
+        block_creator_->onBlock().subscribe([this](const auto &event) {
+          this->vote({}, event);
+        });
       }
 
-      void YacGateImpl::vote(const simulator::BlockCreatorEvent &event) {
+      void YacGateImpl::vote(PeerList peers,
+                             const simulator::BlockCreatorEvent &event) {
         if (current_hash_.vote_round >= event.round) {
           log_->info(
               "Current round {} is greater than or equal to vote round {}, "

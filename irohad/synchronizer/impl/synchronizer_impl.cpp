@@ -43,6 +43,7 @@ namespace iroha {
           },
           [this](const consensus::ProposalReject &msg) {
             notifier_.get_subscriber().on_next(SynchronizationEvent{
+                nullptr,
                 rxcpp::observable<>::empty<
                     std::shared_ptr<shared_model::interface::Block>>(),
                 SynchronizationOutcomeType::kReject,
@@ -50,6 +51,7 @@ namespace iroha {
           },
           [this](const consensus::BlockReject &msg) {
             notifier_.get_subscriber().on_next(SynchronizationEvent{
+                nullptr,
                 rxcpp::observable<>::empty<
                     std::shared_ptr<shared_model::interface::Block>>(),
                 SynchronizationOutcomeType::kReject,
@@ -57,6 +59,7 @@ namespace iroha {
           },
           [this](const consensus::AgreementOnNone &msg) {
             notifier_.get_subscriber().on_next(SynchronizationEvent{
+                nullptr,
                 rxcpp::observable<>::empty<
                     std::shared_ptr<shared_model::interface::Block>>(),
                 SynchronizationOutcomeType::kNothing,
@@ -94,7 +97,8 @@ namespace iroha {
               and validator_->validateAndApply(chain, *storage)) {
             mutable_factory_->commit(std::move(storage));
 
-            return {chain, SynchronizationOutcomeType::kCommit, msg.round};
+            return {
+                nullptr, chain, SynchronizationOutcomeType::kCommit, msg.round};
           }
         }
       }
@@ -131,7 +135,8 @@ namespace iroha {
         }
       }
       notifier_.get_subscriber().on_next(
-          SynchronizationEvent{rxcpp::observable<>::just(msg.block),
+          SynchronizationEvent{nullptr,
+                               rxcpp::observable<>::just(msg.block),
                                SynchronizationOutcomeType::kCommit,
                                msg.round});
     }

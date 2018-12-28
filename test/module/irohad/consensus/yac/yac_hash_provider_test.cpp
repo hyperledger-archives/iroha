@@ -59,7 +59,7 @@ TEST(YacHashProviderTest, MakeYacHashTest) {
   auto hex_block_hash = block->hash().hex();
 
   auto yac_hash = hash_provider.makeHash(iroha::simulator::BlockCreatorEvent{
-      iroha::simulator::RoundData{proposal, block}, round});
+      nullptr, iroha::simulator::RoundData{proposal, block}, round});
 
   ASSERT_EQ(round, yac_hash.vote_round);
   ASSERT_EQ(hex_proposal_hash, yac_hash.vote_hashes.proposal_hash);
@@ -87,7 +87,7 @@ TEST(YacHashProviderTest, ToModelHashTest) {
                  | boost::adaptors::indirected));
 
   auto yac_hash = hash_provider.makeHash(iroha::simulator::BlockCreatorEvent{
-      iroha::simulator::RoundData{proposal, block}, round});
+      nullptr, iroha::simulator::RoundData{proposal, block}, round});
 
   auto model_hash = hash_provider.toModelHash(yac_hash);
 

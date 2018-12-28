@@ -34,8 +34,8 @@ namespace iroha {
             if (event.proposal) {
               this->processProposal(*getProposalUnsafe(event), event.round);
             } else {
-              notifier_.get_subscriber().on_next(
-                  VerifiedProposalCreatorEvent{boost::none, event.round});
+              notifier_.get_subscriber().on_next(VerifiedProposalCreatorEvent{
+                  event.ledger_peers, boost::none, event.round});
             }
           });
 
@@ -47,7 +47,7 @@ namespace iroha {
                                             event.round);
             } else {
               block_notifier_.get_subscriber().on_next(
-                  BlockCreatorEvent{boost::none, event.round});
+                  BlockCreatorEvent{event.ledger_peers, boost::none, event.round});
             }
           });
     }
@@ -108,7 +108,7 @@ namespace iroha {
       ametsuchi_factory_->prepareBlock(std::move(storage));
 
       notifier_.get_subscriber().on_next(
-          VerifiedProposalCreatorEvent{validated_proposal_and_errors, round});
+          VerifiedProposalCreatorEvent{nullptr, validated_proposal_and_errors, round});
     }
 
     void Simulator::processVerifiedProposal(
@@ -139,7 +139,7 @@ namespace iroha {
                                             rejected_hashes);
       crypto_signer_->sign(*block);
       block_notifier_.get_subscriber().on_next(
-          BlockCreatorEvent{RoundData{proposal, block}, round});
+          BlockCreatorEvent{nullptr, RoundData{proposal, block}, round});
     }
 
     rxcpp::observable<BlockCreatorEvent> Simulator::onBlock() {

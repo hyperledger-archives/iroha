@@ -12,6 +12,7 @@
 
 #include <boost/variant.hpp>
 #include <rxcpp/rx.hpp>
+#include "consensus/ledger_event.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/iroha_internal/unsafe_proposal_factory.hpp"
@@ -50,7 +51,10 @@ namespace iroha {
         consensus::Round round;
       };
 
-      using BlockRoundEventType = boost::variant<BlockEvent, EmptyEvent>;
+      struct BlockRoundEventType {
+        std::shared_ptr<PeerList> ledger_peers;
+        boost::variant<BlockEvent, EmptyEvent> event;
+      };
 
       OnDemandOrderingGate(
           std::shared_ptr<OnDemandOrderingService> ordering_service,

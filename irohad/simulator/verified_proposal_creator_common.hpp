@@ -9,6 +9,7 @@
 #include <boost/optional.hpp>
 #include "consensus/round.hpp"
 #include "validation/stateful_validator_common.hpp"
+#include "consensus/ledger_event.hpp"
 
 namespace iroha {
   namespace simulator {
@@ -18,6 +19,7 @@ namespace iroha {
      * and processes a proposal
      */
     struct VerifiedProposalCreatorEvent {
+      std::shared_ptr<PeerList> ledger_peers;
       boost::optional<std::shared_ptr<validation::VerifiedProposalAndErrors>>
           verified_proposal_result;
       consensus::Round round;

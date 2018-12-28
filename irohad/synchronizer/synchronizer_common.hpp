@@ -12,6 +12,7 @@
 
 #include "consensus/round.hpp"
 #include "interfaces/iroha_internal/block.hpp"
+#include "consensus/ledger_event.hpp"
 
 namespace iroha {
   namespace synchronizer {
@@ -35,6 +36,7 @@ namespace iroha {
      * commit
      */
     struct SynchronizationEvent {
+      std::shared_ptr<PeerList> ledger_peers;
       // TODO andrei 08.11.2018 IR-1852 Rework blocks collection from
       // synchronizer with iterable
       Chain synced_blocks;

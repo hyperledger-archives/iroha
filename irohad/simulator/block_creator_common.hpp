@@ -10,6 +10,7 @@
 
 #include <boost/optional.hpp>
 #include "consensus/round.hpp"
+#include "consensus/ledger_event.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -31,6 +32,7 @@ namespace iroha {
      * a verified proposal
      */
     struct BlockCreatorEvent {
+      std::shared_ptr<PeerList> ledger_peers;
       boost::optional<RoundData> round_data;
       consensus::Round round;
     };

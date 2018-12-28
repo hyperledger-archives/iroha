@@ -293,8 +293,10 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
               .createdTime(iroha::time::now())
               .transactions(txs)
               .build());
-  prop_notifier_.get_subscriber().on_next(OrderingEvent{
-      proposal, {proposal->height(), iroha::ordering::kFirstRejectRound}});
+  prop_notifier_.get_subscriber().on_next(
+      OrderingEvent{nullptr,
+                    proposal,
+                    {proposal->height(), iroha::ordering::kFirstRejectRound}});
 
   torii::CommandSyncClient client2(client1);
 
@@ -342,12 +344,14 @@ TEST_F(ToriiServiceTest, StatusWhenBlocking) {
           iroha::validation::CommandError{
               cmd_name, error_code, "", true, cmd_index}});
   verified_prop_notifier_.get_subscriber().on_next(
-      iroha::simulator::VerifiedProposalCreatorEvent{validation_result, round});
+      iroha::simulator::VerifiedProposalCreatorEvent{
+          nullptr, validation_result, round});
 
   // create commit from block notifier's observable
   rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
       block_notifier_;
-  SynchronizationEvent commit{block_notifier_.get_observable(),
+  SynchronizationEvent commit{nullptr,
+                              block_notifier_.get_observable(),
                               SynchronizationOutcomeType::kCommit,
                               {}};
 
@@ -482,14 +486,17 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
                                             .transactions(txs)
                                             .height(1)
                                             .build());
-  prop_notifier_.get_subscriber().on_next(OrderingEvent{
-      proposal, {proposal->height(), iroha::ordering::kFirstRejectRound}});
+  prop_notifier_.get_subscriber().on_next(
+      OrderingEvent{nullptr,
+                    proposal,
+                    {proposal->height(), iroha::ordering::kFirstRejectRound}});
 
   auto validation_result =
       std::make_shared<iroha::validation::VerifiedProposalAndErrors>();
   validation_result->verified_proposal = proposal;
   verified_prop_notifier_.get_subscriber().on_next(
-      iroha::simulator::VerifiedProposalCreatorEvent{validation_result, round});
+      iroha::simulator::VerifiedProposalCreatorEvent{
+          nullptr, validation_result, round});
 
   auto block = clone(proto::BlockBuilder()
                          .height(1)
@@ -503,7 +510,8 @@ TEST_F(ToriiServiceTest, StreamingFullPipelineTest) {
   // create commit from block notifier's observable
   rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
       block_notifier_;
-  SynchronizationEvent commit{block_notifier_.get_observable(),
+  SynchronizationEvent commit{nullptr,
+                              block_notifier_.get_observable(),
                               SynchronizationOutcomeType::kCommit,
                               {}};
 

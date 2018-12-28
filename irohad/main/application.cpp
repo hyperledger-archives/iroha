@@ -503,6 +503,7 @@ Irohad::RunResult Irohad::run() {
 
             pcs->on_commit()
                 .start_with(synchronizer::SynchronizationEvent{
+                    nullptr,
                     rxcpp::observable<>::just(block),
                     SynchronizationOutcomeType::kCommit,
                     {block->height(), ordering::kFirstRejectRound}})

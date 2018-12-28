@@ -75,7 +75,8 @@ namespace iroha {
 
     class MockConsensusGate : public ConsensusGate {
      public:
-      MOCK_METHOD1(vote, void(const simulator::BlockCreatorEvent &));
+      MOCK_METHOD2(vote,
+                   void(PeerList peers, const simulator::BlockCreatorEvent &));
 
       MOCK_METHOD0(onOutcome, rxcpp::observable<GateObject>());
     };

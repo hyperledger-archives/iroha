@@ -9,6 +9,7 @@
 #include <memory>
 
 #include <boost/optional.hpp>
+#include "consensus/ledger_event.hpp"
 #include "consensus/round.hpp"
 
 namespace shared_model {
@@ -24,6 +25,7 @@ namespace iroha {
      * Event, which is emitted by ordering gate, when it requests a proposal
      */
     struct OrderingEvent {
+      std::shared_ptr<PeerList> ledger_peers;
       boost::optional<std::shared_ptr<shared_model::interface::Proposal>>
           proposal;
       consensus::Round round;

@@ -148,6 +148,7 @@ class QueueBehaviorTest : public ::testing::Test {
 
   void pushCommit(HeightType height) {
     commit_subject.get_subscriber().on_next(SynchronizationEvent{
+        nullptr,
         rxcpp::observable<>::just(
             std::static_pointer_cast<shared_model::interface::Block>(
                 std::make_shared<shared_model::proto::Block>(
@@ -211,7 +212,7 @@ TEST_F(QueueBehaviorTest, SendManyProposals) {
           TestBlockBuilder().height(2).build());
 
   commit_subject.get_subscriber().on_next(
-      SynchronizationEvent{rxcpp::observable<>::just(block),
+      SynchronizationEvent{nullptr, rxcpp::observable<>::just(block),
                            SynchronizationOutcomeType::kCommit,
                            {block->height(), 1}});
 

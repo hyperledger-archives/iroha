@@ -267,7 +267,8 @@ TEST_F(TransactionProcessorTest, TransactionProcessorBlockCreatedTest) {
 
   // empty transactions errors - all txs are valid
   verified_prop_notifier.get_subscriber().on_next(
-      simulator::VerifiedProposalCreatorEvent{validation_result, round});
+      simulator::VerifiedProposalCreatorEvent{
+          nullptr, validation_result, round});
 
   auto block = TestBlockBuilder().transactions(txs).build();
 
@@ -276,7 +277,8 @@ TEST_F(TransactionProcessorTest, TransactionProcessorBlockCreatedTest) {
       blocks_notifier;
 
   commit_notifier.get_subscriber().on_next(
-      SynchronizationEvent{blocks_notifier.get_observable(),
+      SynchronizationEvent{nullptr,
+                           blocks_notifier.get_observable(),
                            SynchronizationOutcomeType::kCommit,
                            {}});
 
@@ -326,12 +328,14 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnCommitTest) {
 
   // empty transactions errors - all txs are valid
   verified_prop_notifier.get_subscriber().on_next(
-      simulator::VerifiedProposalCreatorEvent{validation_result, round});
+      simulator::VerifiedProposalCreatorEvent{
+          nullptr, validation_result, round});
 
   auto block = TestBlockBuilder().transactions(txs).build();
 
   // 2. Create block and notify transaction processor about it
   SynchronizationEvent commit_event{
+      nullptr,
       rxcpp::observable<>::just(
           std::shared_ptr<shared_model::interface::Block>(clone(block))),
       SynchronizationOutcomeType::kCommit,
@@ -400,11 +404,13 @@ TEST_F(TransactionProcessorTest, TransactionProcessorInvalidTxsTest) {
                                          "SomeCommandName", 1, "", true, i}});
   }
   verified_prop_notifier.get_subscriber().on_next(
-      simulator::VerifiedProposalCreatorEvent{validation_result, round});
+      simulator::VerifiedProposalCreatorEvent{
+          nullptr, validation_result, round});
 
   auto block = TestBlockBuilder().transactions(block_txs).build();
 
   SynchronizationEvent commit_event{
+      nullptr,
       rxcpp::observable<>::just(
           std::shared_ptr<shared_model::interface::Block>(clone(block))),
       SynchronizationOutcomeType::kCommit,

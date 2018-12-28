@@ -30,7 +30,7 @@ OnDemandOrderingGate::OnDemandOrderingGate(
         // exclusive lock
         std::lock_guard<std::shared_timed_mutex> lock(mutex_);
 
-        visit_in_place(event,
+        visit_in_place(event.event,
                        [this](const BlockEvent &block_event) {
                          // block committed, increment block round
                          log_->debug("BlockEvent. {}", block_event.round);
@@ -61,8 +61,8 @@ OnDemandOrderingGate::OnDemandOrderingGate(
         auto proposal = this->processProposalRequest(
             network_client_->onRequestProposal(current_round_));
         // vote for the object received from the network
-        proposal_notifier_.get_subscriber().on_next(
-            network::OrderingEvent{proposal, current_round_});
+        proposal_notifier_.get_subscriber().on_next(network::OrderingEvent{
+            event.ledger_peers, proposal, current_round_});
       })),
       cache_(std::move(cache)),
       proposal_factory_(std::move(factory)),

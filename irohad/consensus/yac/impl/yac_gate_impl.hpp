@@ -39,7 +39,8 @@ namespace iroha {
                     std::shared_ptr<consensus::ConsensusResultCache>
                         consensus_result_cache,
                     logger::Logger log = logger::log("YacGate"));
-        void vote(const simulator::BlockCreatorEvent &event) override;
+
+        void vote(PeerList peers, const simulator::BlockCreatorEvent &event) override;
 
         rxcpp::observable<GateObject> onOutcome() override;
 

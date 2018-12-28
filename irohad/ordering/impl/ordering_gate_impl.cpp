@@ -119,7 +119,7 @@ namespace iroha {
         log_->info("Pass the proposal to pipeline height {}",
                    next_proposal->height());
         proposals_.get_subscriber().on_next(network::OrderingEvent{
-            next_proposal, {next_proposal->height(), kFirstRejectRound}});
+            nullptr, next_proposal, {next_proposal->height(), kFirstRejectRound}});
       }
     }
 

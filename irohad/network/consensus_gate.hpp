@@ -8,6 +8,7 @@
 
 #include <rxcpp/rx.hpp>
 #include "consensus/gate_object.hpp"
+#include "consensus/ledger_event.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -34,7 +35,8 @@ namespace iroha {
       /**
        * Vote for given block creator event in consensus
        */
-      virtual void vote(const simulator::BlockCreatorEvent &event) = 0;
+      virtual void vote(PeerList peers,
+                        const simulator::BlockCreatorEvent &event) = 0;
 
       using GateObject = consensus::GateObject;
 
