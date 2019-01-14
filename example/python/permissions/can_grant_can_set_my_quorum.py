@@ -3,16 +3,20 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-import iroha
+import irohalib
 import commons
+import primitive_pb2
 
 admin = commons.new_user('admin@test')
 alice = commons.new_user('alice@test')
 bob = commons.new_user('bob@test')
+iroha = irohalib.Iroha(admin['id'])
 
 
 @commons.hex
 def genesis_tx():
+    test_permissions = [primitive_pb2.can_grant_can_set_my_quorum]
+    genesis_commands = commons.genesis_block(admin, alice, test_permissions)
     test_permissions = iroha.RolePermissionSet([iroha.Role_kSetMyQuorum])
     tx = iroha.ModelTransactionBuilder() \
         .createdTime(commons.now()) \
