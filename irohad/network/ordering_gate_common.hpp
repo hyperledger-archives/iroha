@@ -10,6 +10,7 @@
 
 #include <boost/optional.hpp>
 #include "consensus/round.hpp"
+#include "interfaces/common_objects/peer.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -27,6 +28,9 @@ namespace iroha {
       boost::optional<std::shared_ptr<shared_model::interface::Proposal>>
           proposal;
       consensus::Round round;
+      std::shared_ptr<
+          std::vector<std::shared_ptr<shared_model::interface::Peer>>>
+          peers;
     };
 
     std::shared_ptr<shared_model::interface::Proposal> getProposalUnsafe(

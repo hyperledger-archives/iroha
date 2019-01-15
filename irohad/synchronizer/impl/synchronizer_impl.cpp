@@ -94,7 +94,7 @@ namespace iroha {
               and validator_->validateAndApply(chain, *storage)) {
             mutable_factory_->commit(std::move(storage));
 
-            return {chain, SynchronizationOutcomeType::kCommit, msg.round};
+            return {chain, SynchronizationOutcomeType::kCommit, msg.round, {}};
           }
         }
       }
@@ -130,10 +130,12 @@ namespace iroha {
           log_->warn("Block was not committed due to fail in mutable storage");
         }
       }
+      // синхронизатор -> ordering gate -> simulator -> consensus gate
+
       notifier_.get_subscriber().on_next(
           SynchronizationEvent{rxcpp::observable<>::just(msg.block),
                                SynchronizationOutcomeType::kCommit,
-                               msg.round});
+                               msg.round, {}});
     }
 
     void SynchronizerImpl::processDifferent(const consensus::VoteOther &msg) {

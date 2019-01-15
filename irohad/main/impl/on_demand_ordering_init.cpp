@@ -187,7 +187,6 @@ namespace iroha {
         consensus::Round initial_round,
         std::function<std::chrono::seconds(
             const synchronizer::SynchronizationEvent &)> delay_func) {
-
       auto map = [](auto commit) {
         return matchEvent(
             commit,
@@ -210,7 +209,9 @@ namespace iroha {
                               std::inserter(hashes, hashes.end()));
                   });
               return ordering::OnDemandOrderingGate::BlockEvent{
-                  ordering::nextCommitRound(commit.round), hashes};
+                  ordering::nextCommitRound(commit.round),
+                  hashes,
+                  commit.peers};
             },
             [](const auto &nothing)
                 -> ordering::OnDemandOrderingGate::BlockRoundEventType {

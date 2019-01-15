@@ -15,6 +15,7 @@ namespace shared_model {
   namespace interface {
     class Block;
     class Proposal;
+    class Peer;
   }  // namespace interface
 }  // namespace shared_model
 
@@ -33,6 +34,9 @@ namespace iroha {
     struct BlockCreatorEvent {
       boost::optional<RoundData> round_data;
       consensus::Round round;
+      std::shared_ptr<
+          std::vector<std::shared_ptr<shared_model::interface::Peer>>>
+          peers;
     };
 
     std::shared_ptr<shared_model::interface::Block> getBlockUnsafe(

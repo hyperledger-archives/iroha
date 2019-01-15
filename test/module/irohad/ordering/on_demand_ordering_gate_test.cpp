@@ -117,7 +117,8 @@ TEST_F(OnDemandOrderingGateTest, BlockEvent) {
     ASSERT_EQ(factory_proposal, getProposalUnsafe(val).get());
   });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, {}});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -179,7 +180,8 @@ TEST_F(OnDemandOrderingGateTest, BlockEventNoProposal) {
       make_test_subscriber<CallExact>(ordering_gate->onProposal(), 1);
   gate_wrapper.subscribe([&](auto val) { ASSERT_FALSE(val.proposal); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, {}});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -213,7 +215,7 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
  * this transaction
  */
 TEST_F(OnDemandOrderingGateTest, ReplayedTransactionInProposal) {
-  OnDemandOrderingGate::BlockEvent event = {round, {}};
+  OnDemandOrderingGate::BlockEvent event = {round, {}, {}};
 
   // initialize mock transaction
   auto tx1 = std::make_shared<NiceMock<MockTransaction>>();
@@ -284,7 +286,8 @@ TEST_F(OnDemandOrderingGateTest, PopNonEmptyBatchesFromTheCache) {
               onBatches(round, UnorderedElementsAreArray(collection)))
       .Times(1);
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, {}});
 }
 
 /**
@@ -301,7 +304,8 @@ TEST_F(OnDemandOrderingGateTest, PopEmptyBatchesFromTheCache) {
       .Times(1);
   EXPECT_CALL(*notification, onBatches(_, _)).Times(0);
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, {}});
 }
 
 /**
@@ -322,5 +326,5 @@ TEST_F(OnDemandOrderingGateTest, BatchesRemoveFromCache) {
   EXPECT_CALL(*cache, remove(UnorderedElementsAre(hash1, hash2))).Times(1);
 
   rounds.get_subscriber().on_next(
-      OnDemandOrderingGate::BlockEvent{round, {hash1, hash2}});
+      OnDemandOrderingGate::BlockEvent{round, {hash1, hash2}, {}});
 }

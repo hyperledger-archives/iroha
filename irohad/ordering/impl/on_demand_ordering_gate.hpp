@@ -40,6 +40,9 @@ namespace iroha {
         consensus::Round round;
         /// hashes of processed transactions
         cache::OrderingGateCache::HashesSetType hashes;
+        std::shared_ptr<
+            std::vector<std::shared_ptr<shared_model::interface::Peer>>>
+            peers;
       };
 
       /**

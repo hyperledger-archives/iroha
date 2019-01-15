@@ -47,7 +47,7 @@ namespace iroha {
                                             event.round);
             } else {
               block_notifier_.get_subscriber().on_next(
-                  BlockCreatorEvent{boost::none, event.round});
+                  BlockCreatorEvent{boost::none, event.round, {}});
             }
           });
     }
@@ -139,7 +139,7 @@ namespace iroha {
                                             rejected_hashes);
       crypto_signer_->sign(*block);
       block_notifier_.get_subscriber().on_next(
-          BlockCreatorEvent{RoundData{proposal, block}, round});
+          BlockCreatorEvent{RoundData{proposal, block}, round, {}});
     }
 
     rxcpp::observable<BlockCreatorEvent> Simulator::onBlock() {

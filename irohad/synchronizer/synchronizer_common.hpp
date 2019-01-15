@@ -11,6 +11,7 @@
 #include <rxcpp/rx.hpp>
 
 #include "consensus/round.hpp"
+#include "interfaces/common_objects/peer.hpp"
 #include "interfaces/iroha_internal/block.hpp"
 
 namespace iroha {
@@ -40,6 +41,9 @@ namespace iroha {
       Chain synced_blocks;
       SynchronizationOutcomeType sync_outcome;
       consensus::Round round;
+      std::shared_ptr<
+          std::vector<std::shared_ptr<shared_model::interface::Peer>>>
+          peers;
     };
 
   }  // namespace synchronizer
