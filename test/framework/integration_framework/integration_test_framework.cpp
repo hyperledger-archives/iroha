@@ -25,6 +25,7 @@
 #include "cryptography/default_hash_provider.hpp"
 #include "datetime/time.hpp"
 #include "framework/common_constants.hpp"
+#include "framework/integration_framework/fake_peer/behaviour/honest.hpp"
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
 #include "framework/integration_framework/iroha_instance.hpp"
 #include "framework/integration_framework/port_guard.hpp"
@@ -132,36 +133,33 @@ namespace integration_framework {
     }
   }
 
-  std::future<std::shared_ptr<FakePeer>>
-  IntegrationTestFramework::addInitialPeer(
+  std::shared_ptr<FakePeer> IntegrationTestFramework::addInitialPeer(
       const boost::optional<Keypair> &key) {
-    fake_peers_promises_.emplace_back(std::promise<std::shared_ptr<FakePeer>>(),
-                                      key);
-    return fake_peers_promises_.back().first.get_future();
+    BOOST_ASSERT_MSG(this_peer_, "Need to initialize the ITF peer first!");
+    auto fake_peer =
+        std::make_shared<FakePeer>(kLocalHost,
+                                   port_guard_->getPort(kDefaultInternalPort),
+                                   key,
+                                   this_peer_,
+                                   common_objects_factory_,
+                                   transaction_factory_,
+                                   batch_parser_,
+                                   transaction_batch_factory_,
+                                   tx_presence_cache_);
+    fake_peer->initialize();
+    fake_peers_.emplace_back(fake_peer);
+    return fake_peer;
   }
 
-  void IntegrationTestFramework::makeFakePeers() {
-    if (fake_peers_promises_.size() == 0) {
-      return;
-    }
-    log_->info("creating fake iroha peers");
-    assert(this_peer_ && "this_peer_ is needed for fake peers initialization, "
-        "but not set");
-    for (auto &promise_and_key : fake_peers_promises_) {
-      auto fake_peer =
-          std::make_shared<FakePeer>(kLocalHost,
-                                     port_guard_->getPort(kDefaultInternalPort),
-                                     promise_and_key.second,
-                                     this_peer_,
-                                     common_objects_factory_,
-                                     transaction_factory_,
-                                     batch_parser_,
-                                     transaction_batch_factory_,
-                                     tx_presence_cache_);
-      fake_peer->initialize();
-      fake_peers_.emplace_back(fake_peer);
-      promise_and_key.first.set_value(fake_peer);
-    }
+  std::vector<std::shared_ptr<fake_peer::FakePeer>>
+  IntegrationTestFramework::addInitialPeers(size_t amount) {
+    std::vector<std::shared_ptr<fake_peer::FakePeer>> fake_peers;
+    std::generate_n(std::back_inserter(fake_peers), amount, [this] {
+      auto fake_peer = addInitialPeer({});
+      fake_peer->setBehaviour(std::make_shared<fake_peer::HonestBehaviour>());
+      return fake_peer;
+    });
+    return fake_peers;
   }
 
   shared_model::proto::Block IntegrationTestFramework::defaultBlock(
@@ -205,11 +203,21 @@ namespace integration_framework {
     return genesis_block;
   }
 
+  shared_model::proto::Block IntegrationTestFramework::defaultBlock() const {
+    BOOST_ASSERT_MSG(my_key_, "Need to set the ITF peer key first!");
+    return defaultBlock(*my_key_);
+  }
+
+  IntegrationTestFramework &IntegrationTestFramework::setGenesisBlock(
+      const shared_model::interface::Block &block) {
+    iroha_instance_->makeGenesis(block);
+    return *this;
+  }
+
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
       const Keypair &keypair) {
     initPipeline(keypair);
-    iroha_instance_->makeGenesis(
-        IntegrationTestFramework::defaultBlock(keypair));
+    setGenesisBlock(defaultBlock(keypair));
     log_->info("added genesis block");
     subscribeQueuesAndRun();
     return *this;
@@ -226,7 +234,7 @@ namespace integration_framework {
   IntegrationTestFramework &IntegrationTestFramework::setInitialState(
       const Keypair &keypair, const shared_model::interface::Block &block) {
     initPipeline(keypair);
-    iroha_instance_->makeGenesis(block);
+    setGenesisBlock(block);
     log_->info("added genesis block");
     subscribeQueuesAndRun();
     return *this;
@@ -243,28 +251,15 @@ namespace integration_framework {
   void IntegrationTestFramework::initPipeline(
       const shared_model::crypto::Keypair &keypair) {
     log_->info("init state");
-    // peer initialization
-    common_objects_factory_
-        ->createPeer(kLocalHost + ":" + std::to_string(internal_port_),
-                     keypair.publicKey())
-        .match(
-            [this](iroha::expected::Result<
-                   std::unique_ptr<shared_model::interface::Peer>,
-                   std::string>::ValueType &result) {
-              this->this_peer_ = std::move(result.value);
-            },
-            [](const iroha::expected::Result<
-                std::unique_ptr<shared_model::interface::Peer>,
-                std::string>::ErrorType &error) {
-              BOOST_THROW_EXCEPTION(std::runtime_error(
-                  "Failed to create peer object for current irohad instance. "
-                  + error.error));
-            });
-
+    my_key_ = keypair;
+    this_peer_ = framework::expected::val(
+                     common_objects_factory_->createPeer(
+                         kLocalHost + ":" + std::to_string(internal_port_),
+                         keypair.publicKey()))
+                     .value()
+                     .value;
     iroha_instance_->initPipeline(keypair, maximum_proposal_size_);
     log_->info("created pipeline");
-
-    makeFakePeers();
   }
 
   void IntegrationTestFramework::subscribeQueuesAndRun() {
