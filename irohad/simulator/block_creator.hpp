@@ -9,6 +9,12 @@
 #include <rxcpp/rx.hpp>
 #include "simulator/block_creator_common.hpp"
 
+namespace shared_model {
+  namespace interface {
+    class Block;
+  }
+}  // namespace shared_model
+
 namespace iroha {
   namespace validation {
     struct VerifiedProposalAndErrors;
@@ -24,7 +30,8 @@ namespace iroha {
       /**
        * Creates a block from given proposal and round
        */
-      virtual void processVerifiedProposal(
+      virtual std::shared_ptr<shared_model::interface::Block>
+      processVerifiedProposal(
           const std::shared_ptr<validation::VerifiedProposalAndErrors>
               &verified_proposal_and_errors,
           const consensus::Round &round) = 0;

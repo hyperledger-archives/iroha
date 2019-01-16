@@ -30,9 +30,9 @@ namespace iroha {
       /**
        * Execute stateful validation for given proposal and round
        */
-      virtual void processProposal(
-          const shared_model::interface::Proposal &proposal,
-          const consensus::Round &round) = 0;
+      virtual std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
+      processProposal(const shared_model::interface::Proposal &proposal,
+                      const consensus::Round &round) = 0;
 
       /**
        * Emit proposals which were verified by stateful validator

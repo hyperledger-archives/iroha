@@ -267,7 +267,9 @@ TEST_F(TransactionProcessorTest, TransactionProcessorBlockCreatedTest) {
 
   // empty transactions errors - all txs are valid
   verified_prop_notifier.get_subscriber().on_next(
-      simulator::VerifiedProposalCreatorEvent{validation_result, round});
+      simulator::VerifiedProposalCreatorEvent {
+        validation_result, round, {}
+      });
 
   auto block = TestBlockBuilder().transactions(txs).build();
 
@@ -327,7 +329,9 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnCommitTest) {
 
   // empty transactions errors - all txs are valid
   verified_prop_notifier.get_subscriber().on_next(
-      simulator::VerifiedProposalCreatorEvent{validation_result, round});
+      simulator::VerifiedProposalCreatorEvent {
+        validation_result, round, {}
+      });
 
   auto block = TestBlockBuilder().transactions(txs).build();
 
@@ -402,7 +406,9 @@ TEST_F(TransactionProcessorTest, TransactionProcessorInvalidTxsTest) {
                                          "SomeCommandName", 1, "", true, i}});
   }
   verified_prop_notifier.get_subscriber().on_next(
-      simulator::VerifiedProposalCreatorEvent{validation_result, round});
+      simulator::VerifiedProposalCreatorEvent {
+        validation_result, round, {}
+      });
 
   auto block = TestBlockBuilder().transactions(block_txs).build();
 

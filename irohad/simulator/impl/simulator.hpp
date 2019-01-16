@@ -36,13 +36,14 @@ namespace iroha {
 
       ~Simulator() override;
 
-      void processProposal(const shared_model::interface::Proposal &proposal,
-                           const consensus::Round &round) override;
+      std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
+      processProposal(const shared_model::interface::Proposal &proposal,
+                      const consensus::Round &round) override;
 
       rxcpp::observable<VerifiedProposalCreatorEvent> onVerifiedProposal()
           override;
 
-      void processVerifiedProposal(
+      std::shared_ptr<shared_model::interface::Block> processVerifiedProposal(
           const std::shared_ptr<iroha::validation::VerifiedProposalAndErrors>
               &verified_proposal_and_errors,
           const consensus::Round &round) override;

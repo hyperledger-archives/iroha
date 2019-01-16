@@ -10,6 +10,12 @@
 #include "consensus/round.hpp"
 #include "validation/stateful_validator_common.hpp"
 
+namespace shared_model {
+  namespace interface {
+    class Peer;
+  }
+}
+
 namespace iroha {
   namespace simulator {
 
@@ -21,6 +27,9 @@ namespace iroha {
       boost::optional<std::shared_ptr<validation::VerifiedProposalAndErrors>>
           verified_proposal_result;
       consensus::Round round;
+      std::shared_ptr<
+          std::vector<std::shared_ptr<shared_model::interface::Peer>>>
+          peers;
     };
 
     std::shared_ptr<validation::VerifiedProposalAndErrors>
