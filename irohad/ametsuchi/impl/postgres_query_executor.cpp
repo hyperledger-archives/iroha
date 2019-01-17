@@ -191,11 +191,11 @@ namespace iroha {
               typename PermissionTuple,
               typename QueryExecutor,
               typename ResponseCreator,
-              typename ErrResponse>
+              typename PermissionsErrResponse>
     QueryExecutorResult PostgresQueryExecutorVisitor::executeQuery(
         QueryExecutor &&query_executor,
         ResponseCreator &&response_creator,
-        ErrResponse &&err_response) {
+        PermissionsErrResponse &&perms_err_response) {
       using T = concat<QueryTuple, PermissionTuple>;
       try {
         soci::rowset<T> st = std::forward<QueryExecutor>(query_executor)();
@@ -203,7 +203,8 @@ namespace iroha {
 
         return apply(
             viewPermissions<PermissionTuple>(range.front()),
-            [this, range, &response_creator, &err_response](auto... perms) {
+            [this, range, &response_creator, &perms_err_response](
+                auto... perms) {
               bool temp[] = {not perms...};
               if (std::all_of(std::begin(temp), std::end(temp), [](auto b) {
                     return b;
@@ -212,7 +213,7 @@ namespace iroha {
                 // with a named constant
                 return this->logAndReturnErrorResponse(
                     QueryErrorType::kStatefulFailed,
-                    std::forward<ErrResponse>(err_response)(),
+                    std::forward<PermissionsErrResponse>(perms_err_response)(),
                     2);
               }
               auto query_range = range
@@ -227,9 +228,41 @@ namespace iroha {
                   query_range, perms...);
             });
       } catch (const std::exception &e) {
-        return logAndReturnErrorResponse(
+        return this->logAndReturnErrorResponse(
             QueryErrorType::kStatefulFailed, e.what(), 1);
       }
+    }
+
+    template <class Q>
+    bool PostgresQueryExecutor::validateSignatures(const Q &query) {
+      auto keys_range =
+          query.signatures() | boost::adaptors::transformed([](const auto &s) {
+            return s.publicKey().hex();
+          });
+
+      if (boost::size(keys_range) != 1) {
+        return false;
+      }
+      std::string keys = *std::begin(keys_range);
+      // not using bool since it is not supported by SOCI
+      boost::optional<uint8_t> signatories_valid;
+
+      auto qry = R"(
+        SELECT count(public_key) = 1
+        FROM account_has_signatory
+        WHERE account_id = :account_id AND public_key = :pk
+        )";
+
+      try {
+        *sql_ << qry, soci::into(signatories_valid),
+            soci::use(query.creatorAccountId(), "account_id"),
+            soci::use(keys, "pk");
+      } catch (const std::exception &e) {
+        log_->error(e.what());
+        return false;
+      }
+
+      return signatories_valid and *signatories_valid;
     }
 
     PostgresQueryExecutor::PostgresQueryExecutor(
@@ -240,7 +273,8 @@ namespace iroha {
         std::shared_ptr<shared_model::interface::QueryResponseFactory>
             response_factory,
         std::shared_ptr<shared_model::interface::PermissionToString>
-            perm_converter)
+            perm_converter,
+        logger::Logger log)
         : sql_(std::move(sql)),
           block_store_(block_store),
           pending_txs_storage_(std::move(pending_txs_storage)),
@@ -251,17 +285,33 @@ namespace iroha {
                    response_factory,
                    perm_converter),
           query_response_factory_{std::move(response_factory)},
-          log_(logger::log("PostgresQueryExecutor")) {}
+          log_(std::move(log)) {}
 
     QueryExecutorResult PostgresQueryExecutor::validateAndExecute(
-        const shared_model::interface::Query &query) {
+        const shared_model::interface::Query &query,
+        const bool validate_signatories = true) {
       visitor_.setCreatorId(query.creatorAccountId());
       visitor_.setQueryHash(query.hash());
+      if (validate_signatories and not validateSignatures(query)) {
+        // TODO [IR-1816] Akvinikym 03.12.18: replace magic number 3
+        // with a named constant
+        return query_response_factory_->createErrorQueryResponse(
+            shared_model::interface::QueryResponseFactory::ErrorQueryType::
+                kStatefulFailed,
+            "query signatories did not pass validation",
+            3,
+            query.hash());
+      }
       return boost::apply_visitor(visitor_, query.get());
     }
 
     bool PostgresQueryExecutor::validate(
-        const shared_model::interface::BlocksQuery &query) {
+        const shared_model::interface::BlocksQuery &query,
+        const bool validate_signatories = true) {
+      if (validate_signatories and not validateSignatures(query)) {
+        log_->error("query signatories did not pass validation");
+        return false;
+      }
       using T = boost::tuple<int>;
       boost::format cmd(R"(%s)");
       try {
@@ -285,14 +335,15 @@ namespace iroha {
         std::shared_ptr<shared_model::interface::QueryResponseFactory>
             response_factory,
         std::shared_ptr<shared_model::interface::PermissionToString>
-            perm_converter)
+            perm_converter,
+        logger::Logger log)
         : sql_(sql),
           block_store_(block_store),
           pending_txs_storage_(std::move(pending_txs_storage)),
           converter_(std::move(converter)),
           query_response_factory_{std::move(response_factory)},
           perm_converter_(std::move(perm_converter)),
-          log_(logger::log("PostgresQueryExecutorVisitor")) {}
+          log_(std::move(log)) {}
 
     void PostgresQueryExecutorVisitor::setCreatorId(
         const shared_model::interface::types::AccountIdType &creator_id) {
@@ -328,8 +379,8 @@ namespace iroha {
           error =
               "no asset with such name in account with such id: " + error_body;
           break;
-          // other error are either handled by generic response or do not appear
-          // yet
+          // other errors are either handled by generic response or do not
+          // appear yet
         default:
           error = "failed to execute query: " + error_body;
           break;
@@ -340,9 +391,13 @@ namespace iroha {
           error_type, error, error_code, query_hash_);
     }
 
-    template <typename Query, typename QueryApplier, typename... Permissions>
+    template <typename Query,
+              typename QueryChecker,
+              typename QueryApplier,
+              typename... Permissions>
     QueryExecutorResult PostgresQueryExecutorVisitor::executeTransactionsQuery(
         const Query &q,
+        QueryChecker &&qry_checker,
         const std::string &related_txs,
         QueryApplier applier,
         Permissions... perms) {
@@ -419,15 +474,29 @@ namespace iroha {
               std::move(
                   txs.begin(), txs.end(), std::back_inserter(response_txs));
             }
-            // If 0 transactions are returned, we assume that hash is invalid.
-            // Since query with valid hash is guaranteed to return at least one
-            // transaction
-            if (first_hash and response_txs.empty()) {
-              auto error = (boost::format("invalid pagination hash: %s")
-                            % first_hash->hex())
-                               .str();
-              return this->logAndReturnErrorResponse(
-                  QueryErrorType::kStatefulFailed, error, 4);
+
+            if (response_txs.empty()) {
+              if (first_hash) {
+                // if 0 transactions are returned, and there is a specified
+                // paging hash, we assume it's invalid, since query with valid
+                // hash is guaranteed to return at least one transaction
+                auto error = (boost::format("invalid pagination hash: %s")
+                              % first_hash->hex())
+                                 .str();
+                return this->logAndReturnErrorResponse(
+                    QueryErrorType::kStatefulFailed, error, 4);
+              }
+              // if paging hash is not specified, we should check, why 0
+              // transactions are returned - it can be because there are
+              // actually no transactions for this query or some of the
+              // parameters were wrong
+              if (auto query_incorrect =
+                      std::forward<QueryChecker>(qry_checker)(q)) {
+                return this->logAndReturnErrorResponse(
+                    QueryErrorType::kStatefulFailed,
+                    query_incorrect.error_message,
+                    query_incorrect.error_code);
+              }
             }
 
             // if the number of returned transactions is equal to the
@@ -580,7 +649,16 @@ namespace iroha {
         };
       };
 
+      auto check_query = [this](const auto &q) {
+        if (this->existsInDb<int>("account", "account_id", "quorum", q.accountId())) {
+          return QueryFallbackCheckResult{};
+        }
+        return QueryFallbackCheckResult{
+            5, "no account with such id found: " + q.accountId()};
+      };
+
       return executeTransactionsQuery(q,
+                                      std::move(check_query),
                                       related_txs,
                                       apply_query,
                                       Role::kGetMyAccTxs,
@@ -619,6 +697,16 @@ namespace iroha {
             return (sql_.prepare << cmd, soci::use(creator_id_, "account_id"));
           },
           [&](auto range, auto &my_perm, auto &all_perm) {
+            if (boost::size(range) != q.transactionHashes().size()) {
+              // TODO [IR-1816] Akvinikym 03.12.18: replace magic number 4
+              // with a named constant
+              // at least one of the hashes in the query was invalid -
+              // nonexistent or permissions were missed
+              return this->logAndReturnErrorResponse(
+                  QueryErrorType::kStatefulFailed,
+                  "At least one of the supplied hashes is incorrect",
+                  4);
+            }
             std::map<uint64_t, std::unordered_set<std::string>> index;
             boost::for_each(range, [&index](auto t) {
               apply(t, [&index](auto &height, auto &hash) {
@@ -681,7 +769,23 @@ namespace iroha {
         };
       };
 
+      auto check_query = [this](const auto &q) {
+        if (not this->existsInDb<int>(
+                "account", "account_id", "quorum", q.accountId())) {
+          return QueryFallbackCheckResult{
+              5, "no account with such id found: " + q.accountId()};
+        }
+        if (not this->existsInDb<int>(
+                "asset", "asset_id", "precision", q.assetId())) {
+          return QueryFallbackCheckResult{
+              6, "no asset with such id found: " + q.assetId()};
+        }
+
+        return QueryFallbackCheckResult{};
+      };
+
       return executeTransactionsQuery(q,
+                                      std::move(check_query),
                                       related_txs,
                                       apply_query,
                                       Role::kGetMyAccAstTxs,
@@ -927,6 +1031,22 @@ namespace iroha {
                      [](auto &tx) { return clone(*tx); });
       return query_response_factory_->createTransactionsResponse(
           std::move(response_txs), query_hash_);
+    }
+
+    template <typename ReturnValueType>
+    bool PostgresQueryExecutorVisitor::existsInDb(
+        const std::string &table_name,
+        const std::string &key_name,
+        const std::string &value_name,
+        const std::string &value) const {
+      auto cmd = (boost::format(R"(SELECT %s
+                                   FROM %s
+                                   WHERE %s = '%s'
+                                   LIMIT 1)")
+                  % value_name % table_name % key_name % value)
+                     .str();
+      soci::rowset<ReturnValueType> result = this->sql_.prepare << cmd;
+      return result.begin() != result.end();
     }
 
   }  // namespace ametsuchi

@@ -17,7 +17,6 @@
 #include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/torii/torii_mocks.hpp"
-#include "module/shared_model/builders/protobuf/common_objects/proto_signature_builder.hpp"
 #include "module/shared_model/builders/protobuf/proposal.hpp"
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
@@ -394,9 +393,10 @@ TEST_F(TransactionProcessorTest, TransactionProcessorInvalidTxsTest) {
       std::make_unique<shared_model::proto::Proposal>(
           TestProposalBuilder().transactions(block_txs).build());
   for (size_t i = 0; i < invalid_txs.size(); ++i) {
-    validation_result->rejected_transactions.emplace_back(validation::TransactionError{
-        invalid_txs[i].hash(),
-        iroha::validation::CommandError{"SomeCommandName", 1, "", true, i}});
+    validation_result->rejected_transactions.emplace_back(
+        validation::TransactionError{invalid_txs[i].hash(),
+                                     iroha::validation::CommandError{
+                                         "SomeCommandName", 1, "", true, i}});
   }
   verified_prop_notifier.get_subscriber().on_next(
       simulator::VerifiedProposalCreatorEvent{validation_result, round});

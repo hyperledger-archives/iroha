@@ -36,6 +36,7 @@
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_query_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_transaction_builder.hpp"
+#include "module/shared_model/mock_objects_factories/mock_command_factory.hpp"
 
 using namespace framework::expected;
 using namespace shared_model::interface;
@@ -63,7 +64,8 @@ namespace {
       "id@" + domain_id;
   const shared_model::interface::types::AccountIdType another_account_id =
       "id@" + another_domain_id;
-  const shared_model::interface::types::AccountIdType account_id2 = "id2@" + domain_id;
+  const shared_model::interface::types::AccountIdType account_id2 =
+      "id2@" + domain_id;
 }  // namespace
 
 namespace iroha {
@@ -119,6 +121,8 @@ namespace iroha {
             shared_model::interface::permissions::Grantable::kAddMySignatory;
         pubkey = std::make_unique<shared_model::interface::types::PubkeyType>(
             std::string('1', 32));
+        pubkey2 = std::make_unique<shared_model::interface::types::PubkeyType>(
+            std::string('2', 32));
 
         query_response_factory =
             std::make_shared<shared_model::proto::ProtoQueryResponseFactory>();
@@ -137,27 +141,21 @@ namespace iroha {
             std::make_unique<PostgresCommandExecutor>(*sql, perm_converter);
         pending_txs_storage = std::make_shared<MockPendingTransactionStorage>();
 
-        auto result = execute(buildCommand(TestTransactionBuilder().createRole(
-                                  role, role_permissions)),
-                              true);
-        ASSERT_TRUE(val(result)) << err(result)->error.toString();
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createDomain(
-                            domain_id, role)),
-                        true)));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAccount(
-                            "id", domain_id, *pubkey)),
-                        true)));
+        execute(
+            *mock_command_factory->constructCreateRole(role, role_permissions),
+            true);
+        execute(*mock_command_factory->constructCreateDomain(domain_id, role),
+                true);
+        execute(*mock_command_factory->constructCreateAccount(
+                    "id", domain_id, *pubkey),
+                true);
 
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createDomain(
-                            another_domain_id, role)),
-                        true)));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAccount(
-                            "id", another_domain_id, *pubkey)),
-                        true)));
+        execute(*mock_command_factory->constructCreateDomain(another_domain_id,
+                                                             role),
+                true);
+        execute(*mock_command_factory->constructCreateAccount(
+                    "id", another_domain_id, *pubkey),
+                true);
       }
 
       void TearDown() override {
@@ -169,31 +167,19 @@ namespace iroha {
         return query_executor->createQueryExecutor(pending_txs_storage,
                                                    query_response_factory)
             | [&query](const auto &executor) {
-                return executor->validateAndExecute(query);
+                return executor->validateAndExecute(query, false);
               };
       }
 
-      CommandResult execute(
-          const std::unique_ptr<shared_model::interface::Command> &command,
-          bool do_validation = false,
-          const shared_model::interface::types::AccountIdType &creator =
-              "id@domain") {
+      template <typename CommandType>
+      void execute(CommandType &&command,
+                   bool do_validation = false,
+                   const shared_model::interface::types::AccountIdType
+                       &creator = "id@domain") {
         executor->doValidation(not do_validation);
         executor->setCreatorAccountId(creator);
-        return boost::apply_visitor(*executor, command->get());
-      }
-
-      // TODO 2018-04-20 Alexey Chernyshov - IR-1276 - rework function with
-      // CommandBuilder
-      /**
-       * Helper function to build command and wrap it into
-       * std::unique_ptr<>
-       * @param builder command builder
-       * @return command
-       */
-      std::unique_ptr<shared_model::interface::Command> buildCommand(
-          const TestTransactionBuilder &builder) {
-        return clone(builder.build().commands().front());
+        ASSERT_TRUE(
+            val(executor->operator()(std::forward<CommandType>(command))));
       }
 
       void addPerms(
@@ -201,13 +187,9 @@ namespace iroha {
           const shared_model::interface::types::AccountIdType account_id =
               "id@domain",
           const shared_model::interface::types::RoleIdType role_id = "perms") {
-        ASSERT_TRUE(val(execute(
-            buildCommand(TestTransactionBuilder().createRole(role_id, set)),
-            true)));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().appendRole(
-                            account_id, role_id)),
-                        true)));
+        execute(*mock_command_factory->constructCreateRole(role_id, set), true);
+        execute(*mock_command_factory->constructAppendRole(account_id, role_id),
+                true);
       }
 
       void addAllPerms(
@@ -216,14 +198,11 @@ namespace iroha {
           const shared_model::interface::types::RoleIdType role_id = "all") {
         shared_model::interface::RolePermissionSet permissions;
         permissions.set();
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createRole(
-                            role_id, permissions)),
-                        true)));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().appendRole(
-                            account_id, role_id)),
-                        true)));
+        execute(
+            *mock_command_factory->constructCreateRole(role_id, permissions),
+            true);
+        execute(*mock_command_factory->constructAppendRole(account_id, role_id),
+                true);
       }
 
       // TODO [IR-1816] Akvinikym 06.12.18: remove these constants after
@@ -234,12 +213,29 @@ namespace iroha {
           ErrorCodeType kNoPermissions = 2;
       static constexpr shared_model::interface::ErrorQueryResponse::
           ErrorCodeType kInvalidPagination = 4;
+      static constexpr shared_model::interface::ErrorQueryResponse::
+          ErrorCodeType kInvalidAccountId = 5;
+      static constexpr shared_model::interface::ErrorQueryResponse::
+          ErrorCodeType kInvalidAssetId = 6;
+
+      void createDefaultAccount() {
+        execute(*mock_command_factory->constructCreateAccount(
+                    "id2", domain_id, *pubkey2),
+                true);
+      }
+
+      void createDefaultAsset() {
+        execute(
+            *mock_command_factory->constructCreateAsset("coin", domain_id, 1),
+            true);
+      }
 
       std::string role = "role";
       shared_model::interface::RolePermissionSet role_permissions;
       shared_model::interface::permissions::Grantable grantable_permission;
 
       std::unique_ptr<shared_model::interface::types::PubkeyType> pubkey;
+      std::unique_ptr<shared_model::interface::types::PubkeyType> pubkey2;
 
       std::unique_ptr<soci::session> sql;
 
@@ -257,6 +253,10 @@ namespace iroha {
       std::shared_ptr<shared_model::interface::PermissionToString>
           perm_converter =
               std::make_shared<shared_model::proto::ProtoPermissionToString>();
+
+      std::unique_ptr<shared_model::interface::MockCommandFactory>
+          mock_command_factory =
+              std::make_unique<shared_model::interface::MockCommandFactory>();
     };
 
     class BlocksQueryExecutorTest : public QueryExecutorTest {};
@@ -273,7 +273,7 @@ namespace iroha {
       ASSERT_TRUE(query_executor->createQueryExecutor(pending_txs_storage,
                                                       query_response_factory)
                   | [&blocks_query](const auto &executor) {
-                      return executor->validate(blocks_query);
+                      return executor->validate(blocks_query, false);
                     });
     }
 
@@ -288,7 +288,7 @@ namespace iroha {
       ASSERT_FALSE(query_executor->createQueryExecutor(pending_txs_storage,
                                                        query_response_factory)
                    | [&blocks_query](const auto &executor) {
-                       return executor->validate(blocks_query);
+                       return executor->validate(blocks_query, false);
                      });
     }
 
@@ -296,13 +296,7 @@ namespace iroha {
      public:
       void SetUp() override {
         QueryExecutorTest::SetUp();
-        auto pubkey2 =
-            std::make_unique<shared_model::interface::types::PubkeyType>(
-                std::string('2', 32));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAccount(
-                            "id2", domain_id, *pubkey2)),
-                        true)));
+        createDefaultAccount();
       }
     };
 
@@ -398,13 +392,7 @@ namespace iroha {
      public:
       void SetUp() override {
         QueryExecutorTest::SetUp();
-        auto pubkey2 =
-            std::make_unique<shared_model::interface::types::PubkeyType>(
-                std::string('2', 32));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAccount(
-                            "id2", domain_id, *pubkey2)),
-                        true)));
+        createDefaultAccount();
       }
     };
 
@@ -500,30 +488,16 @@ namespace iroha {
       void SetUp() override {
         QueryExecutorTest::SetUp();
 
-        auto pubkey2 =
-            std::make_unique<shared_model::interface::types::PubkeyType>(
-                std::string('2', 32));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAccount(
-                            "id2", domain_id, *pubkey2)),
-                        true)));
+        createDefaultAccount();
+        createDefaultAsset();
 
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAsset(
-                            "coin", domain_id, 1)),
-                        true)));
-
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder()
-                                         .addAssetQuantity(asset_id, "1.0")
-                                         .creatorAccountId(account_id)),
-                        true)));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder()
-                                         .addAssetQuantity(asset_id, "1.0")
-                                         .creatorAccountId(account_id2)),
-                        true,
-                        account_id2)));
+        execute(*mock_command_factory->constructAddAssetQuantity(
+                    asset_id, shared_model::interface::Amount{"1.0"}),
+                true);
+        execute(*mock_command_factory->constructAddAssetQuantity(
+                    asset_id, shared_model::interface::Amount{"1.0"}),
+                true,
+                account_id2);
       }
     };
 
@@ -560,8 +534,7 @@ namespace iroha {
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountAssetResponse>(
           std::move(result), [](const auto &cast_resp) {
-            ASSERT_EQ(cast_resp.accountAssets()[0].accountId(),
-                      account_id2);
+            ASSERT_EQ(cast_resp.accountAssets()[0].accountId(), account_id2);
             ASSERT_EQ(cast_resp.accountAssets()[0].assetId(), asset_id);
           });
     }
@@ -580,8 +553,7 @@ namespace iroha {
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountAssetResponse>(
           std::move(result), [](const auto &cast_resp) {
-            ASSERT_EQ(cast_resp.accountAssets()[0].accountId(),
-                      account_id2);
+            ASSERT_EQ(cast_resp.accountAssets()[0].accountId(), account_id2);
             ASSERT_EQ(cast_resp.accountAssets()[0].assetId(), asset_id);
           });
     }
@@ -627,39 +599,25 @@ namespace iroha {
             "\"key2\": \"value2\"},"
             " \"id2@domain\": {\"key\": \"value\", "
             "\"key2\": \"value2\"}}";
-        auto pubkey2 =
-            std::make_unique<shared_model::interface::types::PubkeyType>(
-                std::string('2', 32));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAccount(
-                            "id2", domain_id, *pubkey2)),
-                        true)));
+        createDefaultAccount();
+        createDefaultAsset();
 
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAsset(
-                            "coin", domain_id, 1)),
-                        true)));
-
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().setAccountDetail(
-                            account_id2, "key", "value")),
-                        true,
-                        account_id)));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().setAccountDetail(
-                            account_id2, "key2", "value2")),
-                        true,
-                        account_id)));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().setAccountDetail(
-                            account_id2, "key", "value")),
-                        true,
-                        account_id2)));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().setAccountDetail(
-                            account_id2, "key2", "value2")),
-                        true,
-                        account_id2)));
+        execute(*mock_command_factory->constructSetAccountDetail(
+                    account_id2, "key", "value"),
+                true,
+                account_id);
+        execute(*mock_command_factory->constructSetAccountDetail(
+                    account_id2, "key2", "value2"),
+                true,
+                account_id);
+        execute(*mock_command_factory->constructSetAccountDetail(
+                    account_id2, "key", "value"),
+                true,
+                account_id2);
+        execute(*mock_command_factory->constructSetAccountDetail(
+                    account_id2, "key2", "value2"),
+                true,
+                account_id2);
       }
 
       shared_model::interface::types::DetailType detail;
@@ -919,10 +877,9 @@ namespace iroha {
       }
 
       void createAsset() {
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAsset(
-                            "coin", domain_id, 1)),
-                        true)));
+        execute(
+            *mock_command_factory->constructCreateAsset("coin", domain_id, 1),
+            true);
       }
       const std::string asset_id = "coin#domain";
     };
@@ -992,17 +949,8 @@ namespace iroha {
         auto block_store = FlatFile::create(block_store_dir);
         ASSERT_TRUE(block_store);
         this->block_store = std::move(block_store.get());
-        auto pubkey2 =
-            std::make_unique<shared_model::interface::types::PubkeyType>(
-                std::string('2', 32));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAccount(
-                            "id2", domain_id, *pubkey2)),
-                        true)));
-        ASSERT_TRUE(
-            val(execute(buildCommand(TestTransactionBuilder().createAsset(
-                            "coin", domain_id, 1)),
-                        true)));
+        createDefaultAccount();
+        createDefaultAsset();
       }
 
       /**
@@ -1183,7 +1131,7 @@ namespace iroha {
     };
 
     struct GetAccountTxPaginationImpl {
-      static std::initializer_list<permissions::Role> getUserPermissions() {
+      static shared_model::interface::RolePermissionSet getUserPermissions() {
         return {permissions::Role::kSetDetail, permissions::Role::kGetMyAccTxs};
       }
 
@@ -1227,7 +1175,7 @@ namespace iroha {
     }
 
     struct GetAccountAssetTxPaginationImpl {
-      static std::initializer_list<permissions::Role> getUserPermissions() {
+      static shared_model::interface::RolePermissionSet getUserPermissions() {
         return {permissions::Role::kReceive,
                 permissions::Role::kGetMyAccAstTxs};
       }
@@ -1322,8 +1270,7 @@ namespace iroha {
           std::move(result), [](const auto &cast_resp) {
             ASSERT_EQ(cast_resp.transactions().size(), 2);
             for (const auto &tx : cast_resp.transactions()) {
-              EXPECT_EQ(account_id2, tx.creatorAccountId())
-                  << tx.toString();
+              EXPECT_EQ(account_id2, tx.creatorAccountId()) << tx.toString();
             }
           });
     }
@@ -1347,8 +1294,7 @@ namespace iroha {
           std::move(result), [](const auto &cast_resp) {
             ASSERT_EQ(cast_resp.transactions().size(), 2);
             for (const auto &tx : cast_resp.transactions()) {
-              EXPECT_EQ(account_id2, tx.creatorAccountId())
-                  << tx.toString();
+              EXPECT_EQ(account_id2, tx.creatorAccountId()) << tx.toString();
             }
           });
     }
@@ -1370,12 +1316,12 @@ namespace iroha {
     }
 
     /**
-     * @given initialized storage, permission
+     * @given initialized storage, all permissions
      * @when get account transactions of non existing account
-     * @then Return empty account transactions
+     * @then return error
      */
-    TEST_F(GetAccountTransactionsExecutorTest, DISABLED_InvalidNoAccount) {
-      addPerms({shared_model::interface::permissions::Role::kGetAllAccTxs});
+    TEST_F(GetAccountTransactionsExecutorTest, InvalidNoAccount) {
+      addAllPerms();
 
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
@@ -1383,7 +1329,7 @@ namespace iroha {
                        .build();
       auto result = executeQuery(query);
       checkStatefulError<shared_model::interface::StatefulFailedErrorResponse>(
-          std::move(result), kNoStatefulError);
+          std::move(result), kInvalidAccountId);
     }
 
     // ------------------------/ tx pagination tests \----------------------- //
@@ -1526,31 +1472,29 @@ namespace iroha {
     }
 
     /**
-     * @given initialized storage, permission to his/her account
-     * @when get transactions
-     * @then Return transactions of user
+     * @given initialized storage @and global permission
+     * @when get transactions with two valid @and one invalid hashes in query
+     * @then error is returned
      */
-    TEST_F(GetTransactionsHashExecutorTest, ValidMyAccount) {
-      addPerms({shared_model::interface::permissions::Role::kGetMyTxs});
+    TEST_F(GetTransactionsHashExecutorTest, BadHash) {
+      addPerms({shared_model::interface::permissions::Role::kGetAllTxs});
 
       commitBlocks();
 
       std::vector<decltype(hash1)> hashes;
       hashes.push_back(hash1);
+      hashes.emplace_back("AbsolutelyInvalidHash");
       hashes.push_back(hash2);
-      hashes.push_back(hash3);
 
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
                        .getTransactions(hashes)
                        .build();
       auto result = executeQuery(query);
-      checkSuccessfulResult<shared_model::interface::TransactionsResponse>(
-          std::move(result), [this](const auto &cast_resp) {
-            ASSERT_EQ(cast_resp.transactions().size(), 2);
-            ASSERT_EQ(cast_resp.transactions()[0].hash(), hash1);
-            ASSERT_EQ(cast_resp.transactions()[1].hash(), hash2);
-          });
+      // TODO [IR-1816] Akvinikym 03.12.18: replace magic number 4
+      // with a named constant
+      checkStatefulError<shared_model::interface::StatefulFailedErrorResponse>(
+          std::move(result), 4);
     }
 
     using GetAccountAssetTransactionsExecutorTest =
@@ -1590,11 +1534,11 @@ namespace iroha {
 
       commitBlocks();
 
-      auto query = TestQueryBuilder()
-                       .creatorAccountId(account_id)
-                       .getAccountAssetTransactions(
-                               account_id2, asset_id, kTxPageSize)
-                       .build();
+      auto query =
+          TestQueryBuilder()
+              .creatorAccountId(account_id)
+              .getAccountAssetTransactions(account_id2, asset_id, kTxPageSize)
+              .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::TransactionsPageResponse>(
           std::move(result), [this](const auto &cast_resp) {
@@ -1615,11 +1559,11 @@ namespace iroha {
 
       commitBlocks();
 
-      auto query = TestQueryBuilder()
-                       .creatorAccountId(account_id)
-                       .getAccountAssetTransactions(
-                               account_id2, asset_id, kTxPageSize)
-                       .build();
+      auto query =
+          TestQueryBuilder()
+              .creatorAccountId(account_id)
+              .getAccountAssetTransactions(account_id2, asset_id, kTxPageSize)
+              .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::TransactionsPageResponse>(
           std::move(result), [this](const auto &cast_resp) {
@@ -1640,11 +1584,48 @@ namespace iroha {
 
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
-                       .getAccountTransactions(another_account_id, kTxPageSize)
+                       .getAccountAssetTransactions(
+                           another_account_id, asset_id, kTxPageSize)
                        .build();
       auto result = executeQuery(query);
       checkStatefulError<shared_model::interface::StatefulFailedErrorResponse>(
           std::move(result), kNoPermissions);
+    }
+
+    /**
+     * @given initialized storage, all permissions
+     * @when get account asset transactions of non-existing user
+     * @then corresponding error is returned
+     */
+    TEST_F(GetAccountAssetTransactionsExecutorTest, InvalidAccountId) {
+      addAllPerms();
+
+      auto query = TestQueryBuilder()
+                       .creatorAccountId(account_id)
+                       .getAccountAssetTransactions(
+                           "doge@noaccount", asset_id, kTxPageSize)
+                       .build();
+      auto result = executeQuery(query);
+      checkStatefulError<shared_model::interface::StatefulFailedErrorResponse>(
+          std::move(result), kInvalidAccountId);
+    }
+
+    /**
+     * @given initialized storage, all permissions
+     * @when get account asset transactions of non-existing asset
+     * @then corresponding error is returned
+     */
+    TEST_F(GetAccountAssetTransactionsExecutorTest, InvalidAssetId) {
+      addAllPerms();
+
+      auto query =
+          TestQueryBuilder()
+              .creatorAccountId(account_id)
+              .getAccountAssetTransactions(account_id, "doge#coin", kTxPageSize)
+              .build();
+      auto result = executeQuery(query);
+      checkStatefulError<shared_model::interface::StatefulFailedErrorResponse>(
+          std::move(result), kInvalidAssetId);
     }
 
     /**

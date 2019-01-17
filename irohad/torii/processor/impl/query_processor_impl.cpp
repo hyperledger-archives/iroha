@@ -7,7 +7,6 @@
 
 #include <boost/range/size.hpp>
 
-#include "ametsuchi/wsv_query.hpp"
 #include "common/bind.hpp"
 #include "interfaces/queries/blocks_query.hpp"
 #include "interfaces/queries/query.hpp"
@@ -23,12 +22,13 @@ namespace iroha {
         std::shared_ptr<ametsuchi::QueryExecutorFactory> qry_exec,
         std::shared_ptr<iroha::PendingTransactionStorage> pending_transactions,
         std::shared_ptr<shared_model::interface::QueryResponseFactory>
-            response_factory)
+            response_factory,
+        logger::Logger log)
         : storage_{std::move(storage)},
           qry_exec_{std::move(qry_exec)},
           pending_transactions_{std::move(pending_transactions)},
           response_factory_{std::move(response_factory)},
-          log_{logger::log("QueryProcessorImpl")} {
+          log_{std::move(log)} {
       storage_->on_commit().subscribe(
           [this](std::shared_ptr<shared_model::interface::Block> block) {
             auto block_response =
@@ -38,38 +38,8 @@ namespace iroha {
           });
     }
 
-    template <class Q>
-    bool QueryProcessorImpl::checkSignatories(const Q &qry) {
-      const auto &wsv_query = storage_->getWsvQuery();
-
-      auto signatories = wsv_query->getSignatories(qry.creatorAccountId());
-      const auto &sig = qry.signatures();
-
-      return boost::size(sig) == 1
-          and signatories | [&sig](const auto &signatories) {
-                return validation::signaturesSubset(sig, signatories);
-              };
-    }
-
-    template bool QueryProcessorImpl::checkSignatories<
-        shared_model::interface::Query>(const shared_model::interface::Query &);
-    template bool
-    QueryProcessorImpl::checkSignatories<shared_model::interface::BlocksQuery>(
-        const shared_model::interface::BlocksQuery &);
-
     std::unique_ptr<shared_model::interface::QueryResponse>
     QueryProcessorImpl::queryHandle(const shared_model::interface::Query &qry) {
-      if (not checkSignatories(qry)) {
-        // TODO [IR-1816] Akvinikym 03.12.18: replace magic number 3
-        // with a named constant
-        return response_factory_->createErrorQueryResponse(
-            shared_model::interface::QueryResponseFactory::ErrorQueryType::
-                kStatefulFailed,
-            "query signatories did not pass validation",
-            3,
-            qry.hash());
-      }
-
       auto executor = qry_exec_->createQueryExecutor(pending_transactions_,
                                                      response_factory_);
       if (not executor) {
@@ -77,24 +47,17 @@ namespace iroha {
         return nullptr;
       }
 
-      return executor.value()->validateAndExecute(qry);
+      return executor.value()->validateAndExecute(qry, true);
     }
 
     rxcpp::observable<
         std::shared_ptr<shared_model::interface::BlockQueryResponse>>
     QueryProcessorImpl::blocksQueryHandle(
         const shared_model::interface::BlocksQuery &qry) {
-      if (not checkSignatories(qry)) {
-        std::shared_ptr<shared_model::interface::BlockQueryResponse> response =
-            response_factory_->createBlockQueryResponse(
-                "query signatories did not pass validation");
-        return rxcpp::observable<>::just(std::move(response));
-      }
-
       auto exec = qry_exec_->createQueryExecutor(pending_transactions_,
                                                  response_factory_);
       if (not exec or not(exec | [&qry](const auto &executor) {
-            return executor->validate(qry);
+            return executor->validate(qry, true);
           })) {
         std::shared_ptr<shared_model::interface::BlockQueryResponse> response =
             response_factory_->createBlockQueryResponse("stateful invalid");
