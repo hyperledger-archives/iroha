@@ -40,6 +40,7 @@
 #include "module/shared_model/validators/always_valid_validators.hpp"
 #include "multi_sig_transactions/transport/mst_transport_grpc.hpp"
 #include "network/impl/async_grpc_client.hpp"
+#include "ordering/impl/on_demand_os_client_grpc.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 #include "synchronizer/synchronizer_common.hpp"
@@ -135,7 +136,7 @@ namespace integration_framework {
 
   std::shared_ptr<FakePeer> IntegrationTestFramework::addInitialPeer(
       const boost::optional<Keypair> &key) {
-    BOOST_ASSERT_MSG(this_peer_, "Need to initialize the ITF peer first!");
+    BOOST_ASSERT_MSG(this_peer_, "Need to set the ITF peer key first!");
     auto fake_peer =
         std::make_shared<FakePeer>(kLocalHost,
                                    port_guard_->getPort(kDefaultInternalPort),
@@ -534,9 +535,41 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::sendBatch(
-      const std::shared_ptr<shared_model::interface::TransactionBatch> &batch) {
+      const TransactionBatchSPtr &batch) {
     og_transport_->propagateBatch(batch);
     return *this;
+  }
+
+  IntegrationTestFramework &IntegrationTestFramework::sendBatches(
+      const iroha::consensus::Round &round,
+      const std::vector<TransactionBatchSPtr> &batches) {
+    auto on_demand_os_transport =
+        iroha::ordering::transport::OnDemandOsClientGrpcFactory(
+            async_call_,
+            [] { return std::chrono::system_clock::now(); },
+            std::chrono::milliseconds(0)  // the proposal waiting
+                                          // timeout does not apply here
+            )
+            .create(*this_peer_);
+    on_demand_os_transport->onBatches(round, batches);
+    return *this;
+  }
+
+  IntegrationTestFramework::ProposalUPtr
+  IntegrationTestFramework::requestProposal(
+      const iroha::consensus::Round &round, std::chrono::milliseconds timeout) {
+    auto on_demand_os_transport =
+        iroha::ordering::transport::OnDemandOsClientGrpcFactory(
+            async_call_,
+            [] { return std::chrono::system_clock::now(); },
+            timeout)
+            .create(*this_peer_);
+    ProposalUPtr result;
+    auto opt_proposal_ptr = on_demand_os_transport->onRequestProposal(round);
+    if (opt_proposal_ptr) {
+      result = std::move(*opt_proposal_ptr);
+    }
+    return result;
   }
 
   IntegrationTestFramework &IntegrationTestFramework::sendMstState(
@@ -554,10 +587,10 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::checkProposal(
-      std::function<void(const ProposalType &)> validation) {
+      std::function<void(const ProposalSPtr &)> validation) {
     log_->info("check proposal");
     // fetch first proposal from proposal queue
-    ProposalType proposal;
+    ProposalSPtr proposal;
     fetchFromQueue(
         proposal_queue_, proposal, proposal_waiting, "missed proposal");
     validation(proposal);
@@ -570,7 +603,7 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::checkVerifiedProposal(
-      std::function<void(const ProposalType &)> validation) {
+      std::function<void(const ProposalSPtr &)> validation) {
     log_->info("check verified proposal");
     // fetch first proposal from proposal queue
     VerifiedProposalType verified_proposal_and_errors;
@@ -578,7 +611,7 @@ namespace integration_framework {
                    verified_proposal_and_errors,
                    proposal_waiting,
                    "missed verified proposal");
-    ProposalType verified_proposal =
+    ProposalSPtr verified_proposal =
         std::move(verified_proposal_and_errors->verified_proposal);
     validation(verified_proposal);
     return *this;

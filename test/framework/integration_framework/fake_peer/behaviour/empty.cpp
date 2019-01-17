@@ -20,6 +20,13 @@ namespace integration_framework {
         LoaderBlocksRequest request) {
       return {};
     }
+    OrderingProposalRequestResult
+    EmptyBehaviour::processOrderingProposalRequest(
+        const OrderingProposalRequest &request) {
+      return {};
+    }
+    void EmptyBehaviour::processOrderingBatches(
+        const BatchesForRound &batches_for_round) {}
 
     std::string EmptyBehaviour::getName() {
       return "empty behaviour";

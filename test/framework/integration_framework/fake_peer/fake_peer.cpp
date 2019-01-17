@@ -17,14 +17,19 @@
 #include "framework/integration_framework/fake_peer/block_storage.hpp"
 #include "framework/integration_framework/fake_peer/network/loader_grpc.hpp"
 #include "framework/integration_framework/fake_peer/network/mst_network_notifier.hpp"
+#include "framework/integration_framework/fake_peer/network/on_demand_os_network_notifier.hpp"
 #include "framework/integration_framework/fake_peer/network/ordering_gate_network_notifier.hpp"
 #include "framework/integration_framework/fake_peer/network/ordering_service_network_notifier.hpp"
 #include "framework/integration_framework/fake_peer/network/yac_network_notifier.hpp"
+#include "framework/integration_framework/fake_peer/proposal_storage.hpp"
 #include "framework/result_fixture.hpp"
 #include "interfaces/common_objects/common_objects_factory.hpp"
 #include "main/server_runner.hpp"
 #include "multi_sig_transactions/transport/mst_transport_grpc.hpp"
 #include "network/impl/async_grpc_client.hpp"
+#include "network/impl/grpc_channel_builder.hpp"
+#include "ordering/impl/on_demand_os_client_grpc.hpp"
+#include "ordering/impl/on_demand_os_server_grpc.hpp"
 #include "ordering/impl/ordering_gate_transport_grpc.hpp"
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 
@@ -71,6 +76,9 @@ namespace integration_framework {
             transaction_batch_factory,
         std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache)
         : common_objects_factory_(common_objects_factory),
+          transaction_factory_(transaction_factory),
+          transaction_batch_factory_(transaction_batch_factory),
+          batch_parser_(batch_parser),
           listen_ip_(listen_ip),
           internal_port_(internal_port),
           keypair_(std::make_unique<Keypair>(
@@ -113,6 +121,13 @@ namespace integration_framework {
       // here comes the initialization of members requiring shared_from_this()
       synchronizer_transport_ =
           std::make_shared<LoaderGrpc>(shared_from_this());
+      od_os_network_notifier_ =
+          std::make_shared<OnDemandOsNetworkNotifier>(shared_from_this());
+      od_os_transport_ =
+          std::make_shared<OdOsTransport>(od_os_network_notifier_,
+                                          transaction_factory_,
+                                          batch_parser_,
+                                          transaction_batch_factory_);
 
       initialized_ = true;
       return *this;
@@ -157,6 +172,21 @@ namespace integration_framework {
       return boost::none;
     }
 
+    FakePeer &FakePeer::setProposalStorage(
+        std::shared_ptr<ProposalStorage> proposal_storage) {
+      proposal_storage_ = std::move(proposal_storage);
+      return *this;
+    }
+
+    FakePeer &FakePeer::removeProposalStorage() {
+      proposal_storage_.reset();
+      return *this;
+    }
+
+    boost::optional<ProposalStorage &> FakePeer::getProposalStorage() const {
+      return {proposal_storage_ != nullptr, *proposal_storage_};
+    }
+
     void FakePeer::run() {
       ensureInitialized();
       // start instance
@@ -166,6 +196,7 @@ namespace integration_framework {
           .append(mst_transport_)
           .append(os_transport_)
           .append(og_transport_)
+          .append(od_os_transport_)
           .append(synchronizer_transport_)
           .run()
           .match(
@@ -218,6 +249,18 @@ namespace integration_framework {
     FakePeer::getLoaderBlocksRequestObservable() {
       ensureInitialized();
       return synchronizer_transport_->getLoaderBlocksRequestObservable();
+    }
+
+    rxcpp::observable<iroha::consensus::Round>
+    FakePeer::getProposalRequestsObservable() {
+      ensureInitialized();
+      return od_os_network_notifier_->getProposalRequestsObservable();
+    }
+
+    rxcpp::observable<std::shared_ptr<BatchesForRound>>
+    FakePeer::getBatchesObservable() {
+      ensureInitialized();
+      return od_os_network_notifier_->getBatchesObservable();
     }
 
     std::shared_ptr<shared_model::interface::Signature> FakePeer::makeSignature(
@@ -306,6 +349,34 @@ namespace integration_framework {
     size_t FakePeer::sendBlocksRequest(const LoaderBlocksRequest &request) {
       return synchronizer_transport_->sendBlocksRequest(real_peer_->address(),
                                                         request);
+    }
+
+    void FakePeer::sendBatchesForRound(iroha::consensus::Round round,
+                                       std::vector<OsBatchPtr> batches) {
+      auto client = iroha::network::createClient<
+          iroha::ordering::proto::OnDemandOrdering>(real_peer_->address());
+      grpc::ClientContext context;
+      iroha::ordering::proto::BatchesRequest request;
+      google::protobuf::Empty result;
+
+      client->SendBatches(&context, request, &result);
+    }
+
+    std::unique_ptr<shared_model::interface::Proposal>
+    FakePeer::sendProposalRequest(iroha::consensus::Round round,
+                                  std::chrono::milliseconds timeout) {
+      auto on_demand_os_transport =
+          iroha::ordering::transport::OnDemandOsClientGrpcFactory(
+              async_call_,
+              [] { return std::chrono::system_clock::now(); },
+              timeout)
+              .create(*real_peer_);
+      std::unique_ptr<shared_model::interface::Proposal> result;
+      auto opt_proposal_ptr = on_demand_os_transport->onRequestProposal(round);
+      if (opt_proposal_ptr) {
+        result = std::move(*opt_proposal_ptr);
+      }
+      return result;
     }
 
     void FakePeer::ensureInitialized() {

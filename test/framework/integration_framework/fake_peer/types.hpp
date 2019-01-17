@@ -28,6 +28,7 @@ namespace shared_model {
   }  // namespace interface
   namespace proto {
     class Block;
+    class Proposal;
   }
 }  // namespace shared_model
 
@@ -49,8 +50,12 @@ namespace iroha {
       class YacHash;
       struct VoteMessage;
     }  // namespace yac
+    struct Round;
   }    // namespace consensus
   namespace ordering {
+    namespace transport {
+      class OnDemandOsServerGrpc;
+    }
     class OrderingGateTransportGrpc;
     class OrderingServiceTransportGrpc;
   }  // namespace ordering
@@ -61,12 +66,15 @@ namespace integration_framework {
   namespace fake_peer {
     class Behaviour;
     class BlockStorage;
+    class ProposalStorage;
     class FakePeer;
     class LoaderGrpc;
     class MstNetworkNotifier;
     class OgNetworkNotifier;
     class OsNetworkNotifier;
+    class OnDemandOsNetworkNotifier;
     class YacNetworkNotifier;
+    struct BatchesForRound;
     struct MstMessage;
 
     using MstMessagePtr = std::shared_ptr<MstMessage>;
@@ -81,6 +89,9 @@ namespace integration_framework {
         boost::optional<const shared_model::proto::Block &>;
     using LoaderBlocksRequestResult =
         std::vector<std::reference_wrapper<const shared_model::proto::Block>>;
+    using OrderingProposalRequest = iroha::consensus::Round;
+    using OrderingProposalRequestResult =
+        boost::optional<shared_model::proto::Proposal &>;
 
   }  // namespace fake_peer
 }  // namespace integration_framework

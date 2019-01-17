@@ -54,6 +54,14 @@ namespace integration_framework {
       virtual LoaderBlocksRequestResult processLoaderBlocksRequest(
           LoaderBlocksRequest request) = 0;
 
+      /// serve the proposal request
+      virtual OrderingProposalRequestResult processOrderingProposalRequest(
+          const OrderingProposalRequest &request) = 0;
+
+      /// process the batches submitted to a fake peer's on demand OS
+      virtual void processOrderingBatches(
+          const BatchesForRound &batches_for_round) = 0;
+
       virtual std::string getName() = 0;
 
      protected:
