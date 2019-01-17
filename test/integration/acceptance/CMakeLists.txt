@@ -207,6 +207,7 @@ addtest(fake_peer_example_test
 target_link_libraries(fake_peer_example_test
     acceptance_fixture
     integration_framework
+    ametsuchi
     )
 
 addtest(set_account_quorum_test

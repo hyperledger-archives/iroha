@@ -5,6 +5,7 @@
 
 #include <atomic>
 
+#include "ametsuchi/impl/storage_impl.hpp"
 #include "framework/integration_framework/fake_peer/behaviour/honest.hpp"
 #include "framework/integration_framework/fake_peer/block_storage.hpp"
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
