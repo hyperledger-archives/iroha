@@ -105,19 +105,19 @@ namespace integration_framework {
     }
 
     logger::Logger BlockStorage::getLogger() const {
-      std::vector<std::string> using_peers_addresses;
+      std::vector<std::string> addresses_of_users;
       auto it = using_peers_.begin();
       while (it != using_peers_.end()) {
         auto peer = it->lock();
         if (!peer) {
           it = using_peers_.erase(it);
         } else {
-          using_peers_addresses.emplace_back(peer->getAddress());
+          addresses_of_users.emplace_back(peer->getAddress());
           ++it;
         }
       }
       return logger::log("Fake peer block storage used by ["
-                         + boost::algorithm::join(using_peers_addresses, ", ")
+                         + boost::algorithm::join(addresses_of_users, ", ")
                          + "]");
     }
 

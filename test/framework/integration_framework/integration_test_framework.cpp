@@ -676,8 +676,7 @@ namespace integration_framework {
     }
   }
 
-  const std::shared_ptr<IrohaInstance>
-      &IntegrationTestFramework::getIrohaInstance() const {
-    return iroha_instance_;
+  IrohaInstance &IntegrationTestFramework::getIrohaInstance() {
+    return *iroha_instance_;
   }
 }  // namespace integration_framework

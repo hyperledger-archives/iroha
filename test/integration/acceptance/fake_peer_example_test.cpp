@@ -144,7 +144,7 @@ TEST_F(FakePeerExampleFixture, SynchronizeTheRightVersionOfForkedLedger) {
   // Create the valid branch, supported by the good fake peers:
   auto valid_block_storage = std::make_shared<fake_peer::BlockStorage>();
   for (const auto &block : itf.getIrohaInstance()
-                               ->getIrohaInstance()
+                               .getIrohaInstance()
                                ->getStorage()
                                ->getBlockQuery()
                                ->getBlocksFrom(1)) {
@@ -251,7 +251,7 @@ TEST_F(FakePeerExampleFixture, SynchronizeTheRightVersionOfForkedLedger) {
   std::condition_variable wait_cv;
   std::atomic_bool commited_all_blocks(false);
   itf.getIrohaInstance()
-      ->getIrohaInstance()
+      .getIrohaInstance()
       ->getStorage()
       ->on_commit()
       .subscribe([&wait_cv, &commited_all_blocks, &valid_block_storage](

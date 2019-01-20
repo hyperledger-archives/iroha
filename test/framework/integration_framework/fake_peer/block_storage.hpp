@@ -48,9 +48,9 @@ namespace integration_framework {
       std::unordered_map<HashType, BlockPtr, HashType::Hasher> blocks_by_hash_;
 
       /// The collection of peers claiming to use this block storage.
-      // I am using vector (although a kind of set would fit better) because
-      // weak pointers seem unsuitable for any comparison, as the shared pointer
-      // they point to may change.
+      // Vector is used (although a kind of set would fit better) because
+      // weak pointers seem unsuitable for any comparison, as the shared_ptr
+      // they refer to may change.
       mutable std::vector<std::weak_ptr<FakePeer>> using_peers_;
     };
 

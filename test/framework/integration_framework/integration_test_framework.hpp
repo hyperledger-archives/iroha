@@ -404,7 +404,7 @@ namespace integration_framework {
     void done();
 
     /// Get the controlled Iroha instance.
-    const std::shared_ptr<IrohaInstance> &getIrohaInstance() const;
+    IrohaInstance &getIrohaInstance();
 
     /// Set the ITF peer keypair and initialize irohad pipeline.
     void initPipeline(const shared_model::crypto::Keypair &keypair);
