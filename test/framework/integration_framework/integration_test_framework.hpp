@@ -277,7 +277,7 @@ namespace integration_framework {
      */
     IntegrationTestFramework &sendQuery(const shared_model::proto::Query &qry);
 
-    /// Send proposal to this peer' s ordering service.
+    /// Send proposal to this peer's ordering service.
     IntegrationTestFramework &sendProposal(
         std::unique_ptr<shared_model::interface::Proposal> proposal);
 
