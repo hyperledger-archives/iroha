@@ -19,7 +19,6 @@
 #include "interfaces/iroha_internal/transaction_batch_parser.hpp"
 #include "interfaces/iroha_internal/tx_status_factory.hpp"
 #include "interfaces/transaction.hpp"
-#include "network/consensus_gate.hpp"
 #include "torii/status_bus.hpp"
 
 namespace torii {
@@ -33,7 +32,7 @@ namespace torii {
           batch_parser,
       std::shared_ptr<shared_model::interface::TransactionBatchFactory>
           transaction_batch_factory,
-      std::shared_ptr<iroha::network::ConsensusGate> consensus_gate,
+      rxcpp::observable<ConsensusGateEvent> consensus_gate_objects,
       int maximum_rounds_without_update,
       logger::Logger log)
       : command_service_(std::move(command_service)),
@@ -43,7 +42,7 @@ namespace torii {
         batch_parser_(std::move(batch_parser)),
         batch_factory_(std::move(transaction_batch_factory)),
         log_(std::move(log)),
-        consensus_gate_(std::move(consensus_gate)),
+        consensus_gate_objects_(std::move(consensus_gate_objects)),
         maximum_rounds_without_update_(maximum_rounds_without_update) {}
 
   grpc::Status CommandServiceTransportGrpc::Torii(
@@ -57,8 +56,9 @@ namespace torii {
 
   namespace {
     /**
-     * Form an error message, which is to be shared between all transactions, if
-     * there are several of them, or individual message, if there's only one
+     * Form an error message, which is to be shared between all transactions,
+     * if there are several of them, or individual message, if there's only
+     * one
      * @param tx_hashes is non empty hash list to form error message from
      * @param error of those tx(s)
      * @return message
@@ -185,20 +185,14 @@ namespace torii {
     std::string client_id =
         (client_id_format % context->peer() % hash.toString()).str();
 
-    // in each round, increment the round counter, showing number of consecutive
-    // rounds without status update; if it becomes greater than some predefined
-    // value, stop the status streaming
-    std::atomic_int round_counter{0};
-    consensus_gate_->onOutcome().subscribe(
-        [this, &subscription, &round_counter](const auto &) {
-          auto new_val = round_counter.load() + 1;
-          if (new_val >= maximum_rounds_without_update_) {
-            subscription.unsubscribe();
-          } else {
-            round_counter++;
-          }
-        });
+    auto consensus_gate_observable =
+        consensus_gate_objects_
+            // a dummy start_with lets us don't wait for the consensus event
+            // on further combine_latest
+            .start_with(ConsensusGateEvent{});
 
+    boost::optional<iroha::protocol::TxStatus> last_tx_status;
+    auto rounds_counter{0};
     command_service_
         ->getStatusStream(hash)
         // convert to transport objects
@@ -208,21 +202,42 @@ namespace torii {
                      shared_model::proto::TransactionResponse>(response)
               ->getTransport();
         })
-        // complete the observable if client is disconnected
-        .take_while([=](const auto &) {
-          auto is_cancelled = context->IsCancelled();
-          if (is_cancelled) {
-            log_->debug("client unsubscribed, {}", client_id);
-          }
-          return not is_cancelled;
+        .combine_latest(consensus_gate_observable)
+        .map([](const auto &tuple) { return std::get<0>(tuple); })
+        // complete the observable if client is disconnected or too many
+        // rounds have passed without tx status change
+        .take_while(
+            [=, &rounds_counter, &last_tx_status](const auto &response) {
+              auto is_cancelled = context->IsCancelled();
+              if (is_cancelled) {
+                log_->debug("client unsubscribed, {}", client_id);
+              }
+              // we increment round counter when the same status arrived again.
+              auto status = response.tx_status();
+              if (last_tx_status and (status == *last_tx_status)) {
+                ++rounds_counter;
+              } else {
+                rounds_counter = 0;
+              }
+              // we stop the stream when round counter is greater than allowed.
+              if (rounds_counter >= maximum_rounds_without_update_) {
+                return false;
+              }
+
+              return not is_cancelled;
+            })
+        .filter([&last_tx_status](const auto &response) {
+          auto status = response.tx_status();
+          // we allow further processing in case of any new status
+          // (including the first one)
+          auto result = not last_tx_status or (*last_tx_status != status);
+          last_tx_status = status;
+          return result;
         })
         .subscribe(subscription,
-                   [this, &response_writer, &client_id, &round_counter](
-                       iroha::protocol::ToriiResponse response) {
+                   [this, &response_writer, &client_id](const auto &response) {
                      if (response_writer->Write(response)) {
                        log_->debug("status written, {}", client_id);
-                       // reset consecutive rounds counter for this tx
-                       round_counter.store(0);
                      }
                    },
                    [&](std::exception_ptr ep) {

@@ -28,12 +28,6 @@ namespace shared_model {
   }  // namespace interface
 }  // namespace shared_model
 
-namespace iroha {
-  namespace network {
-    class ConsensusGate;
-  }
-}  // namespace iroha
-
 namespace torii {
   class CommandServiceTransportGrpc
       : public iroha::protocol::CommandService_v1::Service {
@@ -43,6 +37,8 @@ namespace torii {
             shared_model::interface::Transaction,
             iroha::protocol::Transaction>;
 
+    struct ConsensusGateEvent {};
+
     /**
      * Creates a new instance of CommandServiceTransportGrpc
      * @param command_service - to delegate logic work
@@ -50,9 +46,10 @@ namespace torii {
      * @param status_factory - factory of statuses
      * @param transaction_factory - factory of transactions
      * @param batch_parser - parses of batches
-     * @param transaction_batch_factory - factory of batches
-     * @param initial_timeout - streaming timeout when tx is not received
-     * @param nonfinal_timeout - streaming timeout when tx is being processed
+     * @param transaction_batch_factory - factory of batches of transactions
+     * @param consensus_gate_objects - events from consensus gate
+     * @param maximum_rounds_without_update - defines how long tx status
+     * stream is kept alive when no new tx statuses appear
      * @param log to print progress
      */
     CommandServiceTransportGrpc(
@@ -65,7 +62,7 @@ namespace torii {
             batch_parser,
         std::shared_ptr<shared_model::interface::TransactionBatchFactory>
             transaction_batch_factory,
-        std::shared_ptr<iroha::network::ConsensusGate> consensus_gate,
+        rxcpp::observable<ConsensusGateEvent> consensus_gate_objects,
         int maximum_rounds_without_update,
         logger::Logger log = logger::log("CommandServiceTransportGrpc"));
 
@@ -135,7 +132,7 @@ namespace torii {
         batch_factory_;
     logger::Logger log_;
 
-    std::shared_ptr<iroha::network::ConsensusGate> consensus_gate_;
+    rxcpp::observable<ConsensusGateEvent> consensus_gate_objects_;
     const int maximum_rounds_without_update_;
   };
 }  // namespace torii
