@@ -17,14 +17,9 @@ template <typename MapType, typename KeyType, typename ValueType>
 static bool emplaceCheckingOverwrite(MapType &map,
                                      const KeyType &key,
                                      const ValueType &value) {
-  const auto it = map.find(key);
-  if (it == map.end()) {
-    map.emplace(key, value);
-    return false;
-  } else {
-    map.emplace_hint(map.erase(it), key, value);
-    return true;
-  }
+  const bool overwritten = map.find(key);
+  map[key] = value;
+  return overwritten;
 }
 
 namespace integration_framework {
@@ -109,7 +104,7 @@ namespace integration_framework {
       auto it = using_peers_.begin();
       while (it != using_peers_.end()) {
         auto peer = it->lock();
-        if (!peer) {
+        if (not peer) {
           it = using_peers_.erase(it);
         } else {
           addresses_of_users.emplace_back(peer->getAddress());

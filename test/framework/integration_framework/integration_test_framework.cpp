@@ -553,8 +553,10 @@ namespace integration_framework {
         iroha::ordering::transport::OnDemandOsClientGrpcFactory(
             async_call_,
             [] { return std::chrono::system_clock::now(); },
-            std::chrono::milliseconds(0)  // the proposal waiting
-                                          // timeout does not apply here
+            std::chrono::milliseconds(0)  // the proposal waiting timeout is
+                                          // only used when waiting a response
+                                          // for a proposal request, which our
+                                          // client does not do
             )
             .create(*this_peer_);
     on_demand_os_transport->onBatches(round, batches);

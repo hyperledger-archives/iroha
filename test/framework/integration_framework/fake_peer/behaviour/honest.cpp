@@ -38,7 +38,7 @@ namespace integration_framework {
 
     LoaderBlockRequestResult HonestBehaviour::processLoaderBlockRequest(
         LoaderBlockRequest request) {
-      const auto block_storage = getFakePeer().getBlockStorage();
+      const auto &block_storage = getFakePeer().getBlockStorage();
       if (!block_storage) {
         getLogger()->debug(
             "Got a Loader.retrieveBlock call, but have no block storage!");

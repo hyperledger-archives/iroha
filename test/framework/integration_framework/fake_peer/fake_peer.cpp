@@ -117,7 +117,7 @@ namespace integration_framework {
     }
 
     FakePeer &FakePeer::initialize() {
-      BOOST_VERIFY_MSG(!initialized_, "Already initialized!");
+      BOOST_VERIFY_MSG(not initialized_, "Already initialized!");
       // here comes the initialization of members requiring shared_from_this()
       synchronizer_transport_ =
           std::make_shared<LoaderGrpc>(shared_from_this());
@@ -275,7 +275,7 @@ namespace integration_framework {
                      iroha::expected::Value<
                          std::unique_ptr<shared_model::interface::Signature>> &
                          sig) { signature_with_pubkey = std::move(sig.value); },
-                 [this](iroha::expected::Error<std::string> &reason) {
+                 [](iroha::expected::Error<std::string> &reason) {
                    BOOST_THROW_EXCEPTION(std::runtime_error(
                        "Cannot build signature: " + reason.error));
                  });

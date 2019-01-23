@@ -9,7 +9,6 @@
 #include "network/ordering_service_transport.hpp"
 
 #include <rxcpp/rx.hpp>
-
 #include "framework/integration_framework/fake_peer/types.hpp"
 
 namespace integration_framework {
