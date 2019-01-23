@@ -17,7 +17,7 @@ template <typename MapType, typename KeyType, typename ValueType>
 static bool emplaceCheckingOverwrite(MapType &map,
                                      const KeyType &key,
                                      const ValueType &value) {
-  const bool overwritten = map.find(key);
+  const bool overwritten = map.find(key) == map.end();
   map[key] = value;
   return overwritten;
 }
