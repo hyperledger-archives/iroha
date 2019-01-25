@@ -112,8 +112,9 @@ namespace torii {
         // prepend initial status
         .start_with(initial_status)
         // select statuses with requested hash
-        .filter(
-            [&](auto response) { return response->transactionHash() == hash; })
+        .filter([hash](auto response) {
+          return response->transactionHash() == hash;
+        })
         // successfully complete the observable if final status is received.
         // final status is included in the observable
         .template lift<ResponsePtrType>([](rxcpp::subscriber<ResponsePtrType>

@@ -35,9 +35,6 @@ using ::testing::Property;
 using ::testing::Return;
 using ::testing::StrEq;
 
-using iroha::consensus::BlockReject;
-using iroha::consensus::GateObject;
-
 using namespace iroha::ametsuchi;
 using namespace iroha::torii;
 using namespace std::chrono_literals;
@@ -73,11 +70,6 @@ class CommandServiceTransportGrpcTest : public testing::Test {
     batch_parser =
         std::make_shared<shared_model::interface::TransactionBatchParserImpl>();
     batch_factory = std::make_shared<MockTransactionBatchFactory>();
-
-    mock_consensus_gate = std::make_shared<iroha::network::MockConsensusGate>();
-    ON_CALL(*mock_consensus_gate, onOutcome())
-        .WillByDefault(
-            Return(rxcpp::observable<>::empty<iroha::consensus::GateObject>()));
   }
 
   void SetUp() override {
@@ -93,8 +85,8 @@ class CommandServiceTransportGrpcTest : public testing::Test {
         transaction_factory,
         batch_parser,
         batch_factory,
-        mock_consensus_gate,
-        2);
+        rxcpp::observable<>::iterate(gate_objects),
+        gate_objects.size());
   }
 
   std::shared_ptr<MockStatusBus> status_bus;
@@ -110,7 +102,11 @@ class CommandServiceTransportGrpcTest : public testing::Test {
   std::shared_ptr<MockCommandService> command_service;
   std::shared_ptr<torii::CommandServiceTransportGrpc> transport_grpc;
 
-  std::shared_ptr<iroha::network::MockConsensusGate> mock_consensus_gate;
+  rxcpp::subjects::subject<
+      torii::CommandServiceTransportGrpc::ConsensusGateEvent>
+      consensus_gate_objects;
+  std::vector<torii::CommandServiceTransportGrpc::ConsensusGateEvent>
+      gate_objects{2};
 
   const size_t kHashLength = 32;
   const size_t kTimes = 5;
@@ -284,10 +280,6 @@ TEST_F(CommandServiceTransportGrpcTest, StatusStreamOnNotReceived) {
                              StrEq(hash.hex())),
                     _))
       .WillOnce(Return(true));
-
-  std::vector<GateObject> gate_objects{BlockReject{}, BlockReject{}};
-  EXPECT_CALL(*mock_consensus_gate, onOutcome())
-      .WillOnce(Return(rxcpp::observable<>::iterate(gate_objects)));
 
   ASSERT_TRUE(transport_grpc
                   ->StatusStream(
