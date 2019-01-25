@@ -238,6 +238,12 @@ class Irohad {
   // persistent cache
   std::shared_ptr<iroha::ametsuchi::TxPresenceCache> persistent_cache;
 
+  // proposal factory
+  std::shared_ptr<shared_model::interface::AbstractTransportFactory<
+      shared_model::interface::Proposal,
+      iroha::protocol::Proposal>>
+      proposal_factory;
+
   // ordering gate
   std::shared_ptr<iroha::network::OrderingGate> ordering_gate;
 
@@ -253,6 +259,7 @@ class Irohad {
 
   // consensus gate
   std::shared_ptr<iroha::network::ConsensusGate> consensus_gate;
+  rxcpp::subjects::subject<iroha::consensus::GateObject> consensus_gate_objects;
 
   // synchronizer
   std::shared_ptr<iroha::synchronizer::Synchronizer> synchronizer;
