@@ -28,6 +28,7 @@
 #include "multi_sig_transactions/state/mst_state.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "network/mst_transport.hpp"
+#include "ordering/impl/on_demand_os_client_grpc.hpp"
 #include "torii/command_client.hpp"
 #include "torii/query_client.hpp"
 
@@ -473,6 +474,9 @@ namespace integration_framework {
         batch_parser_;
     std::shared_ptr<shared_model::interface::TransactionBatchFactory>
         transaction_batch_factory_;
+    std::shared_ptr<
+        iroha::ordering::transport::OnDemandOsClientGrpc::TransportFactoryType>
+        proposal_factory_;
     std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache_;
     std::shared_ptr<iroha::network::MstTransportGrpc> mst_transport_;
     std::shared_ptr<iroha::consensus::yac::YacNetwork> yac_transport_;

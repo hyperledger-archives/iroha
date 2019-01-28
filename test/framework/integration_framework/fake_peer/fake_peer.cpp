@@ -74,10 +74,13 @@ namespace integration_framework {
             batch_parser,
         std::shared_ptr<shared_model::interface::TransactionBatchFactory>
             transaction_batch_factory,
+        std::shared_ptr<iroha::ordering::transport::OnDemandOsClientGrpc::
+                            TransportFactoryType> proposal_factory,
         std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache)
         : common_objects_factory_(common_objects_factory),
           transaction_factory_(transaction_factory),
           transaction_batch_factory_(transaction_batch_factory),
+          proposal_factory_(std::move(proposal_factory)),
           batch_parser_(batch_parser),
           listen_ip_(listen_ip),
           internal_port_(internal_port),
@@ -361,6 +364,7 @@ namespace integration_framework {
       auto on_demand_os_transport =
           iroha::ordering::transport::OnDemandOsClientGrpcFactory(
               async_call_,
+              proposal_factory_,
               [] { return std::chrono::system_clock::now(); },
               timeout)
               .create(*real_peer_);

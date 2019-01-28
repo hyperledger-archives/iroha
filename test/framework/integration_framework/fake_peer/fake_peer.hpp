@@ -16,6 +16,7 @@
 #include "interfaces/iroha_internal/abstract_transport_factory.hpp"
 #include "logger/logger.hpp"
 #include "network/impl/async_grpc_client.hpp"
+#include "ordering/impl/on_demand_os_client_grpc.hpp"
 
 class ServerRunner;
 
@@ -60,6 +61,8 @@ namespace integration_framework {
               batch_parser,
           std::shared_ptr<shared_model::interface::TransactionBatchFactory>
               transaction_batch_factory,
+          std::shared_ptr<iroha::ordering::transport::OnDemandOsClientGrpc::
+                              TransportFactoryType> proposal_factory,
           std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache);
 
       /// Initialization method.
@@ -194,6 +197,9 @@ namespace integration_framework {
       std::shared_ptr<TransportFactoryType> transaction_factory_;
       std::shared_ptr<shared_model::interface::TransactionBatchFactory>
           transaction_batch_factory_;
+      std::shared_ptr<iroha::ordering::transport::OnDemandOsClientGrpc::
+                          TransportFactoryType>
+          proposal_factory_;
       std::shared_ptr<shared_model::interface::TransactionBatchParser>
           batch_parser_;
 

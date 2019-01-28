@@ -48,6 +48,7 @@
 #include "ordering/impl/ordering_service_transport_grpc.hpp"
 #include "synchronizer/synchronizer_common.hpp"
 #include "torii/status_bus.hpp"
+#include "validators/protobuf/proto_proposal_validator.hpp"
 
 using namespace shared_model::crypto;
 using namespace std::literals::string_literals;
@@ -68,6 +69,9 @@ using AlwaysValidInterfaceTransactionValidator =
 using AlwaysValidProtoTransactionValidator =
     shared_model::validation::AlwaysValidModelValidator<
         iroha::protocol::Transaction>;
+using AlwaysValidProtoProposalValidator =
+    shared_model::validation::AlwaysValidModelValidator<
+        shared_model::interface::Proposal>;
 using AlwaysMissingTxPresenceCache = iroha::ametsuchi::TxPresenceCacheStub<
     iroha::ametsuchi::tx_cache_status_responses::Missing>;
 using FakePeer = integration_framework::fake_peer::FakePeer;
@@ -117,6 +121,26 @@ namespace integration_framework {
         transaction_batch_factory_(
             std::make_shared<
                 shared_model::interface::TransactionBatchFactoryImpl>()),
+        proposal_factory_([] {
+          std::shared_ptr<shared_model::validation::AbstractValidator<
+              iroha::protocol::Transaction>>
+              proto_transaction_validator =
+                  std::make_shared<AlwaysValidProtoTransactionValidator>();
+          std::unique_ptr<shared_model::validation::AbstractValidator<
+              shared_model::interface::Proposal>>
+              proposal_validator =
+                  std::make_unique<AlwaysValidProtoProposalValidator>();
+          std::unique_ptr<shared_model::validation::AbstractValidator<
+              iroha::protocol::Proposal>>
+              proto_proposal_validator = std::make_unique<
+                  shared_model::validation::ProtoProposalValidator>(
+                  std::move(proto_transaction_validator));
+          return std::make_shared<shared_model::proto::ProtoTransportFactory<
+              shared_model::interface::Proposal,
+              shared_model::proto::Proposal>>(
+              std::move(proposal_validator),
+              std::move(proto_proposal_validator));
+        }()),
         tx_presence_cache_(std::make_shared<AlwaysMissingTxPresenceCache>()),
         yac_transport_(
             std::make_shared<iroha::consensus::yac::NetworkImpl>(async_call_)),
@@ -152,6 +176,7 @@ namespace integration_framework {
                                    transaction_factory_,
                                    batch_parser_,
                                    transaction_batch_factory_,
+                                   proposal_factory_,
                                    tx_presence_cache_);
     fake_peer->initialize();
     fake_peers_.emplace_back(fake_peer);
@@ -552,6 +577,7 @@ namespace integration_framework {
     auto on_demand_os_transport =
         iroha::ordering::transport::OnDemandOsClientGrpcFactory(
             async_call_,
+            proposal_factory_,
             [] { return std::chrono::system_clock::now(); },
             std::chrono::milliseconds(0)  // the proposal waiting timeout is
                                           // only used when waiting a response
@@ -569,6 +595,7 @@ namespace integration_framework {
     auto on_demand_os_transport =
         iroha::ordering::transport::OnDemandOsClientGrpcFactory(
             async_call_,
+            proposal_factory_,
             [] { return std::chrono::system_clock::now(); },
             timeout)
             .create(*this_peer_);
