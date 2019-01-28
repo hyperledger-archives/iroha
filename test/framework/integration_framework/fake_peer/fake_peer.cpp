@@ -87,13 +87,15 @@ namespace integration_framework {
               common_objects_factory, getAddress(), keypair_->publicKey())),
           real_peer_(std::move(real_peer)),
           async_call_(std::make_shared<AsyncCall>()),
-          mst_transport_(
-              std::make_shared<MstTransport>(async_call_,
-                                             transaction_factory,
-                                             batch_parser,
-                                             transaction_batch_factory,
-                                             tx_presence_cache,
-                                             keypair_->publicKey())),
+          mst_transport_(std::make_shared<MstTransport>(
+              async_call_,
+              transaction_factory,
+              batch_parser,
+              transaction_batch_factory,
+              tx_presence_cache,
+              std::make_shared<iroha::DefaultCompleter>(
+                  std::chrono::minutes(0)),
+              keypair_->publicKey())),
           yac_transport_(std::make_shared<YacTransport>(async_call_)),
           os_transport_(std::make_shared<OsTransport>(transaction_batch_factory,
                                                       async_call_)),
