@@ -182,7 +182,10 @@ namespace integration_framework {
     }
 
     boost::optional<ProposalStorage &> FakePeer::getProposalStorage() const {
-      return {proposal_storage_ != nullptr, *proposal_storage_};
+      if (proposal_storage_) {
+       return *proposal_storage_;
+      }
+      return boost::none;
     }
 
     void FakePeer::run() {
