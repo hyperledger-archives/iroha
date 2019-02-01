@@ -19,22 +19,23 @@ namespace integration_framework {
     class OnDemandOsNetworkNotifier final
         : public iroha::ordering::transport::OdOsNotification {
      public:
-      using Round = iroha::consensus::Round;
-
       OnDemandOsNetworkNotifier(const std::shared_ptr<FakePeer> &fake_peer);
 
-      virtual void onBatches(Round round, CollectionType batches);
+      virtual void onBatches(iroha::consensus::Round round,
+                             CollectionType batches);
 
-      virtual boost::optional<ProposalType> onRequestProposal(Round round);
+      virtual boost::optional<ProposalType> onRequestProposal(
+          iroha::consensus::Round round);
 
-      rxcpp::observable<Round> getProposalRequestsObservable();
+      rxcpp::observable<iroha::consensus::Round>
+      getProposalRequestsObservable();
 
       rxcpp::observable<std::shared_ptr<BatchesForRound>>
       getBatchesObservable();
 
      private:
       std::weak_ptr<FakePeer> fake_peer_wptr_;
-      rxcpp::subjects::subject<Round> rounds_subject_;
+      rxcpp::subjects::subject<iroha::consensus::Round> rounds_subject_;
       rxcpp::subjects::subject<std::shared_ptr<BatchesForRound>>
           batches_subject_;
     };

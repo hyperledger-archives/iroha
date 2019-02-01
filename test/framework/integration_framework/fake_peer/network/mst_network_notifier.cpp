@@ -15,7 +15,8 @@ namespace integration_framework {
           std::make_shared<MstMessage>(from, new_state));
     }
 
-    rxcpp::observable<MstMessagePtr> MstNetworkNotifier::getObservable() {
+    rxcpp::observable<std::shared_ptr<MstMessage>>
+    MstNetworkNotifier::getObservable() {
       return mst_subject_.get_observable();
     }
 

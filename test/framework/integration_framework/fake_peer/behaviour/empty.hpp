@@ -20,10 +20,14 @@ namespace integration_framework {
      public:
       virtual ~EmptyBehaviour() = default;
 
-      void processMstMessage(MstMessagePtr message) override;
-      void processYacMessage(YacMessagePtr message) override;
-      void processOsBatch(OsBatchPtr batch) override;
-      void processOgProposal(OgProposalPtr proposal) override;
+      void processMstMessage(std::shared_ptr<MstMessage> message) override;
+      void processYacMessage(
+          std::shared_ptr<const YacMessage> message) override;
+      void processOsBatch(
+          std::shared_ptr<shared_model::interface::TransactionBatch> batch)
+          override;
+      void processOgProposal(
+          std::shared_ptr<shared_model::interface::Proposal> proposal) override;
       LoaderBlockRequestResult processLoaderBlockRequest(
           LoaderBlockRequest request) override;
       LoaderBlocksRequestResult processLoaderBlocksRequest(

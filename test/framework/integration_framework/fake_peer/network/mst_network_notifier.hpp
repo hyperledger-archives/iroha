@@ -21,10 +21,10 @@ namespace integration_framework {
       void onNewState(const shared_model::crypto::PublicKey &from,
                       const iroha::MstState &new_state) override;
 
-      rxcpp::observable<MstMessagePtr> getObservable();
+      rxcpp::observable<std::shared_ptr<MstMessage>> getObservable();
 
      private:
-      rxcpp::subjects::subject<MstMessagePtr> mst_subject_;
+      rxcpp::subjects::subject<std::shared_ptr<MstMessage>> mst_subject_;
     };
 
   }  // namespace fake_peer

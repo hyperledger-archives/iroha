@@ -10,11 +10,13 @@
 namespace integration_framework {
   namespace fake_peer {
 
-    void OgNetworkNotifier::onProposal(OgProposalPtr proposal) {
+    void OgNetworkNotifier::onProposal(
+        std::shared_ptr<shared_model::interface::Proposal> proposal) {
       proposals_subject_.get_subscriber().on_next(std::move(proposal));
     }
 
-    rxcpp::observable<OgProposalPtr> OgNetworkNotifier::getObservable() {
+    rxcpp::observable<std::shared_ptr<shared_model::interface::Proposal>>
+    OgNetworkNotifier::getObservable() {
       return proposals_subject_.get_observable();
     }
 

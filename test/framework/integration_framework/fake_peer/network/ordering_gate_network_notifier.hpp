@@ -18,12 +18,16 @@ namespace integration_framework {
     class OgNetworkNotifier final
         : public iroha::network::OrderingGateNotification {
      public:
-      void onProposal(OgProposalPtr proposal) override;
+      void onProposal(
+          std::shared_ptr<shared_model::interface::Proposal> proposal) override;
 
-      rxcpp::observable<OgProposalPtr> getObservable();
+      rxcpp::observable<std::shared_ptr<shared_model::interface::Proposal>>
+      getObservable();
 
      private:
-      rxcpp::subjects::subject<OgProposalPtr> proposals_subject_;
+      rxcpp::subjects::subject<
+          std::shared_ptr<shared_model::interface::Proposal>>
+          proposals_subject_;
     };
 
   }  // namespace fake_peer

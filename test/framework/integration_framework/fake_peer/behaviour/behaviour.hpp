@@ -25,7 +25,6 @@ namespace integration_framework {
 
     class Behaviour {
      public:
-
       virtual ~Behaviour();
 
       /// Enable the behaviour for the given peer
@@ -35,16 +34,19 @@ namespace integration_framework {
       void absolve();
 
       /// This method gets subscribed on Fake Peer's MST messages.
-      virtual void processMstMessage(MstMessagePtr message) = 0;
+      virtual void processMstMessage(std::shared_ptr<MstMessage> message) = 0;
 
       /// This method gets subscribed on Fake Peer's YAC messages.
-      virtual void processYacMessage(YacMessagePtr message) = 0;
+      virtual void processYacMessage(
+          std::shared_ptr<const YacMessage> message) = 0;
 
       /// This method gets subscribed on Fake Peer's OS messages.
-      virtual void processOsBatch(OsBatchPtr batch) = 0;
+      virtual void processOsBatch(
+          std::shared_ptr<shared_model::interface::TransactionBatch> batch) = 0;
 
       /// This method gets subscribed on Fake Peer's OG messages.
-      virtual void processOgProposal(OgProposalPtr proposal) = 0;
+      virtual void processOgProposal(
+          std::shared_ptr<shared_model::interface::Proposal> proposal) = 0;
 
       /// This method handles block requests for Fake Peer's.
       virtual LoaderBlockRequestResult processLoaderBlockRequest(

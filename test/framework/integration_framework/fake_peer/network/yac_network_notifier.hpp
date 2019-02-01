@@ -22,10 +22,11 @@ namespace integration_framework {
 
       void onState(StateMessage state) override;
 
-      rxcpp::observable<YacMessagePtr> getObservable();
+      rxcpp::observable<std::shared_ptr<const YacMessage>> getObservable();
 
      private:
-      rxcpp::subjects::subject<YacMessagePtr> votes_subject_;
+      rxcpp::subjects::subject<std::shared_ptr<const YacMessage>>
+          votes_subject_;
     };
 
   }  // namespace fake_peer

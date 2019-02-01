@@ -77,12 +77,7 @@ namespace integration_framework {
     struct BatchesForRound;
     struct MstMessage;
 
-    using MstMessagePtr = std::shared_ptr<MstMessage>;
-    using YacMessagePtr =
-        std::shared_ptr<const std::vector<iroha::consensus::yac::VoteMessage>>;
-    using OgProposalPtr = std::shared_ptr<shared_model::interface::Proposal>;
-    using OsBatchPtr =
-        std::shared_ptr<shared_model::interface::TransactionBatch>;
+    using YacMessage = std::vector<iroha::consensus::yac::VoteMessage>;
     using LoaderBlockRequest = std::shared_ptr<shared_model::crypto::Hash>;
     using LoaderBlocksRequest = shared_model::interface::types::HeightType;
     using LoaderBlockRequestResult =

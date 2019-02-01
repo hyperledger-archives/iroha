@@ -27,7 +27,6 @@ namespace integration_framework {
 
     class BlockStorage final {
      public:
-      using BlockPtr = std::shared_ptr<const shared_model::proto::Block>;
       using HeightType = shared_model::interface::types::HeightType;
       using HashType = shared_model::crypto::Hash;
 
@@ -37,15 +36,23 @@ namespace integration_framework {
       BlockStorage operator=(const BlockStorage &) = delete;
       BlockStorage operator=(BlockStorage &&) = delete;
 
-      void storeBlock(const BlockPtr &block);
+      void storeBlock(
+          const std::shared_ptr<const shared_model::proto::Block> &block);
 
-      BlockPtr getBlockByHeight(HeightType height) const;
-      BlockPtr getBlockByHash(const HashType &hash) const;
-      BlockPtr getTopBlock() const;
+      std::shared_ptr<const shared_model::proto::Block> getBlockByHeight(
+          HeightType height) const;
+      std::shared_ptr<const shared_model::proto::Block> getBlockByHash(
+          const HashType &hash) const;
+      std::shared_ptr<const shared_model::proto::Block> getTopBlock() const;
 
      private:
-      std::unordered_map<HeightType, BlockPtr> blocks_by_height_;
-      std::unordered_map<HashType, BlockPtr, HashType::Hasher> blocks_by_hash_;
+      std::unordered_map<HeightType,
+                         std::shared_ptr<const shared_model::proto::Block>>
+          blocks_by_height_;
+      std::unordered_map<HashType,
+                         std::shared_ptr<const shared_model::proto::Block>,
+                         HashType::Hasher>
+          blocks_by_hash_;
       mutable std::shared_timed_mutex block_maps_mutex_;
 
       logger::Logger log_;

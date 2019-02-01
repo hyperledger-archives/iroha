@@ -8,10 +8,14 @@
 namespace integration_framework {
   namespace fake_peer {
 
-    void EmptyBehaviour::processMstMessage(MstMessagePtr message) {}
-    void EmptyBehaviour::processYacMessage(YacMessagePtr message) {}
-    void EmptyBehaviour::processOsBatch(OsBatchPtr batch) {}
-    void EmptyBehaviour::processOgProposal(OgProposalPtr proposal) {}
+    void EmptyBehaviour::processMstMessage(
+        std::shared_ptr<MstMessage> message) {}
+    void EmptyBehaviour::processYacMessage(
+        std::shared_ptr<const YacMessage> message) {}
+    void EmptyBehaviour::processOsBatch(
+        std::shared_ptr<shared_model::interface::TransactionBatch> batch) {}
+    void EmptyBehaviour::processOgProposal(
+        std::shared_ptr<shared_model::interface::Proposal> proposal) {}
     LoaderBlockRequestResult EmptyBehaviour::processLoaderBlockRequest(
         LoaderBlockRequest request) {
       return {};

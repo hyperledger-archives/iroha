@@ -20,10 +20,14 @@ namespace integration_framework {
       void onBatch(std::unique_ptr<shared_model::interface::TransactionBatch>
                        batch) override;
 
-      rxcpp::observable<OsBatchPtr> getObservable();
+      rxcpp::observable<
+          std::shared_ptr<shared_model::interface::TransactionBatch>>
+      getObservable();
 
      private:
-      rxcpp::subjects::subject<OsBatchPtr> batches_subject_;
+      rxcpp::subjects::subject<
+          std::shared_ptr<shared_model::interface::TransactionBatch>>
+          batches_subject_;
     };
 
   }  // namespace fake_peer
