@@ -226,8 +226,6 @@ namespace integration_framework {
 
       std::shared_ptr<MstTransport> mst_transport_;
       std::shared_ptr<YacTransport> yac_transport_;
-      std::shared_ptr<OsTransport> os_transport_;
-      std::shared_ptr<OgTransport> og_transport_;
       std::shared_ptr<OdOsTransport> od_os_transport_;
       std::shared_ptr<LoaderGrpc> synchronizer_transport_;
 

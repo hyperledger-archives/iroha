@@ -30,8 +30,6 @@
 #include "network/impl/grpc_channel_builder.hpp"
 #include "ordering/impl/on_demand_os_client_grpc.hpp"
 #include "ordering/impl/on_demand_os_server_grpc.hpp"
-#include "ordering/impl/ordering_gate_transport_grpc.hpp"
-#include "ordering/impl/ordering_service_transport_grpc.hpp"
 
 using namespace shared_model::crypto;
 using namespace framework::expected;
@@ -100,10 +98,6 @@ namespace integration_framework {
                   std::chrono::minutes(0)),
               keypair_->publicKey())),
           yac_transport_(std::make_shared<YacTransport>(async_call_)),
-          os_transport_(std::make_shared<OsTransport>(transaction_batch_factory,
-                                                      async_call_)),
-          og_transport_(std::make_shared<OgTransport>(real_peer_->address(),
-                                                      async_call_)),
           mst_network_notifier_(std::make_shared<MstNetworkNotifier>()),
           yac_network_notifier_(std::make_shared<YacNetworkNotifier>()),
           os_network_notifier_(std::make_shared<OsNetworkNotifier>()),
@@ -113,8 +107,6 @@ namespace integration_framework {
                   *keypair_, common_objects_factory)) {
       mst_transport_->subscribe(mst_network_notifier_);
       yac_transport_->subscribe(yac_network_notifier_);
-      os_transport_->subscribe(os_network_notifier_);
-      og_transport_->subscribe(og_network_notifier_);
       log_ = logger::log(
           "IntegrationTestFramework "
           "(fake peer at "
@@ -195,8 +187,6 @@ namespace integration_framework {
       internal_server_ = std::make_unique<ServerRunner>(getAddress());
       internal_server_->append(yac_transport_)
           .append(mst_transport_)
-          .append(os_transport_)
-          .append(og_transport_)
           .append(od_os_transport_)
           .append(synchronizer_transport_)
           .run()
@@ -332,18 +322,6 @@ namespace integration_framework {
             return makeVote(incoming_vote.hash);
           });
       sendYacState(my_votes);
-    }
-
-    void FakePeer::sendProposal(
-        std::unique_ptr<shared_model::interface::Proposal> proposal) {
-      os_transport_->publishProposal(std::move(proposal),
-                                     {real_peer_->address()});
-    }
-
-    void FakePeer::sendBatch(
-        const std::shared_ptr<shared_model::interface::TransactionBatch>
-            &batch) {
-      og_transport_->propagateBatch(batch);
     }
 
     bool FakePeer::sendBlockRequest(const LoaderBlockRequest &request) {

@@ -56,9 +56,6 @@ namespace iroha {
     class MstTransportGrpc;
     class OrderingServiceTransport;
   }  // namespace network
-  namespace ordering {
-    class OrderingGateTransportGrpc;
-  }
   namespace validation {
     struct VerifiedProposalAndErrors;
   }
@@ -480,8 +477,6 @@ namespace integration_framework {
     std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache_;
     std::shared_ptr<iroha::network::MstTransportGrpc> mst_transport_;
     std::shared_ptr<iroha::consensus::yac::YacNetwork> yac_transport_;
-    std::shared_ptr<iroha::network::OrderingServiceTransport> os_transport_;
-    std::shared_ptr<iroha::ordering::OrderingGateTransportGrpc> og_transport_;
 
     boost::optional<shared_model::crypto::Keypair> my_key_;
     std::shared_ptr<shared_model::interface::Peer> this_peer_;

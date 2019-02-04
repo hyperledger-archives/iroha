@@ -36,7 +36,6 @@ target_link_libraries(integration_framework
     shared_model_cryptography_model
     server_runner
     mst_transport
-    ordering_service
     )
 
 add_library(common_test_constants common_constants.cpp)

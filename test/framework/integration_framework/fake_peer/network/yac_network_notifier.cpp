@@ -5,9 +5,9 @@
 
 #include "framework/integration_framework/fake_peer/network/yac_network_notifier.hpp"
 
-#include "consensus/yac/messages.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
 #include "consensus/yac/transport/yac_network_interface.hpp"
+#include "consensus/yac/vote_message.hpp"
 
 namespace integration_framework {
   namespace fake_peer {
