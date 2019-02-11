@@ -19,7 +19,6 @@
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/iroha_internal/transaction_batch_factory_impl.hpp"
 #include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
-#include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
 #include "module/irohad/network/network_mocks.hpp"
 #include "module/irohad/torii/torii_mocks.hpp"
 #include "module/shared_model/interface/mock_transaction_batch_factory.hpp"
@@ -35,7 +34,6 @@ using ::testing::Property;
 using ::testing::Return;
 using ::testing::StrEq;
 
-using namespace iroha::ametsuchi;
 using namespace iroha::torii;
 using namespace std::chrono_literals;
 
@@ -78,7 +76,7 @@ class CommandServiceTransportGrpcTest : public testing::Test {
     status_bus = std::make_shared<MockStatusBus>();
     command_service = std::make_shared<MockCommandService>();
 
-    transport_grpc = std::make_shared<torii::CommandServiceTransportGrpc>(
+    transport_grpc = std::make_shared<CommandServiceTransportGrpc>(
         command_service,
         status_bus,
         status_factory,
@@ -100,12 +98,12 @@ class CommandServiceTransportGrpcTest : public testing::Test {
   std::shared_ptr<shared_model::interface::TxStatusFactory> status_factory;
 
   std::shared_ptr<MockCommandService> command_service;
-  std::shared_ptr<torii::CommandServiceTransportGrpc> transport_grpc;
+  std::shared_ptr<CommandServiceTransportGrpc> transport_grpc;
 
   rxcpp::subjects::subject<
-      torii::CommandServiceTransportGrpc::ConsensusGateEvent>
+      iroha::torii::CommandServiceTransportGrpc::ConsensusGateEvent>
       consensus_gate_objects;
-  std::vector<torii::CommandServiceTransportGrpc::ConsensusGateEvent>
+  std::vector<iroha::torii::CommandServiceTransportGrpc::ConsensusGateEvent>
       gate_objects{2};
 
   const size_t kHashLength = 32;
