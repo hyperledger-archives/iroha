@@ -92,7 +92,8 @@ void OnDemandOrderingServiceImpl::onBatches(consensus::Round round,
   log_->debug("onBatches => collection is inserted");
 }
 
-boost::optional<OnDemandOrderingServiceImpl::ProposalType>
+boost::optional<
+    std::shared_ptr<const OnDemandOrderingServiceImpl::ProposalType>>
 OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round) {
   // read lock
   std::shared_lock<std::shared_timed_mutex> guard(lock_);
@@ -103,7 +104,7 @@ OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round) {
               round,
               (proposal == proposal_map_.end()) ? "NOT " : "");
   if (proposal != proposal_map_.end()) {
-    return clone(*proposal->second);
+    return proposal->second;
   } else {
     return boost::none;
   }
@@ -118,6 +119,7 @@ OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round) {
  * @param requested_tx_amount - amount of transactions to get
  * @param tx_batches_queue - the queue to get transactions from
  * @param discarded_txs_amount - the amount of discarded txs
+
  * @return transactions
  */
 static std::vector<std::shared_ptr<shared_model::interface::Transaction>>
