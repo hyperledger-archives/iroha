@@ -13,7 +13,7 @@ SubscriptionManager::~SubscriptionManager() {
   std::for_each(
       subscriptions.begin(),
       subscriptions.end(),
-      [this](const auto &subscription) { subscription.unsubscribe(); });
+      [](const auto &subscription) { subscription.unsubscribe(); });
 }
 
 void SubscriptionManager::addSubscription(
