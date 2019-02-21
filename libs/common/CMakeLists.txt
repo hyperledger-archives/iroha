@@ -33,3 +33,8 @@ target_link_libraries(libs_timeout INTERFACE
   common
   rxcpp
   )
+
+add_library(subscription_manager subscription_manager.cpp)
+target_link_libraries(subscription_manager
+    rxcpp
+    )
