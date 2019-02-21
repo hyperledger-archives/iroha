@@ -19,10 +19,10 @@ namespace iroha {
      * Note: class is NOT thread-safe
      */
     class SubscriptionManager {
-    public:
+     public:
       virtual ~SubscriptionManager();
 
-    protected:
+     protected:
       /**
        * Add new subscription for the management
        */
