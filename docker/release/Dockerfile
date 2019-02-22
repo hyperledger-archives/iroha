@@ -12,8 +12,7 @@ WORKDIR /opt/iroha_data
 
 COPY entrypoint.sh wait-for-it.sh /
 RUN chmod +x /entrypoint.sh /wait-for-it.sh; \
-	groupadd -r iroha && useradd --no-log-init -r -g iroha iroha; \
-	chown -R iroha:iroha /opt/iroha_data
+	groupadd -r iroha && useradd --no-log-init -r -g iroha iroha
 
 USER iroha
 ENTRYPOINT ["/entrypoint.sh"]
