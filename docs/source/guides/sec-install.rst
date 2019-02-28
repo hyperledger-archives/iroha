@@ -46,8 +46,6 @@ Logging and monitoring
 ^^^^^^^^^^^^^^^^^^^^^^
 - Collect and ship logs to a dedicated machine using an agent (e.g., Filebeat).
 - Collect logs from all Iroha peers in a central point (e.g., Logstash).
-- Enable docker healthcheck.
-- Transfer docker healthcheck status to a monitoring system (e.g., Prometheus).
 - Transfer logging and monitoring information via an encrypted channel (e.g., https).
 - Set up an authentication mechanism to prevent third parties from accessing logs.
 - Set up an authentication mechanism to prevent third parties from submitting logs.
