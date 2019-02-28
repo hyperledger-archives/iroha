@@ -22,7 +22,7 @@ Create an encrypted backup of private keys before deleting them and limit the ac
 Network configuration
 ^^^^^^^^^^^^^^^^^^^^^
 Iroha listens on ports 50051 and 10001.
-Firewall settings must allow incoming/outcoming connections to/from these ports.
+Firewall settings must allow incoming/outgoing connections to/from these ports.
 If possible, disable or remove any other network services with listening ports (FTP, DNS, LDAP, SMB, DHCP, NFS, SNMP, etc).
 Ideally, Iroha should be as much isolated as possible in terms of networking.
 
