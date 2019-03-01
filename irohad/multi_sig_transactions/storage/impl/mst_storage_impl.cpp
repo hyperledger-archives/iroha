@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <utility>
+
 #include "multi_sig_transactions/storage/mst_storage_impl.hpp"
 
 namespace iroha {
@@ -19,9 +21,9 @@ namespace iroha {
   }
   // -----------------------------| interface API |-----------------------------
 
-  MstStorageStateImpl::MstStorageStateImpl(const CompleterType &completer)
+  MstStorageStateImpl::MstStorageStateImpl(CompleterType completer)
       : MstStorage(),
-        completer_(completer),
+        completer_(std::move(completer)),
         own_state_(MstState::empty(completer_)) {}
 
   auto MstStorageStateImpl::applyImpl(

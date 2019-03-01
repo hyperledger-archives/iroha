@@ -6,6 +6,7 @@
 #include "interactive/interactive_status_cli.hpp"
 
 #include <boost/assert.hpp>
+#include <utility>
 
 #include "client.hpp"
 #include "common/byteutils.hpp"
@@ -36,8 +37,8 @@ namespace iroha_cli {
              "Transaction has collected all signatures."}};
 
     InteractiveStatusCli::InteractiveStatusCli(
-        const std::string &default_peer_ip, int default_port)
-        : default_peer_ip_(default_peer_ip), default_port_(default_port) {
+        std::string default_peer_ip, int default_port)
+        : default_peer_ip_(std::move(default_peer_ip)), default_port_(default_port) {
       createActionsMenu();
       createResultMenu();
     }

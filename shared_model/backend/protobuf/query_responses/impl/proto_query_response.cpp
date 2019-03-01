@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <utility>
+
 #include "backend/protobuf/query_responses/proto_query_response.hpp"
 
 #include "backend/protobuf/query_responses/proto_account_asset_response.hpp"
@@ -42,7 +44,7 @@ namespace shared_model {
   namespace proto {
 
     struct QueryResponse::Impl {
-      explicit Impl(const TransportType &ref) : proto_{ref} {}
+      explicit Impl(TransportType ref) : proto_{std::move(ref)} {}
       explicit Impl(TransportType &&ref) : proto_{std::move(ref)} {}
 
       TransportType proto_;

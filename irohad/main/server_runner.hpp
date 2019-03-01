@@ -22,7 +22,7 @@ class ServerRunner {
    * @param reuse - allow multiple sockets to bind to the same port
    * @param log to print progress to
    */
-  explicit ServerRunner(const std::string &address,
+  explicit ServerRunner(std::string address,
                         bool reuse = true,
                         logger::Logger log = logger::log("ServerRunner"));
 

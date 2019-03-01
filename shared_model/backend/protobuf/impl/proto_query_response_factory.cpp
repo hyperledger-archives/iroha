@@ -65,11 +65,11 @@ shared_model::proto::ProtoQueryResponseFactory::createAccountAssetResponse(
           iroha::protocol::QueryResponse &protocol_query_response) {
         iroha::protocol::AccountAssetResponse *protocol_specific_response =
             protocol_query_response.mutable_account_assets_response();
-        for (size_t i = 0; i < assets.size(); i++) {
+        for (const auto & i : assets) {
           auto *asset = protocol_specific_response->add_account_assets();
-          asset->set_account_id(std::move(std::get<0>(assets.at(i))));
-          asset->set_asset_id(std::move(std::get<1>(assets.at(i))));
-          asset->set_balance(std::get<2>(assets.at(i)).toStringRepr());
+          asset->set_account_id(std::move(std::get<0>(i)));
+          asset->set_asset_id(std::move(std::get<1>(i)));
+          asset->set_balance(std::get<2>(i).toStringRepr());
         }
       },
       query_hash);

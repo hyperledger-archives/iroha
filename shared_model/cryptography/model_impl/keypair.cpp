@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <utility>
+
 #include "cryptography/keypair.hpp"
 
 #include "utils/string_builder.hpp"
@@ -35,9 +37,9 @@ namespace shared_model {
       return new Keypair(publicKey(), privateKey());
     }
 
-    Keypair::Keypair(const Keypair::PublicKeyType &public_key,
-                     const Keypair::PrivateKeyType &private_key)
-        : public_key_(public_key), private_key_(private_key) {}
+    Keypair::Keypair(Keypair::PublicKeyType public_key,
+                     Keypair::PrivateKeyType private_key)
+        : public_key_(std::move(public_key)), private_key_(std::move(private_key)) {}
 
   }  // namespace crypto
 }  // namespace shared_model

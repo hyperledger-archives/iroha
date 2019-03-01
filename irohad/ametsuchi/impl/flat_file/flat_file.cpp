@@ -13,6 +13,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/range/adaptor/indexed.hpp>
 #include <boost/range/algorithm/find_if.hpp>
+#include <utility>
 #include "common/files.hpp"
 
 using namespace iroha::ametsuchi;
@@ -112,10 +113,10 @@ void FlatFile::dropAll() {
 // ----------| private API |----------
 
 FlatFile::FlatFile(Identifier current_id,
-                   const std::string &path,
+                   std::string path,
                    FlatFile::private_tag,
                    logger::Logger log)
-    : dump_dir_(path), log_{std::move(log)} {
+    : dump_dir_(std::move(path)), log_{std::move(log)} {
   current_id_.store(current_id);
 }
 

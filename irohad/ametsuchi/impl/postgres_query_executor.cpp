@@ -914,7 +914,7 @@ namespace iroha {
 
       std::string query_detail;
       if (q.key() and q.writer()) {
-        auto filled_json = (boost::format("{\"%s\", \"%s\"}") % q.writer().get()
+        auto filled_json = (boost::format(R"({"%s", "%s"})") % q.writer().get()
                             % q.key().get());
         query_detail = (boost::format(R"(SELECT json_build_object('%s'::text,
             json_build_object('%s'::text, (SELECT data #>> '%s'

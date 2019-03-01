@@ -5,6 +5,8 @@
 
 #include "main/application.hpp"
 
+#include <utility>
+
 #include "ametsuchi/impl/storage_impl.hpp"
 #include "ametsuchi/impl/tx_presence_cache_impl.hpp"
 #include "ametsuchi/impl/wsv_restorer_impl.hpp"
@@ -64,23 +66,23 @@ using namespace std::chrono_literals;
 /**
  * Configuring iroha daemon
  */
-Irohad::Irohad(const std::string &block_store_dir,
-               const std::string &pg_conn,
-               const std::string &listen_ip,
+Irohad::Irohad(std::string block_store_dir,
+               std::string pg_conn,
+               std::string listen_ip,
                size_t torii_port,
                size_t internal_port,
                size_t max_proposal_size,
                std::chrono::milliseconds proposal_delay,
                std::chrono::milliseconds vote_delay,
                std::chrono::minutes mst_expiration_time,
-               const shared_model::crypto::Keypair &keypair,
+               shared_model::crypto::Keypair keypair,
                std::chrono::milliseconds max_rounds_delay,
                size_t stale_stream_max_rounds,
                const boost::optional<GossipPropagationStrategyParams>
                    &opt_mst_gossip_params)
-    : block_store_dir_(block_store_dir),
-      pg_conn_(pg_conn),
-      listen_ip_(listen_ip),
+    : block_store_dir_(std::move(block_store_dir)),
+      pg_conn_(std::move(pg_conn)),
+      listen_ip_(std::move(listen_ip)),
       torii_port_(torii_port),
       internal_port_(internal_port),
       max_proposal_size_(max_proposal_size),
@@ -91,7 +93,7 @@ Irohad::Irohad(const std::string &block_store_dir,
       max_rounds_delay_(max_rounds_delay),
       stale_stream_max_rounds_(stale_stream_max_rounds),
       opt_mst_gossip_params_(opt_mst_gossip_params),
-      keypair(keypair) {
+      keypair(std::move(keypair)) {
   log_ = logger::log("IROHAD");
   log_->info("created");
   // Initializing storage at this point in order to insert genesis block before

@@ -34,11 +34,11 @@ namespace iroha_cli {
        * @param provider for signing queries
        */
       InteractiveQueryCli(
-          const std::string &account_id,
-          const std::string &default_peer_ip,
+          std::string account_id,
+          std::string default_peer_ip,
           int default_port,
           uint64_t query_counter,
-          const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider);
+          std::shared_ptr<iroha::model::ModelCryptoProvider> provider);
       /**
        * Run interactive query command line
        */

@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <utility>
+
 #include "backend/protobuf/proposal.hpp"
 
 #include "backend/protobuf/transaction.hpp"
@@ -15,7 +17,7 @@ namespace shared_model {
     struct Proposal::Impl {
       explicit Impl(TransportType &&ref) : proto_(std::move(ref)) {}
 
-      explicit Impl(const TransportType &ref) : proto_(ref) {}
+      explicit Impl(TransportType ref) : proto_(std::move(ref)) {}
 
       TransportType proto_;
 

@@ -92,7 +92,7 @@ namespace iroha {
        * @param log to print progress
        */
       FlatFile(Identifier last_id,
-               const std::string &path,
+               std::string path,
                FlatFile::private_tag,
                logger::Logger log = logger::log("FlatFile"));
 

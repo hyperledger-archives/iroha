@@ -137,10 +137,10 @@ namespace iroha {
   MstState::MstState(const CompleterType &completer, logger::Logger log)
       : MstState(completer, InternalStateType{}, std::move(log)) {}
 
-  MstState::MstState(const CompleterType &completer,
+  MstState::MstState(CompleterType completer,
                      const InternalStateType &transactions,
                      logger::Logger log)
-      : completer_(completer),
+      : completer_(std::move(completer)),
         internal_state_(transactions.begin(), transactions.end()),
         index_(transactions.begin(), transactions.end()),
         log_(std::move(log)) {}

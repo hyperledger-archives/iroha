@@ -7,6 +7,7 @@
 
 #include <grpc++/grpc++.h>
 #include <memory>
+#include <utility>
 
 #include "consensus/yac/storage/yac_common.hpp"
 #include "consensus/yac/transport/yac_pb_converters.hpp"
@@ -24,7 +25,7 @@ namespace iroha {
       NetworkImpl::NetworkImpl(
           std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
               async_call)
-          : async_call_(async_call) {}
+          : async_call_(std::move(async_call)) {}
 
       void NetworkImpl::subscribe(
           std::shared_ptr<YacNetworkNotifications> handler) {

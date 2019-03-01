@@ -5,6 +5,8 @@
 
 #include "consensus/yac/impl/yac_crypto_provider_impl.hpp"
 
+#include <utility>
+
 #include "consensus/yac/transport/yac_pb_converters.hpp"
 #include "cryptography/crypto_provider/crypto_signer.hpp"
 #include "cryptography/crypto_provider/crypto_verifier.hpp"
@@ -13,10 +15,10 @@ namespace iroha {
   namespace consensus {
     namespace yac {
       CryptoProviderImpl::CryptoProviderImpl(
-          const shared_model::crypto::Keypair &keypair,
+          shared_model::crypto::Keypair keypair,
           std::shared_ptr<shared_model::interface::CommonObjectsFactory>
               factory)
-          : keypair_(keypair), factory_(std::move(factory)) {}
+          : keypair_(std::move(keypair)), factory_(std::move(factory)) {}
 
       bool CryptoProviderImpl::verify(const std::vector<VoteMessage> &msg) {
         return std::all_of(

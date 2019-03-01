@@ -24,7 +24,7 @@ namespace iroha_cli {
        * @param provider crypto provider to make signatures
        */
       InteractiveCli(
-          const std::string &account_name,
+          std::string account_name,
           const std::string &default_peer_ip,
           int default_port,
           uint64_t qry_counter,

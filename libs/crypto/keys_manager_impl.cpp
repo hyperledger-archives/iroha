@@ -6,6 +6,7 @@
 #include "crypto/keys_manager_impl.hpp"
 
 #include <fstream>
+#include <utility>
 
 #include "common/byteutils.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
@@ -43,11 +44,11 @@ namespace iroha {
   static constexpr auto decrypt = encrypt<Blob::Bytes>;
 
   KeysManagerImpl::KeysManagerImpl(
-      const std::string &account_id,
-      const boost::filesystem::path &path_to_keypair,
+      std::string account_id,
+      boost::filesystem::path path_to_keypair,
       logger::Logger log)
-      : path_to_keypair_(path_to_keypair),
-        account_id_(account_id),
+      : path_to_keypair_(std::move(path_to_keypair)),
+        account_id_(std::move(account_id)),
         log_(std::move(log)) {}
 
   /**

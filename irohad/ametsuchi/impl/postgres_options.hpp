@@ -37,7 +37,7 @@ namespace iroha {
 
       boost::optional<std::string> dbname() const;
 
-      explicit PostgresOptions(const std::string &pg_opt);
+      explicit PostgresOptions(std::string pg_opt);
 
      private:
       const std::string pg_opt_;

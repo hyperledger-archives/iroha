@@ -89,16 +89,16 @@ class Irohad {
    * (optional). If not provided, disables mst processing support
    * TODO mboldyrev 03.11.2018 IR-1844 Refactor the constructor.
    */
-  Irohad(const std::string &block_store_dir,
-         const std::string &pg_conn,
-         const std::string &listen_ip,
+  Irohad(std::string block_store_dir,
+         std::string pg_conn,
+         std::string listen_ip,
          size_t torii_port,
          size_t internal_port,
          size_t max_proposal_size,
          std::chrono::milliseconds proposal_delay,
          std::chrono::milliseconds vote_delay,
          std::chrono::minutes mst_expiration_time,
-         const shared_model::crypto::Keypair &keypair,
+         shared_model::crypto::Keypair keypair,
          std::chrono::milliseconds max_rounds_delay,
          size_t stale_stream_max_rounds,
          const boost::optional<iroha::GossipPropagationStrategyParams>

@@ -11,6 +11,7 @@ endif()
 
 PROJECT(iroha C CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # generates compile_commands.json
 SET(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 if (NOT MSVC)
   SET(CMAKE_CXX_FLAGS "-std=c++14 -Wall -fdiagnostics-color=always")

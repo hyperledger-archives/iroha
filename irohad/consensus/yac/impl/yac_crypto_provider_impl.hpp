@@ -17,7 +17,7 @@ namespace iroha {
       class CryptoProviderImpl : public YacCryptoProvider {
        public:
         CryptoProviderImpl(
-            const shared_model::crypto::Keypair &keypair,
+            shared_model::crypto::Keypair keypair,
             std::shared_ptr<shared_model::interface::CommonObjectsFactory>
                 factory);
 

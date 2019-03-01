@@ -166,15 +166,15 @@ namespace iroha_cli {
     }
 
     InteractiveTransactionCli::InteractiveTransactionCli(
-        const std::string &creator_account,
-        const std::string &default_peer_ip,
+        std::string creator_account,
+        std::string default_peer_ip,
         int default_port,
-        const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
+        std::shared_ptr<iroha::model::ModelCryptoProvider> provider)
         : current_context_(MAIN),
-          creator_(creator_account),
-          default_peer_ip_(default_peer_ip),
+          creator_(std::move(creator_account)),
+          default_peer_ip_(std::move(default_peer_ip)),
           default_port_(default_port),
-          provider_(provider) {
+          provider_(std::move(provider)) {
       log_ = logger::log("InteractiveTransactionCli");
       createCommandMenu();
       createResultMenu();

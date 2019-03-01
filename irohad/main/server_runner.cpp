@@ -6,13 +6,14 @@
 #include "main/server_runner.hpp"
 
 #include <boost/format.hpp>
+#include <utility>
 
 const auto kPortBindError = "Cannot bind server to address %s";
 
-ServerRunner::ServerRunner(const std::string &address,
+ServerRunner::ServerRunner(std::string address,
                            bool reuse,
                            logger::Logger log)
-    : log_(std::move(log)), serverAddress_(address), reuse_(reuse) {}
+    : log_(std::move(log)), serverAddress_(std::move(address)), reuse_(reuse) {}
 
 ServerRunner &ServerRunner::append(std::shared_ptr<grpc::Service> service) {
   services_.push_back(service);

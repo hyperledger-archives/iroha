@@ -20,7 +20,7 @@ namespace iroha_cli {
      */
     class InteractiveStatusCli {
      public:
-      InteractiveStatusCli(const std::string &default_peer_ip,
+      InteractiveStatusCli(std::string default_peer_ip,
                            int default_port);
       void run();
 

@@ -9,6 +9,7 @@
 
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <utility>
 #include "backend/protobuf/proposal.hpp"
 #include "common/bind.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
@@ -24,7 +25,7 @@ OnDemandOsServerGrpc::OnDemandOsServerGrpc(
     std::shared_ptr<shared_model::interface::TransactionBatchFactory>
         transaction_batch_factory,
     logger::Logger log)
-    : ordering_service_(ordering_service),
+    : ordering_service_(std::move(ordering_service)),
       transaction_factory_(std::move(transaction_factory)),
       batch_parser_(std::move(batch_parser)),
       batch_factory_(std::move(transaction_batch_factory)),

@@ -5,6 +5,8 @@
 
 #include "ordering/impl/on_demand_os_client_grpc.hpp"
 
+#include <utility>
+
 #include "backend/protobuf/proposal.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "interfaces/common_objects/peer.hpp"
@@ -89,7 +91,7 @@ OnDemandOsClientGrpcFactory::OnDemandOsClientGrpcFactory(
     OnDemandOsClientGrpc::TimeoutType proposal_request_timeout)
     : async_call_(std::move(async_call)),
       proposal_factory_(std::move(proposal_factory)),
-      time_provider_(time_provider),
+      time_provider_(std::move(time_provider)),
       proposal_request_timeout_(proposal_request_timeout) {}
 
 std::unique_ptr<OdOsNotification> OnDemandOsClientGrpcFactory::create(

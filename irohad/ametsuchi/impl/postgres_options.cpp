@@ -9,6 +9,7 @@
 #include <regex>
 
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 namespace iroha {
   namespace ametsuchi {
@@ -16,8 +17,8 @@ namespace iroha {
     // regex to fetch dbname from pg_opt string
     const static std::regex e("\\bdbname=([^ ]*)");
 
-    PostgresOptions::PostgresOptions(const std::string &pg_opt)
-        : pg_opt_(pg_opt) {
+    PostgresOptions::PostgresOptions(std::string pg_opt)
+        : pg_opt_(std::move(pg_opt)) {
       std::smatch m;
 
       if (std::regex_search(pg_opt_, m, e)) {

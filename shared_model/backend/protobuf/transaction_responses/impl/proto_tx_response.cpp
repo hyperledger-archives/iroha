@@ -6,6 +6,7 @@
 #include "backend/protobuf/transaction_responses/proto_tx_response.hpp"
 
 #include <limits>
+#include <utility>
 
 #include "backend/protobuf/transaction_responses/proto_concrete_tx_response.hpp"
 #include "common/visitor.hpp"
@@ -37,7 +38,7 @@ namespace shared_model {
 
     struct TransactionResponse::Impl {
       explicit Impl(TransportType &&ref) : proto_{std::move(ref)} {}
-      explicit Impl(const TransportType &ref) : proto_{ref} {}
+      explicit Impl(TransportType ref) : proto_{std::move(ref)} {}
 
       TransportType proto_;
 

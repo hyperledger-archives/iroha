@@ -15,10 +15,10 @@ namespace iroha_cli {
     // TODO 13/10/2017 neewy: Use iroha::network::util::is_port_valid IR-509
     // #goodfirstissue
     if (port > 0 && port < 65535)
-      return 1;
+      return true;
 
     std::cout << "Port can be only in range (0, 65535)\n";
-    return 0;
+    return false;
   }
 
   bool validate_peers(const char *, const std::string &s) {
@@ -27,10 +27,10 @@ namespace iroha_cli {
     while (std::getline(ss, tmp, ';')) {
       if (tmp.size() != 32) {
         printf("\"%s\" doesn't look like pubkey (size != 32)\n", tmp.c_str());
-        return 0;
+        return false;
       }
     }
-    return 1;
+    return true;
   }
 
   bool validate_config(const char *, const std::string &file) {

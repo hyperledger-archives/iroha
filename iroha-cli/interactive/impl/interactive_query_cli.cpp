@@ -5,6 +5,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <fstream>
+#include <utility>
 
 #include "backend/protobuf/queries/proto_query.hpp"
 
@@ -90,17 +91,17 @@ namespace iroha_cli {
     }
 
     InteractiveQueryCli::InteractiveQueryCli(
-        const std::string &account_name,
-        const std::string &default_peer_ip,
+        std::string account_name,
+        std::string default_peer_ip,
         int default_port,
         uint64_t query_counter,
-        const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider)
+        std::shared_ptr<iroha::model::ModelCryptoProvider> provider)
         : current_context_(MAIN),
-          creator_(account_name),
-          default_peer_ip_(default_peer_ip),
+          creator_(std::move(account_name)),
+          default_peer_ip_(std::move(default_peer_ip)),
           default_port_(default_port),
           counter_(query_counter),
-          provider_(provider) {
+          provider_(std::move(provider)) {
       log_ = logger::log("InteractiveQueryCli");
       create_queries_menu();
       create_result_menu();

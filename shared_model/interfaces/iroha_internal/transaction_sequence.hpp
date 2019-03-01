@@ -24,7 +24,7 @@ namespace shared_model {
       TransactionSequence(const TransactionSequence &) = default;
       TransactionSequence(TransactionSequence &&) = default;
 
-      explicit TransactionSequence(const types::BatchesCollectionType &batches);
+      explicit TransactionSequence(types::BatchesCollectionType batches);
 
       /**
        * Retrieves transactions from all batches as single collection

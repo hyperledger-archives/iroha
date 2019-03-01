@@ -6,6 +6,7 @@
 #include "interfaces/iroha_internal/transaction_sequence.hpp"
 
 #include <numeric>
+#include <utility>
 
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 
@@ -48,8 +49,8 @@ namespace shared_model {
     }
 
     TransactionSequence::TransactionSequence(
-        const types::BatchesCollectionType &batches)
-        : batches_(batches) {}
+        types::BatchesCollectionType batches)
+        : batches_(std::move(batches)) {}
 
   }  // namespace interface
 }  // namespace shared_model

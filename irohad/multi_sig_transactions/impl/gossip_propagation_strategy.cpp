@@ -10,6 +10,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/range/irange.hpp>
+#include <utility>
 #include "common/bind.hpp"
 
 namespace iroha {
@@ -23,7 +24,7 @@ namespace iroha {
       PeerProviderFactory peer_factory,
       rxcpp::observe_on_one_worker emit_worker,
       const GossipPropagationStrategyParams &params)
-      : peer_factory(peer_factory),
+      : peer_factory(std::move(peer_factory)),
         non_visited({}),
         emit_worker(emit_worker),
         emitent(rxcpp::observable<>::interval(steady_clock::now(),

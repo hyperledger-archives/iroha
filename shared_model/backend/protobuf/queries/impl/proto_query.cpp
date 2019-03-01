@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <utility>
+
 #include "backend/protobuf/queries/proto_query.hpp"
 
 #include "backend/protobuf/common_objects/signature.hpp"
@@ -46,7 +48,7 @@ namespace shared_model {
 
     struct Query::Impl {
       explicit Impl(TransportType &&ref) : proto_{std::move(ref)} {}
-      explicit Impl(const TransportType &ref) : proto_{ref} {}
+      explicit Impl(TransportType ref) : proto_{std::move(ref)} {}
 
       TransportType proto_;
 

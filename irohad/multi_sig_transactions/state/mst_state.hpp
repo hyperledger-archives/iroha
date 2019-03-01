@@ -167,7 +167,7 @@ namespace iroha {
     explicit MstState(const CompleterType &completer,
                       logger::Logger log = logger::log("MstState"));
 
-    MstState(const CompleterType &completer,
+    MstState(CompleterType completer,
              const InternalStateType &transactions,
              logger::Logger log = logger::log("MstState"));
 

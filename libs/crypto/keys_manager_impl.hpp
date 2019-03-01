@@ -24,8 +24,8 @@ namespace iroha {
      * of an account
      * @param log to print progress
      */
-    KeysManagerImpl(const std::string &account_id,
-                    const boost::filesystem::path &path_to_keypair,
+    KeysManagerImpl(std::string account_id,
+                    boost::filesystem::path path_to_keypair,
                     logger::Logger log = logger::log("KeysManagerImpl"));
 
     /**

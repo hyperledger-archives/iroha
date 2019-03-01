@@ -6,6 +6,7 @@
 #include "backend/protobuf/block.hpp"
 
 #include <boost/range/adaptors.hpp>
+#include <utility>
 #include "backend/protobuf/common_objects/signature.hpp"
 #include "backend/protobuf/transaction.hpp"
 #include "backend/protobuf/util.hpp"
@@ -16,7 +17,7 @@ namespace shared_model {
 
     struct Block::Impl {
       explicit Impl(TransportType &&ref) : proto_(std::move(ref)) {}
-      explicit Impl(const TransportType &ref) : proto_(ref) {}
+      explicit Impl(TransportType ref) : proto_(std::move(ref)) {}
       Impl(Impl &&o) noexcept = delete;
       Impl &operator=(Impl &&o) noexcept = delete;
 

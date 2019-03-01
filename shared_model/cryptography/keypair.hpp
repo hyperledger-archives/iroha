@@ -24,8 +24,8 @@ namespace shared_model {
       /// Type of private key
       using PrivateKeyType = PrivateKey;
 
-      explicit Keypair(const PublicKeyType &public_key,
-                       const PrivateKeyType &private_key);
+      explicit Keypair(PublicKeyType public_key,
+                       PrivateKeyType private_key);
 
       /**
        * @return public key

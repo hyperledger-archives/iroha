@@ -31,10 +31,10 @@ namespace iroha_cli {
        * @param provider for signing transactions
        */
       InteractiveTransactionCli(
-          const std::string &creator_account,
-          const std::string &default_peer_ip,
+          std::string creator_account,
+          std::string default_peer_ip,
           int default_port,
-          const std::shared_ptr<iroha::model::ModelCryptoProvider> &provider);
+          std::shared_ptr<iroha::model::ModelCryptoProvider> provider);
       /**
        * Run interactive query command line
        */
