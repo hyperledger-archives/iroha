@@ -28,6 +28,10 @@ using ::testing::Return;
 using namespace iroha::consensus::yac;
 using namespace framework::test_subscriber;
 
+// TODO mboldyrev 14.02.2019 IR-324 Use supermajority checker mock
+static const iroha::consensus::yac::ConsistencyModel kConsistencyModel =
+    iroha::consensus::yac::ConsistencyModel::kBft;
+
 static size_t num_peers = 1, my_num = 0;
 
 auto mk_local_peer(uint64_t num) {
@@ -103,11 +107,13 @@ class ConsensusSunnyDayTest : public ::testing::Test {
     auto order = ClusterOrdering::create(default_peers);
     ASSERT_TRUE(order);
 
-    yac = Yac::create(YacVoteStorage(cleanup_strategy),
-                      network,
-                      crypto,
-                      timer,
-                      order.value());
+    yac =
+        Yac::create(YacVoteStorage(cleanup_strategy,
+                                   getSupermajorityChecker(kConsistencyModel)),
+                    network,
+                    crypto,
+                    timer,
+                    order.value());
     network->subscribe(yac);
 
     grpc::ServerBuilder builder;
