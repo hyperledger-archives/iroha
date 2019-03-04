@@ -147,7 +147,7 @@ inline rapidjson::Document parse_iroha_config(const std::string &conf_path) {
     rapidjson::Value key(mbr::UtilityServicePort, allocator);
     doc.AddMember(key, kUtilityServicePortDefault, allocator);
   } else {
-    ac::assert_fatal(doc[mbr::UtilityServicePort].IsString(),
+    ac::assert_fatal(doc[mbr::UtilityServicePort].IsUint(),
                      ac::type_error(mbr::UtilityServicePort, kUintType));
   }
 
