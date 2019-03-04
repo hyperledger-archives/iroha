@@ -15,7 +15,9 @@ namespace iroha {
         ::grpc::ServerContext *context,
         const ::iroha::protocol::ShutdownRequest *request,
         ::google::protobuf::Empty *response) {
-      kShutdownPromise.set_value();
+      if (request->shutdown_key() == kShutdownKey) {
+        kShutdownPromise.set_value();
+      }
       return ::grpc::Status::OK;
     }
   }  // namespace service
