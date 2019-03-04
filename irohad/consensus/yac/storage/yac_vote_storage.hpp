@@ -136,6 +136,19 @@ namespace iroha {
          */
         void nextProcessingState(const Round &round);
 
+        /**
+         * Get last by order finalized round
+         * @return round if it exists
+         */
+        boost::optional<Round> getLastFinalizedRound() const;
+
+        /**
+         * Get state attached to passed round
+         * @param round - target round for finding
+         * @return state if round exists and finalized
+         */
+        boost::optional<Answer> getState(const Round &round) const;
+
        private:
         // --------| fields |--------
 
@@ -160,6 +173,9 @@ namespace iroha {
          * storage
          */
         std::shared_ptr<CleanupStrategy> strategy_;
+
+        /// last finalized round
+        boost::optional<Round> last_round_;
 
         std::shared_ptr<SupermajorityChecker> supermajority_checker_;
 
