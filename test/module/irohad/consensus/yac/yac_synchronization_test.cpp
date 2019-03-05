@@ -47,8 +47,8 @@ class NetworkUtil {
         peers.end(),
         std::vector<VoteMessage>(),
         [&, this](auto vector, const auto &peer_number) {
-          vector.push_back(createVote(
-              peer_number, createHash(r, block_hash, proposal_hash)));
+          vector.push_back(this->createVote(
+              peer_number, this->createHash(r, block_hash, proposal_hash)));
           return std::move(vector);
         });
   }

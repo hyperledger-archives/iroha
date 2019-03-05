@@ -186,12 +186,12 @@ namespace iroha {
                   notifier_.get_subscriber().on_next(answer);
                   break;
                 case ProposalState::kSentProcessed:
-                  tryPropagateBack(state);
+                  this->tryPropagateBack(state);
                   break;
               }
             },
             // sent a state which didn't match with current one
-            [&]() { tryPropagateBack(state); });
+            [&]() { this->tryPropagateBack(state); });
       }
 
       void Yac::tryPropagateBack(const std::vector<VoteMessage> &state) {
