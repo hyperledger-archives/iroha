@@ -19,20 +19,29 @@ namespace iroha {
 
       // --------| private api |--------
 
+      namespace {
+        /**
+         * Find storage with corresponding key
+         * @tparam T - storage type
+         * @param storage - ref or const ref for the storage
+         * @param round - required round
+         * @return iterator for the storage
+         */
+        template <typename T>
+        auto findStorage(T &storage, const Round &round) {
+          return std::find_if(
+              storage.begin(), storage.end(), [&round](const auto &storage) {
+                return storage.getStorageKey() == round;
+              });
+        }
+      }  // namespace
+
       auto YacVoteStorage::getProposalStorage(const Round &round) {
-        return std::find_if(proposal_storages_.begin(),
-                            proposal_storages_.end(),
-                            [&round](const auto &storage) {
-                              return storage.getStorageKey() == round;
-                            });
+        return findStorage(proposal_storages_, round);
       }
 
       auto YacVoteStorage::getProposalStorage(const Round &round) const {
-        return std::find_if(proposal_storages_.begin(),
-                            proposal_storages_.end(),
-                            [&round](const auto &storage) {
-                              return storage.getStorageKey() == round;
-                            });
+        return findStorage(proposal_storages_, round);
       }
 
       boost::optional<std::vector<YacProposalStorage>::iterator>
