@@ -195,7 +195,7 @@ namespace iroha {
       }
 
       void Yac::tryPropagateBack(const std::vector<VoteMessage> &state) {
-        // yac back propagation will work  only if another peer is in
+        // yac back propagation will work only if another peer is in
         // propagation stage because if peer sends list of votes this means that
         // state is already committed
         if (state.size() != 1) {

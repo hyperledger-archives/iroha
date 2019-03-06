@@ -27,6 +27,14 @@ namespace iroha {
                             });
       }
 
+      auto YacVoteStorage::getProposalStorage(const Round &round) const {
+        return std::find_if(proposal_storages_.begin(),
+                            proposal_storages_.end(),
+                            [&round](const auto &storage) {
+                              return storage.getStorageKey() == round;
+                            });
+      }
+
       boost::optional<std::vector<YacProposalStorage>::iterator>
       YacVoteStorage::findProposalStorage(const VoteMessage &msg,
                                           PeersNumberType peers_in_round) {
@@ -77,10 +85,7 @@ namespace iroha {
                          [this, &round](
                              auto &&insert_outcome) -> boost::optional<Answer> {
 
-                if (round > last_round_) {
-                  last_round_ = round;
-                }
-
+                last_round_ = std::max(last_round_.value_or(round), round);
                 this->strategy_->finalize(round, insert_outcome) |
                     [this](auto &&remove) {
                       std::for_each(
@@ -125,12 +130,7 @@ namespace iroha {
 
       boost::optional<Answer> YacVoteStorage::getState(
           const Round &round) const {
-        auto proposal_storage =
-            std::find_if(proposal_storages_.begin(),
-                         proposal_storages_.end(),
-                         [&round](const auto &proposal_state) {
-                           return proposal_state.getStorageKey() == round;
-                         });
+        auto proposal_storage = getProposalStorage(round);
         if (proposal_storage != proposal_storages_.end()) {
           return proposal_storage->getState();
         } else {

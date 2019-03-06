@@ -32,6 +32,7 @@ class NetworkUtil {
   }
 
   auto createVote(size_t from, const YacHash &yac_hash) const {
+    BOOST_ASSERT_MSG(from < peers_.size(), "Requested unknown index of peer");
     return iroha::consensus::yac::createVote(
         yac_hash,
         *iroha::hexstringToBytestring(peers_.at(from)->pubkey().hex()));
@@ -59,13 +60,20 @@ class NetworkUtil {
 
 class YacSynchronizationTest : public YacTest {
  public:
+  void SetUp() override {
+    YacTest::SetUp();
+
+    network_util_ = NetworkUtil(7);
+    initAndCommitState(network_util_);
+  }
+
   /// inits initial state and commits some rounds
   void initAndCommitState(const NetworkUtil &network_util) {
+    size_t number_of_committed_rounds = 10;
+
     initYac(*network_util.order_);
     EXPECT_CALL(*crypto, verify(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(*timer, deny()).Times(10);
-
-    size_t number_of_committed_rounds = 10;
+    EXPECT_CALL(*timer, deny()).Times(number_of_committed_rounds);
 
     for (auto i = 0u; i < number_of_committed_rounds; i++) {
       iroha::consensus::Round r{i, 0};
@@ -75,6 +83,8 @@ class YacSynchronizationTest : public YacTest {
     EXPECT_CALL(*network, sendState(_, _)).Times(8);
     yac->vote(network_util.createHash({10, 0}), *network_util.order_);
   }
+
+  NetworkUtil network_util_{1};
 };
 
 /**
@@ -83,11 +93,7 @@ class YacSynchronizationTest : public YacTest {
  * @then  Yac sends commit for the last round
  */
 TEST_F(YacSynchronizationTest, SynchronizationOncommitInTheCahe) {
-  NetworkUtil network_util(7);
-
-  initAndCommitState(network_util);
-
-  yac->onState(network_util.createVotes({0}, iroha::consensus::Round{1, 0}));
+  yac->onState(network_util_.createVotes({0}, iroha::consensus::Round{1, 0}));
 }
 
 /**
@@ -96,11 +102,7 @@ TEST_F(YacSynchronizationTest, SynchronizationOncommitInTheCahe) {
  * @then  Yac sends commit for the last round
  */
 TEST_F(YacSynchronizationTest, SynchronizationOnCommitOutOfTheCahe) {
-  NetworkUtil network_util(7);
-
-  initAndCommitState(network_util);
-
-  yac->onState(network_util.createVotes({0}, iroha::consensus::Round{9, 0}));
+  yac->onState(network_util_.createVotes({0}, iroha::consensus::Round{9, 0}));
 }
 
 /**
@@ -109,9 +111,5 @@ TEST_F(YacSynchronizationTest, SynchronizationOnCommitOutOfTheCahe) {
  * @then  Yac sends last commit
  */
 TEST_F(YacSynchronizationTest, SynchronizationRejectOutOfTheCahe) {
-  NetworkUtil network_util(7);
-
-  initAndCommitState(network_util);
-
-  yac->onState(network_util.createVotes({0}, iroha::consensus::Round{5, 5}));
+  yac->onState(network_util_.createVotes({0}, iroha::consensus::Round{5, 5}));
 }

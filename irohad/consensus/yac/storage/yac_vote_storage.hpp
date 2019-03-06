@@ -70,6 +70,7 @@ namespace iroha {
          * @return iterator to proposal storage
          */
         auto getProposalStorage(const Round &round);
+        auto getProposalStorage(const Round &round) const;
 
         /**
          * Find existed proposal storage or create new if required
@@ -143,8 +144,8 @@ namespace iroha {
         boost::optional<Round> getLastFinalizedRound() const;
 
         /**
-         * Get state attached to passed round
-         * @param round - target round for finding
+         * Get the state attached of a past round
+         * @param round - required round
          * @return state if round exists and finalized
          */
         boost::optional<Answer> getState(const Round &round) const;
