@@ -38,7 +38,7 @@ If IPv6 is not used, it might be a good idea to disable it.
 
 Updates
 ^^^^^^^
-Install latest operating system security patches and update it regularly.
+Install the latest operating system security patches and update it regularly.
 If Iroha is running in Docker containers, update Docker regularly.
 While being optional, it is considered a good practice to test updates on a separate server before installing to production.
 
