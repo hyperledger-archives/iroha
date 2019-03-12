@@ -8,6 +8,7 @@
 
 #include "ordering/on_demand_ordering_service.hpp"
 
+#include <map>
 #include <queue>
 #include <shared_mutex>
 #include <unordered_map>
@@ -75,7 +76,7 @@ namespace iroha {
        * Method removes the oldest commit or chain of the oldest rejects
        * Note: method is not thread-safe
        */
-      void tryErase();
+      void tryErase(const consensus::Round &current_round);
 
       /**
        * Check if batch was already processed by the peer
@@ -94,16 +95,9 @@ namespace iroha {
       size_t number_of_proposals_;
 
       /**
-       * Queue which holds all rounds in linear order
-       */
-      std::queue<consensus::Round> round_queue_;
-
-      /**
        * Map of available proposals
        */
-      std::unordered_map<consensus::Round,
-                         std::shared_ptr<const ProposalType>,
-                         consensus::RoundTypeHasher>
+      std::map<consensus::Round, std::shared_ptr<const ProposalType>>
           proposal_map_;
 
       /**
