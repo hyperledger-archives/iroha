@@ -71,7 +71,7 @@ void OnDemandOrderingServiceImpl::onBatches(CollectionType batches) {
   std::for_each(
       unprocessed_batches.begin(),
       unprocessed_batches.end(),
-      [this](auto &obj) { current_round_batches_.push(std::move(obj)); });
+      [this](auto &obj) { current_round_batches_.insert(std::move(obj)); });
   log_->debug("onBatches => collection is inserted");
 }
 
@@ -101,7 +101,7 @@ OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round) {
  * required amount is collected.
  * @tparam Lambda - type of side effect function for batches
  * @param requested_tx_amount - amount of transactions to get
- * @param tx_batches_queue - the queue to get transactions from
+ * @param batch_collection - the collection to get transactions from
  * @param discarded_txs_amount - the amount of discarded txs
  * @param batch_operation - side effect function to be performed on each
  * inserted batch. Passed pointer could be modified
@@ -110,29 +110,28 @@ OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round) {
 template <typename Lambda>
 static std::vector<std::shared_ptr<shared_model::interface::Transaction>>
 getTransactions(size_t requested_tx_amount,
-                tbb::concurrent_queue<TransactionBatchType> &tx_batches_queue,
+                detail::BatchSetType &batch_collection,
                 boost::optional<size_t &> discarded_txs_amount,
                 Lambda batch_operation) {
-  TransactionBatchType batch;
   std::vector<std::shared_ptr<shared_model::interface::Transaction>> collection;
-  std::unordered_set<std::string> inserted;
 
-  while (collection.size() < requested_tx_amount
-         and tx_batches_queue.try_pop(batch)) {
-    if (inserted.insert(batch->reducedHash().hex()).second) {
-      collection.insert(std::end(collection),
-                        std::begin(batch->transactions()),
-                        std::end(batch->transactions()));
-      batch_operation(batch);
-    }
+  auto it = batch_collection.begin();
+  for (;
+       it != batch_collection.end() and collection.size() < requested_tx_amount;
+       ++it) {
+    collection.insert(std::end(collection),
+                      std::begin((*it)->transactions()),
+                      std::end((*it)->transactions()));
+    batch_operation(*it);
   }
 
   if (discarded_txs_amount) {
     *discarded_txs_amount = 0;
-    while (tx_batches_queue.try_pop(batch)) {
-      *discarded_txs_amount += boost::size(batch->transactions());
+    for (; it != batch_collection.end(); ++it) {
+      *discarded_txs_amount += boost::size((*it)->transactions());
     }
   }
+  batch_collection.clear();
 
   return collection;
 }
@@ -195,7 +194,7 @@ void OnDemandOrderingServiceImpl::packNextProposals(
 
   if (not current_round_batches_.empty()) {
     auto txs = get_transactions(current_round_batches_, [this](auto &batch) {
-      next_round_batches_.push(std::move(batch));
+      next_round_batches_.insert(std::move(batch));
     });
 
     if (not txs.empty() and round.reject_round != kFirstRejectRound) {

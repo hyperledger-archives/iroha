@@ -66,6 +66,7 @@ namespace iroha {
           std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
               factory,
           std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+          size_t transaction_limit,
           logger::LoggerPtr log);
 
       ~OnDemandOrderingGate() override;
@@ -75,9 +76,6 @@ namespace iroha {
           override;
 
       rxcpp::observable<network::OrderingEvent> onProposal() override;
-
-      [[deprecated("Use ctor")]] void setPcs(
-          const iroha::network::PeerCommunicationService &pcs) override;
 
      private:
       /**
@@ -89,6 +87,8 @@ namespace iroha {
               std::shared_ptr<const OnDemandOrderingService::ProposalType>>
               proposal) const;
 
+      void sendCachedTransactions(const BlockRoundEventType &event);
+
       /**
        * remove already processed transactions from proposal
        */
@@ -96,6 +96,8 @@ namespace iroha {
           std::shared_ptr<const shared_model::interface::Proposal> proposal)
           const;
 
+      /// max number of transactions passed to one ordering service
+      size_t transaction_limit_;
       logger::LoggerPtr log_;
       std::shared_ptr<OnDemandOrderingService> ordering_service_;
       std::shared_ptr<transport::OdOsNotification> network_client_;

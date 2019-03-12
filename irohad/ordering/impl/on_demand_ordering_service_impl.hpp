@@ -12,9 +12,10 @@
 #include <shared_mutex>
 #include <unordered_map>
 
-#include <tbb/concurrent_queue.h>
+#include <tbb/concurrent_unordered_set.h>
 #include "interfaces/iroha_internal/unsafe_proposal_factory.hpp"
 #include "logger/logger_fwd.hpp"
+#include "multi_sig_transactions/hash.hpp"
 #include "ordering/impl/on_demand_common.hpp"
 
 namespace iroha {
@@ -22,6 +23,12 @@ namespace iroha {
     class TxPresenceCache;
   }
   namespace ordering {
+    namespace detail {
+      using BatchSetType = tbb::concurrent_unordered_set<
+          transport::OdOsNotification::TransactionBatchType,
+          model::PointerBatchHasher>;
+    }
+
     class OnDemandOrderingServiceImpl : public OnDemandOrderingService {
      public:
       /**
@@ -102,8 +109,7 @@ namespace iroha {
       /**
        * Collections of batches for current and next rounds
        */
-      tbb::concurrent_queue<TransactionBatchType> current_round_batches_,
-          next_round_batches_;
+      detail::BatchSetType current_round_batches_, next_round_batches_;
 
       /**
        * Read write mutex for public methods
