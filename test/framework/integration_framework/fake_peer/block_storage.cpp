@@ -12,6 +12,7 @@
 #include <boost/range/algorithm/max_element.hpp>
 #include "backend/protobuf/block.hpp"
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
+#include "logger/logger.hpp"
 
 /// Emplace to a map.
 /// @return true if overwritten.
@@ -27,18 +28,17 @@ static bool emplaceCheckingOverwrite(MapType &map,
 namespace integration_framework {
   namespace fake_peer {
 
-    BlockStorage::BlockStorage()
-        : log_(logger::log("Fake peer block storage")) {}
+    BlockStorage::BlockStorage(logger::LoggerPtr log) : log_(std::move(log)) {}
 
     BlockStorage::BlockStorage(const BlockStorage &other)
         : blocks_by_height_(other.blocks_by_height_),
           blocks_by_hash_(other.blocks_by_hash_),
-          log_(logger::log("Fake peer block storage")) {}
+          log_(other.log_) {}
 
     BlockStorage::BlockStorage(BlockStorage &&other)
         : blocks_by_height_(std::move(other.blocks_by_height_)),
           blocks_by_hash_(std::move(other.blocks_by_hash_)),
-          log_(logger::log("Fake peer block storage")) {}
+          log_(std::move(other.log_)) {}
 
     void BlockStorage::storeBlock(
         const std::shared_ptr<const shared_model::proto::Block> &block) {

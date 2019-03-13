@@ -13,7 +13,7 @@
 #include <boost/thread/shared_mutex.hpp>
 #include "cryptography/hash.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 
 namespace shared_model {
   namespace proto {
@@ -30,7 +30,7 @@ namespace integration_framework {
       using HeightType = shared_model::interface::types::HeightType;
       using HashType = shared_model::crypto::Hash;
 
-      BlockStorage();
+      BlockStorage(logger::LoggerPtr log);
       BlockStorage(const BlockStorage &);
       BlockStorage(BlockStorage &&);
       BlockStorage operator=(const BlockStorage &) = delete;
@@ -55,7 +55,7 @@ namespace integration_framework {
           blocks_by_hash_;
       mutable std::shared_timed_mutex block_maps_mutex_;
 
-      logger::Logger log_;
+      logger::LoggerPtr log_;
     };
 
   }  // namespace fake_peer

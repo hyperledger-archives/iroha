@@ -12,7 +12,7 @@
 
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
 #include "framework/integration_framework/fake_peer/types.hpp"
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 
 namespace shared_model {
   namespace proto {
@@ -27,8 +27,9 @@ namespace integration_framework {
      public:
       virtual ~Behaviour();
 
-      /// Enable the behaviour for the given peer
-      void adopt(const std::shared_ptr<FakePeer> &fake_peer);
+      /// Enable the behaviour for the given peer and take the given logger.
+      void setup(const std::shared_ptr<FakePeer> &fake_peer,
+                 logger::LoggerPtr log);
 
       /// Disable the behaviour
       void absolve();
@@ -64,16 +65,14 @@ namespace integration_framework {
       virtual void processOrderingBatches(
           const BatchesForRound &batches_for_round) = 0;
 
-      virtual std::string getName() = 0;
-
      protected:
       FakePeer &getFakePeer();
-      logger::Logger &getLogger();
+      logger::LoggerPtr &getLogger();
 
      private:
       std::weak_ptr<FakePeer> fake_peer_wptr_;
       std::vector<rxcpp::subscription> subscriptions_;
-      logger::Logger log_;
+      logger::LoggerPtr log_;
     };
 
   }  // namespace fake_peer

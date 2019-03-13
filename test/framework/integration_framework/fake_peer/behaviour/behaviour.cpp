@@ -5,6 +5,8 @@
 
 #include "framework/integration_framework/fake_peer/behaviour/behaviour.hpp"
 
+#include "logger/logger.hpp"
+
 namespace integration_framework {
   namespace fake_peer {
 
@@ -12,13 +14,13 @@ namespace integration_framework {
       absolve();
     }
 
-    void Behaviour::adopt(const std::shared_ptr<FakePeer> &fake_peer) {
+    void Behaviour::setup(const std::shared_ptr<FakePeer> &fake_peer,
+                          logger::LoggerPtr log) {
       // This code feels like part of constructor, but the use of `this'
       // to call virtual functions from base class constructor seems wrong.
       // Hint: such calls would precede the derived class construction.
       fake_peer_wptr_ = fake_peer;
-      log_ = logger::log(getName() + " of fake peer at "
-                         + fake_peer->getAddress());
+      log_ = std::move(log);
       // subscribe for all messages
       subscriptions_.emplace_back(
           getFakePeer().getMstStatesObservable().subscribe(
@@ -59,7 +61,7 @@ namespace integration_framework {
       return *fake_peer;
     }
 
-    logger::Logger &Behaviour::getLogger() {
+    logger::LoggerPtr &Behaviour::getLogger() {
       return log_;
     }
 

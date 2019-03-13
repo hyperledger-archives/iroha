@@ -33,10 +33,6 @@ namespace integration_framework {
       getFakePeer().voteForTheSame(message);
     }
 
-    std::string HonestBehaviour::getName() {
-      return "honest behaviour";
-    }
-
     LoaderBlockRequestResult HonestBehaviour::processLoaderBlockRequest(
         LoaderBlockRequest request) {
       const auto &block_storage = getFakePeer().getBlockStorage();

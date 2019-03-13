@@ -83,6 +83,7 @@ namespace integration_framework {
           consensus_log_manager_(log_manager_->getChild("Consensus")),
           mst_log_manager_(
               log_manager_->getChild("MultiSignatureTransactions")),
+          ordering_log_manager_(log_manager_->getChild("Ordering")),
           common_objects_factory_(common_objects_factory),
           transaction_factory_(transaction_factory),
           transaction_batch_factory_(transaction_batch_factory),
@@ -126,14 +127,18 @@ namespace integration_framework {
       BOOST_VERIFY_MSG(not initialized_, "Already initialized!");
       // here comes the initialization of members requiring shared_from_this()
       synchronizer_transport_ =
-          std::make_shared<LoaderGrpc>(shared_from_this());
+          std::make_shared<LoaderGrpc>(shared_from_this(),
+                                       log_manager_->getChild("Synchronizer")
+                                           ->getChild("Transport")
+                                           ->getLogger());
       od_os_network_notifier_ =
           std::make_shared<OnDemandOsNetworkNotifier>(shared_from_this());
-      od_os_transport_ =
-          std::make_shared<OdOsTransport>(od_os_network_notifier_,
-                                          transaction_factory_,
-                                          batch_parser_,
-                                          transaction_batch_factory_);
+      od_os_transport_ = std::make_shared<OdOsTransport>(
+          od_os_network_notifier_,
+          transaction_factory_,
+          batch_parser_,
+          transaction_batch_factory_,
+          ordering_log_manager_->getChild("Transport")->getLogger());
 
       initialized_ = true;
       return *this;
@@ -143,7 +148,8 @@ namespace integration_framework {
         const std::shared_ptr<Behaviour> &behaviour) {
       ensureInitialized();
       behaviour_ = behaviour;
-      behaviour_->adopt(shared_from_this());
+      behaviour_->setup(shared_from_this(),
+                        log_manager_->getChild("Behaviour")->getLogger());
       return *this;
     }
 
@@ -365,7 +371,8 @@ namespace integration_framework {
               async_call_,
               proposal_factory_,
               [] { return std::chrono::system_clock::now(); },
-              timeout)
+              timeout,
+              ordering_log_manager_->getChild("NetworkClient")->getLogger())
               .create(*real_peer_);
       std::unique_ptr<shared_model::interface::Proposal> result;
       auto opt_proposal_ptr = on_demand_os_transport->onRequestProposal(round);

@@ -9,17 +9,15 @@
 #include "framework/integration_framework/fake_peer/behaviour/behaviour.hpp"
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
 #include "loader.grpc.pb.h"
+#include "logger/logger.hpp"
 #include "network/impl/grpc_channel_builder.hpp"
 
 namespace integration_framework {
   namespace fake_peer {
 
-    LoaderGrpc::LoaderGrpc(const std::shared_ptr<FakePeer> &fake_peer)
-        : fake_peer_wptr_(fake_peer) {
-      log_ = logger::log(
-          "IntegrationTestFramework (fake peer at "
-          + fake_peer->getAddress() + " Loader transport)");
-        }
+    LoaderGrpc::LoaderGrpc(const std::shared_ptr<FakePeer> &fake_peer,
+                           logger::LoggerPtr log)
+        : fake_peer_wptr_(fake_peer), log_(std::move(log)) {}
 
     bool LoaderGrpc::sendBlockRequest(
         const std::string &dest_address, const LoaderBlockRequest &hash) {

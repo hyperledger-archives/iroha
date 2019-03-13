@@ -581,11 +581,11 @@ namespace integration_framework {
             async_call_,
             proposal_factory_,
             [] { return std::chrono::system_clock::now(); },
-            std::chrono::milliseconds(0)  // the proposal waiting timeout is
-                                          // only used when waiting a response
-                                          // for a proposal request, which our
-                                          // client does not do
-            )
+            std::chrono::milliseconds(0),  // the proposal waiting timeout is
+                                           // only used when waiting a response
+                                           // for a proposal request, which our
+                                           // client does not do
+            log_manager_->getChild("OrderingClientTransport")->getLogger())
             .create(*this_peer_);
     on_demand_os_transport->onBatches(round, batches);
     return *this;
@@ -599,7 +599,8 @@ namespace integration_framework {
             async_call_,
             proposal_factory_,
             [] { return std::chrono::system_clock::now(); },
-            timeout)
+            timeout,
+            log_manager_->getChild("OrderingClientTransport")->getLogger())
             .create(*this_peer_);
     std::shared_ptr<const shared_model::interface::Proposal> result;
     auto opt_proposal_ptr = on_demand_os_transport->onRequestProposal(round);

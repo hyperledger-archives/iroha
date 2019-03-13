@@ -36,8 +36,6 @@ namespace integration_framework {
           const OrderingProposalRequest &request) override;
       void processOrderingBatches(
           const BatchesForRound &batches_for_round) override;
-
-      std::string getName() override;
     };
 
   }  // namespace fake_peer

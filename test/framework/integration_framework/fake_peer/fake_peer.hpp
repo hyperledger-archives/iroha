@@ -48,6 +48,7 @@ namespace integration_framework {
        * @param batch_parser - batch_parser
        * @param transaction_batch_factory - transaction batch factory
        * @param proposal_factory - proposal factory
+       * @param tx_presence_cache - for MST transport
        * @param log_manager - log manager
        */
       FakePeer(
@@ -208,6 +209,7 @@ namespace integration_framework {
       logger::LoggerManagerTreePtr log_manager_;
       logger::LoggerManagerTreePtr consensus_log_manager_;
       logger::LoggerManagerTreePtr mst_log_manager_;
+      logger::LoggerManagerTreePtr ordering_log_manager_;
 
       std::shared_ptr<shared_model::interface::CommonObjectsFactory>
           common_objects_factory_;

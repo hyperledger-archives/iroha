@@ -32,9 +32,5 @@ namespace integration_framework {
     void EmptyBehaviour::processOrderingBatches(
         const BatchesForRound &batches_for_round) {}
 
-    std::string EmptyBehaviour::getName() {
-      return "empty behaviour";
-    }
-
   }  // namespace fake_peer
 }  // namespace integration_framework

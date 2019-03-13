@@ -29,8 +29,6 @@ namespace integration_framework {
       void processOrderingBatches(
           const BatchesForRound &batches_for_round) override;
 
-      std::string getName() override;
-
      private:
       std::unique_ptr<shared_model::interface::ProposalFactory>
           proposal_factory_;

@@ -4,6 +4,7 @@
  */
 
 #include "framework/integration_framework/fake_peer/network/on_demand_os_network_notifier.hpp"
+
 #include "backend/protobuf/proposal.hpp"
 #include "framework/integration_framework/fake_peer/behaviour/behaviour.hpp"
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
@@ -22,7 +23,8 @@ namespace integration_framework {
           std::make_shared<BatchesForRound>(round, batches));
     }
 
-    boost::optional<OnDemandOsNetworkNotifier::ProposalType>
+    boost::optional<
+        std::shared_ptr<const OnDemandOsNetworkNotifier::ProposalType>>
     OnDemandOsNetworkNotifier::onRequestProposal(
         iroha::consensus::Round round) {
       rounds_subject_.get_subscriber().on_next(round);
@@ -32,7 +34,7 @@ namespace integration_framework {
       if (behaviour) {
         auto opt_proposal = behaviour->processOrderingProposalRequest(round);
         if (opt_proposal) {
-          return std::unique_ptr<shared_model::interface::Proposal>(
+          return std::shared_ptr<shared_model::interface::Proposal>(
               std::make_unique<shared_model::proto::Proposal>(
                   (*opt_proposal)->getTransport()));
         }

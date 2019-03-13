@@ -24,8 +24,8 @@ namespace integration_framework {
       virtual void onBatches(iroha::consensus::Round round,
                              CollectionType batches);
 
-      virtual boost::optional<ProposalType> onRequestProposal(
-          iroha::consensus::Round round);
+      virtual boost::optional<std::shared_ptr<const ProposalType>>
+      onRequestProposal(iroha::consensus::Round round);
 
       rxcpp::observable<iroha::consensus::Round>
       getProposalRequestsObservable();
