@@ -42,8 +42,8 @@ namespace integration_framework {
               }));
       subscriptions_.emplace_back(
           getFakePeer().getBatchesObservable().subscribe(
-              [this](const auto &batches_for_round) {
-                this->processOrderingBatches(*batches_for_round);
+              [this](const auto &batches) {
+                this->processOrderingBatches(*batches);
               }));
     }
 

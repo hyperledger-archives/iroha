@@ -15,9 +15,6 @@ namespace integration_framework {
 
     class HonestBehaviour : public EmptyBehaviour {
      public:
-      HonestBehaviour();
-      virtual ~HonestBehaviour() = default;
-
       void processYacMessage(
           std::shared_ptr<const YacMessage> message) override;
       LoaderBlockRequestResult processLoaderBlockRequest(
@@ -26,12 +23,7 @@ namespace integration_framework {
           LoaderBlocksRequest request) override;
       OrderingProposalRequestResult processOrderingProposalRequest(
           const OrderingProposalRequest &request) override;
-      void processOrderingBatches(
-          const BatchesForRound &batches_for_round) override;
-
-     private:
-      std::unique_ptr<shared_model::interface::ProposalFactory>
-          proposal_factory_;
+      void processOrderingBatches(const BatchesCollection &batches) override;
     };
 
   }  // namespace fake_peer

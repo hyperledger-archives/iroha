@@ -62,8 +62,7 @@ namespace integration_framework {
           const OrderingProposalRequest &request) = 0;
 
       /// process the batches submitted to a fake peer's on demand OS
-      virtual void processOrderingBatches(
-          const BatchesForRound &batches_for_round) = 0;
+      virtual void processOrderingBatches(const BatchesCollection &batches) = 0;
 
      protected:
       FakePeer &getFakePeer();

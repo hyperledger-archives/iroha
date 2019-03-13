@@ -9,7 +9,6 @@
 #include <rxcpp/rx.hpp>
 
 #include "consensus/round.hpp"
-#include "framework/integration_framework/fake_peer/network/batches_for_round.hpp"
 #include "framework/integration_framework/fake_peer/types.hpp"
 #include "ordering/on_demand_os_transport.hpp"
 
@@ -21,8 +20,7 @@ namespace integration_framework {
      public:
       OnDemandOsNetworkNotifier(const std::shared_ptr<FakePeer> &fake_peer);
 
-      virtual void onBatches(iroha::consensus::Round round,
-                             CollectionType batches);
+      virtual void onBatches(CollectionType batches);
 
       virtual boost::optional<std::shared_ptr<const ProposalType>>
       onRequestProposal(iroha::consensus::Round round);
@@ -30,13 +28,13 @@ namespace integration_framework {
       rxcpp::observable<iroha::consensus::Round>
       getProposalRequestsObservable();
 
-      rxcpp::observable<std::shared_ptr<BatchesForRound>>
+      rxcpp::observable<std::shared_ptr<BatchesCollection>>
       getBatchesObservable();
 
      private:
       std::weak_ptr<FakePeer> fake_peer_wptr_;
       rxcpp::subjects::subject<iroha::consensus::Round> rounds_subject_;
-      rxcpp::subjects::subject<std::shared_ptr<BatchesForRound>>
+      rxcpp::subjects::subject<std::shared_ptr<BatchesCollection>>
           batches_subject_;
     };
 

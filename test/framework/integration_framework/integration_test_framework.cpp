@@ -574,7 +574,6 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::sendBatches(
-      const iroha::consensus::Round &round,
       const std::vector<TransactionBatchSPtr> &batches) {
     auto on_demand_os_transport =
         iroha::ordering::transport::OnDemandOsClientGrpcFactory(
@@ -587,11 +586,11 @@ namespace integration_framework {
                                            // client does not do
             log_manager_->getChild("OrderingClientTransport")->getLogger())
             .create(*this_peer_);
-    on_demand_os_transport->onBatches(round, batches);
+    on_demand_os_transport->onBatches(batches);
     return *this;
   }
 
-  std::shared_ptr<shared_model::interface::Proposal>
+  boost::optional<std::shared_ptr<const shared_model::interface::Proposal>>
   IntegrationTestFramework::requestProposal(
       const iroha::consensus::Round &round, std::chrono::milliseconds timeout) {
     auto on_demand_os_transport =
@@ -602,12 +601,7 @@ namespace integration_framework {
             timeout,
             log_manager_->getChild("OrderingClientTransport")->getLogger())
             .create(*this_peer_);
-    std::shared_ptr<const shared_model::interface::Proposal> result;
-    auto opt_proposal_ptr = on_demand_os_transport->onRequestProposal(round);
-    if (opt_proposal_ptr) {
-      result = std::move(*opt_proposal_ptr);
-    }
-    return result;
+    return on_demand_os_transport->onRequestProposal(round);
   }
 
   IntegrationTestFramework &IntegrationTestFramework::sendMstState(
@@ -625,10 +619,12 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::checkProposal(
-      std::function<void(const ProposalSPtr &)> validation) {
+      std::function<void(
+          const std::shared_ptr<const shared_model::interface::Proposal> &)>
+          validation) {
     log_->info("check proposal");
     // fetch first proposal from proposal queue
-    ProposalSPtr proposal;
+    std::shared_ptr<const shared_model::interface::Proposal> proposal;
     fetchFromQueue(
         proposal_queue_, proposal, proposal_waiting, "missed proposal");
     validation(proposal);
@@ -641,7 +637,9 @@ namespace integration_framework {
   }
 
   IntegrationTestFramework &IntegrationTestFramework::checkVerifiedProposal(
-      std::function<void(const ProposalSPtr &)> validation) {
+      std::function<void(
+          const std::shared_ptr<const shared_model::interface::Proposal> &)>
+          validation) {
     log_->info("check verified proposal");
     // fetch first proposal from proposal queue
     VerifiedProposalType verified_proposal_and_errors;

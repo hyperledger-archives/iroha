@@ -17,10 +17,9 @@ namespace integration_framework {
         const std::shared_ptr<FakePeer> &fake_peer)
         : fake_peer_wptr_(fake_peer) {}
 
-    void OnDemandOsNetworkNotifier::onBatches(iroha::consensus::Round round,
-                                              CollectionType batches) {
+    void OnDemandOsNetworkNotifier::onBatches(CollectionType batches) {
       batches_subject_.get_subscriber().on_next(
-          std::make_shared<BatchesForRound>(round, batches));
+          std::make_shared<BatchesCollection>(std::move(batches)));
     }
 
     boost::optional<
@@ -34,7 +33,7 @@ namespace integration_framework {
       if (behaviour) {
         auto opt_proposal = behaviour->processOrderingProposalRequest(round);
         if (opt_proposal) {
-          return std::shared_ptr<shared_model::interface::Proposal>(
+          return std::shared_ptr<const shared_model::interface::Proposal>(
               std::make_unique<shared_model::proto::Proposal>(
                   (*opt_proposal)->getTransport()));
         }
@@ -47,7 +46,7 @@ namespace integration_framework {
       return rounds_subject_.get_observable();
     }
 
-    rxcpp::observable<std::shared_ptr<BatchesForRound>>
+    rxcpp::observable<std::shared_ptr<BatchesCollection>>
     OnDemandOsNetworkNotifier::getBatchesObservable() {
       return batches_subject_.get_observable();
     }

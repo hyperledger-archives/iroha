@@ -30,7 +30,7 @@ namespace integration_framework {
       return {};
     }
     void EmptyBehaviour::processOrderingBatches(
-        const BatchesForRound &batches_for_round) {}
+        const BatchesCollection &batches) {}
 
   }  // namespace fake_peer
 }  // namespace integration_framework

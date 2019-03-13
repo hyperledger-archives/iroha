@@ -132,7 +132,7 @@ namespace integration_framework {
       getProposalRequestsObservable();
 
       /// Get the observable of ODOS batches received by this peer.
-      rxcpp::observable<std::shared_ptr<BatchesForRound>>
+      rxcpp::observable<std::shared_ptr<BatchesCollection>>
       getBatchesObservable();
 
       /**
@@ -173,12 +173,13 @@ namespace integration_framework {
 
       size_t sendBlocksRequest(const LoaderBlocksRequest &request);
 
-      /// Send the real peer the provided batches for the provided round.
-      void sendBatchesForRound(
-          iroha::consensus::Round round,
-          std::vector<
-              std::shared_ptr<shared_model::interface::TransactionBatch>>
-              batches);
+      /// Send the real peer the provided batches for proposal.
+      void proposeBatches(BatchesCollection batches);
+
+      /// Send the real peer the provided transactions for proposal.
+      void proposeTransactions(
+          std::vector<std::shared_ptr<shared_model::interface::Transaction>>
+              transactions);
 
       /**
        * Request the real peer's on demand ordering service a proposal for the
@@ -186,10 +187,11 @@ namespace integration_framework {
        *
        * @param round - the round of requested proposal.
        * @param timeout - time to wait for the reply.
-       * @return The proposal if it was received, or nullptr otherwise.
+       * @return The proposal if it was received
        */
-      std::unique_ptr<shared_model::interface::Proposal> sendProposalRequest(
-          iroha::consensus::Round round, std::chrono::milliseconds timeout);
+      boost::optional<std::shared_ptr<const shared_model::interface::Proposal>>
+      sendProposalRequest(iroha::consensus::Round round,
+                          std::chrono::milliseconds timeout);
 
      private:
       using MstTransport = iroha::network::MstTransportGrpc;

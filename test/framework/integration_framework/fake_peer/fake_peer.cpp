@@ -6,6 +6,7 @@
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
 
 #include <boost/assert.hpp>
+#include "backend/protobuf/transaction.hpp"
 #include "consensus/yac/impl/yac_crypto_provider_impl.hpp"
 #include "consensus/yac/transport/impl/network_impl.hpp"
 #include "consensus/yac/transport/yac_network_interface.hpp"
@@ -269,7 +270,7 @@ namespace integration_framework {
       return od_os_network_notifier_->getProposalRequestsObservable();
     }
 
-    rxcpp::observable<std::shared_ptr<BatchesForRound>>
+    rxcpp::observable<std::shared_ptr<BatchesCollection>>
     FakePeer::getBatchesObservable() {
       ensureInitialized();
       return od_os_network_notifier_->getBatchesObservable();
@@ -350,20 +351,35 @@ namespace integration_framework {
                                                         request);
     }
 
-    void FakePeer::sendBatchesForRound(
-        iroha::consensus::Round round,
-        std::vector<std::shared_ptr<shared_model::interface::TransactionBatch>>
-            batches) {
+    void FakePeer::proposeBatches(BatchesCollection batches) {
+      std::vector<std::shared_ptr<shared_model::interface::Transaction>>
+          transactions;
+      for (auto &batch : batches) {
+        std::copy(batch->transactions().begin(),
+                  batch->transactions().end(),
+                  std::back_inserter(transactions));
+      }
+      proposeTransactions(std::move(transactions));
+    }
+
+    void FakePeer::proposeTransactions(
+        std::vector<std::shared_ptr<shared_model::interface::Transaction>>
+            transactions) {
+      iroha::ordering::proto::BatchesRequest request;
+      for (auto &transaction : transactions) {
+        *request.add_transactions() =
+            static_cast<shared_model::proto::Transaction *>(transaction.get())
+                ->getTransport();
+      }
+
       auto client = iroha::network::createClient<
           iroha::ordering::proto::OnDemandOrdering>(real_peer_->address());
       grpc::ClientContext context;
-      iroha::ordering::proto::BatchesRequest request;
       google::protobuf::Empty result;
-
       client->SendBatches(&context, request, &result);
     }
 
-    std::unique_ptr<shared_model::interface::Proposal>
+    boost::optional<std::shared_ptr<const shared_model::interface::Proposal>>
     FakePeer::sendProposalRequest(iroha::consensus::Round round,
                                   std::chrono::milliseconds timeout) {
       auto on_demand_os_transport =
@@ -374,12 +390,7 @@ namespace integration_framework {
               timeout,
               ordering_log_manager_->getChild("NetworkClient")->getLogger())
               .create(*real_peer_);
-      std::unique_ptr<shared_model::interface::Proposal> result;
-      auto opt_proposal_ptr = on_demand_os_transport->onRequestProposal(round);
-      if (opt_proposal_ptr) {
-        result = std::move(*opt_proposal_ptr);
-      }
-      return result;
+      return on_demand_os_transport->onRequestProposal(round);
     }
 
     void FakePeer::ensureInitialized() {

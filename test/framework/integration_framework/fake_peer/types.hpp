@@ -74,7 +74,6 @@ namespace integration_framework {
     class OsNetworkNotifier;
     class OnDemandOsNetworkNotifier;
     class YacNetworkNotifier;
-    struct BatchesForRound;
     struct MstMessage;
 
     using YacMessage = std::vector<iroha::consensus::yac::VoteMessage>;
@@ -87,6 +86,8 @@ namespace integration_framework {
     using OrderingProposalRequest = iroha::consensus::Round;
     using OrderingProposalRequestResult =
         boost::optional<std::shared_ptr<const shared_model::proto::Proposal>>;
+    using BatchesCollection =
+        std::vector<std::shared_ptr<shared_model::interface::TransactionBatch>>;
 
   }  // namespace fake_peer
 }  // namespace integration_framework

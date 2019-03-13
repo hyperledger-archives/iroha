@@ -10,6 +10,7 @@
 #include "framework/integration_framework/fake_peer/block_storage.hpp"
 #include "framework/integration_framework/fake_peer/fake_peer.hpp"
 #include "framework/integration_framework/integration_test_framework.hpp"
+#include "framework/test_logger.hpp"
 #include "integration/acceptance/acceptance_fixture.hpp"
 #include "module/irohad/multi_sig_transactions/mst_mocks.hpp"
 #include "module/shared_model/builders/protobuf/block.hpp"
@@ -142,7 +143,8 @@ TEST_F(FakePeerExampleFixture, SynchronizeTheRightVersionOfForkedLedger) {
       .skipBlock();
 
   // Create the valid branch, supported by the good fake peers:
-  auto valid_block_storage = std::make_shared<fake_peer::BlockStorage>();
+  auto valid_block_storage =
+      std::make_shared<fake_peer::BlockStorage>(getTestLogger("BlockStorage"));
   for (const auto &block : itf.getIrohaInstance()
                                .getIrohaInstance()
                                ->getStorage()
@@ -307,11 +309,12 @@ TEST_F(FakePeerExampleFixture,
       const auto proposal_from_main_peer = getFakePeer().sendProposalRequest(
           message->front().hash.vote_round, kProposalWaitingTime);
       if (proposal_from_main_peer
-          and std::any_of(proposal_from_main_peer->transactions().begin(),
-                          proposal_from_main_peer->transactions().end(),
-                          [this](const auto &tx) {
-                            return tx.reducedHash() == tx_hash_;
-                          })) {
+          and std::any_of(
+                  proposal_from_main_peer.value()->transactions().begin(),
+                  proposal_from_main_peer.value()->transactions().end(),
+                  [this](const auto &tx) {
+                    return tx.reducedHash() == tx_hash_;
+                  })) {
         got_proposal_from_main_peer_.test_and_set(std::memory_order_relaxed);
       }
       HonestBehaviour::processYacMessage(message);
