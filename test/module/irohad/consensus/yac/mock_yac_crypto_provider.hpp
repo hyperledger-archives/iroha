@@ -27,7 +27,7 @@ namespace iroha {
         auto tmp =
             shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair()
                 .publicKey();
-        std::string key(tmp.blob().size(), 0);
+        std::string key(tmp.blob().size(), '0');
         std::copy(pub_key.begin(), pub_key.end(), key.begin());
         auto sig = std::make_shared<MockSignature>();
         EXPECT_CALL(*sig, publicKey())
@@ -48,6 +48,13 @@ namespace iroha {
           VoteMessage vote;
           vote.hash = std::move(hash);
           vote.signature = createSig("");
+          return vote;
+        }
+
+        VoteMessage getVote(YacHash hash, std::string pub_key) {
+          VoteMessage vote;
+          vote.hash = std::move(hash);
+          vote.signature = createSig(std::move(pub_key));
           return vote;
         }
 
