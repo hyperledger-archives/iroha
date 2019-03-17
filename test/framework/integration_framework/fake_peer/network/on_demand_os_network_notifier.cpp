@@ -34,8 +34,8 @@ namespace integration_framework {
         auto opt_proposal = behaviour->processOrderingProposalRequest(round);
         if (opt_proposal) {
           return std::shared_ptr<const shared_model::interface::Proposal>(
-              std::make_unique<shared_model::proto::Proposal>(
-                  (*opt_proposal)->getTransport()));
+              std::static_pointer_cast<const shared_model::proto::Proposal>(
+                  *opt_proposal));
         }
       }
       return {};
