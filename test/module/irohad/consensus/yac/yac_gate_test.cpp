@@ -13,6 +13,7 @@
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "framework/test_subscriber.hpp"
 
+#include "framework/test_logger.hpp"
 #include "module/irohad/consensus/yac/mock_yac_hash_gate.hpp"
 #include "module/irohad/consensus/yac/mock_yac_hash_provider.hpp"
 #include "module/irohad/consensus/yac/mock_yac_peer_orderer.hpp"
@@ -90,7 +91,8 @@ class YacGateTest : public ::testing::Test {
                                          std::move(peer_orderer_ptr),
                                          hash_provider,
                                          block_creator,
-                                         block_cache);
+                                         block_cache,
+                                         getTestLogger("YacGateImpl"));
   }
 
   iroha::consensus::Round round{1, 1};
@@ -98,7 +100,7 @@ class YacGateTest : public ::testing::Test {
   Signed expected_signed{"expected_signed"};
   Hash prev_hash{"prev hash"};
   YacHash expected_hash;
-  std::shared_ptr<shared_model::interface::Proposal> expected_proposal;
+  std::shared_ptr<const shared_model::interface::Proposal> expected_proposal;
   std::shared_ptr<shared_model::interface::Block> expected_block;
   VoteMessage message;
   CommitMessage commit_message;
@@ -155,6 +157,39 @@ TEST_F(YacGateTest, YacGateSubscriptionTest) {
   outcome_notifier.get_subscriber().on_next(expected_commit);
 
   ASSERT_TRUE(gate_wrapper.validate());
+}
+
+/**
+ * @given yac gate, voting for the block @and receiving it on commit
+ * @when voting for nothing
+ * @then block cache is released
+ */
+TEST_F(YacGateTest, CacheReleased) {
+  YacHash empty_hash;
+
+  // yac consensus
+  EXPECT_CALL(*hash_gate, vote(expected_hash, _)).Times(1);
+  EXPECT_CALL(*hash_gate, vote(empty_hash, _)).Times(1);
+
+  // generate order of peers
+  EXPECT_CALL(*peer_orderer, getOrdering(_))
+      .Times(2)
+      .WillRepeatedly(Return(ClusterOrdering::create({makePeer("fake_node")})));
+
+  // make hash from block
+  EXPECT_CALL(*hash_provider, makeHash(_))
+      .WillOnce(Return(expected_hash))
+      .WillOnce(Return(empty_hash));
+
+  block_notifier.get_subscriber().on_next(
+      BlockCreatorEvent{RoundData{expected_proposal, expected_block}, round});
+
+  outcome_notifier.get_subscriber().on_next(expected_commit);
+  round.reject_round++;
+
+  gate->vote({boost::none, round});
+
+  ASSERT_EQ(block_cache->get(), nullptr);
 }
 
 /**
@@ -257,7 +292,8 @@ class YacGateOlderTest : public YacGateTest {
 
     // generate order of peers
     ON_CALL(*peer_orderer, getOrdering(_))
-        .WillByDefault(Return(ClusterOrdering::create({makePeer("fake_node")})));
+        .WillByDefault(
+            Return(ClusterOrdering::create({makePeer("fake_node")})));
 
     // make hash from block
     ON_CALL(*hash_provider, makeHash(_)).WillByDefault(Return(expected_hash));

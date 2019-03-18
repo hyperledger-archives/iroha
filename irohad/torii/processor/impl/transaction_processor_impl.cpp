@@ -11,6 +11,7 @@
 #include "interfaces/iroha_internal/proposal.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/iroha_internal/transaction_sequence.hpp"
+#include "logger/logger.hpp"
 #include "validation/stateful_validator_common.hpp"
 
 namespace iroha {
@@ -48,7 +49,9 @@ namespace iroha {
         std::shared_ptr<iroha::torii::StatusBus> status_bus,
         std::shared_ptr<shared_model::interface::TxStatusFactory>
             status_factory,
-        logger::Logger log)
+        rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
+            commits,
+        logger::LoggerPtr log)
         : pcs_(std::move(pcs)),
           mst_processor_(std::move(mst_processor)),
           status_bus_(std::move(status_bus)),
@@ -65,7 +68,6 @@ namespace iroha {
 
             // notify about failed txs
             const auto &errors = proposal_and_errors->rejected_transactions;
-            std::lock_guard<std::mutex> lock(notifier_mutex_);
             for (const auto &tx_error : errors) {
               log_->info(composeErrorMessage(tx_error));
               this->publishStatus(TxStatusType::kStatefulFailed,
@@ -75,7 +77,7 @@ namespace iroha {
             // notify about success txs
             for (const auto &successful_tx :
                  proposal_and_errors->verified_proposal->transactions()) {
-              log_->info("on stateful validation success: {}",
+              log_->info("VerifiedProposalCreatorEvent StatefulValid: {}",
                          successful_tx.hash().hex());
               this->publishStatus(TxStatusType::kStatefulValid,
                                   successful_tx.hash());
@@ -83,31 +85,19 @@ namespace iroha {
           });
 
       // commit transactions
-      pcs_->on_commit().subscribe(
-          [this](synchronizer::SynchronizationEvent sync_event) {
-            sync_event.synced_blocks.subscribe(
-                // on next
-                [this](auto model_block) {
-                  current_txs_hashes_.reserve(
-                      model_block->transactions().size());
-                  std::transform(model_block->transactions().begin(),
-                                 model_block->transactions().end(),
-                                 std::back_inserter(current_txs_hashes_),
-                                 [](const auto &tx) { return tx.hash(); });
-                },
-                // on complete
-                [this] {
-                  if (current_txs_hashes_.empty()) {
-                    log_->info("there are no transactions to be committed");
-                  } else {
-                    std::lock_guard<std::mutex> lock(notifier_mutex_);
-                    for (const auto &tx_hash : current_txs_hashes_) {
-                      log_->info("on commit committed: {}", tx_hash.hex());
-                      this->publishStatus(TxStatusType::kCommitted, tx_hash);
-                    }
-                    current_txs_hashes_.clear();
-                  }
-                });
+      commits.subscribe(
+          // on next
+          [this](auto block) {
+            for (const auto &tx : block->transactions()) {
+              const auto &hash = tx.hash();
+              log_->debug("Committed transaction: {}", hash.hex());
+              this->publishStatus(TxStatusType::kCommitted, hash);
+            }
+            for (const auto &rejected_tx_hash :
+                 block->rejected_transactions_hashes()) {
+              log_->debug("Rejected transaction: {}", rejected_tx_hash.hex());
+              this->publishStatus(TxStatusType::kRejected, rejected_tx_hash);
+            }
           });
 
       mst_processor_->onStateUpdate().subscribe([this](auto &&state) {
@@ -173,6 +163,10 @@ namespace iroha {
         case TxStatusType::kStatefulValid: {
           status_bus_->publish(
               status_factory_->makeStatefulValid(hash, tx_error));
+          return;
+        };
+        case TxStatusType::kRejected: {
+          status_bus_->publish(status_factory_->makeRejected(hash, tx_error));
           return;
         };
         case TxStatusType::kCommitted: {

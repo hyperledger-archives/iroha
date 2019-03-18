@@ -24,6 +24,8 @@
 #include "framework/integration_framework/fake_peer/proposal_storage.hpp"
 #include "framework/result_fixture.hpp"
 #include "interfaces/common_objects/common_objects_factory.hpp"
+#include "logger/logger.hpp"
+#include "logger/logger_manager.hpp"
 #include "main/server_runner.hpp"
 #include "multi_sig_transactions/transport/mst_transport_grpc.hpp"
 #include "network/impl/async_grpc_client.hpp"
@@ -74,8 +76,14 @@ namespace integration_framework {
             transaction_batch_factory,
         std::shared_ptr<iroha::ordering::transport::OnDemandOsClientGrpc::
                             TransportFactoryType> proposal_factory,
-        std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache)
-        : common_objects_factory_(common_objects_factory),
+        std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache,
+        logger::LoggerManagerTreePtr log_manager)
+        : log_(log_manager->getLogger()),
+          log_manager_(std::move(log_manager)),
+          consensus_log_manager_(log_manager_->getChild("Consensus")),
+          mst_log_manager_(
+              log_manager_->getChild("MultiSignatureTransactions")),
+          common_objects_factory_(common_objects_factory),
           transaction_factory_(transaction_factory),
           transaction_batch_factory_(transaction_batch_factory),
           proposal_factory_(std::move(proposal_factory)),
@@ -87,7 +95,8 @@ namespace integration_framework {
           this_peer_(createPeer(
               common_objects_factory, getAddress(), keypair_->publicKey())),
           real_peer_(std::move(real_peer)),
-          async_call_(std::make_shared<AsyncCall>()),
+          async_call_(std::make_shared<AsyncCall>(
+              log_manager_->getChild("AsyncNetworkClient")->getLogger())),
           mst_transport_(std::make_shared<MstTransport>(
               async_call_,
               transaction_factory,
@@ -96,8 +105,12 @@ namespace integration_framework {
               tx_presence_cache,
               std::make_shared<iroha::DefaultCompleter>(
                   std::chrono::minutes(0)),
-              keypair_->publicKey())),
-          yac_transport_(std::make_shared<YacTransport>(async_call_)),
+              keypair_->publicKey(),
+              mst_log_manager_->getChild("State")->getLogger(),
+              mst_log_manager_->getChild("Transport")->getLogger())),
+          yac_transport_(std::make_shared<YacTransport>(
+              async_call_,
+              consensus_log_manager_->getChild("Transport")->getLogger())),
           mst_network_notifier_(std::make_shared<MstNetworkNotifier>()),
           yac_network_notifier_(std::make_shared<YacNetworkNotifier>()),
           os_network_notifier_(std::make_shared<OsNetworkNotifier>()),
@@ -107,10 +120,6 @@ namespace integration_framework {
                   *keypair_, common_objects_factory)) {
       mst_transport_->subscribe(mst_network_notifier_);
       yac_transport_->subscribe(yac_network_notifier_);
-      log_ = logger::log(
-          "IntegrationTestFramework "
-          "(fake peer at "
-          + getAddress() + ")");
     }
 
     FakePeer &FakePeer::initialize() {
@@ -184,7 +193,8 @@ namespace integration_framework {
       ensureInitialized();
       // start instance
       log_->info("starting listening server");
-      internal_server_ = std::make_unique<ServerRunner>(getAddress());
+      internal_server_ = std::make_unique<ServerRunner>(
+          getAddress(), log_manager_->getChild("InternalServer")->getLogger());
       internal_server_->append(yac_transport_)
           .append(mst_transport_)
           .append(od_os_transport_)

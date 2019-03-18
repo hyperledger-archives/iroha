@@ -12,6 +12,7 @@
 #include "backend/protobuf/proposal.hpp"
 #include "common/bind.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
+#include "logger/logger.hpp"
 
 using namespace iroha::ordering;
 using namespace iroha::ordering::transport;
@@ -23,7 +24,7 @@ OnDemandOsServerGrpc::OnDemandOsServerGrpc(
         batch_parser,
     std::shared_ptr<shared_model::interface::TransactionBatchFactory>
         transaction_batch_factory,
-    logger::Logger log)
+    logger::LoggerPtr log)
     : ordering_service_(ordering_service),
       transaction_factory_(std::move(transaction_factory)),
       batch_parser_(std::move(batch_parser)),
@@ -64,11 +65,9 @@ grpc::Status OnDemandOsServerGrpc::SendBatches(
     ::grpc::ServerContext *context,
     const proto::BatchesRequest *request,
     ::google::protobuf::Empty *response) {
-  consensus::Round round{request->round().block_round(),
-                         request->round().reject_round()};
   auto transactions = deserializeTransactions(request);
 
-  auto batch_candidates = batch_parser_->parseBatches(transactions);
+  auto batch_candidates = batch_parser_->parseBatches(std::move(transactions));
 
   auto batches = std::accumulate(
       std::begin(batch_candidates),
@@ -85,7 +84,7 @@ grpc::Status OnDemandOsServerGrpc::SendBatches(
         return acc;
       });
 
-  ordering_service_->onBatches(round, std::move(batches));
+  ordering_service_->onBatches(std::move(batches));
 
   return ::grpc::Status::OK;
 }
@@ -98,7 +97,7 @@ grpc::Status OnDemandOsServerGrpc::RequestProposal(
       {request->round().block_round(), request->round().reject_round()})
       | [&](auto &&proposal) {
           *response->mutable_proposal() = std::move(
-              static_cast<shared_model::proto::Proposal *>(proposal.get())
+              static_cast<const shared_model::proto::Proposal *>(proposal.get())
                   ->getTransport());
         };
   return ::grpc::Status::OK;

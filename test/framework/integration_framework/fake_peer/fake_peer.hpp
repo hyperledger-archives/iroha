@@ -14,7 +14,8 @@
 #include "framework/integration_framework/fake_peer/network/mst_message.hpp"
 #include "framework/integration_framework/fake_peer/types.hpp"
 #include "interfaces/iroha_internal/abstract_transport_factory.hpp"
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
+#include "logger/logger_manager_fwd.hpp"
 #include "network/impl/async_grpc_client.hpp"
 #include "ordering/impl/on_demand_os_client_grpc.hpp"
 
@@ -45,9 +46,9 @@ namespace integration_framework {
        * @param common_objects_factory - common_objects_factory
        * @param transaction_factory - transaction_factory
        * @param batch_parser - batch_parser
-       * @param transaction_batch_factory - transaction_batch_factory
-       * @param gree_all_proposals - whether this peer should agree all
-       * proposals
+       * @param transaction_batch_factory - transaction batch factory
+       * @param proposal_factory - proposal factory
+       * @param log_manager - log manager
        */
       FakePeer(
           const std::string &listen_ip,
@@ -63,7 +64,8 @@ namespace integration_framework {
               transaction_batch_factory,
           std::shared_ptr<iroha::ordering::transport::OnDemandOsClientGrpc::
                               TransportFactoryType> proposal_factory,
-          std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache);
+          std::shared_ptr<iroha::ametsuchi::TxPresenceCache> tx_presence_cache,
+          logger::LoggerManagerTreePtr log_manager);
 
       /// Initialization method.
       /// \attention Must be called prior to any other instance method (except
@@ -202,6 +204,11 @@ namespace integration_framework {
 
       bool initialized_{false};
 
+      logger::LoggerPtr log_;
+      logger::LoggerManagerTreePtr log_manager_;
+      logger::LoggerManagerTreePtr consensus_log_manager_;
+      logger::LoggerManagerTreePtr mst_log_manager_;
+
       std::shared_ptr<shared_model::interface::CommonObjectsFactory>
           common_objects_factory_;
       std::shared_ptr<TransportFactoryType> transaction_factory_;
@@ -242,8 +249,6 @@ namespace integration_framework {
       std::shared_ptr<Behaviour> behaviour_;
       std::shared_ptr<BlockStorage> block_storage_;
       std::shared_ptr<ProposalStorage> proposal_storage_;
-
-      logger::Logger log_;
     };
 
   }  // namespace fake_peer

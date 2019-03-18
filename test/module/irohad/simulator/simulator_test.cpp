@@ -13,6 +13,7 @@
 #include "backend/protobuf/transaction.hpp"
 #include "builders/protobuf/transaction.hpp"
 #include "datetime/time.hpp"
+#include "framework/test_logger.hpp"
 #include "framework/test_subscriber.hpp"
 #include "module/irohad/ametsuchi/mock_block_query.hpp"
 #include "module/irohad/ametsuchi/mock_block_query_factory.hpp"
@@ -70,7 +71,8 @@ class SimulatorTest : public ::testing::Test {
                                             factory,
                                             block_query_factory,
                                             crypto_signer,
-                                            std::move(block_factory));
+                                            std::move(block_factory),
+                                            getTestLogger("Simulator"));
   }
 
   consensus::Round round;
@@ -112,8 +114,9 @@ auto makeProposal(int height) {
                       .createdTime(iroha::time::now())
                       .transactions(txs)
                       .build();
-  return std::shared_ptr<shared_model::interface::Proposal>(
-      std::make_shared<shared_model::proto::Proposal>(std::move(proposal)));
+  return std::shared_ptr<const shared_model::interface::Proposal>(
+      std::make_shared<const shared_model::proto::Proposal>(
+          std::move(proposal)));
 }
 
 auto makeTx() {

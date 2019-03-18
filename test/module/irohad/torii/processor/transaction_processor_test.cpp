@@ -6,11 +6,13 @@
 #include "torii/processor/transaction_processor_impl.hpp"
 
 #include <backend/protobuf/proto_tx_status_factory.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/join.hpp>
 #include <boost/variant.hpp>
 #include "builders/default_builders.hpp"
 #include "builders/protobuf/transaction.hpp"
 #include "framework/batch_helper.hpp"
+#include "framework/test_logger.hpp"
 #include "framework/test_subscriber.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/iroha_internal/transaction_sequence_factory.hpp"
@@ -39,10 +41,8 @@ class TransactionProcessorTest : public ::testing::Test {
  public:
   void SetUp() override {
     pcs = std::make_shared<MockPeerCommunicationService>();
-    mst = std::make_shared<MockMstProcessor>();
+    mst = std::make_shared<MockMstProcessor>(getTestLogger("MstProcessor"));
 
-    EXPECT_CALL(*pcs, on_commit())
-        .WillRepeatedly(Return(commit_notifier.get_observable()));
     EXPECT_CALL(*pcs, onVerifiedProposal())
         .WillRepeatedly(Return(verified_prop_notifier.get_observable()));
 
@@ -58,7 +58,9 @@ class TransactionProcessorTest : public ::testing::Test {
         pcs,
         mst,
         status_bus,
-        std::make_shared<shared_model::proto::ProtoTxStatusFactory>());
+        std::make_shared<shared_model::proto::ProtoTxStatusFactory>(),
+        commit_notifier.get_observable(),
+        getTestLogger("TransactionProcessor"));
   }
 
   auto base_tx() {
@@ -122,6 +124,10 @@ class TransactionProcessorTest : public ::testing::Test {
       mst_update_notifier;
   rxcpp::subjects::subject<iroha::DataType> mst_prepared_notifier;
   rxcpp::subjects::subject<iroha::DataType> mst_expired_notifier;
+  rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
+      commit_notifier;
+  rxcpp::subjects::subject<simulator::VerifiedProposalCreatorEvent>
+      verified_prop_notifier;
 
   std::shared_ptr<MockPeerCommunicationService> pcs;
   std::shared_ptr<MockStatusBus> status_bus;
@@ -132,10 +138,6 @@ class TransactionProcessorTest : public ::testing::Test {
   shared_model::builder::TransactionStatusBuilder<
       shared_model::proto::TransactionStatusBuilder>
       status_builder;
-
-  rxcpp::subjects::subject<SynchronizationEvent> commit_notifier;
-  rxcpp::subjects::subject<simulator::VerifiedProposalCreatorEvent>
-      verified_prop_notifier;
 
   consensus::Round round;
   const size_t proposal_size = 5;
@@ -233,10 +235,10 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnProposalBatchTest) {
 /**
  * @given transaction processor
  * @when transactions compose proposal which is sent to peer
- * communication service @and all transactions composed the block
- * @then for every transaction in bathces STATEFUL_VALID status is returned
+ * communication service
+ * @then for every transaction in batches STATEFUL_VALID status is returned
  */
-TEST_F(TransactionProcessorTest, TransactionProcessorBlockCreatedTest) {
+TEST_F(TransactionProcessorTest, TransactionProcessorVerifiedProposalTest) {
   std::vector<shared_model::proto::Transaction> txs;
   for (size_t i = 0; i < proposal_size; i++) {
     auto &&tx = addSignaturesFromKeyPairs(baseTestTx(), makeKey());
@@ -267,23 +269,6 @@ TEST_F(TransactionProcessorTest, TransactionProcessorBlockCreatedTest) {
   // empty transactions errors - all txs are valid
   verified_prop_notifier.get_subscriber().on_next(
       simulator::VerifiedProposalCreatorEvent{validation_result, round});
-
-  auto block = TestBlockBuilder().transactions(txs).build();
-
-  // 2. Create block and notify transaction processor about it
-  rxcpp::subjects::subject<std::shared_ptr<shared_model::interface::Block>>
-      blocks_notifier;
-
-  commit_notifier.get_subscriber().on_next(
-      SynchronizationEvent{blocks_notifier.get_observable(),
-                           SynchronizationOutcomeType::kCommit,
-                           {},
-                           {}});
-
-  blocks_notifier.get_subscriber().on_next(
-      std::shared_ptr<shared_model::interface::Block>(clone(block)));
-  // Note blocks_notifier hasn't invoked on_completed, so
-  // transactions are not commited
 
   SCOPED_TRACE("Stateful Valid status verification");
   validateStatuses<shared_model::interface::StatefulValidTxResponse>(txs);
@@ -331,13 +316,8 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnCommitTest) {
   auto block = TestBlockBuilder().transactions(txs).build();
 
   // 2. Create block and notify transaction processor about it
-  SynchronizationEvent commit_event{
-      rxcpp::observable<>::just(
-          std::shared_ptr<shared_model::interface::Block>(clone(block))),
-      SynchronizationOutcomeType::kCommit,
-      {},
-      {}};
-  commit_notifier.get_subscriber().on_next(commit_event);
+  commit_notifier.get_subscriber().on_next(
+      std::shared_ptr<shared_model::interface::Block>(clone(block)));
 
   SCOPED_TRACE("Committed status verification");
   validateStatuses<shared_model::interface::CommittedTxResponse>(txs);
@@ -349,8 +329,8 @@ TEST_F(TransactionProcessorTest, TransactionProcessorOnCommitTest) {
  * communication service @and some transactions became part of block, while some
  * were not committed, failing stateful validation
  * @then for every transaction from block COMMIT status is returned @and
- * for every transaction, which failed stateful validation,
- * STATEFUL_INVALID_STATUS status is returned
+ * for every transaction, which failed stateful validation, REJECTED status is
+ * returned
  */
 TEST_F(TransactionProcessorTest, TransactionProcessorInvalidTxsTest) {
   std::vector<shared_model::proto::Transaction> block_txs;
@@ -377,8 +357,9 @@ TEST_F(TransactionProcessorTest, TransactionProcessorInvalidTxsTest) {
   // passed or not stateful validation)
   // Plus all transactions from block will
   // be committed and corresponding status will be sent
+  // Rejected statuses will be published for invalid transactions
   EXPECT_CALL(*status_bus, publish(_))
-      .Times(proposal_size + block_size)
+      .Times(proposal_size + block_size + invalid_txs.size())
       .WillRepeatedly(testing::Invoke([this](auto response) {
         status_map[response->transactionHash()] = response;
       }));
@@ -403,21 +384,28 @@ TEST_F(TransactionProcessorTest, TransactionProcessorInvalidTxsTest) {
   verified_prop_notifier.get_subscriber().on_next(
       simulator::VerifiedProposalCreatorEvent{validation_result, round});
 
-  auto block = TestBlockBuilder().transactions(block_txs).build();
-
-  SynchronizationEvent commit_event{
-      rxcpp::observable<>::just(
-          std::shared_ptr<shared_model::interface::Block>(clone(block))),
-      SynchronizationOutcomeType::kCommit,
-      {},
-      {}};
-  commit_notifier.get_subscriber().on_next(commit_event);
-
   {
     SCOPED_TRACE("Stateful invalid status verification");
     // check that all invalid transactions will have stateful invalid status
     validateStatuses<shared_model::interface::StatefulFailedTxResponse>(
         invalid_txs);
+  }
+
+  auto block = TestBlockBuilder()
+                   .transactions(block_txs)
+                   .rejectedTransactions(
+                       invalid_txs | boost::adaptors::transformed([](auto &tx) {
+                         return tx.hash();
+                       }))
+                   .build();
+
+  commit_notifier.get_subscriber().on_next(
+      std::shared_ptr<shared_model::interface::Block>(clone(block)));
+
+  {
+    SCOPED_TRACE("Rejected status verification");
+    // check that all invalid transactions will have rejected status
+    validateStatuses<shared_model::interface::RejectedTxResponse>(invalid_txs);
   }
   {
     SCOPED_TRACE("Committed status verification");

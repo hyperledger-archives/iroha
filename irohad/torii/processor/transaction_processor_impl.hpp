@@ -14,7 +14,7 @@
 #include "interfaces/common_objects/transaction_sequence_common.hpp"
 #include "interfaces/iroha_internal/tx_status_factory.hpp"
 #include "interfaces/transaction_responses/tx_response.hpp"
-#include "logger/logger.hpp"
+#include "logger/logger_fwd.hpp"
 #include "multi_sig_transactions/mst_processor.hpp"
 #include "network/peer_communication_service.hpp"
 #include "torii/status_bus.hpp"
@@ -28,6 +28,7 @@ namespace iroha {
        * @param mst_processor is a handler for multisignature transactions
        * @param status_bus is a common notifier for tx statuses
        * @param status_factory creates transaction statuses
+       * @param commits - an observable on committed blocks
        * @param log to print the progress
        */
       TransactionProcessorImpl(
@@ -36,7 +37,9 @@ namespace iroha {
           std::shared_ptr<iroha::torii::StatusBus> status_bus,
           std::shared_ptr<shared_model::interface::TxStatusFactory>
               status_factory,
-          logger::Logger log = logger::log("TxProcessor"));
+          rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
+              commits,
+          logger::LoggerPtr log);
 
       void batchHandle(
           std::shared_ptr<shared_model::interface::TransactionBatch>
@@ -62,11 +65,7 @@ namespace iroha {
       // creates transaction status
       std::shared_ptr<shared_model::interface::TxStatusFactory> status_factory_;
 
-      logger::Logger log_;
-
-      /// prevents from emitting new tx statuses from different threads
-      /// in parallel
-      std::mutex notifier_mutex_;
+      logger::LoggerPtr log_;
 
       // TODO: [IR-1665] Akvinikym 29.08.18: Refactor method publishStatus(..)
       /**
@@ -77,6 +76,7 @@ namespace iroha {
         kStatelessValid,
         kStatefulFailed,
         kStatefulValid,
+        kRejected,
         kCommitted,
         kMstExpired,
         kNotReceived,

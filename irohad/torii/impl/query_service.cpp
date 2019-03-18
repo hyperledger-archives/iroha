@@ -9,6 +9,7 @@
 #include "backend/protobuf/query_responses/proto_query_response.hpp"
 #include "cryptography/default_hash_provider.hpp"
 #include "interfaces/iroha_internal/abstract_transport_factory.hpp"
+#include "logger/logger.hpp"
 #include "validators/default_validator.hpp"
 
 namespace iroha {
@@ -17,7 +18,7 @@ namespace iroha {
     QueryService::QueryService(
         std::shared_ptr<iroha::torii::QueryProcessor> query_processor,
         std::shared_ptr<QueryFactoryType> query_factory,
-        logger::Logger log)
+      logger::LoggerPtr log)
         : query_processor_{std::move(query_processor)},
           query_factory_{std::move(query_factory)},
           log_{std::move(log)} {}
@@ -43,7 +44,9 @@ namespace iroha {
             response = static_cast<shared_model::proto::QueryResponse &>(
                            *query_processor_->queryHandle(*query.value))
                            .getTransport();
-            cache_.addItem(hash, response);
+            // TODO 18.02.2019 lebdron: IR-336 Replace cache
+            // 0 is used as a dummy value
+            cache_.addItem(hash, 0);
           },
           [&hash, &response](
               const iroha::expected::Error<QueryFactoryType::Error> &error) {

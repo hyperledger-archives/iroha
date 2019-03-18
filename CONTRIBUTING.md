@@ -1,6 +1,4 @@
-# Contributing guidelines
-
-:star::tada: First off, thanks for taking the time to contribute! :tada::star:
+First off, thanks for taking the time to contribute!
 
 The following is a short set of guidelines for contributing to Iroha.
 
@@ -87,6 +85,8 @@ Read our [C++ Style Guide](#c-style-guide) and start with beginner-friendly issu
 - Follow the [Git Style Guide](#git-style-guide)
 
 - **Document new code** based on the [Documentation Styleguide](#documentation-styleguide)
+
+- When working with **PRs from forks** check [this manual](https://help.github.com/articles/checking-out-pull-requests-locally)
 
 
 ## Styleguides

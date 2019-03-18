@@ -1,26 +1,12 @@
 /**
- * Copyright Soramitsu Co., Ltd. 2018 All Rights Reserved.
- * http://soramitsu.co.jp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright Soramitsu Co., Ltd. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 #ifndef IROHA_CONSENSUS_INIT_HPP
 #define IROHA_CONSENSUS_INIT_HPP
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "ametsuchi/peer_query_factory.hpp"
 #include "consensus/consensus_block_cache.hpp"
@@ -33,7 +19,9 @@
 #include "consensus/yac/yac_peer_orderer.hpp"
 #include "cryptography/keypair.hpp"
 #include "interfaces/common_objects/common_objects_factory.hpp"
+#include "logger/logger_manager_fwd.hpp"
 #include "network/block_loader.hpp"
+#include "network/impl/async_grpc_client.hpp"
 #include "simulator/block_creator.hpp"
 
 namespace iroha {
@@ -41,34 +29,6 @@ namespace iroha {
     namespace yac {
 
       class YacInit {
-       private:
-        // ----------| Yac dependencies |----------
-
-        auto createPeerOrderer(
-            std::shared_ptr<ametsuchi::PeerQueryFactory> peer_query_factory);
-
-        auto createNetwork(std::shared_ptr<iroha::network::AsyncGrpcClient<
-                               google::protobuf::Empty>> async_call);
-
-        auto createCryptoProvider(
-            const shared_model::crypto::Keypair &keypair,
-            std::shared_ptr<shared_model::interface::CommonObjectsFactory>
-                common_objects_factory);
-
-        auto createTimer(std::chrono::milliseconds delay_milliseconds);
-
-        auto createHashProvider();
-
-        std::shared_ptr<consensus::yac::Yac> createYac(
-            ClusterOrdering initial_order,
-            const shared_model::crypto::Keypair &keypair,
-            std::chrono::milliseconds delay_milliseconds,
-            std::shared_ptr<
-                iroha::network::AsyncGrpcClient<google::protobuf::Empty>>
-                async_call,
-            std::shared_ptr<shared_model::interface::CommonObjectsFactory>
-                common_objects_factory);
-
        public:
         std::shared_ptr<YacGate> initConsensusGate(
             std::shared_ptr<ametsuchi::PeerQueryFactory> peer_query_factory,
@@ -81,9 +41,25 @@ namespace iroha {
                 iroha::network::AsyncGrpcClient<google::protobuf::Empty>>
                 async_call,
             std::shared_ptr<shared_model::interface::CommonObjectsFactory>
-                common_objects_factory);
+                common_objects_factory,
+            ConsistencyModel consistency_model,
+            const logger::LoggerManagerTreePtr &consensus_log_manager);
 
-        std::shared_ptr<NetworkImpl> consensus_network;
+        std::shared_ptr<NetworkImpl> getConsensusNetwork() const;
+
+       private:
+        auto createTimer(std::chrono::milliseconds delay_milliseconds);
+
+        // coordinator has a worker, and a factory for coordinated
+        // observables, subscribers and schedulable functions.
+        //
+        // A new thread scheduler is created
+        // by calling .create_coordinator().get_scheduler()
+        rxcpp::observe_on_one_worker coordination_{
+            rxcpp::observe_on_new_thread()};
+
+        bool initialized_{false};
+        std::shared_ptr<NetworkImpl> consensus_network_;
       };
     }  // namespace yac
   }    // namespace consensus
