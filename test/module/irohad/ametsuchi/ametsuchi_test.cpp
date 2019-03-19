@@ -518,31 +518,31 @@ TEST_F(AmetsuchiTest, TestRestoreWSV) {
  * @then the effect of transactions in the committed block can be verified with
  * queries
  */
-TEST_F(AmetsuchiTest, TestingWSVAfterCommitBlock) {
+TEST_F(AmetsuchiTest, TestingWsvAfterCommitBlock) {
   ASSERT_TRUE(storage);
 
   shared_model::crypto::Keypair key{
       shared_model::crypto::DefaultCryptoAlgorithmType::generateKeypair()};
 
   auto genesis_tx = shared_model::proto::TransactionBuilder()
-                   .creatorAccountId("admin@test")
-                   .createdTime(iroha::time::now())
-                   .quorum(1)
-                   .createRole("admin",
-                               {Role::kCreateDomain,
-                                Role::kCreateAccount,
-                                Role::kAddAssetQty,
-                                Role::kAddPeer,
-                                Role::kReceive,
-                                Role::kTransfer})
-                   .createDomain("test", "admin")
-                   .createAccount("admin", "test", key.publicKey())
-                   .createAccount("receiver", "test", key.publicKey())
-                   .createAsset("coin", "test", 2)
-                   .addAssetQuantity("coin#test", "20.00")
-                   .build()
-                   .signAndAddSignature(key)
-                   .finish();
+                        .creatorAccountId("admin@test")
+                        .createdTime(iroha::time::now())
+                        .quorum(1)
+                        .createRole("admin",
+                                    {Role::kCreateDomain,
+                                     Role::kCreateAccount,
+                                     Role::kAddAssetQty,
+                                     Role::kAddPeer,
+                                     Role::kReceive,
+                                     Role::kTransfer})
+                        .createDomain("test", "admin")
+                        .createAccount("admin", "test", key.publicKey())
+                        .createAccount("receiver", "test", key.publicKey())
+                        .createAsset("coin", "test", 2)
+                        .addAssetQuantity("coin#test", "20.00")
+                        .build()
+                        .signAndAddSignature(key)
+                        .finish();
   auto genesis_block =
       TestBlockBuilder()
           .transactions(
@@ -554,15 +554,16 @@ TEST_F(AmetsuchiTest, TestingWSVAfterCommitBlock) {
           .build();
   apply(storage, genesis_block);
 
-  // std::vector<shared_model::proto::Transaction> txs;
-  auto add_ast_tx = shared_model::proto::TransactionBuilder()
-                        .creatorAccountId("admin@test")
-                        .createdTime(iroha::time::now())
-                        .quorum(1)
-                        .transferAsset("admin@test", "receiver@test", "coin#test", "deal", "10.00")
-                        .build()
-                        .signAndAddSignature(key)
-                        .finish();
+  auto add_ast_tx =
+      shared_model::proto::TransactionBuilder()
+          .creatorAccountId("admin@test")
+          .createdTime(iroha::time::now())
+          .quorum(1)
+          .transferAsset(
+              "admin@test", "receiver@test", "coin#test", "deal", "10.00")
+          .build()
+          .signAndAddSignature(key)
+          .finish();
 
   auto expected_block =
       TestBlockBuilder()
@@ -572,15 +573,14 @@ TEST_F(AmetsuchiTest, TestingWSVAfterCommitBlock) {
           .prevHash(genesis_block.hash())
           .createdTime(iroha::time::now())
           .build();
-  // auto expected_block =
-  // TestBlockBuilder().transactions(txs).height(1).build();
 
   static auto wrapper =
       make_test_subscriber<CallExact>(storage->on_commit(), 1);
   wrapper.subscribe([&](const auto &block) {
     ASSERT_EQ(*block, expected_block);
     shared_model::interface::Amount resultingAmount("10.00");
-    validateAccountAsset(sql_query, "receiver@test", "coin#test", resultingAmount);
+    validateAccountAsset(
+        sql_query, "receiver@test", "coin#test", resultingAmount);
   });
 
   apply(storage, expected_block);
