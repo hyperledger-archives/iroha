@@ -194,7 +194,8 @@ namespace iroha {
               log_manager_->getChild("QueryExecutor")));
     }
 
-    bool StorageImpl::insertBlock(const shared_model::interface::Block &block) {
+    bool StorageImpl::insertBlock(
+        std::shared_ptr<const shared_model::interface::Block> block) {
       log_->info("create mutable storage");
       auto storageResult = createMutableStorage();
       bool inserted = false;
@@ -222,7 +223,7 @@ namespace iroha {
           [&](iroha::expected::Value<std::unique_ptr<MutableStorage>>
                   &mutableStorage) {
             std::for_each(blocks.begin(), blocks.end(), [&](auto block) {
-              inserted &= mutableStorage.value->apply(*block);
+              inserted &= mutableStorage.value->apply(block);
             });
             commit(std::move(mutableStorage.value));
           },
@@ -431,7 +432,7 @@ namespace iroha {
         storage->committed = true;
 
         storage->block_storage_->forEach(
-            [this](const auto &block) { this->storeBlock(*block); });
+            [this](const auto &block) { this->storeBlock(block); });
 
         return PostgresWsvQuery(*(storage->sql_),
                                 factory_,
@@ -450,7 +451,7 @@ namespace iroha {
     }
 
     boost::optional<std::unique_ptr<LedgerState>> StorageImpl::commitPrepared(
-        const shared_model::interface::Block &block) {
+        std::shared_ptr<const shared_model::interface::Block> block) {
       if (not prepared_blocks_enabled_) {
         log_->warn("prepared blocks are not enabled");
         return boost::none;
@@ -472,7 +473,7 @@ namespace iroha {
         sql << "COMMIT PREPARED '" + prepared_block_name_ + "';";
         PostgresBlockIndex block_index(
             sql, log_manager_->getChild("BlockIndex")->getLogger());
-        block_index.index(block);
+        block_index.index(*block);
         block_is_prepared = false;
         return PostgresWsvQuery(sql,
                                 factory_,
@@ -489,7 +490,7 @@ namespace iroha {
         };
       } catch (const std::exception &e) {
         log_->warn("failed to apply prepared block {}: {}",
-                   block.hash().hex(),
+                   block->hash().hex(),
                    e.what());
         return boost::none;
       }
@@ -520,7 +521,7 @@ namespace iroha {
           log_manager_->getChild("PostgresBlockQuery")->getLogger());
     }
 
-    rxcpp::observable<std::shared_ptr<shared_model::interface::Block>>
+    rxcpp::observable<std::shared_ptr<const shared_model::interface::Block>>
     StorageImpl::on_commit() {
       return notifier_.get_observable();
     }
@@ -557,12 +558,13 @@ namespace iroha {
       }
     }
 
-    bool StorageImpl::storeBlock(const shared_model::interface::Block &block) {
-      auto json_result = converter_->serialize(block);
+    bool StorageImpl::storeBlock(
+        std::shared_ptr<const shared_model::interface::Block> block) {
+      auto json_result = converter_->serialize(*block);
       return json_result.match(
           [this, &block](const expected::Value<std::string> &v) {
-            block_store_->add(block.height(), stringToBytes(v.value));
-            notifier_.get_subscriber().on_next(clone(block));
+            block_store_->add(block->height(), stringToBytes(v.value));
+            notifier_.get_subscriber().on_next(block);
             return true;
           },
           [this](const expected::Error<std::string> &e) {
