@@ -62,6 +62,8 @@ namespace shared_model {
         return SignatureSetType<proto::Signature>(signatures.begin(),
                                                   signatures.end());
       }()};
+
+      interface::types::HashType hash_ = makeHash(payload_blob_);
     };  // namespace proto
 
     Transaction::Transaction(const TransportType &transaction) {
@@ -140,6 +142,10 @@ namespace shared_model {
       }();
 
       return true;
+    }
+
+    const interface::types::HashType &Transaction::hash() const {
+      return impl_->hash_;
     }
 
     const Transaction::TransportType &Transaction::getTransport() const {
