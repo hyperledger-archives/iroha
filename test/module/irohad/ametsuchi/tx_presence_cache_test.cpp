@@ -121,10 +121,13 @@ TEST_F(TxPresenceCacheTest, BatchHashTest) {
           tx_cache_status_responses::Missing(hash3))));
   auto tx1 = std::make_shared<MockTransaction>();
   EXPECT_CALL(*tx1, hash()).WillOnce(ReturnRefOfCopy(hash1));
+  EXPECT_CALL(*tx1, reducedHash()).WillOnce(ReturnRefOfCopy(hash1));
   auto tx2 = std::make_shared<MockTransaction>();
   EXPECT_CALL(*tx2, hash()).WillOnce(ReturnRefOfCopy(hash2));
+  EXPECT_CALL(*tx2, reducedHash()).WillOnce(ReturnRefOfCopy(hash2));
   auto tx3 = std::make_shared<MockTransaction>();
   EXPECT_CALL(*tx3, hash()).WillOnce(ReturnRefOfCopy(hash3));
+  EXPECT_CALL(*tx3, reducedHash()).WillOnce(ReturnRefOfCopy(hash3));
 
   shared_model::interface::types::SharedTxsCollectionType txs{tx1, tx2, tx3};
   TxPresenceCacheImpl cache(mock_storage);

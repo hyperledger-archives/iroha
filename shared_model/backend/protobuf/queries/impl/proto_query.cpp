@@ -75,7 +75,7 @@ namespace shared_model {
         return set;
       }()};
 
-      interface::types::HashType hash_ = makeHash(blob_);
+      interface::types::HashType hash_ = makeHash(payload_);
     };
 
     Query::Query(const Query &o) : Query(o.impl_->proto_) {}

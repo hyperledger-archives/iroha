@@ -53,6 +53,9 @@ class ChainValidationTest : public ::testing::Test {
         .WillRepeatedly(Return(signatures | boost::adaptors::indirected));
     EXPECT_CALL(*block, payload())
         .WillRepeatedly(ReturnRefOfCopy(shared_model::crypto::Blob{"blob"}));
+    EXPECT_CALL(*block, hash())
+        .WillRepeatedly(
+            testing::ReturnRefOfCopy(shared_model::crypto::Hash("hash")));
   }
 
   std::shared_ptr<iroha::consensus::yac::MockSupermajorityChecker>

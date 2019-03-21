@@ -59,6 +59,8 @@ class YacGateTest : public ::testing::Test {
     auto prev_hash = Hash("prev hash");
     EXPECT_CALL(*block, prevHash())
         .WillRepeatedly(testing::ReturnRefOfCopy(prev_hash));
+    EXPECT_CALL(*block, hash())
+        .WillRepeatedly(testing::ReturnRefOfCopy(prev_hash));
     expected_block = block;
 
     auto signature = std::make_shared<MockSignature>();
