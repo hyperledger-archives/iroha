@@ -41,6 +41,7 @@ struct MockBlock : public shared_model::interface::Block {
   MOCK_METHOD2(addSignature,
                bool(const shared_model::crypto::Signed &,
                     const shared_model::crypto::PublicKey &));
+  MOCK_CONST_METHOD0(hash, const shared_model::interface::types::HashType &());
   MOCK_CONST_METHOD0(clone, MockBlock *());
 };
 
