@@ -39,10 +39,6 @@ bool FlatFileBlockStorage::insert(
       });
 }
 
-bool FlatFileBlockStorage::insert(const shared_model::interface::Block &block) {
-  return insert(clone(block));
-}
-
 boost::optional<std::shared_ptr<const shared_model::interface::Block>>
 FlatFileBlockStorage::fetch(
     shared_model::interface::types::HeightType height) const {
