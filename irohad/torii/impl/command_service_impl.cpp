@@ -36,7 +36,8 @@ namespace iroha {
           log_(std::move(log)) {
       // Notifier for all clients
       status_subscription_ = status_bus_->statuses().subscribe(
-          // TODO mboldyrev IR-426 capture this, wait termination in destructor
+          // TODO mboldyrev IR-426 research approaches to the problem of member
+          // observer lifetime.
           [cache = cache_](auto response) {
             // find response for this tx in cache; if status of received
             // response isn't "greater" than cached one, dismiss received one
