@@ -19,6 +19,7 @@
 #include "ordering.grpc.pb.h"
 #include "ordering/impl/on_demand_os_server_grpc.hpp"
 #include "ordering/impl/ordering_gate_cache/ordering_gate_cache.hpp"
+#include "ordering/impl/ordering_gate_cache/ordering_gate_resend_strategy.hpp"
 #include "ordering/on_demand_ordering_service.hpp"
 #include "ordering/on_demand_os_transport.hpp"
 
@@ -57,6 +58,8 @@ namespace iroha {
           std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
               async_call,
           std::shared_ptr<TransportFactoryType> proposal_transport_factory,
+          std::shared_ptr<ordering::OrderingGateResendStrategy>
+              batch_resend_strategy,
           std::chrono::milliseconds delay,
           std::vector<shared_model::interface::types::HashType> initial_hashes,
           const logger::LoggerManagerTreePtr &ordering_log_manager);
@@ -72,6 +75,8 @@ namespace iroha {
           std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
               proposal_factory,
           std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+          std::shared_ptr<ordering::OrderingGateResendStrategy>
+              batch_resend_strategy,
           std::function<std::chrono::milliseconds(
               const synchronizer::SynchronizationEvent &)> delay_func,
           size_t max_number_of_transactions,
@@ -94,11 +99,11 @@ namespace iroha {
       OnDemandOrderingInit(logger::LoggerPtr log);
 
       ~OnDemandOrderingInit();
-
       /**
        * Initializes on-demand ordering gate and ordering sevice components
        *
-       * @param max_number_of_transactions maximum number of transaction in a proposal
+       * @param max_number_of_transactions maximum number of transaction in a
+       * proposal
        * @param delay timeout for ordering service response on proposal request
        * @param initial_hashes seeds for peer list permutations for first k
        * rounds they are required since hash of block i defines round i + k
@@ -134,6 +139,8 @@ namespace iroha {
               proposal_factory,
           std::shared_ptr<TransportFactoryType> proposal_transport_factory,
           std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+          std::shared_ptr<ordering::OrderingGateResendStrategy>
+              batch_resend_strategy,
           std::function<std::chrono::milliseconds(
               const synchronizer::SynchronizationEvent &)> delay_func,
           logger::LoggerManagerTreePtr ordering_log_manager);

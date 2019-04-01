@@ -37,6 +37,7 @@
 #include "network/impl/peer_communication_service_impl.hpp"
 #include "ordering/impl/on_demand_common.hpp"
 #include "ordering/impl/on_demand_ordering_gate.hpp"
+#include "ordering/impl/ordering_gate_cache/on_demand_resend_strategy.hpp"
 #include "pending_txs_storage/impl/pending_txs_storage_impl.hpp"
 #include "simulator/impl/simulator.hpp"
 #include "synchronizer/impl/synchronizer_impl.hpp"
@@ -347,6 +348,9 @@ void Irohad::initOrderingGate() {
   auto factory = std::make_unique<shared_model::proto::ProtoProposalFactory<
       shared_model::validation::DefaultProposalValidator>>();
 
+  auto batch_resend_strategy =
+      std::make_shared<ordering::OnDemandResendStrategy>();
+
   const uint64_t kCounter = 0, kMaxLocalCounter = 2;
   // reject_delay and local_counter are local mutable variables of lambda
   const auto kMaxDelay(max_rounds_delay_);
@@ -386,6 +390,7 @@ void Irohad::initOrderingGate() {
                                      std::move(factory),
                                      proposal_factory,
                                      persistent_cache,
+                                     std::move(batch_resend_strategy),
                                      delay,
                                      log_manager_->getChild("Ordering"));
   log_->info("[Init] => init ordering gate - [{}]",

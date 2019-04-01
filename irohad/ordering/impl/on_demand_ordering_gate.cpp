@@ -42,6 +42,7 @@ OnDemandOrderingGate::OnDemandOrderingGate(
     std::shared_ptr<cache::OrderingGateCache> cache,
     std::shared_ptr<shared_model::interface::UnsafeProposalFactory> factory,
     std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+    std::shared_ptr<OrderingGateResendStrategy> batch_resend_strategy,
     size_t transaction_limit,
     logger::LoggerPtr log)
     : log_(std::move(log)),
@@ -60,6 +61,8 @@ OnDemandOrderingGate::OnDemandOrderingGate(
 
         this->sendCachedTransactions(event);
 
+        batch_resend_strategy_->setCurrentRound(current_round);
+
         // request proposal for the current round
         auto proposal = this->processProposalRequest(
             network_client_->onRequestProposal(current_round));
@@ -69,7 +72,8 @@ OnDemandOrderingGate::OnDemandOrderingGate(
       })),
       cache_(std::move(cache)),
       proposal_factory_(std::move(factory)),
-      tx_cache_(std::move(tx_cache)) {}
+      tx_cache_(std::move(tx_cache)),
+      batch_resend_strategy_(std::move(batch_resend_strategy)) {}
 
 OnDemandOrderingGate::~OnDemandOrderingGate() {
   events_subscription_.unsubscribe();
@@ -78,6 +82,8 @@ OnDemandOrderingGate::~OnDemandOrderingGate() {
 void OnDemandOrderingGate::propagateBatch(
     std::shared_ptr<shared_model::interface::TransactionBatch> batch) {
   cache_->addToBack({batch});
+
+  batch_resend_strategy_->feed(batch);
 
   network_client_->onBatches(
       transport::OdOsNotification::CollectionType{batch});
@@ -109,6 +115,7 @@ void OnDemandOrderingGate::sendCachedTransactions(
                  [this](const BlockEvent &block_event) {
                    // block committed, remove transactions from cache
                    cache_->remove(block_event.hashes);
+                   batch_resend_strategy_->remove(block_event.hashes);
                  },
                  [](const EmptyEvent &) {
                    // no blocks committed, no transactions to remove
@@ -116,6 +123,10 @@ void OnDemandOrderingGate::sendCachedTransactions(
 
   auto batches = cache_->pop();
   cache_->addToBack(batches);
+
+  for (const auto &batch : batches) {
+    batch_resend_strategy_->readyToUse(batch);
+  }
 
   // get only transactions which fit to next proposal
   auto end_iterator = batches.begin();

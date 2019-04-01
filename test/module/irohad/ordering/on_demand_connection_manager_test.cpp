@@ -33,6 +33,7 @@ ACTION_P(CreateAndSave, var) {
 struct OnDemandConnectionManagerTest : public ::testing::Test {
   void SetUp() override {
     factory = std::make_shared<MockOdOsNotificationFactory>();
+    strategy = std::make_shared<MockOrderingGateResendStrategy>();
 
     auto set = [this](auto &field, auto &ptr) {
       field = std::make_shared<MockPeer>();
@@ -49,6 +50,7 @@ struct OnDemandConnectionManagerTest : public ::testing::Test {
         factory,
         peers.get_observable(),
         cpeers,
+        strategy,
         getTestLogger("OsConnectionManager"));
   }
 
@@ -58,6 +60,7 @@ struct OnDemandConnectionManagerTest : public ::testing::Test {
 
   rxcpp::subjects::subject<OnDemandConnectionManager::CurrentPeers> peers;
   std::shared_ptr<MockOdOsNotificationFactory> factory;
+  std::shared_ptr<MockOrderingGateResendStrategy> strategy;
   std::shared_ptr<OnDemandConnectionManager> manager;
 };
 

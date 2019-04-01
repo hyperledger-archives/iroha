@@ -12,6 +12,7 @@
 
 #include <rxcpp/rx.hpp>
 #include "logger/logger_fwd.hpp"
+#include "ordering/impl/ordering_gate_cache/ordering_gate_resend_strategy.hpp"
 
 namespace iroha {
   namespace ordering {
@@ -53,12 +54,14 @@ namespace iroha {
       OnDemandConnectionManager(
           std::shared_ptr<transport::OdOsNotificationFactory> factory,
           rxcpp::observable<CurrentPeers> peers,
+          std::shared_ptr<OrderingGateResendStrategy> batch_resend_strategy,
           logger::LoggerPtr log);
 
       OnDemandConnectionManager(
           std::shared_ptr<transport::OdOsNotificationFactory> factory,
           rxcpp::observable<CurrentPeers> peers,
           CurrentPeers initial_peers,
+          std::shared_ptr<OrderingGateResendStrategy> batch_resend_strategy,
           logger::LoggerPtr log);
 
       ~OnDemandConnectionManager() override;
@@ -85,6 +88,7 @@ namespace iroha {
 
       logger::LoggerPtr log_;
       std::shared_ptr<transport::OdOsNotificationFactory> factory_;
+      std::shared_ptr<OrderingGateResendStrategy> batch_resend_strategy_;
       rxcpp::composite_subscription subscription_;
 
       CurrentConnections connections_;
