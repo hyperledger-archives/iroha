@@ -24,6 +24,7 @@ TEST(OnDemandResendStrategyTest, Feed) {
   OnDemandResendStrategy strategy;
   shared_model::interface::types::HashType hash("hash");
   auto batch = createMockBatchWithHash(hash);
+  EXPECT_CALL(*batch, Equals(_)).Times(1).WillRepeatedly(Return(true));
   ASSERT_TRUE(strategy.feed(batch));
   ASSERT_FALSE(strategy.feed(batch));
 }

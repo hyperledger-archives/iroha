@@ -24,10 +24,7 @@ bool OnDemandResendStrategy::feed(
 bool OnDemandResendStrategy::readyToUse(
     std::shared_ptr<shared_model::interface::TransactionBatch> batch) {
   std::shared_lock<std::shared_timed_mutex> lock(access_mutex_);
-  auto batch_found = std::find_if(
-      sent_batches_.begin(), sent_batches_.end(), [&batch](auto saved_batch) {
-        return *(saved_batch.first) == *batch;
-      });
+  auto batch_found = sent_batches_.find(batch);
   if (batch_found != sent_batches_.end()) {
     batch_found->second.second = true;
     return true;
@@ -44,10 +41,7 @@ OnDemandResendStrategy::RoundSetType OnDemandResendStrategy::extract(
       nextRejectRound(nextCommitRound(current_round_)),
       nextRejectRound(nextRejectRound(current_round_))};
 
-  auto saved_round_iterator = std::find_if(
-      sent_batches_.begin(), sent_batches_.end(), [&batch](auto saved_batch) {
-        return *(saved_batch.first) == *batch;
-      });
+  auto saved_round_iterator = sent_batches_.find(batch);
   if (saved_round_iterator == sent_batches_.end()) {
     return valid_rounds;
   }
@@ -67,9 +61,7 @@ OnDemandResendStrategy::RoundSetType OnDemandResendStrategy::extract(
     valid_rounds.erase(nextRejectRound(nextCommitRound(current_round_)));
     valid_rounds.erase(nextCommitRound(nextCommitRound(current_round_)));
   } else {
-    BOOST_ASSERT_MSG(
-        false,
-        "Current round can't be reached after 2 rounds from the saved one");
+    // do nothing
   }
 
   saved_round_iterator->second.first = current_round_;

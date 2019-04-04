@@ -35,7 +35,9 @@ namespace iroha {
      private:
       std::unordered_map<
           std::shared_ptr<shared_model::interface::TransactionBatch>,
-          std::pair<consensus::Round, bool>>
+          std::pair<consensus::Round, bool>,
+          cache::OrderingGateCache::BatchPointerHasher,
+          cache::OrderingGateCache::BatchPointerComparator>
           sent_batches_;
       consensus::Round current_round_;
       mutable std::shared_timed_mutex access_mutex_;
