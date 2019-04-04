@@ -124,6 +124,12 @@ namespace integration_framework {
       yac_transport_->subscribe(yac_network_notifier_);
     }
 
+    FakePeer::~FakePeer() {
+      if (behaviour_) {
+        behaviour_->absolve();
+      }
+    }
+
     FakePeer &FakePeer::initialize() {
       BOOST_VERIFY_MSG(not initialized_, "Already initialized!");
       // here comes the initialization of members requiring shared_from_this()
@@ -178,22 +184,8 @@ namespace integration_framework {
       return boost::none;
     }
 
-    FakePeer &FakePeer::setProposalStorage(
-        std::shared_ptr<ProposalStorage> proposal_storage) {
-      proposal_storage_ = std::move(proposal_storage);
-      return *this;
-    }
-
-    FakePeer &FakePeer::removeProposalStorage() {
-      proposal_storage_.reset();
-      return *this;
-    }
-
-    boost::optional<ProposalStorage &> FakePeer::getProposalStorage() const {
-      if (proposal_storage_) {
-        return *proposal_storage_;
-      }
-      return boost::none;
+    ProposalStorage &FakePeer::getProposalStorage() {
+      return proposal_storage_;
     }
 
     void FakePeer::run() {
@@ -381,7 +373,7 @@ namespace integration_framework {
 
     boost::optional<std::shared_ptr<const shared_model::interface::Proposal>>
     FakePeer::sendProposalRequest(iroha::consensus::Round round,
-                                  std::chrono::milliseconds timeout) {
+                                  std::chrono::milliseconds timeout) const {
       auto on_demand_os_transport =
           iroha::ordering::transport::OnDemandOsClientGrpcFactory(
               async_call_,
