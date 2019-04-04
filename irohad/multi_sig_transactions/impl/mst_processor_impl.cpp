@@ -92,10 +92,11 @@ namespace iroha {
   // -------------------| MstTransportNotification override |-------------------
 
   void FairMstProcessor::onNewState(const shared_model::crypto::PublicKey &from,
-                                    ConstRefState new_state) {
+                                    MstState new_state) {
     log_->info("Applying new state");
     auto current_time = time_provider_->getCurrentTime();
 
+    new_state.eraseExpired(current_time);
     auto state_update = storage_->apply(from, new_state);
 
     // updated batches
@@ -105,9 +106,6 @@ namespace iroha {
 
     // completed batches
     completedBatchesNotify(*state_update.completed_state_);
-
-    // expired batches
-    expiredBatchesNotify(storage_->getDiffState(from, current_time));
   }
 
   // -----------------------------| private api |-----------------------------
