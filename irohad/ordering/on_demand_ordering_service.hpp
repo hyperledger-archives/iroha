@@ -8,19 +8,28 @@
 
 #include "ordering/on_demand_os_transport.hpp"
 
+#include <memory>
+#include "interfaces/common_objects/peer.hpp"
+
 namespace iroha {
   namespace ordering {
 
     /**
      * Ordering Service aka OS which can share proposals by request
      */
-    class OnDemandOrderingService : public transport::OdOsNotification {
+    class OnDemandOrderingService : public transport::OdNotificationOsSide {
      public:
+      /// shortcut for peer type
+      using PeerType = std::shared_ptr<shared_model::interface::Peer>;
+      /// collection of peers type
+      using PeerList = std::vector<PeerType>;
       /**
        * Method which should be invoked on outcome of collaboration for round
        * @param round - proposal round which has started
+       * @param peers - list of peers in new round
        */
-      virtual void onCollaborationOutcome(consensus::Round round) = 0;
+      virtual void onCollaborationOutcome(consensus::Round round,
+                                          const PeerList &peers) = 0;
     };
 
   }  // namespace ordering

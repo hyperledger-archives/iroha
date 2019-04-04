@@ -55,8 +55,14 @@ OnDemandOrderingGate::OnDemandOrderingGate(
               return event.round;
             });
 
+        auto ledger_state =
+            visit_in_place(event, [this, &current_round](const auto &event) {
+              return event.ledger_state;
+            });
+
         // notify our ordering service about new round
-        ordering_service_->onCollaborationOutcome(current_round);
+        ordering_service_->onCollaborationOutcome(
+            current_round, *ledger_state->ledger_peers);
 
         this->sendCachedTransactions(event);
 

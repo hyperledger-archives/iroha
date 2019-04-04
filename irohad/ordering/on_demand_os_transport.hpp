@@ -25,11 +25,13 @@ namespace iroha {
   namespace ordering {
     namespace transport {
 
-      /**
-       * Notification interface of on demand ordering service.
-       */
-      class OdOsNotification {
-       public:
+      namespace using_detail {
+
+        /**
+         * Type of peer identity
+         */
+        using PeerType = shared_model::interface::Peer;
+
         /**
          * Type of stored proposals
          */
@@ -45,6 +47,16 @@ namespace iroha {
          * Type of inserted collections
          */
         using CollectionType = std::vector<TransactionBatchType>;
+      }  // namespace using_detail
+
+      /**
+       * Notification interface of on demand ordering service.
+       */
+      class OdOsNotification {
+       public:
+        using ProposalType = using_detail::ProposalType;
+        using TransactionBatchType = using_detail::TransactionBatchType;
+        using CollectionType = using_detail::CollectionType;
 
         /**
          * Callback on receiving transactions
@@ -76,9 +88,38 @@ namespace iroha {
          * @return connection represented with OdOsNotification interface
          */
         virtual std::unique_ptr<OdOsNotification> create(
-            const shared_model::interface::Peer &to) = 0;
+            const using_detail::PeerType &to) = 0;
 
         virtual ~OdOsNotificationFactory() = default;
+      };
+
+      class OdNotificationOsSide {
+       public:
+        using InitiatorPeerType = std::shared_ptr<using_detail::PeerType>;
+        using ProposalType = using_detail::ProposalType;
+        using TransactionBatchType = using_detail::TransactionBatchType;
+        using CollectionType = using_detail::CollectionType;
+
+        /**
+         * Callback on receiving transactions
+         * @param batches - vector of passed transaction batches
+         * @param from - peer which sends batches
+         */
+        virtual void onBatches(CollectionType batches,
+                               InitiatorPeerType from) = 0;
+
+        /**
+         * Callback on request about proposal
+         * @param round - number of collaboration round.
+         * Calculated as block_height + 1
+         * @param requester - peer which requests proposal
+         * @return proposal for requested round
+         */
+        virtual boost::optional<std::shared_ptr<const ProposalType>>
+        onRequestProposal(consensus::Round round,
+                          InitiatorPeerType requester) = 0;
+
+        virtual ~OdNotificationOsSide() = default;
       };
 
     }  // namespace transport

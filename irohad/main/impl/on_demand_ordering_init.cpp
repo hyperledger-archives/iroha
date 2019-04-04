@@ -13,6 +13,7 @@
 #include "interfaces/common_objects/types.hpp"
 #include "logger/logger.hpp"
 #include "logger/logger_manager.hpp"
+#include "ordering/impl/kick_out_proposal_creation_strategy.hpp"
 #include "ordering/impl/on_demand_common.hpp"
 #include "ordering/impl/on_demand_connection_manager.hpp"
 #include "ordering/impl/on_demand_ordering_gate.hpp"
@@ -232,12 +233,15 @@ namespace iroha {
                               std::inserter(hashes, hashes.end()));
                   });
               return ordering::OnDemandOrderingGate::BlockEvent{
-                  ordering::nextCommitRound(commit.round), hashes};
+                  ordering::nextCommitRound(commit.round),
+                  hashes,
+                  commit.ledger_state};
             },
             [](const auto &nothing)
                 -> ordering::OnDemandOrderingGate::BlockRoundEventType {
               return ordering::OnDemandOrderingGate::EmptyEvent{
-                  ordering::nextRejectRound(nothing.round)};
+                  ordering::nextRejectRound(nothing.round),
+                  nothing.ledger_state};
             });
       };
 
@@ -261,11 +265,13 @@ namespace iroha {
         std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
             proposal_factory,
         std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+        std::shared_ptr<ordering::ProposalCreationStrategy> creation_strategy,
         const logger::LoggerManagerTreePtr &ordering_log_manager) {
       return std::make_shared<ordering::OnDemandOrderingServiceImpl>(
           max_number_of_transactions,
           std::move(proposal_factory),
           std::move(tx_cache),
+          creation_strategy,
           ordering_log_manager->getChild("Service")->getLogger());
     }
 
@@ -294,10 +300,12 @@ namespace iroha {
         std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
         std::function<std::chrono::milliseconds(
             const synchronizer::SynchronizationEvent &)> delay_func,
-        logger::LoggerManagerTreePtr ordering_log_manager) {
+        logger::LoggerManagerTreePtr ordering_log_manager,
+        std::shared_ptr<ordering::ProposalCreationStrategy> creation_strategy) {
       auto ordering_service = createService(max_number_of_transactions,
                                             proposal_factory,
                                             tx_cache,
+                                            creation_strategy,
                                             ordering_log_manager);
       service = std::make_shared<ordering::transport::OnDemandOsServerGrpc>(
           ordering_service,

@@ -20,7 +20,7 @@
 #include "ordering/impl/on_demand_os_server_grpc.hpp"
 #include "ordering/impl/ordering_gate_cache/ordering_gate_cache.hpp"
 #include "ordering/on_demand_ordering_service.hpp"
-#include "ordering/on_demand_os_transport.hpp"
+#include "ordering/ordering_service_proposal_creation_strategy.hpp"
 
 namespace iroha {
   namespace network {
@@ -86,6 +86,7 @@ namespace iroha {
           std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
               proposal_factory,
           std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+          std::shared_ptr<ordering::ProposalCreationStrategy> creation_strategy,
           const logger::LoggerManagerTreePtr &ordering_log_manager);
 
      public:
@@ -98,7 +99,8 @@ namespace iroha {
       /**
        * Initializes on-demand ordering gate and ordering sevice components
        *
-       * @param max_number_of_transactions maximum number of transaction in a proposal
+       * @param max_number_of_transactions maximum number of transaction in a
+       * proposal
        * @param delay timeout for ordering service response on proposal request
        * @param initial_hashes seeds for peer list permutations for first k
        * rounds they are required since hash of block i defines round i + k
@@ -136,7 +138,8 @@ namespace iroha {
           std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
           std::function<std::chrono::milliseconds(
               const synchronizer::SynchronizationEvent &)> delay_func,
-          logger::LoggerManagerTreePtr ordering_log_manager);
+          logger::LoggerManagerTreePtr ordering_log_manager,
+          std::shared_ptr<ordering::ProposalCreationStrategy> creation_strategy);
 
       /// gRPC service for ordering service
       std::shared_ptr<ordering::proto::OnDemandOrdering::Service> service;

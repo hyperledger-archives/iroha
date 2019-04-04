@@ -31,6 +31,7 @@ OnDemandOrderingServiceImpl::OnDemandOrderingServiceImpl(
     std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
         proposal_factory,
     std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+    std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy,
     logger::LoggerPtr log,
     size_t number_of_proposals,
     const consensus::Round &initial_round)
@@ -38,23 +39,25 @@ OnDemandOrderingServiceImpl::OnDemandOrderingServiceImpl(
       number_of_proposals_(number_of_proposals),
       proposal_factory_(std::move(proposal_factory)),
       tx_cache_(std::move(tx_cache)),
-      log_(std::move(log)) {
-  onCollaborationOutcome(initial_round);
-}
+      proposal_creation_strategy_(std::move(proposal_creation_strategy)),
+      log_(std::move(log)) {}
 
 // -------------------------| OnDemandOrderingService |-------------------------
 
 void OnDemandOrderingServiceImpl::onCollaborationOutcome(
-    consensus::Round round) {
+    consensus::Round round, const PeerList &peers) {
   log_->info("onCollaborationOutcome => {}", round);
 
-  packNextProposals(round);
+  if (proposal_creation_strategy_->onCollaborationOutcome(round, peers)) {
+    packNextProposals(round);
+  }
   tryErase(round);
 }
 
 // ----------------------------| OdOsNotification |-----------------------------
 
-void OnDemandOrderingServiceImpl::onBatches(CollectionType batches) {
+void OnDemandOrderingServiceImpl::onBatches(CollectionType batches,
+                                            InitiatorPeerType from) {
   auto unprocessed_batches =
       boost::adaptors::filter(batches, [this](const auto &batch) {
         log_->debug("check batch {} for already processed transactions",
@@ -73,12 +76,15 @@ void OnDemandOrderingServiceImpl::onBatches(CollectionType batches) {
 
 boost::optional<
     std::shared_ptr<const OnDemandOrderingServiceImpl::ProposalType>>
-OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round) {
+OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round,
+                                               InitiatorPeerType requester) {
   boost::optional<
       std::shared_ptr<const OnDemandOrderingServiceImpl::ProposalType>>
       result;
   {
     std::shared_lock<std::shared_timed_mutex> lock(proposals_mutex_);
+    // todo add force initialization of proposal
+    proposal_creation_strategy_->onProposal(requester, round);
     auto it = proposal_map_.find(round);
     result = boost::make_optional(it != proposal_map_.end(), it->second);
   }

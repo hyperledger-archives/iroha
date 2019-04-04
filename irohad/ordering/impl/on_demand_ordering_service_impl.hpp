@@ -18,6 +18,7 @@
 // TODO 2019-03-15 andrei: IR-403 Separate BatchHashEquality and MstState
 #include "multi_sig_transactions/state/mst_state.hpp"
 #include "ordering/impl/on_demand_common.hpp"
+#include "ordering/ordering_service_proposal_creation_strategy.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -54,20 +55,22 @@ namespace iroha {
           std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
               proposal_factory,
           std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+          std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy,
           logger::LoggerPtr log,
           size_t number_of_proposals = 3,
           const consensus::Round &initial_round = {2, kFirstRejectRound});
 
       // --------------------- | OnDemandOrderingService |_---------------------
 
-      void onCollaborationOutcome(consensus::Round round) override;
+      void onCollaborationOutcome(consensus::Round round,
+                                  const PeerList &peers) override;
 
       // ----------------------- | OdOsNotification | --------------------------
 
-      void onBatches(CollectionType batches) override;
+      void onBatches(CollectionType batches, InitiatorPeerType from) override;
 
       boost::optional<std::shared_ptr<const ProposalType>> onRequestProposal(
-          consensus::Round round) override;
+          consensus::Round round, InitiatorPeerType requester) override;
 
      private:
       /**
@@ -121,6 +124,11 @@ namespace iroha {
        * Processed transactions cache used for replay prevention
        */
       std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache_;
+
+      /**
+       *
+       */
+      std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy_;
 
       /**
        * Logger instance

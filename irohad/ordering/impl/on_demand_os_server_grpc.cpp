@@ -18,7 +18,7 @@ using namespace iroha::ordering;
 using namespace iroha::ordering::transport;
 
 OnDemandOsServerGrpc::OnDemandOsServerGrpc(
-    std::shared_ptr<OdOsNotification> ordering_service,
+    std::shared_ptr<OdNotificationOsSide> ordering_service,
     std::shared_ptr<TransportFactoryType> transaction_factory,
     std::shared_ptr<shared_model::interface::TransactionBatchParser>
         batch_parser,
@@ -84,7 +84,7 @@ grpc::Status OnDemandOsServerGrpc::SendBatches(
         return acc;
       });
 
-  ordering_service_->onBatches(std::move(batches));
+  ordering_service_->onBatches(std::move(batches), nullptr);
 
   return ::grpc::Status::OK;
 }
@@ -94,7 +94,8 @@ grpc::Status OnDemandOsServerGrpc::RequestProposal(
     const proto::ProposalRequest *request,
     proto::ProposalResponse *response) {
   ordering_service_->onRequestProposal(
-      {request->round().block_round(), request->round().reject_round()})
+      {request->round().block_round(), request->round().reject_round()},
+      nullptr)
       | [&](auto &&proposal) {
           *response->mutable_proposal() = std::move(
               static_cast<const shared_model::proto::Proposal *>(proposal.get())
