@@ -34,6 +34,7 @@ OnDemandOrderingServiceImpl::OnDemandOrderingServiceImpl(
     std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy,
     logger::LoggerPtr log,
     size_t number_of_proposals,
+    // todo remove initial round
     const consensus::Round &initial_round)
     : transaction_limit_(transaction_limit),
       number_of_proposals_(number_of_proposals),

@@ -11,7 +11,6 @@
 
 #include <boost/foreach.hpp>
 #include "boost/tuple/tuple.hpp"
-#include "consensus/yac/supermajority_checker.hpp"
 #include "logger/logger.hpp"
 
 #include "framework/test_logger.hpp"
@@ -55,6 +54,10 @@ class SupermajorityCheckerTest
     return checker->hasSupermajority(current, all);
   }
 
+  bool hasMajority(PeersNumberType voted, PeersNumberType all) const {
+    return checker->hasMajority(voted, all);
+  }
+
   bool canHaveSupermajority(const VoteGroups &votes,
                             PeersNumberType all) const override {
     return checker->canHaveSupermajority(votes, all);
@@ -72,13 +75,13 @@ INSTANTIATE_TEST_CASE_P(Instance,
                         ::testing::Values(ConsistencyModel::kCft,
                                           ConsistencyModel::kBft),
                         // empty argument for the macro
-                        );
+);
 
 INSTANTIATE_TEST_CASE_P(Instance,
                         BftSupermajorityCheckerTest,
                         ::testing::Values(ConsistencyModel::kBft),
                         // empty argument for the macro
-                        );
+);
 
 /**
  * @given 2 participants
@@ -88,7 +91,7 @@ INSTANTIATE_TEST_CASE_P(Instance,
 TEST_P(CftAndBftSupermajorityCheckerTest, SuperMajorityCheckWithSize2) {
   log_->info("-----------| F(x, 2), x in [0..3] |-----------");
 
-  size_t A = 2; // number of all peers
+  size_t A = 2;  // number of all peers
   for (size_t i = 0; i < 4; ++i) {
     if (i >= getSupermajority(A)  // enough votes
         and i <= A                // not more than total peers amount
@@ -112,7 +115,7 @@ TEST_P(CftAndBftSupermajorityCheckerTest, SuperMajorityCheckWithSize2) {
 TEST_P(SupermajorityCheckerTest, SuperMajorityCheckWithSize4) {
   log_->info("-----------| F(x, 4), x in [0..5] |-----------");
 
-  size_t A = 6; // number of all peers
+  size_t A = 6;  // number of all peers
   for (size_t i = 0; i < 5; ++i) {
     if (i >= getSupermajority(A)  // enough votes
         and i <= A                // not more than total peers amount
@@ -153,8 +156,8 @@ TEST_P(CftAndBftSupermajorityCheckerTest, OneLargeAndManySingleVoteGroups) {
   };
 
   struct Case {
-    size_t V; // Voted peers
-    size_t A; // All peers
+    size_t V;  // Voted peers
+    size_t A;  // All peers
   };
 
   for (const auto &c : std::initializer_list<Case>({{6, 7}, {8, 12}})) {

@@ -103,7 +103,10 @@ TEST_F(OnDemandOrderingGateTest, BlockEvent) {
   ON_CALL(*proposal, transactions())
       .WillByDefault(Return(txs | boost::adaptors::indirected));
 
-  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
+  EXPECT_CALL(
+      *ordering_service,
+      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(oproposal))));
 
@@ -112,7 +115,8 @@ TEST_F(OnDemandOrderingGateTest, BlockEvent) {
   gate_wrapper.subscribe(
       [&](auto val) { ASSERT_EQ(proposal, getProposalUnsafe(val).get()); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
+      round, {}, std::make_shared<iroha::LedgerState>()});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -135,7 +139,10 @@ TEST_F(OnDemandOrderingGateTest, EmptyEvent) {
   ON_CALL(*proposal, transactions())
       .WillByDefault(Return(txs | boost::adaptors::indirected));
 
-  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
+  EXPECT_CALL(
+      *ordering_service,
+      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(oproposal))));
 
@@ -144,7 +151,8 @@ TEST_F(OnDemandOrderingGateTest, EmptyEvent) {
   gate_wrapper.subscribe(
       [&](auto val) { ASSERT_EQ(proposal, getProposalUnsafe(val).get()); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::EmptyEvent{round});
+  rounds.get_subscriber().on_next(OnDemandOrderingGate::EmptyEvent{
+      round, std::make_shared<iroha::LedgerState>()});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -159,7 +167,10 @@ TEST_F(OnDemandOrderingGateTest, BlockEventNoProposal) {
   boost::optional<std::shared_ptr<const OdOsNotification::ProposalType>>
       proposal;
 
-  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
+  EXPECT_CALL(
+      *ordering_service,
+      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(proposal))));
 
@@ -167,7 +178,8 @@ TEST_F(OnDemandOrderingGateTest, BlockEventNoProposal) {
       make_test_subscriber<CallExact>(ordering_gate->onProposal(), 1);
   gate_wrapper.subscribe([&](auto val) { ASSERT_FALSE(val.proposal); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
+      round, {}, std::make_shared<iroha::LedgerState>()});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -182,7 +194,10 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
   boost::optional<std::shared_ptr<const OdOsNotification::ProposalType>>
       proposal;
 
-  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
+  EXPECT_CALL(
+      *ordering_service,
+      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(proposal))));
 
@@ -190,7 +205,8 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
       make_test_subscriber<CallExact>(ordering_gate->onProposal(), 1);
   gate_wrapper.subscribe([&](auto val) { ASSERT_FALSE(val.proposal); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::EmptyEvent{round});
+  rounds.get_subscriber().on_next(OnDemandOrderingGate::EmptyEvent{
+      round, std::make_shared<iroha::LedgerState>()});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -202,7 +218,8 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
  * this transaction
  */
 TEST_F(OnDemandOrderingGateTest, ReplayedTransactionInProposal) {
-  OnDemandOrderingGate::BlockEvent event = {round, {}};
+  OnDemandOrderingGate::BlockEvent event = {
+      round, {}, std::make_shared<iroha::LedgerState>()};
 
   // initialize mock transaction
   auto tx1 = std::make_shared<NiceMock<MockTransaction>>();
@@ -219,7 +236,10 @@ TEST_F(OnDemandOrderingGateTest, ReplayedTransactionInProposal) {
           std::move(proposal)));
 
   // set expectations for ordering service
-  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
+  EXPECT_CALL(
+      *ordering_service,
+      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(arriving_proposal))));
   EXPECT_CALL(*tx_cache,
@@ -277,7 +297,8 @@ TEST_F(OnDemandOrderingGateTest, PopNonEmptyBatchesFromTheCache) {
   EXPECT_CALL(*notification, onBatches(UnorderedElementsAreArray(collection)))
       .Times(1);
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
+      round, {}, std::make_shared<iroha::LedgerState>()});
 }
 
 /**
@@ -294,7 +315,8 @@ TEST_F(OnDemandOrderingGateTest, PopEmptyBatchesFromTheCache) {
       .Times(1);
   EXPECT_CALL(*notification, onBatches(_)).Times(0);
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{round, {}});
+  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
+      round, {}, std::make_shared<iroha::LedgerState>()});
 }
 
 /**
@@ -314,6 +336,6 @@ TEST_F(OnDemandOrderingGateTest, BatchesRemoveFromCache) {
   EXPECT_CALL(*cache, pop()).Times(1);
   EXPECT_CALL(*cache, remove(UnorderedElementsAre(hash1, hash2))).Times(1);
 
-  rounds.get_subscriber().on_next(
-      OnDemandOrderingGate::BlockEvent{round, {hash1, hash2}});
+  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
+      round, {hash1, hash2}, std::make_shared<iroha::LedgerState>()});
 }

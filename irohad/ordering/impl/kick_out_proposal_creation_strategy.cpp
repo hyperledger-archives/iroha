@@ -27,7 +27,7 @@ bool KickOutProposalCreationStrategy::onCollaborationOutcome(
   auto has_majority =
       majority_checker_->hasMajority(counter, last_requested_.size());
   updateCurrentState(peers);
-  return has_majority;
+  return not has_majority;
 }
 
 boost::optional<ProposalCreationStrategy::RoundType>

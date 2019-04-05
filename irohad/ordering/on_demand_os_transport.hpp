@@ -25,7 +25,7 @@ namespace iroha {
   namespace ordering {
     namespace transport {
 
-      namespace using_detail {
+      namespace details {
 
         /**
          * Type of peer identity
@@ -47,16 +47,16 @@ namespace iroha {
          * Type of inserted collections
          */
         using CollectionType = std::vector<TransactionBatchType>;
-      }  // namespace using_detail
+      }  // namespace details
 
       /**
        * Notification interface of on demand ordering service.
        */
       class OdOsNotification {
        public:
-        using ProposalType = using_detail::ProposalType;
-        using TransactionBatchType = using_detail::TransactionBatchType;
-        using CollectionType = using_detail::CollectionType;
+        using ProposalType = details::ProposalType;
+        using TransactionBatchType = details::TransactionBatchType;
+        using CollectionType = details::CollectionType;
 
         /**
          * Callback on receiving transactions
@@ -88,17 +88,17 @@ namespace iroha {
          * @return connection represented with OdOsNotification interface
          */
         virtual std::unique_ptr<OdOsNotification> create(
-            const using_detail::PeerType &to) = 0;
+            const details::PeerType &to) = 0;
 
         virtual ~OdOsNotificationFactory() = default;
       };
 
       class OdNotificationOsSide {
        public:
-        using InitiatorPeerType = std::shared_ptr<using_detail::PeerType>;
-        using ProposalType = using_detail::ProposalType;
-        using TransactionBatchType = using_detail::TransactionBatchType;
-        using CollectionType = using_detail::CollectionType;
+        using InitiatorPeerType = std::shared_ptr<details::PeerType>;
+        using ProposalType = details::ProposalType;
+        using TransactionBatchType = details::TransactionBatchType;
+        using CollectionType = details::CollectionType;
 
         /**
          * Callback on receiving transactions

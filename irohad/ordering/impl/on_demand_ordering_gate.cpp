@@ -81,7 +81,8 @@ OnDemandOrderingGate::~OnDemandOrderingGate() {
   events_subscription_.unsubscribe();
 }
 
-void OnDemandOrderingGate::propagateBatch(
+void OnDemandOrderingGate::
+propagateBatch(
     std::shared_ptr<shared_model::interface::TransactionBatch> batch) {
   cache_->addToBack({batch});
 

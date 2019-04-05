@@ -47,13 +47,59 @@ TEST_F(KickOutProposalCreationStrategyTest, OnNonMaliciousCase) {
   EXPECT_CALL(*supermajority_checker_, hasMajority(0, 0))
       .WillOnce(Return(false));
 
-  ASSERT_EQ(false, strategy_->onCollaborationOutcome({1, 0}, peers));
+  ASSERT_EQ(true, strategy_->onCollaborationOutcome({1, 0}, peers));
 
   for (auto i = 0u; i < f; ++i) {
     strategy_->onProposal(peers.at(i), {2, 0});
   }
 
   EXPECT_CALL(*supermajority_checker_, hasMajority(f, number_of_peers))
-          .WillOnce(Return(true));
+      .WillOnce(Return(false));
   ASSERT_EQ(true, strategy_->onCollaborationOutcome({2, 0}, peers));
 }
+
+/**
+ * @given initialized kickOutStrategy
+ *        @and onCollaborationOutcome is invoked for the first round
+ * @when  onProposal calls F + 1 times with different peers for further rounds
+ * @then  onCollaborationOutcome call returns false
+ */
+TEST_F(KickOutProposalCreationStrategyTest, OnMaliciousCase) {
+  EXPECT_CALL(*supermajority_checker_, hasMajority(0, 0))
+      .WillOnce(Return(false));
+
+  ASSERT_EQ(true, strategy_->onCollaborationOutcome({1, 0}, peers));
+
+  auto requested = f + 1;
+  for (auto i = 0u; i < requested; ++i) {
+    strategy_->onProposal(peers.at(i), {2, 0});
+  }
+
+  EXPECT_CALL(*supermajority_checker_, hasMajority(requested, number_of_peers))
+      .WillOnce(Return(true));
+  ASSERT_EQ(false, strategy_->onCollaborationOutcome({2, 0}, peers));
+}
+
+/**
+ * @given initialized kickOutStrategy
+ *        @and onCollaborationOutcome is invoked for the first round
+ * @when  onProposal calls F + 1 times with one peer
+ * @then  onCollaborationOutcome call returns true
+ */
+TEST_F(KickOutProposalCreationStrategyTest, RepeadedRequest) {
+  EXPECT_CALL(*supermajority_checker_, hasMajority(0, 0))
+      .WillOnce(Return(false));
+
+  ASSERT_EQ(true, strategy_->onCollaborationOutcome({1, 0}, peers));
+
+  auto requested = f + 1;
+  for (auto i = 0u; i < requested; ++i) {
+    strategy_->onProposal(peers.at(0), {2, 0});
+  }
+  EXPECT_CALL(*supermajority_checker_, hasMajority(1, number_of_peers))
+      .WillOnce(Return(false));
+  ASSERT_EQ(true, strategy_->onCollaborationOutcome({2, 0}, peers));
+}
+
+
+/// todo test where peer out of the scope

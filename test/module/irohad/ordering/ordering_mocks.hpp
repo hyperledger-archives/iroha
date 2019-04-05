@@ -36,13 +36,14 @@ namespace iroha {
     }  // namespace cache
 
     struct MockOnDemandOrderingService : public OnDemandOrderingService {
-      MOCK_METHOD1(onBatches, void(CollectionType));
+      MOCK_METHOD2(onBatches, void(CollectionType, InitiatorPeerType));
 
-      MOCK_METHOD1(onRequestProposal,
+      MOCK_METHOD2(onRequestProposal,
                    boost::optional<std::shared_ptr<const ProposalType>>(
-                       consensus::Round));
+                       consensus::Round, InitiatorPeerType from));
 
-      MOCK_METHOD1(onCollaborationOutcome, void(consensus::Round));
+      MOCK_METHOD2(onCollaborationOutcome,
+                   void(consensus::Round, const PeerList &peers));
     };
 
   }  // namespace ordering

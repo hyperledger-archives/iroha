@@ -15,6 +15,7 @@
 #include "framework/test_logger.hpp"
 #include "interfaces/iroha_internal/transaction_batch_impl.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/ordering/mock_proposal_creation_strategy.hpp"
 #include "module/shared_model/interface_mocks.hpp"
 #include "module/shared_model/validators/validators.hpp"
 #include "ordering/impl/on_demand_common.hpp"
@@ -46,6 +47,9 @@ class OnDemandOsTest : public ::testing::Test {
                          commit_round = {3, kFirstRejectRound},
                          reject_round = {2, kNextRejectRoundConsumer};
   NiceMock<iroha::ametsuchi::MockTxPresenceCache> *mock_cache;
+  std::shared_ptr<MockProposalCreationStrategy> proposal_creation_strategy;
+  ProposalCreationStrategy::PeerList started_list;
+  ProposalCreationStrategy::PeerType requester_peer;
 
   void SetUp() override {
     // TODO: nickaleks IR-1811 use mock factory
@@ -62,10 +66,17 @@ class OnDemandOsTest : public ::testing::Test {
                 _)))
         .WillByDefault(Return(std::vector<iroha::ametsuchi::TxCacheStatusType>{
             iroha::ametsuchi::tx_cache_status_responses::Missing()}));
+
+    proposal_creation_strategy =
+        std::make_shared<MockProposalCreationStrategy>();
+    started_list = {};
+    requester_peer = nullptr;
+
     os = std::make_shared<OnDemandOrderingServiceImpl>(
         transaction_limit,
         std::move(factory),
         std::move(tx_cache),
+        proposal_creation_strategy,
         getTestLogger("OdOrderingService"),
         proposal_limit,
         initial_round);
@@ -76,7 +87,7 @@ class OnDemandOsTest : public ::testing::Test {
    * @param range - pair of [from, to)
    */
   void generateTransactionsAndInsert(std::pair<uint64_t, uint64_t> range) {
-    os->onBatches(generateTransactions(range));
+    os->onBatches(generateTransactions(range), requester_peer);
   }
 
   OnDemandOrderingService::CollectionType generateTransactions(
@@ -119,11 +130,16 @@ class OnDemandOsTest : public ::testing::Test {
  * @then  check that previous round doesn't have proposal
  */
 TEST_F(OnDemandOsTest, EmptyRound) {
-  ASSERT_FALSE(os->onRequestProposal(initial_round));
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
 
-  os->onCollaborationOutcome(commit_round);
+  ASSERT_FALSE(os->onRequestProposal(initial_round, requester_peer));
 
-  ASSERT_FALSE(os->onRequestProposal(initial_round));
+  os->onCollaborationOutcome(commit_round, started_list);
+
+  ASSERT_FALSE(os->onRequestProposal(initial_round, requester_peer));
 }
 
 /**
@@ -133,11 +149,16 @@ TEST_F(OnDemandOsTest, EmptyRound) {
  * @then  check that previous round has all transaction
  */
 TEST_F(OnDemandOsTest, NormalRound) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   generateTransactionsAndInsert({1, 2});
 
-  os->onCollaborationOutcome(commit_round);
+  os->onCollaborationOutcome(commit_round, started_list);
 
-  ASSERT_TRUE(os->onRequestProposal(target_round));
+  ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
 }
 
 /**
@@ -148,13 +169,20 @@ TEST_F(OnDemandOsTest, NormalRound) {
  * AND the rest of transactions isn't appeared in next after next round
  */
 TEST_F(OnDemandOsTest, OverflowRound) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   generateTransactionsAndInsert({1, transaction_limit * 2});
 
-  os->onCollaborationOutcome(commit_round);
+  os->onCollaborationOutcome(commit_round, started_list);
 
-  ASSERT_TRUE(os->onRequestProposal(target_round));
+  ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
   ASSERT_EQ(transaction_limit,
-            (*os->onRequestProposal(target_round))->transactions().size());
+            (*os->onRequestProposal(target_round, requester_peer))
+                ->transactions()
+                .size());
 }
 
 /**
@@ -164,6 +192,11 @@ TEST_F(OnDemandOsTest, OverflowRound) {
  * @then  check that all transactions appear in proposal
  */
 TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   auto large_tx_limit = 10000u;
   auto factory = std::make_unique<
       shared_model::proto::ProtoProposalFactory<MockProposalValidator>>();
@@ -173,6 +206,7 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
       large_tx_limit,
       std::move(factory),
       std::move(tx_cache),
+      proposal_creation_strategy,
       getTestLogger("OdOrderingService"),
       proposal_limit,
       initial_round);
@@ -187,9 +221,12 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
   std::thread two(call, std::make_pair(large_tx_limit / 2, large_tx_limit));
   one.join();
   two.join();
-  os->onCollaborationOutcome(commit_round);
+  os->onCollaborationOutcome(commit_round, started_list);
   ASSERT_EQ(large_tx_limit,
-            os->onRequestProposal(target_round).get()->transactions().size());
+            os->onRequestProposal(target_round, requester_peer)
+                .get()
+                ->transactions()
+                .size());
 }
 
 /**
@@ -201,20 +238,27 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
  * tryErase
  */
 TEST_F(OnDemandOsTest, Erase) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   generateTransactionsAndInsert({1, 2});
   os->onCollaborationOutcome(
-      {commit_round.block_round, commit_round.reject_round});
+      {commit_round.block_round, commit_round.reject_round}, started_list);
   ASSERT_TRUE(os->onRequestProposal(
-      {commit_round.block_round + 1, commit_round.reject_round}));
+      {commit_round.block_round + 1, commit_round.reject_round},
+      requester_peer));
 
   for (auto i = commit_round.reject_round + 1;
        i < (commit_round.reject_round + 1) + (proposal_limit + 2);
        ++i) {
     generateTransactionsAndInsert({1, 2});
-    os->onCollaborationOutcome({commit_round.block_round, i});
+    os->onCollaborationOutcome({commit_round.block_round, i}, started_list);
   }
   ASSERT_TRUE(os->onRequestProposal(
-      {commit_round.block_round + 1, commit_round.reject_round}));
+      {commit_round.block_round + 1, commit_round.reject_round},
+      requester_peer));
 }
 
 /**
@@ -223,6 +267,11 @@ TEST_F(OnDemandOsTest, Erase) {
  * @then check that proposal factory is called and returns a proposal
  */
 TEST_F(OnDemandOsTest, UseFactoryForProposal) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   auto factory = std::make_unique<MockUnsafeProposalFactory>();
   auto mock_factory = factory.get();
   auto tx_cache =
@@ -245,6 +294,7 @@ TEST_F(OnDemandOsTest, UseFactoryForProposal) {
       transaction_limit,
       std::move(factory),
       std::move(tx_cache),
+      proposal_creation_strategy,
       getTestLogger("OdOrderingService"),
       proposal_limit,
       initial_round);
@@ -255,9 +305,9 @@ TEST_F(OnDemandOsTest, UseFactoryForProposal) {
 
   generateTransactionsAndInsert({1, 2});
 
-  os->onCollaborationOutcome(commit_round);
+  os->onCollaborationOutcome(commit_round, started_list);
 
-  ASSERT_TRUE(os->onRequestProposal(target_round));
+  ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
 }
 
 // Return matcher for batch, which passes it by const &
@@ -272,6 +322,11 @@ auto batchRef(const shared_model::interface::TransactionBatch &batch) {
  * @then the batch is not present in a proposal
  */
 TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   auto batches = generateTransactions({1, 2});
   auto &batch = *batches.at(0);
 
@@ -279,11 +334,11 @@ TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
       .WillOnce(Return(std::vector<iroha::ametsuchi::TxCacheStatusType>{
           iroha::ametsuchi::tx_cache_status_responses::Committed()}));
 
-  os->onBatches(batches);
+  os->onBatches(batches, requester_peer);
 
-  os->onCollaborationOutcome(commit_round);
+  os->onCollaborationOutcome(commit_round, started_list);
 
-  auto proposal = os->onRequestProposal(initial_round);
+  auto proposal = os->onRequestProposal(initial_round, requester_peer);
 
   EXPECT_FALSE(proposal);
 }
@@ -294,6 +349,11 @@ TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
  * @then batch is present in a proposal
  */
 TEST_F(OnDemandOsTest, PassMissingTransaction) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   auto batches = generateTransactions({1, 2});
   auto &batch = *batches.at(0);
 
@@ -301,11 +361,11 @@ TEST_F(OnDemandOsTest, PassMissingTransaction) {
       .WillOnce(Return(std::vector<iroha::ametsuchi::TxCacheStatusType>{
           iroha::ametsuchi::tx_cache_status_responses::Missing()}));
 
-  os->onBatches(batches);
+  os->onBatches(batches, requester_peer);
 
-  os->onCollaborationOutcome(commit_round);
+  os->onCollaborationOutcome(commit_round, started_list);
 
-  auto proposal = os->onRequestProposal(target_round);
+  auto proposal = os->onRequestProposal(target_round, requester_peer);
 
   // since we only sent one transaction,
   // if the proposal is present, there is no need to check for that specific tx
@@ -318,6 +378,11 @@ TEST_F(OnDemandOsTest, PassMissingTransaction) {
  * @then 2 new batches are in a proposal and already commited batch is discarded
  */
 TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   auto batches = generateTransactions({1, 4});
   auto &batch1 = *batches.at(0);
   auto &batch2 = *batches.at(1);
@@ -333,11 +398,11 @@ TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
       .WillOnce(Return(std::vector<iroha::ametsuchi::TxCacheStatusType>{
           iroha::ametsuchi::tx_cache_status_responses::Missing()}));
 
-  os->onBatches(batches);
+  os->onBatches(batches, requester_peer);
 
-  os->onCollaborationOutcome(commit_round);
+  os->onCollaborationOutcome(commit_round, started_list);
 
-  auto proposal = os->onRequestProposal(target_round);
+  auto proposal = os->onRequestProposal(target_round, requester_peer);
   const auto &txs = proposal->get()->transactions();
   auto &batch2_tx = *batch2.transactions().at(0);
 
@@ -353,14 +418,19 @@ TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
  * @then the proposal contains the batch once
  */
 TEST_F(OnDemandOsTest, DuplicateTxTest) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   auto now = iroha::time::now();
   auto txs1 = generateTransactions({1, 2}, now);
-  os->onBatches(txs1);
+  os->onBatches(txs1, requester_peer);
 
   auto txs2 = generateTransactions({1, 2}, now);
-  os->onBatches(txs2);
-  os->onCollaborationOutcome(commit_round);
-  auto proposal = os->onRequestProposal(target_round);
+  os->onBatches(txs2, requester_peer);
+  os->onCollaborationOutcome(commit_round, started_list);
+  auto proposal = os->onRequestProposal(target_round, requester_peer);
 
   ASSERT_EQ(1, boost::size((*proposal)->transactions()));
 }
@@ -371,21 +441,31 @@ TEST_F(OnDemandOsTest, DuplicateTxTest) {
  * @then both of them are used for the next proposal
  */
 TEST_F(OnDemandOsTest, RejectCommit) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_, _))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+      .WillRepeatedly(testing::Return(boost::none));
+
   auto now = iroha::time::now();
   auto txs1 = generateTransactions({1, 2}, now);
-  os->onBatches(txs1);
+  os->onBatches(txs1, requester_peer);
   os->onCollaborationOutcome(
-      {initial_round.block_round, initial_round.reject_round + 1});
+      {initial_round.block_round, initial_round.reject_round + 1},
+      started_list);
 
   auto txs2 = generateTransactions({1, 2}, now + 1);
-  os->onBatches(txs2);
+  os->onBatches(txs2, requester_peer);
   os->onCollaborationOutcome(
-      {initial_round.block_round, initial_round.reject_round + 2});
+      {initial_round.block_round, initial_round.reject_round + 2},
+      started_list);
   auto proposal = os->onRequestProposal(
-      {initial_round.block_round, initial_round.reject_round + 3});
+      {initial_round.block_round, initial_round.reject_round + 3},
+      requester_peer);
 
   ASSERT_EQ(2, boost::size((*proposal)->transactions()));
 
-  proposal = os->onRequestProposal(commit_round);
+  proposal = os->onRequestProposal(commit_round, requester_peer);
   ASSERT_EQ(2, boost::size((*proposal)->transactions()));
 }
+
+// todo add test with malicious case in strategy
