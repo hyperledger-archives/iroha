@@ -11,6 +11,7 @@
 #include "framework/test_subscriber.hpp"
 #include "interfaces/iroha_internal/transaction_batch_impl.hpp"
 #include "module/irohad/ametsuchi/mock_tx_presence_cache.hpp"
+#include "module/irohad/consensus/yac/yac_test_util.hpp"
 #include "module/irohad/ordering/mock_on_demand_os_notification.hpp"
 #include "module/irohad/ordering/ordering_mocks.hpp"
 #include "module/shared_model/interface_mocks.hpp"
@@ -55,6 +56,12 @@ class OnDemandOrderingGateTest : public ::testing::Test {
                                                tx_cache,
                                                1000,
                                                getTestLogger("OrderingGate"));
+    using PeerListType =
+        std::vector<std::shared_ptr<shared_model::interface::Peer>>;
+    PeerListType peers{iroha::consensus::yac::makePeer("1")};
+
+    ledger_state = std::make_shared<iroha::LedgerState>(
+        std::make_shared<PeerListType>(peers));
   }
 
   rxcpp::subjects::subject<OnDemandOrderingGate::BlockRoundEventType> rounds;
@@ -65,6 +72,8 @@ class OnDemandOrderingGateTest : public ::testing::Test {
   std::shared_ptr<OnDemandOrderingGate> ordering_gate;
 
   std::shared_ptr<cache::MockOrderingGateCache> cache;
+
+  std::shared_ptr<iroha::LedgerState> ledger_state;
 
   const consensus::Round round = {2, kFirstRejectRound};
 };
@@ -105,7 +114,9 @@ TEST_F(OnDemandOrderingGateTest, BlockEvent) {
 
   EXPECT_CALL(
       *ordering_service,
-      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      onCollaborationOutcome(
+          round,
+          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
       .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(oproposal))));
@@ -115,8 +126,8 @@ TEST_F(OnDemandOrderingGateTest, BlockEvent) {
   gate_wrapper.subscribe(
       [&](auto val) { ASSERT_EQ(proposal, getProposalUnsafe(val).get()); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
-      round, {}, std::make_shared<iroha::LedgerState>()});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, ledger_state});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -141,7 +152,9 @@ TEST_F(OnDemandOrderingGateTest, EmptyEvent) {
 
   EXPECT_CALL(
       *ordering_service,
-      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      onCollaborationOutcome(
+          round,
+          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
       .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(oproposal))));
@@ -151,8 +164,8 @@ TEST_F(OnDemandOrderingGateTest, EmptyEvent) {
   gate_wrapper.subscribe(
       [&](auto val) { ASSERT_EQ(proposal, getProposalUnsafe(val).get()); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::EmptyEvent{
-      round, std::make_shared<iroha::LedgerState>()});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::EmptyEvent{round, ledger_state});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -169,7 +182,9 @@ TEST_F(OnDemandOrderingGateTest, BlockEventNoProposal) {
 
   EXPECT_CALL(
       *ordering_service,
-      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      onCollaborationOutcome(
+          round,
+          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
       .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(proposal))));
@@ -178,8 +193,8 @@ TEST_F(OnDemandOrderingGateTest, BlockEventNoProposal) {
       make_test_subscriber<CallExact>(ordering_gate->onProposal(), 1);
   gate_wrapper.subscribe([&](auto val) { ASSERT_FALSE(val.proposal); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
-      round, {}, std::make_shared<iroha::LedgerState>()});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, ledger_state});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -196,7 +211,9 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
 
   EXPECT_CALL(
       *ordering_service,
-      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      onCollaborationOutcome(
+          round,
+          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
       .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(proposal))));
@@ -205,8 +222,8 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
       make_test_subscriber<CallExact>(ordering_gate->onProposal(), 1);
   gate_wrapper.subscribe([&](auto val) { ASSERT_FALSE(val.proposal); });
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::EmptyEvent{
-      round, std::make_shared<iroha::LedgerState>()});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::EmptyEvent{round, ledger_state});
 
   ASSERT_TRUE(gate_wrapper.validate());
 }
@@ -238,7 +255,9 @@ TEST_F(OnDemandOrderingGateTest, ReplayedTransactionInProposal) {
   // set expectations for ordering service
   EXPECT_CALL(
       *ordering_service,
-      onCollaborationOutcome(round, OnDemandOrderingService::PeerList{}))
+      onCollaborationOutcome(
+          round,
+          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
       .Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(arriving_proposal))));
@@ -297,8 +316,8 @@ TEST_F(OnDemandOrderingGateTest, PopNonEmptyBatchesFromTheCache) {
   EXPECT_CALL(*notification, onBatches(UnorderedElementsAreArray(collection)))
       .Times(1);
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
-      round, {}, std::make_shared<iroha::LedgerState>()});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, ledger_state});
 }
 
 /**
@@ -315,8 +334,8 @@ TEST_F(OnDemandOrderingGateTest, PopEmptyBatchesFromTheCache) {
       .Times(1);
   EXPECT_CALL(*notification, onBatches(_)).Times(0);
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
-      round, {}, std::make_shared<iroha::LedgerState>()});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {}, ledger_state});
 }
 
 /**
@@ -336,6 +355,6 @@ TEST_F(OnDemandOrderingGateTest, BatchesRemoveFromCache) {
   EXPECT_CALL(*cache, pop()).Times(1);
   EXPECT_CALL(*cache, remove(UnorderedElementsAre(hash1, hash2))).Times(1);
 
-  rounds.get_subscriber().on_next(OnDemandOrderingGate::BlockEvent{
-      round, {hash1, hash2}, std::make_shared<iroha::LedgerState>()});
+  rounds.get_subscriber().on_next(
+      OnDemandOrderingGate::BlockEvent{round, {hash1, hash2}, ledger_state});
 }
