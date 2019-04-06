@@ -19,10 +19,8 @@ namespace iroha {
      */
     class OnDemandOrderingService : public transport::OdNotificationOsSide {
      public:
-      /// shortcut for peer type
-      using PeerType = std::shared_ptr<shared_model::interface::Peer>;
       /// collection of peers type
-      using PeerList = std::vector<PeerType>;
+      using PeerList = std::vector<InitiatorPeerType>;
       /**
        * Method which should be invoked on outcome of collaboration for round
        * @param round - proposal round which has started

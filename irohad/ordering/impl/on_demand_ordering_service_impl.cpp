@@ -49,15 +49,14 @@ void OnDemandOrderingServiceImpl::onCollaborationOutcome(
     consensus::Round round, const PeerList &peers) {
   log_->info("onCollaborationOutcome => {}", round);
 
-  if (proposal_creation_strategy_->onCollaborationOutcome(round, peers)) {
-    packNextProposals(round);
-  }
+  packNextProposals(round);
+  proposal_creation_strategy_->onCollaborationOutcome(peers);
   tryErase(round);
 }
 
 // ----------------------------| OdOsNotification |-----------------------------
 
-void OnDemandOrderingServiceImpl::onBatches(CollectionType batches,
+void OnDemandOrderingServiceImpl::onBatches(BatchesCollectionType batches,
                                             InitiatorPeerType from) {
   auto unprocessed_batches =
       boost::adaptors::filter(batches, [this](const auto &batch) {
@@ -170,7 +169,8 @@ void OnDemandOrderingServiceImpl::packNextProposals(
   size_t discarded_txs_quantity;
   auto now = iroha::time::now();
   auto generate_proposal = [this, now, &discarded_txs_quantity](
-                               consensus::Round round, const auto &txs) {
+                               consensus::Round round,
+                               const TransactionsCollectionType &txs) {
     auto proposal = proposal_factory_->unsafeCreateProposal(
         round.block_round, now, txs | boost::adaptors::indirected);
     proposal_map_.erase(round);
@@ -187,15 +187,34 @@ void OnDemandOrderingServiceImpl::packNextProposals(
   if (not pending_batches_.empty()) {
     auto txs = getTransactions(
         transaction_limit_, pending_batches_, discarded_txs_quantity);
-    if (not txs.empty()) {
-      generate_proposal({round.block_round, round.reject_round + 1}, txs);
-      generate_proposal({round.block_round + 1, kFirstRejectRound}, txs);
-    }
+    tryToCreateProposal(
+        {round.block_round, round.reject_round + 1}, txs, generate_proposal);
+    tryToCreateProposal(
+        {round.block_round + 1, kFirstRejectRound}, txs, generate_proposal);
   }
 
   if (round.reject_round == kFirstRejectRound) {
     std::lock_guard<std::shared_timed_mutex> lock(batches_mutex_);
     pending_batches_.clear();
+  }
+}
+
+void OnDemandOrderingServiceImpl::tryToCreateProposal(
+    iroha::consensus::Round round,
+    const TransactionsCollectionType &txs,
+    std::function<void(RoundType, const TransactionsCollectionType &)>
+        proposal_generator) {
+  std::string log_str = "Proposal in round {} will not created because ";
+
+  if (not txs.empty()) {
+    if (proposal_creation_strategy_->shouldCreateRound(round)) {
+      proposal_generator(round, txs);
+      log_->info("created proposal in round {}", round);
+    } else {
+      log_->info(log_str + "round strategy annul creation", round);
+    }
+  } else {
+    log_->info(log_str + "transactions absent", round);
   }
 }
 

@@ -11,7 +11,7 @@
 
 #include <boost/optional.hpp>
 #include "consensus/round.hpp"
-#include "interfaces/common_objects/peer.hpp"
+#include "cryptography/public_key.hpp"
 
 namespace iroha {
   namespace ordering {
@@ -23,21 +23,24 @@ namespace iroha {
     class ProposalCreationStrategy {
      public:
       /// shortcut for peer type
-      using PeerType = std::shared_ptr<shared_model::interface::Peer>;
+      using PeerType = std::shared_ptr<shared_model::crypto::PublicKey>;
       /// shortcut for round type
       using RoundType = consensus::Round;
       /// collection of peers type
       using PeerList = std::vector<PeerType>;
 
       /**
-       * Indicates the start of new round and provide information about proposal
-       * creation
-       * @param round - new consensus round
+       * Indicates the start of new round.
        * @param peers - peers which participate in new round
+       */
+      virtual void onCollaborationOutcome(const PeerList &peers) = 0;
+
+      /**
+       *
+       * @param round - new consensus round
        * @return true, if proposal should be created in new round
        */
-      virtual bool onCollaborationOutcome(RoundType round,
-                                          const PeerList &peers) = 0;
+      virtual bool shouldCreateRound(RoundType round) = 0;
 
       /**
        * Notify the strategy about proposal request

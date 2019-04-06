@@ -67,7 +67,8 @@ namespace iroha {
 
       // ----------------------- | OdOsNotification | --------------------------
 
-      void onBatches(CollectionType batches, InitiatorPeerType from) override;
+      void onBatches(BatchesCollectionType batches,
+                     InitiatorPeerType from) override;
 
       boost::optional<std::shared_ptr<const ProposalType>> onRequestProposal(
           consensus::Round round, InitiatorPeerType requester) override;
@@ -78,6 +79,15 @@ namespace iroha {
        * Note: method is not thread-safe
        */
       void packNextProposals(const consensus::Round &round);
+
+      using TransactionsCollectionType =
+          std::vector<std::shared_ptr<shared_model::interface::Transaction>>;
+      using RoundType = iroha::consensus::Round;
+
+      void tryToCreateProposal(
+          RoundType,
+          const TransactionsCollectionType &,
+          std::function<void(RoundType, const TransactionsCollectionType &)>);
 
       /**
        * Removes last elements if it is required

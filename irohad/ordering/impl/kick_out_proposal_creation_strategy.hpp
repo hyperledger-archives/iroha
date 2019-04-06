@@ -24,25 +24,21 @@ namespace iroha {
       KickOutProposalCreationStrategy(
           std::shared_ptr<SupermajorityCheckerType>);
 
-      bool onCollaborationOutcome(RoundType round,
-                                  const PeerList &peers) override;
-
-      boost::optional<RoundType> onProposal(PeerType who,
-                                            RoundType requested_round) override;
-
-     private:
-      using RoundCollectionType = std::unordered_map<
-          PeerType,
-          RoundType,
-          DereferenceHash<PeerType, shared_model::interface::Peer::PeerHash>>;
-
       /**
        * Update peers state with new peers.
        * Note: the method removes peers which are not participating in consensus
        * and adds new with minimal round
        * @param peers - list of peers which fetched in the last round
        */
-      void updateCurrentState(const PeerList &peers);
+      void onCollaborationOutcome(const PeerList &peers) override;
+
+      bool shouldCreateRound(RoundType round);
+
+      boost::optional<RoundType> onProposal(PeerType who,
+                                            RoundType requested_round) override;
+
+     private:
+      using RoundCollectionType = std::unordered_map<std::string, RoundType>;
 
       std::shared_ptr<SupermajorityCheckerType> majority_checker_;
       RoundCollectionType last_requested_;
