@@ -8,7 +8,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "module/irohad/consensus/yac/mock_yac_supermajority_checker.hpp"
-#include "module/irohad/consensus/yac/yac_test_util.hpp"
 
 using namespace iroha::ordering;
 
@@ -19,7 +18,8 @@ class KickOutProposalCreationStrategyTest : public testing::Test {
  public:
   void SetUp() override {
     for (auto i = 0u; i < number_of_peers; ++i) {
-      peers.push_back(iroha::consensus::yac::makePeer(std::to_string(i)));
+      peers.push_back(
+          std::make_shared<shared_model::crypto::PublicKey>(std::to_string(i)));
     }
 
     supermajority_checker_ =
@@ -41,13 +41,15 @@ class KickOutProposalCreationStrategyTest : public testing::Test {
  * @given initialized kickOutStrategy
  *        @and onCollaborationOutcome is invoked for the first round
  * @when  onProposal calls F times with different peers for further rounds
- * @then  onCollaborationOutcome call returns true
+ * @then  shouldCreateRound returns true
  */
 TEST_F(KickOutProposalCreationStrategyTest, OnNonMaliciousCase) {
-  EXPECT_CALL(*supermajority_checker_, hasMajority(0, 0))
+  EXPECT_CALL(*supermajority_checker_, hasMajority(0, number_of_peers))
       .WillOnce(Return(false));
 
-  ASSERT_EQ(true, strategy_->onCollaborationOutcome({1, 0}, peers));
+  strategy_->onCollaborationOutcome(peers);
+
+  ASSERT_EQ(true, strategy_->shouldCreateRound({1, 0}));
 
   for (auto i = 0u; i < f; ++i) {
     strategy_->onProposal(peers.at(i), {2, 0});
@@ -55,20 +57,17 @@ TEST_F(KickOutProposalCreationStrategyTest, OnNonMaliciousCase) {
 
   EXPECT_CALL(*supermajority_checker_, hasMajority(f, number_of_peers))
       .WillOnce(Return(false));
-  ASSERT_EQ(true, strategy_->onCollaborationOutcome({2, 0}, peers));
+  ASSERT_EQ(true, strategy_->shouldCreateRound({2, 0}));
 }
 
 /**
  * @given initialized kickOutStrategy
  *        @and onCollaborationOutcome is invoked for the first round
  * @when  onProposal calls F + 1 times with different peers for further rounds
- * @then  onCollaborationOutcome call returns false
+ * @then  onCollaborationOutcome returns false
  */
 TEST_F(KickOutProposalCreationStrategyTest, OnMaliciousCase) {
-  EXPECT_CALL(*supermajority_checker_, hasMajority(0, 0))
-      .WillOnce(Return(false));
-
-  ASSERT_EQ(true, strategy_->onCollaborationOutcome({1, 0}, peers));
+  strategy_->onCollaborationOutcome(peers);
 
   auto requested = f + 1;
   for (auto i = 0u; i < requested; ++i) {
@@ -77,7 +76,7 @@ TEST_F(KickOutProposalCreationStrategyTest, OnMaliciousCase) {
 
   EXPECT_CALL(*supermajority_checker_, hasMajority(requested, number_of_peers))
       .WillOnce(Return(true));
-  ASSERT_EQ(false, strategy_->onCollaborationOutcome({2, 0}, peers));
+  ASSERT_EQ(false, strategy_->shouldCreateRound({2, 0}));
 }
 
 /**
@@ -87,10 +86,7 @@ TEST_F(KickOutProposalCreationStrategyTest, OnMaliciousCase) {
  * @then  onCollaborationOutcome call returns true
  */
 TEST_F(KickOutProposalCreationStrategyTest, RepeadedRequest) {
-  EXPECT_CALL(*supermajority_checker_, hasMajority(0, 0))
-      .WillOnce(Return(false));
-
-  ASSERT_EQ(true, strategy_->onCollaborationOutcome({1, 0}, peers));
+  strategy_->onCollaborationOutcome(peers);
 
   auto requested = f + 1;
   for (auto i = 0u; i < requested; ++i) {
@@ -98,8 +94,25 @@ TEST_F(KickOutProposalCreationStrategyTest, RepeadedRequest) {
   }
   EXPECT_CALL(*supermajority_checker_, hasMajority(1, number_of_peers))
       .WillOnce(Return(false));
-  ASSERT_EQ(true, strategy_->onCollaborationOutcome({2, 0}, peers));
+  ASSERT_EQ(true, strategy_->shouldCreateRound({2, 0}));
 }
 
+/**
+ * @given initialized kickOutStrategy
+ *        @and onCollaborationOutcome is invoked for the first round
+ * @when  onProposal calls F times different peers
+ *        @and 1 time with unknown peer
+ * @then  onCollaborationOutcome call returns true
+ */
+TEST_F(KickOutProposalCreationStrategyTest, UnknownPeerRequestsProposal) {
+  strategy_->onCollaborationOutcome(peers);
 
-/// todo test where peer out of the scope
+  for (auto i = 0u; i < f; ++i) {
+    strategy_->onProposal(peers.at(i), {2, 0});
+  }
+  strategy_->onProposal(
+      std::make_shared<shared_model::crypto::PublicKey>("unknown"), {2, 0});
+  EXPECT_CALL(*supermajority_checker_, hasMajority(f, number_of_peers))
+      .WillOnce(Return(false));
+  ASSERT_EQ(true, strategy_->shouldCreateRound({2, 0}));
+}
