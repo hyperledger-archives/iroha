@@ -13,6 +13,7 @@
 #include <boost/range/empty.hpp>
 #include "ametsuchi/tx_presence_cache.hpp"
 #include "common/visitor.hpp"
+#include "cryptography/public_key.hpp"
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
 #include "logger/logger.hpp"
@@ -60,9 +61,18 @@ OnDemandOrderingGate::OnDemandOrderingGate(
               return event.ledger_state;
             });
 
+        auto peer_keys = [](const auto peers) {
+          OnDemandOrderingService::PeerList lst;
+          for (auto peer : peers) {
+            auto shp_pub_key =
+                std::make_shared<shared_model::crypto::PublicKey>(peer->pubkey());
+            lst.push_back(shp_pub_key);
+          }
+          return lst;
+        };
         // notify our ordering service about new round
         ordering_service_->onCollaborationOutcome(
-            current_round, *ledger_state->ledger_peers);
+            current_round, peer_keys(*ledger_state->ledger_peers));
 
         this->sendCachedTransactions(event);
 
@@ -81,8 +91,7 @@ OnDemandOrderingGate::~OnDemandOrderingGate() {
   events_subscription_.unsubscribe();
 }
 
-void OnDemandOrderingGate::
-propagateBatch(
+void OnDemandOrderingGate::propagateBatch(
     std::shared_ptr<shared_model::interface::TransactionBatch> batch) {
   cache_->addToBack({batch});
 

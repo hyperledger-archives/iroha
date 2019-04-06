@@ -12,13 +12,16 @@
 
 #include <boost/optional.hpp>
 #include "consensus/round.hpp"
+#include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {
   namespace interface {
     class TransactionBatch;
     class Proposal;
-    class Peer;
   }  // namespace interface
+  namespace crypto {
+    class PublicKey;
+  }  // namespace crypto
 }  // namespace shared_model
 
 namespace iroha {
@@ -30,7 +33,7 @@ namespace iroha {
         /**
          * Type of peer identity
          */
-        using PeerType = shared_model::interface::Peer;
+        using PeerType = shared_model::crypto::PublicKey;
 
         /**
          * Type of stored proposals
@@ -84,11 +87,11 @@ namespace iroha {
         /**
          * Create corresponding OdOsNotification interface for peer
          * Returned pointer is guaranteed to be not equal to nullptr
-         * @param peer - peer to connect
+         * @param to - address of the peer to connect
          * @return connection represented with OdOsNotification interface
          */
         virtual std::unique_ptr<OdOsNotification> create(
-            const details::PeerType &to) = 0;
+            const shared_model::interface::types::AddressType &to) = 0;
 
         virtual ~OdOsNotificationFactory() = default;
       };
@@ -98,14 +101,15 @@ namespace iroha {
         using InitiatorPeerType = std::shared_ptr<details::PeerType>;
         using ProposalType = details::ProposalType;
         using TransactionBatchType = details::TransactionBatchType;
-        using CollectionType = details::CollectionType;
+        using BatchesCollectionType = details::CollectionType;
+        using PeerStateType = std::vector<InitiatorPeerType>;
 
         /**
          * Callback on receiving transactions
          * @param batches - vector of passed transaction batches
          * @param from - peer which sends batches
          */
-        virtual void onBatches(CollectionType batches,
+        virtual void onBatches(BatchesCollectionType batches,
                                InitiatorPeerType from) = 0;
 
         /**

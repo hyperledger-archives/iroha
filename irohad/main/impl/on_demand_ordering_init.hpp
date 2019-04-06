@@ -45,6 +45,7 @@ namespace iroha {
               async_call,
           std::shared_ptr<TransportFactoryType> proposal_transport_factory,
           std::chrono::milliseconds delay,
+          std::shared_ptr<shared_model::crypto::PublicKey> self_peer,
           const logger::LoggerManagerTreePtr &ordering_log_manager);
 
       /**
@@ -59,6 +60,7 @@ namespace iroha {
           std::shared_ptr<TransportFactoryType> proposal_transport_factory,
           std::chrono::milliseconds delay,
           std::vector<shared_model::interface::types::HashType> initial_hashes,
+          std::shared_ptr<shared_model::crypto::PublicKey> self_peer,
           const logger::LoggerManagerTreePtr &ordering_log_manager);
 
       /**
@@ -116,6 +118,10 @@ namespace iroha {
        * requests to ordering service and processing responses
        * @param proposal_factory factory required by ordering service to produce
        * proposals
+       * @param field_validator - provides a dependency for validating peer keys
+       * @param creation_strategy - provides a strategy for creaing proposals in
+       * OS
+       * @param self_peer_key - the public key of instantiated peer
        * @return initialized ordering gate
        */
       std::shared_ptr<network::OrderingGate> initOrderingGate(
@@ -139,7 +145,10 @@ namespace iroha {
           std::function<std::chrono::milliseconds(
               const synchronizer::SynchronizationEvent &)> delay_func,
           logger::LoggerManagerTreePtr ordering_log_manager,
-          std::shared_ptr<ordering::ProposalCreationStrategy> creation_strategy);
+          std::shared_ptr<shared_model::validation::FieldValidator>
+              field_validator,
+          std::shared_ptr<ordering::ProposalCreationStrategy> creation_strategy,
+          std::shared_ptr<shared_model::crypto::PublicKey> self_peer_key);
 
       /// gRPC service for ordering service
       std::shared_ptr<ordering::proto::OnDemandOrdering::Service> service;

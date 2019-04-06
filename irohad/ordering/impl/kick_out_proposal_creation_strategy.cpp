@@ -50,9 +50,7 @@ boost::optional<ProposalCreationStrategy::RoundType>
 KickOutProposalCreationStrategy::onProposal(PeerType who,
                                             RoundType requested_round) {
   auto iter = last_requested_.find(who->hex());
-  if (iter == last_requested_.end()) {
-    last_requested_.insert({who->hex(), requested_round});
-  } else {
+  if (iter != last_requested_.end()) {
     if (iter->second < requested_round) {
       iter->second = requested_round;
     }

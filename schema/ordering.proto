@@ -4,6 +4,7 @@ package iroha.ordering.proto;
 import "transaction.proto";
 import "proposal.proto";
 import "endpoint.proto";
+import "primitive.proto";
 import "google/protobuf/empty.proto";
 
 service OrderingGateTransportGrpc {
@@ -21,10 +22,12 @@ message ProposalRound {
 
 message BatchesRequest {
   repeated protocol.Transaction transactions = 1;
+  string peer_key = 2;
 }
 
 message ProposalRequest {
   ProposalRound round = 1;
+  string peer_key = 2;
 }
 
 message ProposalResponse {

@@ -52,12 +52,14 @@ namespace iroha {
             async_call,
         std::shared_ptr<TransportFactoryType> proposal_transport_factory,
         std::chrono::milliseconds delay,
+        std::shared_ptr<shared_model::crypto::PublicKey> self_peer,
         const logger::LoggerManagerTreePtr &ordering_log_manager) {
       return std::make_shared<ordering::transport::OnDemandOsClientGrpcFactory>(
           std::move(async_call),
           std::move(proposal_transport_factory),
           [] { return std::chrono::system_clock::now(); },
           delay,
+          self_peer,
           ordering_log_manager->getChild("NetworkClient")->getLogger());
     }
 
@@ -68,6 +70,7 @@ namespace iroha {
         std::shared_ptr<TransportFactoryType> proposal_transport_factory,
         std::chrono::milliseconds delay,
         std::vector<shared_model::interface::types::HashType> initial_hashes,
+        std::shared_ptr<shared_model::crypto::PublicKey> self_peer_key,
         const logger::LoggerManagerTreePtr &ordering_log_manager) {
       // since top block will be the first in notifier observable, hashes of
       // two previous blocks are prepended
@@ -195,6 +198,7 @@ namespace iroha {
           createNotificationFactory(std::move(async_call),
                                     std::move(proposal_transport_factory),
                                     delay,
+                                    self_peer_key,
                                     ordering_log_manager),
           peers,
           ordering_log_manager->getChild("ConnectionManager")->getLogger());
@@ -301,7 +305,10 @@ namespace iroha {
         std::function<std::chrono::milliseconds(
             const synchronizer::SynchronizationEvent &)> delay_func,
         logger::LoggerManagerTreePtr ordering_log_manager,
-        std::shared_ptr<ordering::ProposalCreationStrategy> creation_strategy) {
+        std::shared_ptr<shared_model::validation::FieldValidator>
+            field_validator,
+        std::shared_ptr<ordering::ProposalCreationStrategy> creation_strategy,
+        std::shared_ptr<shared_model::crypto::PublicKey> self_peer_key) {
       auto ordering_service = createService(max_number_of_transactions,
                                             proposal_factory,
                                             tx_cache,
@@ -312,6 +319,7 @@ namespace iroha {
           std::move(transaction_factory),
           std::move(batch_parser),
           std::move(transaction_batch_factory),
+          field_validator,
           ordering_log_manager->getChild("Server")->getLogger());
       return createGate(
           ordering_service,
@@ -320,6 +328,7 @@ namespace iroha {
                                   std::move(proposal_transport_factory),
                                   delay,
                                   std::move(initial_hashes),
+                                  self_peer_key,
                                   ordering_log_manager),
           std::make_shared<ordering::cache::OnDemandCache>(),
           std::move(proposal_factory),

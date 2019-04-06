@@ -376,8 +376,13 @@ void Irohad::initOrderingGate() {
   };
 
   std::shared_ptr<iroha::ordering::ProposalCreationStrategy> proposal_strategy =
-      std::make_shared<ordering::KickOutProposalCreationStrategy>(
+      std::make_shared<ordering::kiKickOutProposalCreationStrategy>(
           getSupermajorityChecker(kConsensusConsistencyModel));
+
+  auto field_validator =
+      std::make_shared<shared_model::validation::FieldValidator>();
+  auto self_peer_key =
+      std::make_shared<shared_model::crypto::PublicKey>(keypair.publicKey());
 
   ordering_gate =
       ordering_init.initOrderingGate(max_proposal_size_,
@@ -393,7 +398,9 @@ void Irohad::initOrderingGate() {
                                      persistent_cache,
                                      delay,
                                      log_manager_->getChild("Ordering"),
-                                     proposal_strategy);
+                                     field_validator,
+                                     proposal_strategy,
+                                     self_peer_key);
   log_->info("[Init] => init ordering gate - [{}]",
              logger::logBool(ordering_gate));
 }
@@ -685,6 +692,21 @@ Irohad::RunResult Irohad::run() {
                                          + e->error);
             }
 
+            auto peer_query = storage->createPeerQuery();
+            if (not peer_query) {
+              return expected::makeError("Failed to create peer query");
+            }
+            auto peer_list = (*peer_query)->getLedgerPeers();
+            if (not peer_list) {
+              return expected::makeError(
+                  "Failed to fetch peers from peer query");
+            }
+            std::shared_ptr<iroha::LedgerState> state =
+                std::make_shared<iroha::LedgerState>();
+            state->ledger_peers = std::make_shared<
+                std::vector<std::shared_ptr<shared_model::interface::Peer>>>(
+                std::move(peer_list.get()));
+
             auto block = boost::get<expected::Value<
                 std::shared_ptr<shared_model::interface::Block>>>(&block_var)
                              ->value;
@@ -695,7 +717,8 @@ Irohad::RunResult Irohad::run() {
                 synchronizer::SynchronizationEvent{
                     rxcpp::observable<>::just(block),
                     SynchronizationOutcomeType::kCommit,
-                    {block->height(), ordering::kFirstRejectRound}});
+                    {block->height(), ordering::kFirstRejectRound},
+                    state});
             return {};
           },
           [&](const expected::Error<std::string> &e) -> RunResult {

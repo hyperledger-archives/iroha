@@ -8,6 +8,7 @@
 
 #include "ordering/on_demand_os_transport.hpp"
 
+#include "interfaces/common_objects/types.hpp"
 #include "interfaces/iroha_internal/abstract_transport_factory.hpp"
 #include "logger/logger_fwd.hpp"
 #include "network/impl/async_grpc_client.hpp"
@@ -40,6 +41,8 @@ namespace iroha {
             std::shared_ptr<TransportFactoryType> proposal_factory,
             std::function<TimepointType()> time_provider,
             std::chrono::milliseconds proposal_request_timeout,
+            std::shared_ptr<shared_model::interface::types::PubkeyType>
+                self_peer_key_,
             logger::LoggerPtr log);
 
         void onBatches(CollectionType batches) override;
@@ -55,6 +58,8 @@ namespace iroha {
         std::shared_ptr<TransportFactoryType> proposal_factory_;
         std::function<TimepointType()> time_provider_;
         std::chrono::milliseconds proposal_request_timeout_;
+        std::shared_ptr<shared_model::interface::types::PubkeyType>
+            self_peer_key_;
       };
 
       class OnDemandOsClientGrpcFactory : public OdOsNotificationFactory {
@@ -66,6 +71,8 @@ namespace iroha {
             std::shared_ptr<TransportFactoryType> proposal_factory,
             std::function<OnDemandOsClientGrpc::TimepointType()> time_provider,
             OnDemandOsClientGrpc::TimeoutType proposal_request_timeout,
+            std::shared_ptr<shared_model::interface::types::PubkeyType>
+                self_key_peer,
             logger::LoggerPtr client_log);
 
         /**
@@ -75,7 +82,7 @@ namespace iroha {
          * This factory method can be used in production code
          */
         std::unique_ptr<OdOsNotification> create(
-            const shared_model::interface::Peer &to) override;
+            const shared_model::interface::types::AddressType &to) override;
 
        private:
         std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>
@@ -83,6 +90,8 @@ namespace iroha {
         std::shared_ptr<TransportFactoryType> proposal_factory_;
         std::function<OnDemandOsClientGrpc::TimepointType()> time_provider_;
         std::chrono::milliseconds proposal_request_timeout_;
+        std::shared_ptr<shared_model::interface::types::PubkeyType>
+            self_key_peer_;
         logger::LoggerPtr client_log_;
       };
 
