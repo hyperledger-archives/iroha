@@ -59,10 +59,13 @@ namespace shared_model {
 
       /**
        * Adds error to map
-       * @param reasons
+       * @param reasons - errors for adding
        */
       void addReason(ReasonsGroupType &&reasons) {
-        reasons_map_.insert(std::move(reasons));
+        // checks that reason makes sense
+        if(reasons.second.size() != 0) {
+          reasons_map_.insert(std::move(reasons));
+        }
       }
 
       std::map<ReasonsGroupName, GroupedReasons> getReasonsMap() {
