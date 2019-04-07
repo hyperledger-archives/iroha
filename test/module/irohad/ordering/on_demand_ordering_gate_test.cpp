@@ -236,7 +236,7 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
  */
 TEST_F(OnDemandOrderingGateTest, ReplayedTransactionInProposal) {
   OnDemandOrderingGate::BlockEvent event = {
-      round, {}, std::make_shared<iroha::LedgerState>()};
+      round, {}, ledger_state};
 
   // initialize mock transaction
   auto tx1 = std::make_shared<NiceMock<MockTransaction>>();

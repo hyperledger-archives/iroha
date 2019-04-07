@@ -15,7 +15,7 @@ namespace iroha {
     namespace transport {
 
       struct MockOdOsNotificationOsSide : public OdNotificationOsSide {
-        MOCK_METHOD2(onBatches, void(CollectionType, InitiatorPeerType));
+        MOCK_METHOD2(onBatches, void(BatchesCollectionType, InitiatorPeerType));
 
         MOCK_METHOD2(onRequestProposal,
                      boost::optional<std::shared_ptr<const ProposalType>>(

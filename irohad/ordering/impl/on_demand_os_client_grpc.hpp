@@ -8,6 +8,7 @@
 
 #include "ordering/on_demand_os_transport.hpp"
 
+#include "cryptography/public_key.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/iroha_internal/abstract_transport_factory.hpp"
 #include "logger/logger_fwd.hpp"

@@ -47,11 +47,16 @@ struct OnDemandOsServerGrpcTest : public ::testing::Test {
     auto batch_parser =
         std::make_shared<shared_model::interface::TransactionBatchParserImpl>();
     batch_factory = std::make_shared<MockTransactionBatchFactory>();
+    // todo rework field validator with mock
+    auto field_validator =
+        std::make_shared<shared_model::validation::FieldValidator>();
+
     server =
         std::make_shared<OnDemandOsServerGrpc>(notification,
                                                std::move(transaction_factory),
                                                std::move(batch_parser),
                                                batch_factory,
+                                               field_validator,
                                                getTestLogger("OdOsServerGrpc"));
   }
 
@@ -96,6 +101,7 @@ TEST_F(OnDemandOsServerGrpcTest, SendBatches) {
   EXPECT_CALL(*notification, onBatches(_, _))
       .WillOnce(SaveArg0Move(&collection));
   proto::BatchesRequest request;
+  *request.mutable_peer_key() = std::string(32, 'f');
   request.add_transactions()
       ->mutable_payload()
       ->mutable_reduced_payload()
@@ -116,6 +122,7 @@ TEST_F(OnDemandOsServerGrpcTest, SendBatches) {
 TEST_F(OnDemandOsServerGrpcTest, RequestProposal) {
   auto creator = "test";
   proto::ProposalRequest request;
+  *request.mutable_peer_key() = std::string(32, 'f');
   request.mutable_round()->set_block_round(round.block_round);
   request.mutable_round()->set_reject_round(round.reject_round);
   proto::ProposalResponse response;
@@ -150,6 +157,7 @@ TEST_F(OnDemandOsServerGrpcTest, RequestProposal) {
  */
 TEST_F(OnDemandOsServerGrpcTest, RequestProposalNone) {
   proto::ProposalRequest request;
+  *request.mutable_peer_key() = std::string(32, 'f');
   request.mutable_round()->set_block_round(round.block_round);
   request.mutable_round()->set_reject_round(round.reject_round);
   proto::ProposalResponse response;

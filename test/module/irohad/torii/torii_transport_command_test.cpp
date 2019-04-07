@@ -182,7 +182,8 @@ TEST_F(CommandServiceTransportGrpcTest, ListToriiInvalid) {
   }
 
   shared_model::validation::Answer error;
-  error.addReason(std::make_pair("some error", std::vector<std::string>{}));
+  error.addReason(
+      std::make_pair("some error", std::vector<std::string>{"error_reason"}));
   EXPECT_CALL(*proto_tx_validator, validate(_))
       .Times(kTimes)
       .WillRepeatedly(Return(shared_model::validation::Answer{}));
@@ -222,7 +223,8 @@ TEST_F(CommandServiceTransportGrpcTest, ListToriiPartialInvalid) {
       .WillRepeatedly(Invoke([this, &counter, kError](const auto &) mutable {
         shared_model::validation::Answer res;
         if (counter++ == kTimes - 1) {
-          res.addReason(std::make_pair(kError, std::vector<std::string>{}));
+          res.addReason(
+              std::make_pair(kError, std::vector<std::string>{"error_reason"}));
         }
         return res;
       }));

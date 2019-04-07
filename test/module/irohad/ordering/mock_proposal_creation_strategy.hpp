@@ -14,7 +14,8 @@ namespace iroha {
   namespace ordering {
     class MockProposalCreationStrategy : public ProposalCreationStrategy {
      public:
-      MOCK_METHOD2(onCollaborationOutcome, bool(RoundType, const PeerList &));
+      MOCK_METHOD1(onCollaborationOutcome, void(const PeerList &));
+      MOCK_METHOD1(shouldCreateRound, bool(RoundType));
       MOCK_METHOD2(onProposal,
                    boost::optional<RoundType>(PeerType,
                                               RoundType requested_round));

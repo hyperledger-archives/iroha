@@ -20,12 +20,12 @@ using namespace iroha;
 using namespace iroha::ordering;
 using namespace iroha::ordering::transport;
 
-using grpc::testing::MockClientAsyncResponseReader;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgPointee;
+using grpc::testing::MockClientAsyncResponseReader;
 
 class OnDemandOsClientGrpcTest : public ::testing::Test {
  public:
@@ -54,12 +54,16 @@ class OnDemandOsClientGrpcTest : public ::testing::Test {
     proto_proposal_validator = proto_validator.get();
     proposal_factory = std::make_shared<ProtoProposalTransportFactory>(
         std::move(validator), std::move(proto_validator));
+    self_key = "self";
+    auto self_pub_key =
+        std::make_shared<shared_model::crypto::PublicKey>(self_key);
     client =
         std::make_shared<OnDemandOsClientGrpc>(std::move(ustub),
                                                async_call,
                                                proposal_factory,
                                                [&] { return timepoint; },
                                                timeout,
+                                               self_pub_key,
                                                getTestLogger("OdOsClientGrpc"));
   }
 
@@ -69,6 +73,7 @@ class OnDemandOsClientGrpcTest : public ::testing::Test {
   std::chrono::milliseconds timeout{1};
   std::shared_ptr<OnDemandOsClientGrpc> client;
   consensus::Round round{1, 2};
+  std::string self_key;
 
   MockProposalValidator *proposal_validator;
   MockProtoProposalValidator *proto_proposal_validator;
@@ -104,6 +109,7 @@ TEST_F(OnDemandOsClientGrpcTest, onBatches) {
                 .reduced_payload()
                 .creator_account_id(),
             creator);
+  ASSERT_EQ(self_key, request.peer_key());
 }
 
 /**
@@ -143,6 +149,7 @@ TEST_F(OnDemandOsClientGrpcTest, onRequestProposal) {
   ASSERT_EQ(request.round().reject_round(), round.reject_round);
   ASSERT_TRUE(proposal);
   ASSERT_EQ(proposal.value()->transactions()[0].creatorAccountId(), creator);
+  ASSERT_EQ(self_key, request.peer_key());
 }
 
 /**
