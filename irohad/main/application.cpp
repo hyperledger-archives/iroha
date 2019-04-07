@@ -376,7 +376,7 @@ void Irohad::initOrderingGate() {
   };
 
   std::shared_ptr<iroha::ordering::ProposalCreationStrategy> proposal_strategy =
-      std::make_shared<ordering::kiKickOutProposalCreationStrategy>(
+      std::make_shared<ordering::KickOutProposalCreationStrategy>(
           getSupermajorityChecker(kConsensusConsistencyModel));
 
   auto field_validator =

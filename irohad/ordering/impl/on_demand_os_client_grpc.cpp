@@ -106,9 +106,9 @@ OnDemandOsClientGrpcFactory::OnDemandOsClientGrpcFactory(
       client_log_(std::move(client_log)) {}
 
 std::unique_ptr<OdOsNotification> OnDemandOsClientGrpcFactory::create(
-    const shared_model::interface::types::AddressType &to) {
+    const shared_model::interface::Peer &to) {
   return std::make_unique<OnDemandOsClientGrpc>(
-      network::createClient<proto::OnDemandOrdering>(to),
+      network::createClient<proto::OnDemandOrdering>(to.address()),
       async_call_,
       proposal_factory_,
       time_provider_,

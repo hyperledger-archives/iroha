@@ -82,7 +82,7 @@ namespace iroha {
          * This factory method can be used in production code
          */
         std::unique_ptr<OdOsNotification> create(
-            const shared_model::interface::types::AddressType &to) override;
+            const shared_model::interface::Peer &to) override;
 
        private:
         std::shared_ptr<network::AsyncGrpcClient<google::protobuf::Empty>>

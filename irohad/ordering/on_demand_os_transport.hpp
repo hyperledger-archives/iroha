@@ -18,6 +18,7 @@ namespace shared_model {
   namespace interface {
     class TransactionBatch;
     class Proposal;
+    class Peer;
   }  // namespace interface
   namespace crypto {
     class PublicKey;
@@ -87,11 +88,11 @@ namespace iroha {
         /**
          * Create corresponding OdOsNotification interface for peer
          * Returned pointer is guaranteed to be not equal to nullptr
-         * @param to - address of the peer to connect
+         * @param peer - peer to connect
          * @return connection represented with OdOsNotification interface
          */
         virtual std::unique_ptr<OdOsNotification> create(
-            const shared_model::interface::types::AddressType &to) = 0;
+            const shared_model::interface::Peer &to) = 0;
 
         virtual ~OdOsNotificationFactory() = default;
       };

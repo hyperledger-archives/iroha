@@ -74,7 +74,7 @@ void OnDemandConnectionManager::initializeConnections(
     const CurrentPeers &peers) {
   auto create_assign = [this](auto &ptr, auto &peer) {
     std::lock_guard<std::shared_timed_mutex> lock(mutex_);
-    ptr = factory_->create(peer->address());
+    ptr = factory_->create(*peer);
   };
 
   for (auto &&pair : boost::combine(connections_.peers, peers.peers)) {
