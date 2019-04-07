@@ -20,10 +20,5 @@ namespace shared_model {
     bool Peer::operator==(const ModelType &rhs) const {
       return address() == rhs.address() and pubkey() == rhs.pubkey();
     }
-
-    size_t Peer::PeerHash::operator()(
-        const shared_model::interface::Peer &t) const {
-      return std::hash<std::string>()(t.address() + t.pubkey().toString());
-    }
   }  // namespace interface
 }  // namespace shared_model

@@ -62,7 +62,7 @@ namespace shared_model {
        * @param reasons - errors for adding
        */
       void addReason(ReasonsGroupType &&reasons) {
-        // checks that reason makes sense
+        // checks that reasons aren't empty
         if(reasons.second.size() != 0) {
           reasons_map_.insert(std::move(reasons));
         }

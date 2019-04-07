@@ -4,7 +4,6 @@ package iroha.ordering.proto;
 import "transaction.proto";
 import "proposal.proto";
 import "endpoint.proto";
-import "primitive.proto";
 import "google/protobuf/empty.proto";
 
 service OrderingGateTransportGrpc {

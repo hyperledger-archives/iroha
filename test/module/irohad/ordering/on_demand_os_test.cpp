@@ -481,4 +481,22 @@ TEST_F(OnDemandOsTest, RejectCommit) {
   ASSERT_EQ(2, boost::size((*proposal)->transactions()));
 }
 
-// todo add test with malicious case in strategy
+/**
+ * @given initialized on-demand OS with a batch inside
+ * @when creation strategy denies creation of new proposals
+ * @then check that prposal isn't created
+ */
+TEST_F(OnDemandOsTest, FailOnCreationStrategy) {
+  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
+  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
+          .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
+          .WillRepeatedly(testing::Return(boost::none));
+
+  generateTransactionsAndInsert({1, 2});
+
+  os->onCollaborationOutcome(commit_round, started_list);
+
+  ASSERT_FALSE(os->onRequestProposal(target_round, requester_peer));
+}
+

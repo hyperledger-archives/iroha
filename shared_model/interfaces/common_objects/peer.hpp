@@ -30,11 +30,6 @@ namespace shared_model {
       std::string toString() const override;
 
       bool operator==(const ModelType &rhs) const override;
-
-      class PeerHash {
-       public:
-        size_t operator()(const Peer &) const;
-      };
     };
   }  // namespace interface
 }  // namespace shared_model

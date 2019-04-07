@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <unordered_map>
-#include "common/pointer_utils.hpp"
 #include "consensus/round.hpp"
 #include "consensus/yac/supermajority_checker.hpp"
 
