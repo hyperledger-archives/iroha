@@ -14,6 +14,7 @@
 #include "interfaces/iroha_internal/transaction_batch.hpp"
 #include "interfaces/transaction.hpp"
 #include "logger/logger.hpp"
+#include "storage_shared_limit/storage_limit_none.hpp"
 #include "validators/field_validator.hpp"
 
 using namespace iroha;
@@ -89,8 +90,11 @@ grpc::Status MstTransportGrpc::SendState(
 
   auto batches = batch_parser_->parseBatches(transactions);
 
+  // TODO use the limit from MstStorage
   MstState new_state =
-      MstState::empty(mst_completer_, mst_state_txs_limit_, mst_state_logger_);
+      MstState::empty(mst_completer_,
+                      std::make_shared<StorageLimitNone>(mst_state_txs_limit_),
+                      mst_state_logger_);
 
   for (auto &batch : batches) {
     batch_factory_->createTransactionBatch(batch).match(

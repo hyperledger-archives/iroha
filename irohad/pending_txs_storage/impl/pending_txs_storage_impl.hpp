@@ -17,6 +17,7 @@
 
 namespace iroha {
 
+  class MovedBatch;
   class MstState;
 
   class PendingTransactionStorageImpl : public PendingTransactionStorage {
@@ -31,9 +32,10 @@ namespace iroha {
     using StateObservable = rxcpp::observable<SharedState>;
     using BatchObservable = rxcpp::observable<SharedBatch>;
 
-    PendingTransactionStorageImpl(StateObservable updated_batches,
-                                  BatchObservable prepared_batch,
-                                  BatchObservable expired_batch);
+    PendingTransactionStorageImpl(
+        StateObservable updated_batches,
+        rxcpp::observable<std::shared_ptr<MovedBatch>> prepared_batch,
+        BatchObservable expired_batch);
 
     ~PendingTransactionStorageImpl() override;
 

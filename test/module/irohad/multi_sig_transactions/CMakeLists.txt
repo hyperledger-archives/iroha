@@ -57,3 +57,20 @@ AddTest(mst_net_input_test mst_net_input_test.cpp)
 target_link_libraries(mst_net_input_test
     integration_framework
     )
+
+AddTest(mst_to_pcs_propagation_test mst_to_psc_propagation_test.cpp)
+target_link_libraries(mst_to_pcs_propagation_test
+    mst_propagation_to_pcs
+    schema
+    shared_model_interfaces_factories
+    shared_model_proto_backend
+    test_logger
+    )
+
+AddTest(storage_limit_test storage_limit_test.cpp)
+target_link_libraries(storage_limit_test
+    schema
+    shared_model_interfaces_factories
+    shared_model_proto_backend
+    test_logger
+    )

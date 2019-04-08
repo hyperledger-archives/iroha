@@ -15,6 +15,7 @@
 #include "module/shared_model/interface_mocks.hpp"
 #include "multi_sig_transactions/mst_processor_impl.hpp"
 #include "multi_sig_transactions/storage/mst_storage_impl.hpp"
+#include "storage_shared_limit/storage_limit_none.hpp"
 
 auto log_ = getTestLogger("MstProcessorTest");
 
@@ -23,6 +24,8 @@ using namespace framework::test_subscriber;
 
 using testing::_;
 using testing::Return;
+
+using StorageLimitDummy = StorageLimitNone<BatchPtr>;
 
 class MstProcessorTest : public testing::Test {
  public:
@@ -34,7 +37,6 @@ class MstProcessorTest : public testing::Test {
   /// use effective implementation of storage
   std::shared_ptr<MstStorage> storage;
   std::shared_ptr<FairMstProcessor> mst_processor;
-  size_t mst_state_txs_limit{10};
 
   // ---------------------------------| mocks |---------------------------------
 
@@ -50,11 +52,11 @@ class MstProcessorTest : public testing::Test {
  protected:
   void SetUp() override {
     transport = std::make_shared<MockMstTransport>();
-    storage =
-        std::make_shared<MstStorageStateImpl>(std::make_shared<TestCompleter>(),
-                                              mst_state_txs_limit,
-                                              getTestLogger("MstState"),
-                                              getTestLogger("MstStorage"));
+    storage = std::make_shared<MstStorageStateImpl>(
+        std::make_shared<TestCompleter>(),
+        std::make_shared<iroha::StorageLimitDummy>(),
+        getTestLogger("MstState"),
+        getTestLogger("MstStorage"));
 
     propagation_strategy = std::make_shared<MockPropagationStrategy>();
     EXPECT_CALL(*propagation_strategy, emitter())
@@ -256,9 +258,10 @@ TEST_F(MstProcessorTest, onUpdateFromTransportUsecase) {
 
   // ---------------------------------| when |----------------------------------
   shared_model::crypto::PublicKey another_peer_key("another_pubkey");
-  auto transported_state = MstState::empty(std::make_shared<TestCompleter>(),
-                                           mst_state_txs_limit,
-                                           getTestLogger("MstState"));
+  auto transported_state =
+      MstState::empty(std::make_shared<TestCompleter>(),
+                      std::make_shared<iroha::StorageLimitDummy>(),
+                      getTestLogger("MstState"));
   transported_state += addSignaturesFromKeyPairs(
       makeTestBatch(txBuilder(1, time_now, quorum)), 0, makeKey());
   mst_processor->onNewState(another_peer_key, transported_state);
@@ -310,7 +313,7 @@ TEST_F(MstProcessorTest, emptyStatePropagation) {
 
   auto another_peer_state = MstState::empty(
       std::make_shared<iroha::DefaultCompleter>(std::chrono::minutes(0)),
-      mst_state_txs_limit,
+      std::make_shared<iroha::StorageLimitDummy>(),
       getTestLogger("MstState"));
   another_peer_state += makeTestBatch(txBuilder(1));
 

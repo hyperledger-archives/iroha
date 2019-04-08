@@ -35,7 +35,7 @@ namespace iroha {
   auto FairMstProcessor::propagateBatchImpl(const iroha::DataType &batch)
       -> decltype(propagateBatch(batch)) {
     auto state_update = storage_->updateOwnState(batch);
-    completedBatchesNotify(*state_update.completed_state_);
+    completedBatchesNotify(state_update.completed_state_);
     updatedBatchesNotify(*state_update.updated_state_);
     expiredBatchesNotify(
         storage_->extractExpiredTransactions(time_provider_->getCurrentTime()));
@@ -58,11 +58,13 @@ namespace iroha {
   }
 
   // TODO [IR-1687] Akvinikym 10.09.18: three methods below should be one
-  void FairMstProcessor::completedBatchesNotify(ConstRefState state) const {
-    if (not state.isEmpty()) {
-      state.iterateBatches([this](const auto &batch) {
-        batches_subject_.get_subscriber().on_next(batch);
-      });
+  void FairMstProcessor::completedBatchesNotify(
+      std::vector<std::shared_ptr<MovedBatch>> completed) const {
+    if (not completed.empty()) {
+      std::for_each(
+          completed.begin(), completed.end(), [this](const auto &batch) {
+            batches_subject_.get_subscriber().on_next(batch);
+          });
     }
   }
 
@@ -101,7 +103,7 @@ namespace iroha {
                state_update.updated_state_->transactionsQuantity());
 
     // completed batches
-    completedBatchesNotify(*state_update.completed_state_);
+    completedBatchesNotify(state_update.completed_state_);
 
     // expired batches
     expiredBatchesNotify(storage_->getDiffState(from, current_time));

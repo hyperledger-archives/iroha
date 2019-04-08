@@ -48,7 +48,7 @@ namespace iroha {
      * Observable emit batches which are prepared for further processing in
      * system
      */
-    rxcpp::observable<DataType> onPreparedBatches() const;
+    rxcpp::observable<std::shared_ptr<MovedBatch>> onPreparedBatches() const;
 
     /**
      * Observable emit expired by time transactions

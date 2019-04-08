@@ -112,8 +112,10 @@ TEST_F(TransportTest, SendAndReceive) {
   std::condition_variable cv;
 
   auto time = iroha::time::now();
-  auto state = iroha::MstState::empty(
-      completer_, mst_state_txs_limit_, getTestLogger("MstState"));
+  auto state =
+      iroha::MstState::empty(completer_,
+                             std::make_shared<iroha::StorageLimitDummy>(),
+                             getTestLogger("MstState"));
   state += addSignaturesFromKeyPairs(
       makeTestBatch(txBuilder(1, time)), 0, makeKey());
   state += addSignaturesFromKeyPairs(
@@ -200,8 +202,10 @@ TEST_F(TransportTest, ReplayAttack) {
   transport->subscribe(mst_notification_transport_);
 
   auto batch = makeTestBatch(txBuilder(1), txBuilder(2));
-  auto state = iroha::MstState::empty(
-      completer_, mst_state_txs_limit_, getTestLogger("MstState"));
+  auto state =
+      iroha::MstState::empty(completer_,
+                             std::make_shared<iroha::StorageLimitDummy>(),
+                             getTestLogger("MstState"));
   state += addSignaturesFromKeyPairs(
       addSignaturesFromKeyPairs(batch, 0, makeKey()), 1, makeKey());
 

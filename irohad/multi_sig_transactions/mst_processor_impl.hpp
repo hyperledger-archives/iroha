@@ -75,7 +75,8 @@ namespace iroha {
      * signatures and ready to move forward
      * @param state with those batches
      */
-    void completedBatchesNotify(ConstRefState state) const;
+    void completedBatchesNotify(
+        std::vector<std::shared_ptr<MovedBatch>> completed) const;
 
     /**
      * Notify subscribers when some of the batches received new signatures, but
@@ -102,7 +103,7 @@ namespace iroha {
     rxcpp::subjects::subject<std::shared_ptr<MstState>> state_subject_;
 
     /// use for share completed batches
-    rxcpp::subjects::subject<DataType> batches_subject_;
+    rxcpp::subjects::subject<std::shared_ptr<MovedBatch>> batches_subject_;
 
     /// use for share expired batches
     rxcpp::subjects::subject<DataType> expired_subject_;

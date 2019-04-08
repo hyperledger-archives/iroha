@@ -18,7 +18,8 @@ namespace iroha {
     return this->onStateUpdateImpl();
   }
 
-  rxcpp::observable<DataType> MstProcessor::onPreparedBatches() const {
+  rxcpp::observable<std::shared_ptr<MovedBatch>>
+  MstProcessor::onPreparedBatches() const {
     return this->onPreparedBatchesImpl();
   }
 

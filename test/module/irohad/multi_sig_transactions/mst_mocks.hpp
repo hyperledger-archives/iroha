@@ -13,6 +13,7 @@
 #include "multi_sig_transactions/mst_time_provider.hpp"
 #include "multi_sig_transactions/mst_types.hpp"
 #include "network/mst_transport.hpp"
+#include "storage_shared_limit/storage_limit_none.hpp"
 
 namespace iroha {
 
@@ -57,7 +58,8 @@ namespace iroha {
     MOCK_METHOD1(propagateBatchImpl, bool(const DataType &));
     MOCK_CONST_METHOD0(onStateUpdateImpl,
                        rxcpp::observable<std::shared_ptr<MstState>>());
-    MOCK_CONST_METHOD0(onPreparedBatchesImpl, rxcpp::observable<DataType>());
+    MOCK_CONST_METHOD0(onPreparedBatchesImpl,
+                       rxcpp::observable<std::shared_ptr<MovedBatch>>());
     MOCK_CONST_METHOD0(onExpiredBatchesImpl, rxcpp::observable<DataType>());
     MOCK_CONST_METHOD1(batchInStorageImpl, bool(const DataType &));
   };

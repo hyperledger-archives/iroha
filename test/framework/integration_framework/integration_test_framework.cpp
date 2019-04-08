@@ -386,7 +386,8 @@ namespace integration_framework {
   IntegrationTestFramework::getMstPreparedBatchesObservable() {
     return iroha_instance_->getIrohaInstance()
         ->getMstProcessor()
-        ->onPreparedBatches();
+        ->onPreparedBatches()
+        .map([](const auto &moved_batch) { return moved_batch->get(); });
   }
 
   rxcpp::observable<iroha::BatchPtr>
