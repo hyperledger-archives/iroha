@@ -6,7 +6,9 @@
 #include "ametsuchi/impl/storage_impl.hpp"
 
 #include <soci/postgresql/soci-postgresql.h>
+#include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
+#include <boost/range/algorithm/replace_if.hpp>
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include "ametsuchi/impl/mutable_storage_impl.hpp"
 #include "ametsuchi/impl/peer_query_wsv.hpp"
@@ -42,6 +44,17 @@ namespace {
     } catch (std::exception &e) {
       return false;
     }
+  }
+
+  std::string formatPostgresMessage(const char *message) {
+    std::string formatted_message(message);
+    boost::replace_if(formatted_message, boost::is_any_of("\r\n"), ' ');
+    return formatted_message;
+  }
+
+  void processPqNotice(void *arg, const char *message) {
+    auto *log = reinterpret_cast<logger::Logger *>(arg);
+    log->debug("{}", formatPostgresMessage(message));
   }
 
 }  // namespace
@@ -84,6 +97,14 @@ namespace iroha {
           block_is_prepared(false) {
       prepared_block_name_ =
           "prepared_block" + postgres_options_.dbname().value_or("");
+
+      for (size_t i = 0; i != pool_size_; i++) {
+        soci::session &session = connection_->at(i);
+        auto *backend = static_cast<soci::postgresql_session_backend *>(
+            session.get_backend());
+        PQsetNoticeProcessor(backend->conn_, &processPqNotice, log_.get());
+      }
+
       soci::session sql(*connection_);
       // rollback current prepared transaction
       // if there exists any since last session
@@ -328,7 +349,8 @@ namespace iroha {
         return expected::makeValue(false);
       } catch (std::exception &e) {
         return expected::makeError<std::string>(
-            std::string("Connection to PostgreSQL broken: ") + e.what());
+            std::string("Connection to PostgreSQL broken: ")
+            + formatPostgresMessage(e.what()));
       }
     }
 
@@ -359,7 +381,7 @@ namespace iroha {
           session.open(*soci::factory_postgresql(), options_str);
         }
       } catch (const std::exception &e) {
-        return expected::makeError(e.what());
+        return expected::makeError(formatPostgresMessage(e.what()));
       }
       return expected::makeValue(pool);
     }
@@ -529,10 +551,14 @@ namespace iroha {
     void StorageImpl::prepareBlock(std::unique_ptr<TemporaryWsv> wsv) {
       auto &wsv_impl = static_cast<TemporaryWsvImpl &>(*wsv);
       if (not prepared_blocks_enabled_) {
-        log_->warn("prepared block are not enabled");
+        log_->warn("prepared blocks are not enabled");
         return;
       }
-      if (not block_is_prepared) {
+      if (block_is_prepared) {
+        log_->warn(
+            "Refusing to add new prepared state, because there already is one. "
+            "Multiple prepared states are not yet supported.");
+      } else {
         soci::session &sql = *wsv_impl.sql_;
         try {
           sql << "PREPARE TRANSACTION '" + prepared_block_name_ + "';";
@@ -554,7 +580,7 @@ namespace iroha {
         sql << "ROLLBACK PREPARED '" + prepared_block_name_ + "';";
         block_is_prepared = false;
       } catch (const std::exception &e) {
-        log_->info(e.what());
+        log_->info("{}", formatPostgresMessage(e.what()));
       }
     }
 
@@ -563,12 +589,16 @@ namespace iroha {
       auto json_result = converter_->serialize(*block);
       return json_result.match(
           [this, &block](const expected::Value<std::string> &v) {
-            block_store_->add(block->height(), stringToBytes(v.value));
-            notifier_.get_subscriber().on_next(block);
-            return true;
+            if (block_store_->add(block->height(), stringToBytes(v.value))) {
+              notifier_.get_subscriber().on_next(block);
+              return true;
+            } else {
+              log_->error("Block insertion failed: {}", *block);
+              return false;
+            }
           },
-          [this](const expected::Error<std::string> &e) {
-            log_->error(e.error);
+          [this, &block](const expected::Error<std::string> &e) {
+            log_->error("Block serialization failed: {}: {}", *block, e.error);
             return false;
           });
     }
