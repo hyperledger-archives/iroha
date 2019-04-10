@@ -4,7 +4,7 @@ services:
 {% for node in iroha_nodes %}
   {{ node.human_hostname }}:
     image: hyperledger/iroha:{{ iroha_docker_tag }}
-{% if overlay_network %}
+{% if iroha_overlay_network %}
     container_name: {{ node.hostname.split(':')[0] }}
     expose:
       - {{ iroha_peer_port }}
@@ -27,9 +27,10 @@ services:
     networks:
       - {{ iroha_network_name }}
       - iroha-db-net
+    restart: always
 
   {{ node.human_hostname }}-postgres:
-    image: postgres:{{ postgres_docker_tag }}
+    image: postgres:{{ iroha_postgres_docker_tag }}
     container_name: {{ node.human_hostname }}-postgres
     environment:
       POSTGRES_PASSWORD: {{ iroha_postgres_password }}
