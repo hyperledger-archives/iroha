@@ -96,6 +96,7 @@ namespace iroha {
     log_->info("Applying new state");
     auto current_time = time_provider_->getCurrentTime();
 
+    // no need to add already expired batches to local state
     new_state.eraseExpired(current_time);
     auto state_update = storage_->apply(from, new_state);
 
@@ -106,6 +107,10 @@ namespace iroha {
 
     // completed batches
     completedBatchesNotify(*state_update.completed_state_);
+
+    // expired batches
+    // not nesessary to do it right here, just use the occasion to clean storage
+    expiredBatchesNotify(storage_->extractExpiredTransactions(current_time));
   }
 
   // -----------------------------| private api |-----------------------------
