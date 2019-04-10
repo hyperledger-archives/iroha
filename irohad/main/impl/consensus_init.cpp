@@ -5,6 +5,7 @@
 
 #include "main/impl/consensus_init.hpp"
 
+#include "common/bind.hpp"
 #include "consensus/yac/consistency_model.hpp"
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include "consensus/yac/impl/timer_impl.hpp"
@@ -97,6 +98,8 @@ namespace iroha {
           ConsistencyModel consistency_model,
           const logger::LoggerManagerTreePtr &consensus_log_manager) {
         auto peer_orderer = createPeerOrderer(peer_query_factory);
+        auto peers = peer_query_factory->createPeerQuery() |
+            [](auto &&peer_query) { return peer_query->getLedgerPeers(); };
 
         consensus_network_ = std::make_shared<NetworkImpl>(
             async_call,
@@ -105,7 +108,7 @@ namespace iroha {
             },
             consensus_log_manager->getChild("Network")->getLogger());
 
-        auto yac = createYac(peer_orderer->getInitialOrdering().value(),
+        auto yac = createYac(*ClusterOrdering::create(peers.value()),
                              keypair,
                              createTimer(vote_delay_milliseconds),
                              consensus_network_,
