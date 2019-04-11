@@ -35,38 +35,27 @@ bool OnDemandResendStrategy::readyToUse(
 OnDemandResendStrategy::RoundSetType OnDemandResendStrategy::extract(
     std::shared_ptr<shared_model::interface::TransactionBatch> batch) {
   std::shared_lock<std::shared_timed_mutex> lock(access_mutex_);
-  std::set<consensus::Round> valid_rounds{
-      nextCommitRound(nextCommitRound(current_round_)),
-      nextCommitRound(nextRejectRound(current_round_)),
-      nextRejectRound(nextCommitRound(current_round_)),
-      nextRejectRound(nextRejectRound(current_round_))};
+  auto reachable_from_current = reachableInTwoRounds(current_round_);
 
   auto saved_round_iterator = sent_batches_.find(batch);
   if (saved_round_iterator == sent_batches_.end()) {
-    return valid_rounds;
+    return reachable_from_current;
   }
   if (not saved_round_iterator->second.second) {
-    return valid_rounds;
+    return reachable_from_current;
   }
+
   auto saved_round = saved_round_iterator->second.first;
-
-  if (nextCommitRound(nextCommitRound(saved_round)) == current_round_) {
-    // do nothing
-  } else if (nextRejectRound(nextCommitRound(saved_round)) == current_round_) {
-    valid_rounds.erase(nextCommitRound(nextRejectRound(current_round_)));
-  } else if (nextCommitRound(nextRejectRound(saved_round)) == current_round_) {
-    valid_rounds.erase(nextCommitRound(nextRejectRound(current_round_)));
-  } else if (nextRejectRound(nextRejectRound(saved_round)) == current_round_) {
-    valid_rounds.erase(nextCommitRound(nextRejectRound(current_round_)));
-    valid_rounds.erase(nextRejectRound(nextCommitRound(current_round_)));
-    valid_rounds.erase(nextCommitRound(nextCommitRound(current_round_)));
-  } else {
-    // do nothing
-  }
-
   saved_round_iterator->second.first = current_round_;
 
-  return valid_rounds;
+  auto reachable_from_saved = reachableInTwoRounds(saved_round);
+  RoundSetType target_rounds{};
+  std::set_difference(reachable_from_current.begin(),
+                      reachable_from_current.end(),
+                      reachable_from_saved.begin(),
+                      reachable_from_saved.end(),
+                      std::inserter(target_rounds, target_rounds.begin()));
+  return target_rounds;
 }
 
 void OnDemandResendStrategy::remove(
@@ -95,4 +84,15 @@ void OnDemandResendStrategy::setCurrentRound(
 iroha::consensus::Round OnDemandResendStrategy::getCurrentRound() const {
   std::shared_lock<std::shared_timed_mutex> lock(access_mutex_);
   return current_round_;
+}
+
+OnDemandResendStrategy::RoundSetType
+OnDemandResendStrategy::reachableInTwoRounds(
+    const consensus::Round &round) const {
+  RoundSetType reachable_rounds{};
+  reachable_rounds.insert(nextCommitRound(nextCommitRound(round)));
+  reachable_rounds.insert(nextCommitRound(nextRejectRound(round)));
+  reachable_rounds.insert(nextRejectRound(nextCommitRound(round)));
+  reachable_rounds.insert(nextRejectRound(nextRejectRound(round)));
+  return reachable_rounds;
 }

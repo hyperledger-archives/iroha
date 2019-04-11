@@ -33,6 +33,8 @@ namespace iroha {
       consensus::Round getCurrentRound() const override;
 
      private:
+      RoundSetType reachableInTwoRounds(const consensus::Round &round) const;
+
       std::unordered_map<
           std::shared_ptr<shared_model::interface::TransactionBatch>,
           std::pair<consensus::Round, bool>,
