@@ -18,17 +18,29 @@ add_library(integration_framework
     integration_framework/integration_test_framework.cpp
     integration_framework/iroha_instance.cpp
     integration_framework/fake_peer/fake_peer.cpp
-    integration_framework/fake_peer/yac_network_notifier.cpp
+    integration_framework/fake_peer/block_storage.cpp
+    integration_framework/fake_peer/proposal_storage.cpp
+    integration_framework/fake_peer/behaviour/behaviour.cpp
+    integration_framework/fake_peer/behaviour/empty.cpp
+    integration_framework/fake_peer/behaviour/honest.cpp
+    integration_framework/fake_peer/network/loader_grpc.cpp
+    integration_framework/fake_peer/network/mst_network_notifier.cpp
+    integration_framework/fake_peer/network/on_demand_os_network_notifier.cpp
+    integration_framework/fake_peer/network/ordering_service_network_notifier.cpp
+    integration_framework/fake_peer/network/ordering_gate_network_notifier.cpp
+    integration_framework/fake_peer/network/yac_network_notifier.cpp
     integration_framework/port_guard.cpp
     )
 target_link_libraries(integration_framework
+    PRIVATE
+    yac_transport
+    PUBLIC
     application
     integration_framework_config_helper
     command_client
     common_test_constants
     query_client
     ordering_gate_common
-    yac_transport
     shared_model_cryptography_model
     server_runner
     mst_transport

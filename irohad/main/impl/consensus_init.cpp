@@ -5,6 +5,7 @@
 
 #include "main/impl/consensus_init.hpp"
 
+#include "common/bind.hpp"
 #include "consensus/yac/consistency_model.hpp"
 #include "consensus/yac/impl/peer_orderer_impl.hpp"
 #include "consensus/yac/impl/timer_impl.hpp"
@@ -17,6 +18,7 @@
 #include "logger/logger_manager.hpp"
 #include "network/impl/grpc_channel_builder.hpp"
 
+using namespace iroha::consensus;
 using namespace iroha::consensus::yac;
 
 namespace {
@@ -41,12 +43,14 @@ namespace {
 
   std::shared_ptr<Yac> createYac(
       ClusterOrdering initial_order,
+      Round initial_round,
       const shared_model::crypto::Keypair &keypair,
       std::shared_ptr<Timer> timer,
       std::shared_ptr<YacNetwork> network,
       std::shared_ptr<shared_model::interface::CommonObjectsFactory>
           common_objects_factory,
       ConsistencyModel consistency_model,
+      rxcpp::observe_on_one_worker coordination,
       const logger::LoggerManagerTreePtr &consensus_log_manager) {
     std::shared_ptr<iroha::consensus::yac::CleanupStrategy> cleanup_strategy =
         std::make_shared<iroha::consensus::yac::BufferedCleanupStrategy>();
@@ -58,6 +62,8 @@ namespace {
         createCryptoProvider(keypair, std::move(common_objects_factory)),
         std::move(timer),
         initial_order,
+        initial_round,
+        coordination,
         consensus_log_manager->getChild("HashGate")->getLogger());
   }
 }  // namespace
@@ -74,23 +80,14 @@ namespace iroha {
       }
 
       auto YacInit::createTimer(std::chrono::milliseconds delay_milliseconds) {
-        return std::make_shared<TimerImpl>([delay_milliseconds, this] {
-          // static factory with a single thread
-          //
-          // observe_on_new_thread -- coordination which creates new thread with
-          // observe_on strategy -- all subsequent operations will be performed
-          // on this thread.
-          //
-          // scheduler owns a timeline that is exposed by the now() method.
-          // scheduler is also a factory for workers in that timeline.
-          //
-          // coordination is a factory for coordinators and has a scheduler.
-          return rxcpp::observable<>::timer(
-              std::chrono::milliseconds(delay_milliseconds), coordination_);
-        });
+        return std::make_shared<TimerImpl>(
+            delay_milliseconds,
+            // TODO 2019-04-10 andrei: IR-441 Share a thread between MST and YAC
+            rxcpp::observe_on_new_thread());
       }
 
       std::shared_ptr<YacGate> YacInit::initConsensusGate(
+          Round initial_round,
           std::shared_ptr<iroha::ametsuchi::PeerQueryFactory>
               peer_query_factory,
           std::shared_ptr<simulator::BlockCreator> block_creator,
@@ -107,6 +104,8 @@ namespace iroha {
           ConsistencyModel consistency_model,
           const logger::LoggerManagerTreePtr &consensus_log_manager) {
         auto peer_orderer = createPeerOrderer(peer_query_factory);
+        auto peers = peer_query_factory->createPeerQuery() |
+            [](auto &&peer_query) { return peer_query->getLedgerPeers(); };
 
         consensus_network_ = std::make_shared<NetworkImpl>(
             async_call,
@@ -115,12 +114,14 @@ namespace iroha {
             },
             consensus_log_manager->getChild("Network")->getLogger());
 
-        auto yac = createYac(peer_orderer->getInitialOrdering().value(),
+        auto yac = createYac(*ClusterOrdering::create(peers.value()),
+                             initial_round,
                              keypair,
                              createTimer(vote_delay_milliseconds),
                              consensus_network_,
                              std::move(common_objects_factory),
                              consistency_model,
+                             rxcpp::observe_on_new_thread(),
                              consensus_log_manager);
         consensus_network_->subscribe(yac);
 

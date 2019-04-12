@@ -12,6 +12,7 @@
 #include "framework/test_logger.hpp"
 #include "interfaces/iroha_internal/transaction_batch_impl.hpp"
 #include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
+#include "module/irohad/common/validators_config.hpp"
 #include "module/irohad/ordering/mock_on_demand_os_notification.hpp"
 #include "module/irohad/ordering/mock_proposal_creation_strategy.hpp"
 #include "module/shared_model/interface/mock_transaction_batch_factory.hpp"
@@ -50,7 +51,8 @@ struct OnDemandOsServerGrpcTest : public ::testing::Test {
     batch_factory = std::make_shared<MockTransactionBatchFactory>();
     // todo rework field validator with mock
     auto field_validator =
-        std::make_shared<shared_model::validation::FieldValidator>();
+        std::make_shared<shared_model::validation::FieldValidator>(
+            test::kTestsValidatorsConfig);
     proposal_creation_strategy =
         std::make_shared<MockProposalCreationStrategy>();
 

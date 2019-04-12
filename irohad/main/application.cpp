@@ -25,6 +25,7 @@
 #include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
 #include "logger/logger.hpp"
 #include "logger/logger_manager.hpp"
+#include "main/impl/consensus_init.hpp"
 #include "main/server_runner.hpp"
 #include "multi_sig_transactions/gossip_propagation_strategy.hpp"
 #include "multi_sig_transactions/mst_processor_impl.hpp"
@@ -104,15 +105,21 @@ Irohad::Irohad(const std::string &block_store_dir,
       opt_mst_gossip_params_(opt_mst_gossip_params),
       keypair(keypair),
       ordering_init(logger_manager->getLogger()),
+      yac_init(std::make_unique<iroha::consensus::yac::YacInit>()),
+      consensus_gate_objects(consensus_gate_objects_lifetime),
       log_manager_(std::move(logger_manager)),
       log_(log_manager_->getLogger()) {
   log_->info("created");
+  validators_config_ =
+      std::make_shared<shared_model::validation::ValidatorsConfig>(
+          max_proposal_size_);
   // Initializing storage at this point in order to insert genesis block before
   // initialization of iroha daemon
   initStorage();
 }
 
 Irohad::~Irohad() {
+  consensus_gate_objects_lifetime.unsubscribe();
   consensus_gate_events_subscription.unsubscribe();
 }
 
@@ -159,7 +166,7 @@ void Irohad::dropStorage() {
 void Irohad::initStorage() {
   common_objects_factory_ =
       std::make_shared<shared_model::proto::ProtoCommonObjectsFactory<
-          shared_model::validation::FieldValidator>>();
+          shared_model::validation::FieldValidator>>(validators_config_);
   auto perm_converter =
       std::make_shared<shared_model::proto::ProtoPermissionToString>();
   auto block_converter =
@@ -219,7 +226,7 @@ void Irohad::initBatchParser() {
  */
 void Irohad::initValidators() {
   auto factory = std::make_unique<shared_model::proto::ProtoProposalFactory<
-      shared_model::validation::DefaultProposalValidator>>();
+      shared_model::validation::DefaultProposalValidator>>(validators_config_);
   auto validators_log_manager = log_manager_->getChild("Validators");
   stateful_validator = std::make_shared<StatefulValidatorImpl>(
       std::move(factory),
@@ -249,8 +256,9 @@ void Irohad::initFactories() {
           shared_model::validation::ProtoTransactionValidator>();
   std::unique_ptr<shared_model::validation::AbstractValidator<
       shared_model::interface::Proposal>>
-      proposal_validator = std::make_unique<
-          shared_model::validation::DefaultProposalValidator>();
+      proposal_validator =
+          std::make_unique<shared_model::validation::DefaultProposalValidator>(
+              validators_config_);
   std::unique_ptr<
       shared_model::validation::AbstractValidator<iroha::protocol::Proposal>>
       proto_proposal_validator =
@@ -262,15 +270,19 @@ void Irohad::initFactories() {
           shared_model::proto::Proposal>>(std::move(proposal_validator),
                                           std::move(proto_proposal_validator));
 
+  auto batch_validator =
+      std::make_shared<shared_model::validation::BatchValidator>(
+          validators_config_);
   // transaction factories
   transaction_batch_factory_ =
-      std::make_shared<shared_model::interface::TransactionBatchFactoryImpl>();
+      std::make_shared<shared_model::interface::TransactionBatchFactoryImpl>(
+          batch_validator);
 
   std::unique_ptr<shared_model::validation::AbstractValidator<
       shared_model::interface::Transaction>>
-      transaction_validator =
-          std::make_unique<shared_model::validation::
-                               DefaultOptionalSignedTransactionValidator>();
+      transaction_validator = std::make_unique<
+          shared_model::validation::DefaultOptionalSignedTransactionValidator>(
+          validators_config_);
   transaction_factory =
       std::make_shared<shared_model::proto::ProtoTransportFactory<
           shared_model::interface::Transaction,
@@ -285,7 +297,8 @@ void Irohad::initFactories() {
   std::unique_ptr<shared_model::validation::AbstractValidator<
       shared_model::interface::Query>>
       query_validator = std::make_unique<
-          shared_model::validation::DefaultSignedQueryValidator>();
+          shared_model::validation::DefaultSignedQueryValidator>(
+          validators_config_);
   std::unique_ptr<
       shared_model::validation::AbstractValidator<iroha::protocol::Query>>
       proto_query_validator =
@@ -296,7 +309,8 @@ void Irohad::initFactories() {
       std::move(query_validator), std::move(proto_query_validator));
 
   auto blocks_query_validator = std::make_unique<
-      shared_model::validation::DefaultSignedBlocksQueryValidator>();
+      shared_model::validation::DefaultSignedBlocksQueryValidator>(
+      validators_config_);
   auto proto_blocks_query_validator =
       std::make_unique<shared_model::validation::ProtoBlocksQueryValidator>();
 
@@ -346,7 +360,7 @@ void Irohad::initOrderingGate() {
       });
 
   auto factory = std::make_unique<shared_model::proto::ProtoProposalFactory<
-      shared_model::validation::DefaultProposalValidator>>();
+      shared_model::validation::DefaultProposalValidator>>(validators_config_);
 
   const uint64_t kCounter = 0, kMaxLocalCounter = 2;
   // reject_delay and local_counter are local mutable variables of lambda
@@ -380,7 +394,8 @@ void Irohad::initOrderingGate() {
           getSupermajorityChecker(kConsensusConsistencyModel));
 
   auto field_validator =
-      std::make_shared<shared_model::validation::FieldValidator>();
+      std::make_shared<shared_model::validation::FieldValidator>(
+          validators_config_);
 
   ordering_gate =
       ordering_init.initOrderingGate(max_proposal_size_,
@@ -414,8 +429,8 @@ void Irohad::initSimulator() {
       //  not required to validate signatures of transactions here because they
       //  are validated in the ordering gate, where they are received from the
       //  ordering service.
-      std::make_unique<
-          shared_model::validation::DefaultUnsignedBlockValidator>(),
+      std::make_unique<shared_model::validation::DefaultUnsignedBlockValidator>(
+          validators_config_),
       std::make_unique<shared_model::validation::ProtoBlockValidator>());
   simulator = std::make_shared<Simulator>(
       ordering_gate,
@@ -446,6 +461,7 @@ void Irohad::initBlockLoader() {
       loader_init.initBlockLoader(storage,
                                   storage,
                                   consensus_result_cache_,
+                                  validators_config_,
                                   log_manager_->getChild("BlockLoader"));
 
   log_->info("[Init] => block loader");
@@ -455,17 +471,34 @@ void Irohad::initBlockLoader() {
  * Initializing consensus gate
  */
 void Irohad::initConsensusGate() {
-  consensus_gate =
-      yac_init.initConsensusGate(storage,
-                                 simulator,
-                                 block_loader,
-                                 keypair,
-                                 consensus_result_cache_,
-                                 vote_delay_,
-                                 async_call_,
-                                 common_objects_factory_,
-                                 kConsensusConsistencyModel,
-                                 log_manager_->getChild("Consensus"));
+  auto block_query = storage->createBlockQuery();
+  if (not block_query) {
+    log_->error("Failed to create block query");
+    return;
+  }
+  auto block_var = (*block_query)->getTopBlock();
+  if (auto e = boost::get<expected::Error<std::string>>(&block_var)) {
+    log_->error("Failed to get the top block: {}", e->error);
+    return;
+  }
+
+  auto block =
+      boost::get<
+          expected::Value<std::shared_ptr<shared_model::interface::Block>>>(
+          &block_var)
+          ->value;
+  consensus_gate = yac_init->initConsensusGate(
+      {block->height(), ordering::kFirstRejectRound},
+      storage,
+      simulator,
+      block_loader,
+      keypair,
+      consensus_result_cache_,
+      vote_delay_,
+      async_call_,
+      common_objects_factory_,
+      kConsensusConsistencyModel,
+      log_manager_->getChild("Consensus"));
   consensus_gate->onOutcome().subscribe(
       consensus_gate_events_subscription,
       consensus_gate_objects.get_subscriber());
@@ -501,7 +534,7 @@ void Irohad::initPeerCommunicationService() {
     log_->info("~~~~~~~~~| PROPOSAL ^_^ |~~~~~~~~~ ");
   });
 
-  pcs->on_commit().subscribe([this](const auto &event) {
+  pcs->onSynchronization().subscribe([this](const auto &event) {
     using iroha::synchronizer::SynchronizationOutcomeType;
     switch (event.sync_outcome) {
       case SynchronizationOutcomeType::kCommit:
@@ -671,7 +704,7 @@ Irohad::RunResult Irohad::run() {
             }
             // Run internal server
             return internal_server->append(ordering_init.service)
-                .append(yac_init.getConsensusNetwork())
+                .append(yac_init->getConsensusNetwork())
                 .append(loader_init.service)
                 .run();
           })
@@ -690,33 +723,28 @@ Irohad::RunResult Irohad::run() {
                                          + e->error);
             }
 
-            auto peer_query = storage->createPeerQuery();
-            if (not peer_query) {
-              return expected::makeError("Failed to create peer query");
-            }
-            auto peer_list = (*peer_query)->getLedgerPeers();
-            if (not peer_list) {
-              return expected::makeError(
-                  "Failed to fetch peers from peer query");
-            }
-            std::shared_ptr<iroha::LedgerState> state =
-                std::make_shared<iroha::LedgerState>();
-            state->ledger_peers = std::make_shared<
-                std::vector<std::shared_ptr<shared_model::interface::Peer>>>(
-                std::move(peer_list.get()));
-
             auto block = boost::get<expected::Value<
                 std::shared_ptr<shared_model::interface::Block>>>(&block_var)
                              ->value;
 
-            pcs->on_commit().subscribe(ordering_init.notifier.get_subscriber());
+            auto peers = storage->createPeerQuery() |
+                [](auto &&peer_query) { return peer_query->getLedgerPeers(); };
 
-            ordering_init.notifier.get_subscriber().on_next(
+            auto initial_ledger_state = std::make_shared<LedgerState>(
+                std::make_unique<PeerList>(peers.value()), block->height());
+
+            pcs->onSynchronization().subscribe(
+                ordering_init.sync_event_notifier.get_subscriber());
+            storage->on_commit().subscribe(
+                ordering_init.commit_notifier.get_subscriber());
+
+            ordering_init.commit_notifier.get_subscriber().on_next(block);
+
+            ordering_init.sync_event_notifier.get_subscriber().on_next(
                 synchronizer::SynchronizationEvent{
-                    rxcpp::observable<>::just(block),
                     SynchronizationOutcomeType::kCommit,
                     {block->height(), ordering::kFirstRejectRound},
-                    state});
+                    initial_ledger_state});
             return {};
           },
           [&](const expected::Error<std::string> &e) -> RunResult {

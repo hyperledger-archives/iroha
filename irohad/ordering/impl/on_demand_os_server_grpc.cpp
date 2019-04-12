@@ -106,9 +106,9 @@ grpc::Status OnDemandOsServerGrpc::RequestProposal(
                            request->round().reject_round()};
     proposal_creation_strategy_->onProposal(peer, round);
     ordering_service_->onRequestProposal(round) | [&](auto &&proposal) {
-      *response->mutable_proposal() = std::move(
+      *response->mutable_proposal() =
           static_cast<const shared_model::proto::Proposal *>(proposal.get())
-              ->getTransport());
+              ->getTransport();
     };
   };
   return ::grpc::Status::OK;

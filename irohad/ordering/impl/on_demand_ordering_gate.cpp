@@ -22,24 +22,13 @@
 using namespace iroha;
 using namespace iroha::ordering;
 
-std::string OnDemandOrderingGate::BlockEvent::toString() const {
-  return shared_model::detail::PrettyStringBuilder()
-      .init("BlockEvent")
-      .append(round.toString())
-      .finalize();
-}
-
-std::string OnDemandOrderingGate::EmptyEvent::toString() const {
-  return shared_model::detail::PrettyStringBuilder()
-      .init("EmptyEvent")
-      .append(round.toString())
-      .finalize();
-}
-
 OnDemandOrderingGate::OnDemandOrderingGate(
     std::shared_ptr<OnDemandOrderingService> ordering_service,
     std::shared_ptr<transport::OdOsNotification> network_client,
-    rxcpp::observable<BlockRoundEventType> events,
+    rxcpp::observable<
+        std::shared_ptr<const cache::OrderingGateCache::HashesSetType>>
+        processed_tx_hashes,
+    rxcpp::observable<RoundSwitch> round_switch_events,
     std::shared_ptr<cache::OrderingGateCache> cache,
     std::shared_ptr<shared_model::interface::UnsafeProposalFactory> factory,
     std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
@@ -50,41 +39,45 @@ OnDemandOrderingGate::OnDemandOrderingGate(
       transaction_limit_(transaction_limit),
       ordering_service_(std::move(ordering_service)),
       network_client_(std::move(network_client)),
-      events_subscription_(events.subscribe([this](auto event) {
-        consensus::Round current_round =
-            visit_in_place(event, [this, &current_round](const auto &event) {
-              log_->debug("{}", event);
-              return event.round;
-            });
+      processed_tx_hashes_subscription_(
+          processed_tx_hashes.subscribe([this](auto hashes) {
+            // remove transaction hashes from cache
+            log_->debug("Asking to remove {} transactions from cache.",
+                        hashes->size());
+            cache_->remove(*hashes);
+          })),
+      round_switch_subscription_(round_switch_events.subscribe([this](
+                                                                   auto event) {
+        log_->debug("Current: {}", event.next_round);
 
-        auto ledger_state =
-            visit_in_place(event, [this, &current_round](const auto &event) {
-              return event.ledger_state;
-            });
-
-        // notify our ordering service about new round
         proposal_creation_strategy_->onCollaborationOutcome(
-            *ledger_state->ledger_peers
+            *event.ledger_state->ledger_peers
             | boost::adaptors::transformed(
                   [](auto &peer) -> decltype(auto) { return peer->pubkey(); }));
-        ordering_service_->onCollaborationOutcome(current_round);
+        // notify our ordering service about new round
+        ordering_service_->onCollaborationOutcome(event.next_round);
 
-        this->sendCachedTransactions(event);
+        this->sendCachedTransactions();
 
         // request proposal for the current round
         auto proposal = this->processProposalRequest(
-            network_client_->onRequestProposal(current_round));
+            network_client_->onRequestProposal(event.next_round));
         // vote for the object received from the network
         proposal_notifier_.get_subscriber().on_next(
-            network::OrderingEvent{std::move(proposal), current_round});
+            network::OrderingEvent{std::move(proposal),
+                                   event.next_round,
+                                   std::move(event.ledger_state)});
       })),
       cache_(std::move(cache)),
       proposal_factory_(std::move(factory)),
       tx_cache_(std::move(tx_cache)),
-      proposal_creation_strategy_(std::move(proposal_creation_strategy)) {}
+      proposal_creation_strategy_(std::move(proposal_creation_strategy)),
+      proposal_notifier_(proposal_notifier_lifetime_) {}
 
 OnDemandOrderingGate::~OnDemandOrderingGate() {
-  events_subscription_.unsubscribe();
+  proposal_notifier_lifetime_.unsubscribe();
+  processed_tx_hashes_subscription_.unsubscribe();
+  round_switch_subscription_.unsubscribe();
 }
 
 void OnDemandOrderingGate::propagateBatch(
@@ -115,17 +108,9 @@ OnDemandOrderingGate::processProposalRequest(
   return proposal_without_replays;
 }
 
-void OnDemandOrderingGate::sendCachedTransactions(
-    const BlockRoundEventType &event) {
-  visit_in_place(event,
-                 [this](const BlockEvent &block_event) {
-                   // block committed, remove transactions from cache
-                   cache_->remove(block_event.hashes);
-                 },
-                 [](const EmptyEvent &) {
-                   // no blocks committed, no transactions to remove
-                 });
-
+void OnDemandOrderingGate::sendCachedTransactions() {
+  // TODO mboldyrev 22.03.2019 IR-425
+  // make cache_->getBatchesForRound(current_round) that respects sync
   auto batches = cache_->pop();
   cache_->addToBack(batches);
 

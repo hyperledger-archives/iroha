@@ -107,14 +107,8 @@ class ConsensusSunnyDayTest : public ::testing::Test {
         },
         getTestLogger("YacNetwork"));
     crypto = std::make_shared<FixedCryptoProvider>(my_pub_key);
-    timer = std::make_shared<TimerImpl>([this] {
-      // static factory with a single thread
-      // see YacInit::createTimer in consensus_init.cpp
-      static rxcpp::observe_on_one_worker coordination(
-          rxcpp::observe_on_new_thread().create_coordinator().get_scheduler());
-      return rxcpp::observable<>::timer(std::chrono::milliseconds(delay),
-                                        coordination);
-    });
+    timer = std::make_shared<TimerImpl>(std::chrono::milliseconds(delay),
+                                        rxcpp::observe_on_new_thread());
     auto order = ClusterOrdering::create(default_peers);
     ASSERT_TRUE(order);
 
@@ -126,6 +120,8 @@ class ConsensusSunnyDayTest : public ::testing::Test {
         crypto,
         timer,
         order.value(),
+        initial_round,
+        rxcpp::observe_on_new_thread(),
         getTestLogger("Yac"));
     network->subscribe(yac);
 
@@ -147,6 +143,7 @@ class ConsensusSunnyDayTest : public ::testing::Test {
   std::shared_ptr<shared_model::interface::Peer> my_peer;
   const std::string my_pub_key;
   std::vector<std::shared_ptr<shared_model::interface::Peer>> default_peers;
+  iroha::consensus::Round initial_round{1, 1};
 };
 
 /**
@@ -155,27 +152,34 @@ class ConsensusSunnyDayTest : public ::testing::Test {
  * @then commit is achieved
  */
 TEST_F(ConsensusSunnyDayTest, SunnyDayTest) {
-  std::condition_variable cv;
-  auto wrapper = make_test_subscriber<CallExact>(yac->onOutcome(), 1);
-  wrapper.subscribe([&cv](auto hash) {
-    std::cout << "^_^ COMMITTED!!!" << std::endl;
-    cv.notify_one();
-  });
+  auto wrapper = make_test_subscriber<CallExact>(
+      yac->onOutcome()
+          .timeout(std::chrono::milliseconds(delay_after),
+                   rxcpp::observe_on_new_thread())
+          .take(1)
+          .as_blocking(),
+      1);
 
   EXPECT_CALL(*crypto, verify(_)).WillRepeatedly(Return(true));
 
   // Wait for other peers to start
   std::this_thread::sleep_for(std::chrono::milliseconds(delay_before));
 
-  YacHash my_hash(iroha::consensus::Round{1, 1}, "proposal_hash", "block_hash");
+  YacHash my_hash(initial_round, "proposal_hash", "block_hash");
   my_hash.block_signature = createSig(my_pub_key);
   auto order = ClusterOrdering::create(default_peers);
   ASSERT_TRUE(order);
 
   yac->vote(my_hash, *order);
-  std::mutex m;
-  std::unique_lock<std::mutex> lk(m);
-  cv.wait_for(lk, std::chrono::milliseconds(delay_after));
+
+  wrapper.subscribe([](auto) { std::cout << "^_^ COMMITTED!!!" << std::endl; },
+                    [](std::exception_ptr ep) {
+                      try {
+                        std::rethrow_exception(ep);
+                      } catch (const std::exception &e) {
+                        FAIL() << "Error waiting for outcome: " << e.what();
+                      }
+                    });
 
   ASSERT_TRUE(wrapper.validate());
 }
