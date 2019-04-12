@@ -8,9 +8,6 @@
 
 #include "ordering/on_demand_os_transport.hpp"
 
-#include <memory>
-#include "interfaces/common_objects/peer.hpp"
-
 namespace iroha {
   namespace ordering {
 
@@ -19,15 +16,11 @@ namespace iroha {
      */
     class OnDemandOrderingService : public transport::OdNotificationOsSide {
      public:
-      /// collection of peers type
-      using PeerList = std::vector<InitiatorPeerType>;
       /**
        * Method which should be invoked on outcome of collaboration for round
        * @param round - proposal round which has started
-       * @param peers - list of peers in new round
        */
-      virtual void onCollaborationOutcome(consensus::Round round,
-                                          const PeerList &peers) = 0;
+      virtual void onCollaborationOutcome(consensus::Round round) = 0;
     };
 
   }  // namespace ordering

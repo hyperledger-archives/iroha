@@ -117,12 +117,7 @@ TEST_F(OnDemandOrderingGateTest, BlockEvent) {
   ON_CALL(*proposal, transactions())
       .WillByDefault(Return(txs | boost::adaptors::indirected));
 
-  EXPECT_CALL(
-      *ordering_service,
-      onCollaborationOutcome(
-          round,
-          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
-      .Times(1);
+  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(oproposal))));
 
@@ -155,12 +150,7 @@ TEST_F(OnDemandOrderingGateTest, EmptyEvent) {
   ON_CALL(*proposal, transactions())
       .WillByDefault(Return(txs | boost::adaptors::indirected));
 
-  EXPECT_CALL(
-      *ordering_service,
-      onCollaborationOutcome(
-          round,
-          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
-      .Times(1);
+  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(oproposal))));
 
@@ -185,12 +175,7 @@ TEST_F(OnDemandOrderingGateTest, BlockEventNoProposal) {
   boost::optional<std::shared_ptr<const OdOsNotification::ProposalType>>
       proposal;
 
-  EXPECT_CALL(
-      *ordering_service,
-      onCollaborationOutcome(
-          round,
-          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
-      .Times(1);
+  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(proposal))));
 
@@ -214,12 +199,7 @@ TEST_F(OnDemandOrderingGateTest, EmptyEventNoProposal) {
   boost::optional<std::shared_ptr<const OdOsNotification::ProposalType>>
       proposal;
 
-  EXPECT_CALL(
-      *ordering_service,
-      onCollaborationOutcome(
-          round,
-          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
-      .Times(1);
+  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(proposal))));
 
@@ -257,12 +237,7 @@ TEST_F(OnDemandOrderingGateTest, ReplayedTransactionInProposal) {
           std::move(proposal)));
 
   // set expectations for ordering service
-  EXPECT_CALL(
-      *ordering_service,
-      onCollaborationOutcome(
-          round,
-          testing::Matcher<const OnDemandOrderingService::PeerList &>(_)))
-      .Times(1);
+  EXPECT_CALL(*ordering_service, onCollaborationOutcome(round)).Times(1);
   EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(arriving_proposal))));
   EXPECT_CALL(*tx_cache,

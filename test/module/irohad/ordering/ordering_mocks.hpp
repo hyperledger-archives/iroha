@@ -42,8 +42,7 @@ namespace iroha {
                    boost::optional<std::shared_ptr<const ProposalType>>(
                        consensus::Round, InitiatorPeerType from));
 
-      MOCK_METHOD2(onCollaborationOutcome,
-                   void(consensus::Round, const PeerList &peers));
+      MOCK_METHOD1(onCollaborationOutcome, void(consensus::Round));
     };
 
   }  // namespace ordering

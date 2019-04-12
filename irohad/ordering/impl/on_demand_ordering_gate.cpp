@@ -62,22 +62,12 @@ OnDemandOrderingGate::OnDemandOrderingGate(
               return event.ledger_state;
             });
 
-        auto peer_keys = [](const auto peers) {
-          OnDemandOrderingService::PeerList lst;
-          for (auto peer : peers) {
-            auto shp_pub_key =
-                std::make_shared<shared_model::crypto::PublicKey>(peer->pubkey());
-            lst.push_back(shp_pub_key);
-          }
-          return lst;
-        };
         // notify our ordering service about new round
         proposal_creation_strategy_->onCollaborationOutcome(
             *ledger_state->ledger_peers
             | boost::adaptors::transformed(
                   [](auto &peer) -> decltype(auto) { return peer->pubkey(); }));
-        ordering_service_->onCollaborationOutcome(
-            current_round, peer_keys(*ledger_state->ledger_peers));
+        ordering_service_->onCollaborationOutcome(current_round);
 
         this->sendCachedTransactions(event);
 

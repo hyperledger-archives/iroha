@@ -49,7 +49,6 @@ class OnDemandOsTest : public ::testing::Test {
                          reject_round = {2, kNextRejectRoundConsumer};
   NiceMock<iroha::ametsuchi::MockTxPresenceCache> *mock_cache;
   std::shared_ptr<MockProposalCreationStrategy> proposal_creation_strategy;
-  std::vector<std::shared_ptr<ProposalCreationStrategy::PeerType>> initial_list;
   std::shared_ptr<ProposalCreationStrategy::PeerType> requester_peer;
 
   void SetUp() override {
@@ -136,7 +135,7 @@ TEST_F(OnDemandOsTest, EmptyRound) {
 
   ASSERT_FALSE(os->onRequestProposal(initial_round, requester_peer));
 
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
 
   ASSERT_FALSE(os->onRequestProposal(initial_round, requester_peer));
 }
@@ -155,7 +154,7 @@ TEST_F(OnDemandOsTest, NormalRound) {
 
   generateTransactionsAndInsert({1, 2});
 
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
 
   ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
 }
@@ -175,7 +174,7 @@ TEST_F(OnDemandOsTest, OverflowRound) {
 
   generateTransactionsAndInsert({1, transaction_limit * 2});
 
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
 
   ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
   ASSERT_EQ(transaction_limit,
@@ -220,7 +219,7 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
   std::thread two(call, std::make_pair(large_tx_limit / 2, large_tx_limit));
   one.join();
   two.join();
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
   ASSERT_EQ(large_tx_limit,
             os->onRequestProposal(target_round, requester_peer)
                 .get()
@@ -244,7 +243,7 @@ TEST_F(OnDemandOsTest, Erase) {
 
   generateTransactionsAndInsert({1, 2});
   os->onCollaborationOutcome(
-      {commit_round.block_round, commit_round.reject_round}, initial_list);
+      {commit_round.block_round, commit_round.reject_round});
   ASSERT_TRUE(os->onRequestProposal(
       {commit_round.block_round + 1, commit_round.reject_round},
       requester_peer));
@@ -253,7 +252,7 @@ TEST_F(OnDemandOsTest, Erase) {
        i < (commit_round.reject_round + 1) + (proposal_limit + 2);
        ++i) {
     generateTransactionsAndInsert({1, 2});
-    os->onCollaborationOutcome({commit_round.block_round, i}, initial_list);
+    os->onCollaborationOutcome({commit_round.block_round, i});
   }
   ASSERT_TRUE(os->onRequestProposal(
       {commit_round.block_round + 1, commit_round.reject_round},
@@ -304,7 +303,7 @@ TEST_F(OnDemandOsTest, UseFactoryForProposal) {
 
   generateTransactionsAndInsert({1, 2});
 
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
 
   ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
 }
@@ -335,7 +334,7 @@ TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
 
   os->onBatches(batches, requester_peer);
 
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
 
   auto proposal = os->onRequestProposal(initial_round, requester_peer);
 
@@ -362,7 +361,7 @@ TEST_F(OnDemandOsTest, PassMissingTransaction) {
 
   os->onBatches(batches, requester_peer);
 
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
 
   auto proposal = os->onRequestProposal(target_round, requester_peer);
 
@@ -399,7 +398,7 @@ TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
 
   os->onBatches(batches, requester_peer);
 
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
 
   auto proposal = os->onRequestProposal(target_round, requester_peer);
   const auto &txs = proposal->get()->transactions();
@@ -428,7 +427,7 @@ TEST_F(OnDemandOsTest, DuplicateTxTest) {
 
   auto txs2 = generateTransactions({1, 2}, now);
   os->onBatches(txs2, requester_peer);
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
   auto proposal = os->onRequestProposal(target_round, requester_peer);
 
   ASSERT_EQ(1, boost::size((*proposal)->transactions()));
@@ -449,14 +448,12 @@ TEST_F(OnDemandOsTest, RejectCommit) {
   auto txs1 = generateTransactions({1, 2}, now);
   os->onBatches(txs1, requester_peer);
   os->onCollaborationOutcome(
-      {initial_round.block_round, initial_round.reject_round + 1},
-      initial_list);
+      {initial_round.block_round, initial_round.reject_round + 1});
 
   auto txs2 = generateTransactions({1, 2}, now + 1);
   os->onBatches(txs2, requester_peer);
   os->onCollaborationOutcome(
-      {initial_round.block_round, initial_round.reject_round + 2},
-      initial_list);
+      {initial_round.block_round, initial_round.reject_round + 2});
   auto proposal = os->onRequestProposal(
       {initial_round.block_round, initial_round.reject_round + 3},
       requester_peer);
@@ -480,7 +477,7 @@ TEST_F(OnDemandOsTest, FailOnCreationStrategy) {
 
   generateTransactionsAndInsert({1, 2});
 
-  os->onCollaborationOutcome(commit_round, initial_list);
+  os->onCollaborationOutcome(commit_round);
 
   ASSERT_FALSE(os->onRequestProposal(target_round, requester_peer));
 }

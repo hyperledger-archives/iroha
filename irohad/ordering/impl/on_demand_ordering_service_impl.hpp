@@ -62,8 +62,7 @@ namespace iroha {
 
       // --------------------- | OnDemandOrderingService |_---------------------
 
-      void onCollaborationOutcome(consensus::Round round,
-                                  const PeerList &peers) override;
+      void onCollaborationOutcome(consensus::Round round) override;
 
       // ----------------------- | OdOsNotification | --------------------------
 

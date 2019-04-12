@@ -46,7 +46,7 @@ OnDemandOrderingServiceImpl::OnDemandOrderingServiceImpl(
 // -------------------------| OnDemandOrderingService |-------------------------
 
 void OnDemandOrderingServiceImpl::onCollaborationOutcome(
-    consensus::Round round, const PeerList &peers) {
+    consensus::Round round) {
   log_->info("onCollaborationOutcome => {}", round);
 
   packNextProposals(round);
