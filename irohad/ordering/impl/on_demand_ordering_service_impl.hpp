@@ -80,12 +80,11 @@ namespace iroha {
 
       using TransactionsCollectionType =
           std::vector<std::shared_ptr<shared_model::interface::Transaction>>;
-      using RoundType = iroha::consensus::Round;
 
-      void tryToCreateProposal(
-          RoundType,
-          const TransactionsCollectionType &,
-          std::function<void(RoundType, const TransactionsCollectionType &)>);
+      void tryCreateProposal(
+          consensus::Round round,
+          const TransactionsCollectionType &txs,
+          shared_model::interface::types::TimestampType created_time);
 
       /**
        * Removes last elements if it is required
