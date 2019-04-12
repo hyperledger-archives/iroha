@@ -42,8 +42,7 @@ namespace iroha {
             std::shared_ptr<TransportFactoryType> proposal_factory,
             std::function<TimepointType()> time_provider,
             std::chrono::milliseconds proposal_request_timeout,
-            std::shared_ptr<shared_model::interface::types::PubkeyType>
-                self_peer_key_,
+            shared_model::interface::types::PubkeyType my_key,
             logger::LoggerPtr log);
 
         void onBatches(CollectionType batches) override;
@@ -59,8 +58,7 @@ namespace iroha {
         std::shared_ptr<TransportFactoryType> proposal_factory_;
         std::function<TimepointType()> time_provider_;
         std::chrono::milliseconds proposal_request_timeout_;
-        std::shared_ptr<shared_model::interface::types::PubkeyType>
-            self_peer_key_;
+        shared_model::interface::types::PubkeyType my_key_;
       };
 
       class OnDemandOsClientGrpcFactory : public OdOsNotificationFactory {
@@ -72,8 +70,7 @@ namespace iroha {
             std::shared_ptr<TransportFactoryType> proposal_factory,
             std::function<OnDemandOsClientGrpc::TimepointType()> time_provider,
             OnDemandOsClientGrpc::TimeoutType proposal_request_timeout,
-            std::shared_ptr<shared_model::interface::types::PubkeyType>
-                self_key_peer,
+            shared_model::interface::types::PubkeyType my_key,
             logger::LoggerPtr client_log);
 
         /**
@@ -91,8 +88,7 @@ namespace iroha {
         std::shared_ptr<TransportFactoryType> proposal_factory_;
         std::function<OnDemandOsClientGrpc::TimepointType()> time_provider_;
         std::chrono::milliseconds proposal_request_timeout_;
-        std::shared_ptr<shared_model::interface::types::PubkeyType>
-            self_key_peer_;
+        shared_model::interface::types::PubkeyType my_key_;
         logger::LoggerPtr client_log_;
       };
 

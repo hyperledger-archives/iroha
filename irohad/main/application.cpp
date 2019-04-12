@@ -381,8 +381,6 @@ void Irohad::initOrderingGate() {
 
   auto field_validator =
       std::make_shared<shared_model::validation::FieldValidator>();
-  auto self_peer_key =
-      std::make_shared<shared_model::crypto::PublicKey>(keypair.publicKey());
 
   ordering_gate =
       ordering_init.initOrderingGate(max_proposal_size_,
@@ -400,7 +398,7 @@ void Irohad::initOrderingGate() {
                                      log_manager_->getChild("Ordering"),
                                      field_validator,
                                      proposal_strategy,
-                                     self_peer_key);
+                                     keypair.publicKey());
   log_->info("[Init] => init ordering gate - [{}]",
              logger::logBool(ordering_gate));
 }
