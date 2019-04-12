@@ -66,11 +66,10 @@ namespace iroha {
 
       // ----------------------- | OdOsNotification | --------------------------
 
-      void onBatches(BatchesCollectionType batches,
-                     InitiatorPeerType from) override;
+      void onBatches(CollectionType batches) override;
 
       boost::optional<std::shared_ptr<const ProposalType>> onRequestProposal(
-          consensus::Round round, InitiatorPeerType requester) override;
+          consensus::Round round) override;
 
      private:
       /**

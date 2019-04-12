@@ -14,7 +14,7 @@ namespace iroha {
     /**
      * Ordering Service aka OS which can share proposals by request
      */
-    class OnDemandOrderingService : public transport::OdNotificationOsSide {
+    class OnDemandOrderingService : public transport::OdOsNotification {
      public:
       /**
        * Method which should be invoked on outcome of collaboration for round

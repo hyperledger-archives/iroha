@@ -12,7 +12,6 @@
 
 #include <boost/optional.hpp>
 #include "consensus/round.hpp"
-#include "interfaces/common_objects/types.hpp"
 
 namespace shared_model {
   namespace interface {
@@ -20,22 +19,17 @@ namespace shared_model {
     class Proposal;
     class Peer;
   }  // namespace interface
-  namespace crypto {
-    class PublicKey;
-  }  // namespace crypto
 }  // namespace shared_model
 
 namespace iroha {
   namespace ordering {
     namespace transport {
 
-      namespace details {
-
-        /**
-         * Type of peer identity
-         */
-        using PeerType = shared_model::crypto::PublicKey;
-
+      /**
+       * Notification interface of on demand ordering service.
+       */
+      class OdOsNotification {
+       public:
         /**
          * Type of stored proposals
          */
@@ -51,16 +45,6 @@ namespace iroha {
          * Type of inserted collections
          */
         using CollectionType = std::vector<TransactionBatchType>;
-      }  // namespace details
-
-      /**
-       * Notification interface of on demand ordering service.
-       */
-      class OdOsNotification {
-       public:
-        using ProposalType = details::ProposalType;
-        using TransactionBatchType = details::TransactionBatchType;
-        using CollectionType = details::CollectionType;
 
         /**
          * Callback on receiving transactions
@@ -95,36 +79,6 @@ namespace iroha {
             const shared_model::interface::Peer &to) = 0;
 
         virtual ~OdOsNotificationFactory() = default;
-      };
-
-      class OdNotificationOsSide {
-       public:
-        using InitiatorPeerType = std::shared_ptr<details::PeerType>;
-        using ProposalType = details::ProposalType;
-        using TransactionBatchType = details::TransactionBatchType;
-        using BatchesCollectionType = details::CollectionType;
-        using PeerStateType = std::vector<InitiatorPeerType>;
-
-        /**
-         * Callback on receiving transactions
-         * @param batches - vector of passed transaction batches
-         * @param from - peer which sends batches
-         */
-        virtual void onBatches(BatchesCollectionType batches,
-                               InitiatorPeerType from) = 0;
-
-        /**
-         * Callback on request about proposal
-         * @param round - number of collaboration round.
-         * Calculated as block_height + 1
-         * @param requester - peer which requests proposal
-         * @return proposal for requested round
-         */
-        virtual boost::optional<std::shared_ptr<const ProposalType>>
-        onRequestProposal(consensus::Round round,
-                          InitiatorPeerType requester) = 0;
-
-        virtual ~OdNotificationOsSide() = default;
       };
 
     }  // namespace transport

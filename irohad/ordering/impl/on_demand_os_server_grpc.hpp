@@ -32,7 +32,7 @@ namespace iroha {
                 iroha::protocol::Transaction>;
 
         OnDemandOsServerGrpc(
-            std::shared_ptr<OdNotificationOsSide> ordering_service,
+            std::shared_ptr<OdOsNotification> ordering_service,
             std::shared_ptr<TransportFactoryType> transaction_factory,
             std::shared_ptr<shared_model::interface::TransactionBatchParser>
                 batch_parser,
@@ -63,7 +63,7 @@ namespace iroha {
         shared_model::interface::types::SharedTxsCollectionType
         deserializeTransactions(const proto::BatchesRequest *request);
 
-        std::shared_ptr<OdNotificationOsSide> ordering_service_;
+        std::shared_ptr<OdOsNotification> ordering_service_;
 
         std::shared_ptr<TransportFactoryType> transaction_factory_;
         std::shared_ptr<shared_model::interface::TransactionBatchParser>

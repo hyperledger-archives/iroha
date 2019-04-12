@@ -12,7 +12,7 @@
 #include "framework/test_logger.hpp"
 #include "interfaces/iroha_internal/transaction_batch_impl.hpp"
 #include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
-#include "module/irohad/ordering/mock_on_demand_os_notification_os_side.hpp"
+#include "module/irohad/ordering/mock_on_demand_os_notification.hpp"
 #include "module/irohad/ordering/mock_proposal_creation_strategy.hpp"
 #include "module/shared_model/interface/mock_transaction_batch_factory.hpp"
 #include "module/shared_model/validators/validators.hpp"
@@ -29,7 +29,7 @@ using ::testing::Return;
 
 struct OnDemandOsServerGrpcTest : public ::testing::Test {
   void SetUp() override {
-    notification = std::make_shared<MockOdOsNotificationOsSide>();
+    notification = std::make_shared<MockOdOsNotification>();
     std::unique_ptr<shared_model::validation::AbstractValidator<
         shared_model::interface::Transaction>>
         interface_transaction_validator =
@@ -64,7 +64,7 @@ struct OnDemandOsServerGrpcTest : public ::testing::Test {
                                                getTestLogger("OdOsServerGrpc"));
   }
 
-  std::shared_ptr<MockOdOsNotificationOsSide> notification;
+  std::shared_ptr<MockOdOsNotification> notification;
   std::shared_ptr<MockTransactionBatchFactory> batch_factory;
   std::shared_ptr<MockProposalCreationStrategy> proposal_creation_strategy;
   std::shared_ptr<OnDemandOsServerGrpc> server;
@@ -103,8 +103,7 @@ TEST_F(OnDemandOsServerGrpcTest, SendBatches) {
                             shared_model::interface::TransactionBatchImpl>(
                             cand));
                   }));
-  EXPECT_CALL(*notification, onBatches(_, _))
-      .WillOnce(SaveArg0Move(&collection));
+  EXPECT_CALL(*notification, onBatches(_)).WillOnce(SaveArg0Move(&collection));
   proto::BatchesRequest request;
   *request.mutable_peer_key() = std::string(32, 'f');
   request.add_transactions()
@@ -139,7 +138,7 @@ TEST_F(OnDemandOsServerGrpcTest, RequestProposal) {
 
   std::shared_ptr<const shared_model::interface::Proposal> iproposal(
       std::make_shared<const shared_model::proto::Proposal>(proposal));
-  EXPECT_CALL(*notification, onRequestProposal(round, _))
+  EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(iproposal))));
 
   server->RequestProposal(nullptr, &request, &response);
@@ -166,7 +165,7 @@ TEST_F(OnDemandOsServerGrpcTest, RequestProposalNone) {
   request.mutable_round()->set_block_round(round.block_round);
   request.mutable_round()->set_reject_round(round.reject_round);
   proto::ProposalResponse response;
-  EXPECT_CALL(*notification, onRequestProposal(round, _))
+  EXPECT_CALL(*notification, onRequestProposal(round))
       .WillOnce(Return(ByMove(std::move(boost::none))));
 
   server->RequestProposal(nullptr, &request, &response);

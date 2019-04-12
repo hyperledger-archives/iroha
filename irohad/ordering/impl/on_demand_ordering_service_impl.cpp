@@ -55,8 +55,7 @@ void OnDemandOrderingServiceImpl::onCollaborationOutcome(
 
 // ----------------------------| OdOsNotification |-----------------------------
 
-void OnDemandOrderingServiceImpl::onBatches(BatchesCollectionType batches,
-                                            InitiatorPeerType from) {
+void OnDemandOrderingServiceImpl::onBatches(CollectionType batches) {
   auto unprocessed_batches =
       boost::adaptors::filter(batches, [this](const auto &batch) {
         log_->debug("check batch {} for already processed transactions",
@@ -75,8 +74,7 @@ void OnDemandOrderingServiceImpl::onBatches(BatchesCollectionType batches,
 
 boost::optional<
     std::shared_ptr<const OnDemandOrderingServiceImpl::ProposalType>>
-OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round,
-                                               InitiatorPeerType requester) {
+OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round) {
   boost::optional<
       std::shared_ptr<const OnDemandOrderingServiceImpl::ProposalType>>
       result;

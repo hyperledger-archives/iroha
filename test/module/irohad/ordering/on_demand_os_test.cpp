@@ -49,7 +49,6 @@ class OnDemandOsTest : public ::testing::Test {
                          reject_round = {2, kNextRejectRoundConsumer};
   NiceMock<iroha::ametsuchi::MockTxPresenceCache> *mock_cache;
   std::shared_ptr<MockProposalCreationStrategy> proposal_creation_strategy;
-  std::shared_ptr<ProposalCreationStrategy::PeerType> requester_peer;
 
   void SetUp() override {
     // TODO: nickaleks IR-1811 use mock factory
@@ -85,13 +84,13 @@ class OnDemandOsTest : public ::testing::Test {
    * @param range - pair of [from, to)
    */
   void generateTransactionsAndInsert(std::pair<uint64_t, uint64_t> range) {
-    os->onBatches(generateTransactions(range), requester_peer);
+    os->onBatches(generateTransactions(range));
   }
 
-  OnDemandOrderingService::BatchesCollectionType generateTransactions(
+  OnDemandOrderingService::CollectionType generateTransactions(
       std::pair<uint64_t, uint64_t> range,
       shared_model::interface::types::TimestampType now = iroha::time::now()) {
-    OnDemandOrderingService::BatchesCollectionType collection;
+    OnDemandOrderingService::CollectionType collection;
 
     for (auto i = range.first; i < range.second; ++i) {
       collection.push_back(
@@ -133,11 +132,11 @@ TEST_F(OnDemandOsTest, EmptyRound) {
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
       .WillRepeatedly(testing::Return(boost::none));
 
-  ASSERT_FALSE(os->onRequestProposal(initial_round, requester_peer));
+  ASSERT_FALSE(os->onRequestProposal(initial_round));
 
   os->onCollaborationOutcome(commit_round);
 
-  ASSERT_FALSE(os->onRequestProposal(initial_round, requester_peer));
+  ASSERT_FALSE(os->onRequestProposal(initial_round));
 }
 
 /**
@@ -156,7 +155,7 @@ TEST_F(OnDemandOsTest, NormalRound) {
 
   os->onCollaborationOutcome(commit_round);
 
-  ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
+  ASSERT_TRUE(os->onRequestProposal(target_round));
 }
 
 /**
@@ -176,11 +175,9 @@ TEST_F(OnDemandOsTest, OverflowRound) {
 
   os->onCollaborationOutcome(commit_round);
 
-  ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
+  ASSERT_TRUE(os->onRequestProposal(target_round));
   ASSERT_EQ(transaction_limit,
-            (*os->onRequestProposal(target_round, requester_peer))
-                ->transactions()
-                .size());
+            (*os->onRequestProposal(target_round))->transactions().size());
 }
 
 /**
@@ -221,10 +218,7 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
   two.join();
   os->onCollaborationOutcome(commit_round);
   ASSERT_EQ(large_tx_limit,
-            os->onRequestProposal(target_round, requester_peer)
-                .get()
-                ->transactions()
-                .size());
+            os->onRequestProposal(target_round).get()->transactions().size());
 }
 
 /**
@@ -245,8 +239,7 @@ TEST_F(OnDemandOsTest, Erase) {
   os->onCollaborationOutcome(
       {commit_round.block_round, commit_round.reject_round});
   ASSERT_TRUE(os->onRequestProposal(
-      {commit_round.block_round + 1, commit_round.reject_round},
-      requester_peer));
+      {commit_round.block_round + 1, commit_round.reject_round}));
 
   for (auto i = commit_round.reject_round + 1;
        i < (commit_round.reject_round + 1) + (proposal_limit + 2);
@@ -255,8 +248,7 @@ TEST_F(OnDemandOsTest, Erase) {
     os->onCollaborationOutcome({commit_round.block_round, i});
   }
   ASSERT_TRUE(os->onRequestProposal(
-      {commit_round.block_round + 1, commit_round.reject_round},
-      requester_peer));
+      {commit_round.block_round + 1, commit_round.reject_round}));
 }
 
 /**
@@ -305,7 +297,7 @@ TEST_F(OnDemandOsTest, UseFactoryForProposal) {
 
   os->onCollaborationOutcome(commit_round);
 
-  ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
+  ASSERT_TRUE(os->onRequestProposal(target_round));
 }
 
 // Return matcher for batch, which passes it by const &
@@ -332,11 +324,11 @@ TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
       .WillOnce(Return(std::vector<iroha::ametsuchi::TxCacheStatusType>{
           iroha::ametsuchi::tx_cache_status_responses::Committed()}));
 
-  os->onBatches(batches, requester_peer);
+  os->onBatches(batches);
 
   os->onCollaborationOutcome(commit_round);
 
-  auto proposal = os->onRequestProposal(initial_round, requester_peer);
+  auto proposal = os->onRequestProposal(initial_round);
 
   EXPECT_FALSE(proposal);
 }
@@ -359,11 +351,11 @@ TEST_F(OnDemandOsTest, PassMissingTransaction) {
       .WillOnce(Return(std::vector<iroha::ametsuchi::TxCacheStatusType>{
           iroha::ametsuchi::tx_cache_status_responses::Missing()}));
 
-  os->onBatches(batches, requester_peer);
+  os->onBatches(batches);
 
   os->onCollaborationOutcome(commit_round);
 
-  auto proposal = os->onRequestProposal(target_round, requester_peer);
+  auto proposal = os->onRequestProposal(target_round);
 
   // since we only sent one transaction,
   // if the proposal is present, there is no need to check for that specific tx
@@ -396,11 +388,11 @@ TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
       .WillOnce(Return(std::vector<iroha::ametsuchi::TxCacheStatusType>{
           iroha::ametsuchi::tx_cache_status_responses::Missing()}));
 
-  os->onBatches(batches, requester_peer);
+  os->onBatches(batches);
 
   os->onCollaborationOutcome(commit_round);
 
-  auto proposal = os->onRequestProposal(target_round, requester_peer);
+  auto proposal = os->onRequestProposal(target_round);
   const auto &txs = proposal->get()->transactions();
   auto &batch2_tx = *batch2.transactions().at(0);
 
@@ -423,12 +415,12 @@ TEST_F(OnDemandOsTest, DuplicateTxTest) {
 
   auto now = iroha::time::now();
   auto txs1 = generateTransactions({1, 2}, now);
-  os->onBatches(txs1, requester_peer);
+  os->onBatches(txs1);
 
   auto txs2 = generateTransactions({1, 2}, now);
-  os->onBatches(txs2, requester_peer);
+  os->onBatches(txs2);
   os->onCollaborationOutcome(commit_round);
-  auto proposal = os->onRequestProposal(target_round, requester_peer);
+  auto proposal = os->onRequestProposal(target_round);
 
   ASSERT_EQ(1, boost::size((*proposal)->transactions()));
 }
@@ -446,21 +438,20 @@ TEST_F(OnDemandOsTest, RejectCommit) {
 
   auto now = iroha::time::now();
   auto txs1 = generateTransactions({1, 2}, now);
-  os->onBatches(txs1, requester_peer);
+  os->onBatches(txs1);
   os->onCollaborationOutcome(
       {initial_round.block_round, initial_round.reject_round + 1});
 
   auto txs2 = generateTransactions({1, 2}, now + 1);
-  os->onBatches(txs2, requester_peer);
+  os->onBatches(txs2);
   os->onCollaborationOutcome(
       {initial_round.block_round, initial_round.reject_round + 2});
   auto proposal = os->onRequestProposal(
-      {initial_round.block_round, initial_round.reject_round + 3},
-      requester_peer);
+      {initial_round.block_round, initial_round.reject_round + 3});
 
   ASSERT_EQ(2, boost::size((*proposal)->transactions()));
 
-  proposal = os->onRequestProposal(commit_round, requester_peer);
+  proposal = os->onRequestProposal(commit_round);
   ASSERT_EQ(2, boost::size((*proposal)->transactions()));
 }
 
@@ -479,5 +470,5 @@ TEST_F(OnDemandOsTest, FailOnCreationStrategy) {
 
   os->onCollaborationOutcome(commit_round);
 
-  ASSERT_FALSE(os->onRequestProposal(target_round, requester_peer));
+  ASSERT_FALSE(os->onRequestProposal(target_round));
 }

@@ -20,7 +20,7 @@ using namespace iroha::ordering;
 using namespace iroha::ordering::transport;
 
 OnDemandOsServerGrpc::OnDemandOsServerGrpc(
-    std::shared_ptr<OdNotificationOsSide> ordering_service,
+    std::shared_ptr<OdOsNotification> ordering_service,
     std::shared_ptr<TransportFactoryType> transaction_factory,
     std::shared_ptr<shared_model::interface::TransactionBatchParser>
         batch_parser,
@@ -91,9 +91,7 @@ grpc::Status OnDemandOsServerGrpc::SendBatches(
       });
 
   fetchPeer(request->peer_key()) | [this, &batches](auto &&peer) {
-    ordering_service_->onBatches(
-        std::move(batches),
-        std::make_shared<shared_model::crypto::PublicKey>(peer));
+    ordering_service_->onBatches(std::move(batches));
   };
 
   return ::grpc::Status::OK;
@@ -108,14 +106,11 @@ grpc::Status OnDemandOsServerGrpc::RequestProposal(
                            request->round().reject_round()};
     // todo add force initialization of proposal
     proposal_creation_strategy_->onProposal(peer, round);
-    ordering_service_->onRequestProposal(
-        round, std::make_shared<shared_model::crypto::PublicKey>(peer))
-        |
-        [&](auto &&proposal) {
-          *response->mutable_proposal() = std::move(
-              static_cast<const shared_model::proto::Proposal *>(proposal.get())
-                  ->getTransport());
-        };
+    ordering_service_->onRequestProposal(round) | [&](auto &&proposal) {
+      *response->mutable_proposal() = std::move(
+          static_cast<const shared_model::proto::Proposal *>(proposal.get())
+              ->getTransport());
+    };
   };
   return ::grpc::Status::OK;
 }
