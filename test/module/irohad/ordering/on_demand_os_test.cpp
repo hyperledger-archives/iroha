@@ -75,8 +75,7 @@ class OnDemandOsTest : public ::testing::Test {
         std::move(tx_cache),
         proposal_creation_strategy,
         getTestLogger("OdOrderingService"),
-        proposal_limit,
-        initial_round);
+        proposal_limit);
   }
 
   /**
@@ -203,8 +202,7 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
       std::move(tx_cache),
       proposal_creation_strategy,
       getTestLogger("OdOrderingService"),
-      proposal_limit,
-      initial_round);
+      proposal_limit);
 
   auto call = [this](auto bounds) {
     for (auto i = bounds.first; i < bounds.second; ++i) {
@@ -286,8 +284,7 @@ TEST_F(OnDemandOsTest, UseFactoryForProposal) {
       std::move(tx_cache),
       proposal_creation_strategy,
       getTestLogger("OdOrderingService"),
-      proposal_limit,
-      initial_round);
+      proposal_limit);
 
   EXPECT_CALL(*mock_factory, unsafeCreateProposal(_, _, _))
       .WillOnce(Return(ByMove(makeMockProposal())))

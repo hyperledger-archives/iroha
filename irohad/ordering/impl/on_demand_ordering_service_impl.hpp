@@ -47,8 +47,6 @@ namespace iroha {
        * @param log to print progress
        * @param number_of_proposals - number of stored proposals, older will be
        * removed. Default value is 3
-       * @param initial_round - first round of agreement.
-       * Default value is {2, kFirstRejectRound} since genesis block height is 1
        */
       OnDemandOrderingServiceImpl(
           size_t transaction_limit,
@@ -57,8 +55,7 @@ namespace iroha {
           std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
           std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy,
           logger::LoggerPtr log,
-          size_t number_of_proposals = 3,
-          const consensus::Round &initial_round = {2, kFirstRejectRound});
+          size_t number_of_proposals = 3);
 
       // --------------------- | OnDemandOrderingService |_---------------------
 
