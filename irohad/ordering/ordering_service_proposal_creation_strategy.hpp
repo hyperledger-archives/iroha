@@ -6,10 +6,8 @@
 #ifndef IROHA_ORDERING_SERVICE_PROPOSAL_CREATION_STRATEGY_HPP
 #define IROHA_ORDERING_SERVICE_PROPOSAL_CREATION_STRATEGY_HPP
 
-#include <memory>
-#include <vector>
-
 #include <boost/optional.hpp>
+#include <boost/range/any_range.hpp>
 #include "consensus/round.hpp"
 #include "cryptography/public_key.hpp"
 
@@ -23,11 +21,12 @@ namespace iroha {
     class ProposalCreationStrategy {
      public:
       /// shortcut for peer type
-      using PeerType = std::shared_ptr<shared_model::crypto::PublicKey>;
+      using PeerType = shared_model::crypto::PublicKey;
       /// shortcut for round type
       using RoundType = consensus::Round;
       /// collection of peers type
-      using PeerList = std::vector<PeerType>;
+      using PeerList = boost::
+          any_range<PeerType, boost::forward_traversal_tag, const PeerType>;
 
       /**
        * Indicates the start of new round.
@@ -49,7 +48,7 @@ namespace iroha {
        * @return round where proposal is required to be created immediately
        */
       virtual boost::optional<RoundType> onProposal(
-          PeerType who, RoundType requested_round) = 0;
+          const PeerType &who, RoundType requested_round) = 0;
 
       virtual ~ProposalCreationStrategy() = default;
     };

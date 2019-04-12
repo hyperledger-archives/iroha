@@ -43,6 +43,7 @@ OnDemandOrderingGate::OnDemandOrderingGate(
     std::shared_ptr<cache::OrderingGateCache> cache,
     std::shared_ptr<shared_model::interface::UnsafeProposalFactory> factory,
     std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+    std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy,
     size_t transaction_limit,
     logger::LoggerPtr log)
     : log_(std::move(log)),
@@ -71,6 +72,10 @@ OnDemandOrderingGate::OnDemandOrderingGate(
           return lst;
         };
         // notify our ordering service about new round
+        proposal_creation_strategy_->onCollaborationOutcome(
+            *ledger_state->ledger_peers
+            | boost::adaptors::transformed(
+                  [](auto &peer) -> decltype(auto) { return peer->pubkey(); }));
         ordering_service_->onCollaborationOutcome(
             current_round, peer_keys(*ledger_state->ledger_peers));
 
@@ -85,7 +90,8 @@ OnDemandOrderingGate::OnDemandOrderingGate(
       })),
       cache_(std::move(cache)),
       proposal_factory_(std::move(factory)),
-      tx_cache_(std::move(tx_cache)) {}
+      tx_cache_(std::move(tx_cache)),
+      proposal_creation_strategy_(std::move(proposal_creation_strategy)) {}
 
 OnDemandOrderingGate::~OnDemandOrderingGate() {
   events_subscription_.unsubscribe();

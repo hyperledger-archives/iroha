@@ -19,6 +19,7 @@
 #include "logger/logger_fwd.hpp"
 #include "ordering/impl/ordering_gate_cache/ordering_gate_cache.hpp"
 #include "ordering/on_demand_ordering_service.hpp"
+#include "ordering/ordering_service_proposal_creation_strategy.hpp"
 
 namespace iroha {
   namespace ametsuchi {
@@ -71,6 +72,7 @@ namespace iroha {
           std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
               factory,
           std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+          std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy,
           size_t transaction_limit,
           logger::LoggerPtr log);
 
@@ -112,6 +114,7 @@ namespace iroha {
       std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
           proposal_factory_;
       std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache_;
+      std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy_;
 
       rxcpp::subjects::subject<network::OrderingEvent> proposal_notifier_;
     };

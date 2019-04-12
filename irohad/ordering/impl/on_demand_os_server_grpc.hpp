@@ -54,10 +54,8 @@ namespace iroha {
             proto::ProposalResponse *response) override;
 
        private:
-        using ParsedPeerType =
-            boost::optional<std::shared_ptr<shared_model::crypto::PublicKey>>;
-
-        ParsedPeerType fetchPeer(const std::string &pub_key) const;
+        boost::optional<shared_model::crypto::PublicKey> fetchPeer(
+            const std::string &pub_key) const;
 
         /**
          * Flat map transport transactions to shared model

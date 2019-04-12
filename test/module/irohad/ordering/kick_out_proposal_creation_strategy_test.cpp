@@ -5,6 +5,8 @@
 
 #include "ordering/impl/kick_out_proposal_creation_strategy.hpp"
 
+#include <vector>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "module/irohad/consensus/yac/mock_yac_supermajority_checker.hpp"
@@ -18,8 +20,7 @@ class KickOutProposalCreationStrategyTest : public testing::Test {
  public:
   void SetUp() override {
     for (auto i = 0u; i < number_of_peers; ++i) {
-      peers.push_back(
-          std::make_shared<shared_model::crypto::PublicKey>(std::to_string(i)));
+      peers.emplace_back(std::to_string(i));
     }
 
     supermajority_checker_ =
@@ -32,7 +33,7 @@ class KickOutProposalCreationStrategyTest : public testing::Test {
   std::shared_ptr<iroha::consensus::yac::MockSupermajorityChecker>
       supermajority_checker_;
 
-  KickOutProposalCreationStrategy::PeerList peers;
+  std::vector<KickOutProposalCreationStrategy::PeerType> peers;
   size_t number_of_peers = 7;
   size_t f = 2;
 };
@@ -110,8 +111,7 @@ TEST_F(KickOutProposalCreationStrategyTest, UnknownPeerRequestsProposal) {
   for (auto i = 0u; i < f; ++i) {
     strategy_->onProposal(peers.at(i), {2, 0});
   }
-  strategy_->onProposal(
-      std::make_shared<shared_model::crypto::PublicKey>("unknown"), {2, 0});
+  strategy_->onProposal(shared_model::crypto::PublicKey{"unknown"}, {2, 0});
   EXPECT_CALL(*supermajority_checker_, hasMajority(f, number_of_peers))
       .WillOnce(Return(false));
   ASSERT_EQ(true, strategy_->shouldCreateRound({2, 0}));

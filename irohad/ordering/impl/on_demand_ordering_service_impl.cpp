@@ -50,7 +50,6 @@ void OnDemandOrderingServiceImpl::onCollaborationOutcome(
   log_->info("onCollaborationOutcome => {}", round);
 
   packNextProposals(round);
-  proposal_creation_strategy_->onCollaborationOutcome(peers);
   tryErase(round);
 }
 

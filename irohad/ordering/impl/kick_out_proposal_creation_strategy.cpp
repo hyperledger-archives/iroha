@@ -5,7 +5,7 @@
 
 #include "ordering/impl/kick_out_proposal_creation_strategy.hpp"
 
-#include <numeric>
+#include <algorithm>
 #include "interfaces/common_objects/peer.hpp"
 
 using namespace iroha::ordering;
@@ -16,30 +16,28 @@ KickOutProposalCreationStrategy::KickOutProposalCreationStrategy(
 
 void KickOutProposalCreationStrategy::onCollaborationOutcome(
     const PeerList &peers) {
-  last_requested_ =
-      std::accumulate(peers.begin(),
-                      peers.end(),
-                      RoundCollectionType{},
-                      [this](auto collection, const auto &peer) {
-                        auto iter = last_requested_.find(peer->hex());
-                        if (iter != last_requested_.end()) {
-                          collection.insert(*iter);
-                        } else {
-                          collection.insert({peer->hex(), RoundType{0, 0}});
-                        }
-                        return std::move(collection);
-                      });
+  std::lock_guard<std::mutex> guard(mutex_);
+  RoundCollectionType last_requested;
+  for (const auto &peer : peers) {
+    auto iter = last_requested_.find(peer.hex());
+    if (iter != last_requested_.end()) {
+      last_requested.insert(*iter);
+    } else {
+      last_requested.insert({peer.hex(), RoundType{0, 0}});
+    }
+  }
+  last_requested_ = last_requested;
 }
 
 bool KickOutProposalCreationStrategy::shouldCreateRound(RoundType round) {
   uint64_t counter = 0;
-  std::for_each(last_requested_.begin(),
-                last_requested_.end(),
-                [&round, &counter](const auto &elem) {
-                  if (elem.second >= round) {
-                    counter++;
-                  }
-                });
+  {
+    std::lock_guard<std::mutex> guard(mutex_);
+    counter = std::count_if(
+        last_requested_.begin(),
+        last_requested_.end(),
+        [&round](const auto &elem) { return elem.second >= round; });
+  }
 
   auto has_majority =
       majority_checker_->hasMajority(counter, last_requested_.size());
@@ -47,11 +45,12 @@ bool KickOutProposalCreationStrategy::shouldCreateRound(RoundType round) {
 }
 
 boost::optional<ProposalCreationStrategy::RoundType>
-KickOutProposalCreationStrategy::onProposal(PeerType who,
+KickOutProposalCreationStrategy::onProposal(const PeerType &who,
                                             RoundType requested_round) {
-  auto iter = last_requested_.find(who->hex());
-  if (iter != last_requested_.end()) {
-    if (iter->second < requested_round) {
+  {
+    std::lock_guard<std::mutex> guard(mutex_);
+    auto iter = last_requested_.find(who.hex());
+    if (iter != last_requested_.end() and iter->second < requested_round) {
       iter->second = requested_round;
     }
   }

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <thread>
+#include <vector>
 
 #include <gtest/gtest.h>
 #include "backend/protobuf/proto_proposal_factory.hpp"
@@ -48,8 +49,8 @@ class OnDemandOsTest : public ::testing::Test {
                          reject_round = {2, kNextRejectRoundConsumer};
   NiceMock<iroha::ametsuchi::MockTxPresenceCache> *mock_cache;
   std::shared_ptr<MockProposalCreationStrategy> proposal_creation_strategy;
-  ProposalCreationStrategy::PeerList started_list;
-  ProposalCreationStrategy::PeerType requester_peer;
+  std::vector<std::shared_ptr<ProposalCreationStrategy::PeerType>> initial_list;
+  std::shared_ptr<ProposalCreationStrategy::PeerType> requester_peer;
 
   void SetUp() override {
     // TODO: nickaleks IR-1811 use mock factory
@@ -69,8 +70,6 @@ class OnDemandOsTest : public ::testing::Test {
 
     proposal_creation_strategy =
         std::make_shared<MockProposalCreationStrategy>();
-    started_list = {};
-    requester_peer = nullptr;
 
     os = std::make_shared<OnDemandOrderingServiceImpl>(
         transaction_limit,
@@ -130,7 +129,6 @@ class OnDemandOsTest : public ::testing::Test {
  * @then  check that previous round doesn't have proposal
  */
 TEST_F(OnDemandOsTest, EmptyRound) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -138,7 +136,7 @@ TEST_F(OnDemandOsTest, EmptyRound) {
 
   ASSERT_FALSE(os->onRequestProposal(initial_round, requester_peer));
 
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
 
   ASSERT_FALSE(os->onRequestProposal(initial_round, requester_peer));
 }
@@ -150,7 +148,6 @@ TEST_F(OnDemandOsTest, EmptyRound) {
  * @then  check that previous round has all transaction
  */
 TEST_F(OnDemandOsTest, NormalRound) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -158,7 +155,7 @@ TEST_F(OnDemandOsTest, NormalRound) {
 
   generateTransactionsAndInsert({1, 2});
 
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
 
   ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
 }
@@ -171,7 +168,6 @@ TEST_F(OnDemandOsTest, NormalRound) {
  * AND the rest of transactions isn't appeared in next after next round
  */
 TEST_F(OnDemandOsTest, OverflowRound) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -179,7 +175,7 @@ TEST_F(OnDemandOsTest, OverflowRound) {
 
   generateTransactionsAndInsert({1, transaction_limit * 2});
 
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
 
   ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
   ASSERT_EQ(transaction_limit,
@@ -195,7 +191,6 @@ TEST_F(OnDemandOsTest, OverflowRound) {
  * @then  check that all transactions appear in proposal
  */
 TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -225,7 +220,7 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
   std::thread two(call, std::make_pair(large_tx_limit / 2, large_tx_limit));
   one.join();
   two.join();
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
   ASSERT_EQ(large_tx_limit,
             os->onRequestProposal(target_round, requester_peer)
                 .get()
@@ -242,8 +237,6 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
  * tryErase
  */
 TEST_F(OnDemandOsTest, Erase) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_))
-      .Times(testing::AtLeast(1));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -251,7 +244,7 @@ TEST_F(OnDemandOsTest, Erase) {
 
   generateTransactionsAndInsert({1, 2});
   os->onCollaborationOutcome(
-      {commit_round.block_round, commit_round.reject_round}, started_list);
+      {commit_round.block_round, commit_round.reject_round}, initial_list);
   ASSERT_TRUE(os->onRequestProposal(
       {commit_round.block_round + 1, commit_round.reject_round},
       requester_peer));
@@ -260,7 +253,7 @@ TEST_F(OnDemandOsTest, Erase) {
        i < (commit_round.reject_round + 1) + (proposal_limit + 2);
        ++i) {
     generateTransactionsAndInsert({1, 2});
-    os->onCollaborationOutcome({commit_round.block_round, i}, started_list);
+    os->onCollaborationOutcome({commit_round.block_round, i}, initial_list);
   }
   ASSERT_TRUE(os->onRequestProposal(
       {commit_round.block_round + 1, commit_round.reject_round},
@@ -273,7 +266,6 @@ TEST_F(OnDemandOsTest, Erase) {
  * @then check that proposal factory is called and returns a proposal
  */
 TEST_F(OnDemandOsTest, UseFactoryForProposal) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -312,7 +304,7 @@ TEST_F(OnDemandOsTest, UseFactoryForProposal) {
 
   generateTransactionsAndInsert({1, 2});
 
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
 
   ASSERT_TRUE(os->onRequestProposal(target_round, requester_peer));
 }
@@ -329,7 +321,6 @@ auto batchRef(const shared_model::interface::TransactionBatch &batch) {
  * @then the batch is not present in a proposal
  */
 TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -344,7 +335,7 @@ TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
 
   os->onBatches(batches, requester_peer);
 
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
 
   auto proposal = os->onRequestProposal(initial_round, requester_peer);
 
@@ -357,7 +348,6 @@ TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
  * @then batch is present in a proposal
  */
 TEST_F(OnDemandOsTest, PassMissingTransaction) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -372,7 +362,7 @@ TEST_F(OnDemandOsTest, PassMissingTransaction) {
 
   os->onBatches(batches, requester_peer);
 
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
 
   auto proposal = os->onRequestProposal(target_round, requester_peer);
 
@@ -387,7 +377,6 @@ TEST_F(OnDemandOsTest, PassMissingTransaction) {
  * @then 2 new batches are in a proposal and already commited batch is discarded
  */
 TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -410,7 +399,7 @@ TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
 
   os->onBatches(batches, requester_peer);
 
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
 
   auto proposal = os->onRequestProposal(target_round, requester_peer);
   const auto &txs = proposal->get()->transactions();
@@ -428,7 +417,6 @@ TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
  * @then the proposal contains the batch once
  */
 TEST_F(OnDemandOsTest, DuplicateTxTest) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -440,7 +428,7 @@ TEST_F(OnDemandOsTest, DuplicateTxTest) {
 
   auto txs2 = generateTransactions({1, 2}, now);
   os->onBatches(txs2, requester_peer);
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
   auto proposal = os->onRequestProposal(target_round, requester_peer);
 
   ASSERT_EQ(1, boost::size((*proposal)->transactions()));
@@ -452,8 +440,6 @@ TEST_F(OnDemandOsTest, DuplicateTxTest) {
  * @then both of them are used for the next proposal
  */
 TEST_F(OnDemandOsTest, RejectCommit) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_))
-          .Times(testing::AtLeast(1));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
@@ -464,13 +450,13 @@ TEST_F(OnDemandOsTest, RejectCommit) {
   os->onBatches(txs1, requester_peer);
   os->onCollaborationOutcome(
       {initial_round.block_round, initial_round.reject_round + 1},
-      started_list);
+      initial_list);
 
   auto txs2 = generateTransactions({1, 2}, now + 1);
   os->onBatches(txs2, requester_peer);
   os->onCollaborationOutcome(
       {initial_round.block_round, initial_round.reject_round + 2},
-      started_list);
+      initial_list);
   auto proposal = os->onRequestProposal(
       {initial_round.block_round, initial_round.reject_round + 3},
       requester_peer);
@@ -487,16 +473,14 @@ TEST_F(OnDemandOsTest, RejectCommit) {
  * @then check that prposal isn't created
  */
 TEST_F(OnDemandOsTest, FailOnCreationStrategy) {
-  EXPECT_CALL(*proposal_creation_strategy, onCollaborationOutcome(_));
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-          .WillRepeatedly(testing::Return(false));
+      .WillRepeatedly(testing::Return(false));
   EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-          .WillRepeatedly(testing::Return(boost::none));
+      .WillRepeatedly(testing::Return(boost::none));
 
   generateTransactionsAndInsert({1, 2});
 
-  os->onCollaborationOutcome(commit_round, started_list);
+  os->onCollaborationOutcome(commit_round, initial_list);
 
   ASSERT_FALSE(os->onRequestProposal(target_round, requester_peer));
 }
-

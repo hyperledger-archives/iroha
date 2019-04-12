@@ -9,8 +9,9 @@
 #include "ordering/ordering_service_proposal_creation_strategy.hpp"
 
 #include <memory>
+#include <mutex>
 #include <unordered_map>
-#include "consensus/round.hpp"
+
 #include "consensus/yac/supermajority_checker.hpp"
 
 namespace iroha {
@@ -21,7 +22,7 @@ namespace iroha {
       using SupermajorityCheckerType =
           iroha::consensus::yac::SupermajorityChecker;
       KickOutProposalCreationStrategy(
-          std::shared_ptr<SupermajorityCheckerType>);
+          std::shared_ptr<SupermajorityCheckerType> majority_checker);
 
       /**
        * Update peers state with new peers.
@@ -31,14 +32,15 @@ namespace iroha {
        */
       void onCollaborationOutcome(const PeerList &peers) override;
 
-      bool shouldCreateRound(RoundType round);
+      bool shouldCreateRound(RoundType round) override;
 
-      boost::optional<RoundType> onProposal(PeerType who,
+      boost::optional<RoundType> onProposal(const PeerType &who,
                                             RoundType requested_round) override;
 
      private:
       using RoundCollectionType = std::unordered_map<std::string, RoundType>;
 
+      std::mutex mutex_;
       std::shared_ptr<SupermajorityCheckerType> majority_checker_;
       RoundCollectionType last_requested_;
     };

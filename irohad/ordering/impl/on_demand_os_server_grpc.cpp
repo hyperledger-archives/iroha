@@ -91,7 +91,9 @@ grpc::Status OnDemandOsServerGrpc::SendBatches(
       });
 
   fetchPeer(request->peer_key()) | [this, &batches](auto &&peer) {
-    ordering_service_->onBatches(std::move(batches), peer);
+    ordering_service_->onBatches(
+        std::move(batches),
+        std::make_shared<shared_model::crypto::PublicKey>(peer));
   };
 
   return ::grpc::Status::OK;
@@ -106,25 +108,27 @@ grpc::Status OnDemandOsServerGrpc::RequestProposal(
                            request->round().reject_round()};
     // todo add force initialization of proposal
     proposal_creation_strategy_->onProposal(peer, round);
-    ordering_service_->onRequestProposal(round, peer) | [&](auto &&proposal) {
-      *response->mutable_proposal() = std::move(
-          static_cast<const shared_model::proto::Proposal *>(proposal.get())
-              ->getTransport());
-    };
+    ordering_service_->onRequestProposal(
+        round, std::make_shared<shared_model::crypto::PublicKey>(peer))
+        |
+        [&](auto &&proposal) {
+          *response->mutable_proposal() = std::move(
+              static_cast<const shared_model::proto::Proposal *>(proposal.get())
+                  ->getTransport());
+        };
   };
   return ::grpc::Status::OK;
 }
 
-OnDemandOsServerGrpc::ParsedPeerType OnDemandOsServerGrpc::fetchPeer(
-    const std::string &pub_key) const {
-  std::shared_ptr<shared_model::crypto::PublicKey> key =
-      std::make_shared<shared_model::crypto::PublicKey>(pub_key);
+boost::optional<shared_model::crypto::PublicKey>
+OnDemandOsServerGrpc::fetchPeer(const std::string &pub_key) const {
+  shared_model::crypto::PublicKey key{pub_key};
   shared_model::validation::ReasonsGroupType reason;
-  field_validator_->validatePubkey(reason, *key);
+  field_validator_->validatePubkey(reason, key);
   shared_model::validation::Answer answer;
   answer.addReason(std::move(reason));
   if (answer.hasErrors()) {
-    log_->error("Peer key struct isn't parsed, {}", answer.reason());
+    log_->error("Failed to parse peer key struct, {}", answer.reason());
     return boost::none;
   }
 

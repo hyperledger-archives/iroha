@@ -211,6 +211,7 @@ namespace iroha {
         std::shared_ptr<shared_model::interface::UnsafeProposalFactory>
             proposal_factory,
         std::shared_ptr<ametsuchi::TxPresenceCache> tx_cache,
+        std::shared_ptr<ordering::ProposalCreationStrategy> creation_strategy,
         std::function<std::chrono::milliseconds(
             const synchronizer::SynchronizationEvent &)> delay_func,
         size_t max_number_of_transactions,
@@ -260,6 +261,7 @@ namespace iroha {
           std::move(cache),
           std::move(proposal_factory),
           std::move(tx_cache),
+          std::move(creation_strategy),
           max_number_of_transactions,
           ordering_log_manager->getChild("Gate")->getLogger());
     }
@@ -334,6 +336,7 @@ namespace iroha {
           std::make_shared<ordering::cache::OnDemandCache>(),
           std::move(proposal_factory),
           std::move(tx_cache),
+          std::move(creation_strategy),
           std::move(delay_func),
           max_number_of_transactions,
           ordering_log_manager);
