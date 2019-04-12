@@ -87,6 +87,7 @@ namespace iroha {
           block_store_(std::move(block_store)),
           connection_(std::move(connection)),
           factory_(std::move(factory)),
+          notifier_(notifier_lifetime_),
           converter_(std::move(converter)),
           perm_converter_(std::move(perm_converter)),
           block_storage_factory_(std::move(block_storage_factory)),
@@ -206,7 +207,8 @@ namespace iroha {
             response_factory) const {
       std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
       if (not connection_) {
-        log_->info("connection to database is not initialised");
+        log_->info(
+            "createQueryExecutor: connection to database is not initialised");
         return boost::none;
       }
       return boost::make_optional<std::shared_ptr<QueryExecutor>>(
@@ -494,7 +496,8 @@ namespace iroha {
       try {
         std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
         if (not connection_) {
-          log_->info("connection to database is not initialised");
+          log_->info(
+              "commitPrepared: connection to database is not initialised");
           return boost::none;
         }
         soci::session sql(*connection_);
@@ -533,7 +536,7 @@ namespace iroha {
     std::shared_ptr<WsvQuery> StorageImpl::getWsvQuery() const {
       std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
       if (not connection_) {
-        log_->info("connection to database is not initialised");
+        log_->info("getWsvQuery: connection to database is not initialised");
         return nullptr;
       }
       return std::make_shared<PostgresWsvQuery>(
@@ -545,7 +548,7 @@ namespace iroha {
     std::shared_ptr<BlockQuery> StorageImpl::getBlockQuery() const {
       std::shared_lock<std::shared_timed_mutex> lock(drop_mutex);
       if (not connection_) {
-        log_->info("connection to database is not initialised");
+        log_->info("getBlockQuery: connection to database is not initialised");
         return nullptr;
       }
       return std::make_shared<PostgresBlockQuery>(
@@ -584,6 +587,7 @@ namespace iroha {
     }
 
     StorageImpl::~StorageImpl() {
+      notifier_lifetime_.unsubscribe();
       freeConnections();
     }
 
