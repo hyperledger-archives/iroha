@@ -104,7 +104,6 @@ grpc::Status OnDemandOsServerGrpc::RequestProposal(
   fetchPeer(request->peer_key()) | [this, &request, &response](auto &&peer) {
     consensus::Round round{request->round().block_round(),
                            request->round().reject_round()};
-    // todo add force initialization of proposal
     proposal_creation_strategy_->onProposal(peer, round);
     ordering_service_->onRequestProposal(round) | [&](auto &&proposal) {
       *response->mutable_proposal() = std::move(

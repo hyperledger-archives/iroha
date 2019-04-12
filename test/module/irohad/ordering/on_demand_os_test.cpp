@@ -68,6 +68,8 @@ class OnDemandOsTest : public ::testing::Test {
 
     proposal_creation_strategy =
         std::make_shared<MockProposalCreationStrategy>();
+    ON_CALL(*proposal_creation_strategy, shouldCreateRound(_))
+        .WillByDefault(Return(true));
 
     os = std::make_shared<OnDemandOrderingServiceImpl>(
         transaction_limit,
@@ -126,11 +128,6 @@ class OnDemandOsTest : public ::testing::Test {
  * @then  check that previous round doesn't have proposal
  */
 TEST_F(OnDemandOsTest, EmptyRound) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   ASSERT_FALSE(os->onRequestProposal(initial_round));
 
   os->onCollaborationOutcome(commit_round);
@@ -145,11 +142,6 @@ TEST_F(OnDemandOsTest, EmptyRound) {
  * @then  check that previous round has all transaction
  */
 TEST_F(OnDemandOsTest, NormalRound) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   generateTransactionsAndInsert({1, 2});
 
   os->onCollaborationOutcome(commit_round);
@@ -165,11 +157,6 @@ TEST_F(OnDemandOsTest, NormalRound) {
  * AND the rest of transactions isn't appeared in next after next round
  */
 TEST_F(OnDemandOsTest, OverflowRound) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   generateTransactionsAndInsert({1, transaction_limit * 2});
 
   os->onCollaborationOutcome(commit_round);
@@ -186,11 +173,6 @@ TEST_F(OnDemandOsTest, OverflowRound) {
  * @then  check that all transactions appear in proposal
  */
 TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   auto large_tx_limit = 10000u;
   auto factory = std::make_unique<
       shared_model::proto::ProtoProposalFactory<MockProposalValidator>>();
@@ -228,11 +210,6 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
  * tryErase
  */
 TEST_F(OnDemandOsTest, Erase) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   generateTransactionsAndInsert({1, 2});
   os->onCollaborationOutcome(
       {commit_round.block_round, commit_round.reject_round});
@@ -255,11 +232,6 @@ TEST_F(OnDemandOsTest, Erase) {
  * @then check that proposal factory is called and returns a proposal
  */
 TEST_F(OnDemandOsTest, UseFactoryForProposal) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   auto factory = std::make_unique<MockUnsafeProposalFactory>();
   auto mock_factory = factory.get();
   auto tx_cache =
@@ -309,11 +281,6 @@ auto batchRef(const shared_model::interface::TransactionBatch &batch) {
  * @then the batch is not present in a proposal
  */
 TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   auto batches = generateTransactions({1, 2});
   auto &batch = *batches.at(0);
 
@@ -336,11 +303,6 @@ TEST_F(OnDemandOsTest, AlreadyProcessedProposalDiscarded) {
  * @then batch is present in a proposal
  */
 TEST_F(OnDemandOsTest, PassMissingTransaction) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   auto batches = generateTransactions({1, 2});
   auto &batch = *batches.at(0);
 
@@ -365,11 +327,6 @@ TEST_F(OnDemandOsTest, PassMissingTransaction) {
  * @then 2 new batches are in a proposal and already commited batch is discarded
  */
 TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   auto batches = generateTransactions({1, 4});
   auto &batch1 = *batches.at(0);
   auto &batch2 = *batches.at(1);
@@ -405,11 +362,6 @@ TEST_F(OnDemandOsTest, SeveralTransactionsOneCommited) {
  * @then the proposal contains the batch once
  */
 TEST_F(OnDemandOsTest, DuplicateTxTest) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   auto now = iroha::time::now();
   auto txs1 = generateTransactions({1, 2}, now);
   os->onBatches(txs1);
@@ -428,11 +380,6 @@ TEST_F(OnDemandOsTest, DuplicateTxTest) {
  * @then both of them are used for the next proposal
  */
 TEST_F(OnDemandOsTest, RejectCommit) {
-  EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
-
   auto now = iroha::time::now();
   auto txs1 = generateTransactions({1, 2}, now);
   os->onBatches(txs1);
@@ -460,8 +407,6 @@ TEST_F(OnDemandOsTest, RejectCommit) {
 TEST_F(OnDemandOsTest, FailOnCreationStrategy) {
   EXPECT_CALL(*proposal_creation_strategy, shouldCreateRound(_))
       .WillRepeatedly(testing::Return(false));
-  EXPECT_CALL(*proposal_creation_strategy, onProposal(_, _))
-      .WillRepeatedly(testing::Return(boost::none));
 
   generateTransactionsAndInsert({1, 2});
 
