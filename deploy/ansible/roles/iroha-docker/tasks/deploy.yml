@@ -8,6 +8,7 @@
   - name: create Docker network
     shell: "docker network create -d overlay --attachable {{ iroha_network_name }} || true"
     when: iroha_overlay_network
+    run_once: yes
 
   - name: create Docker network
     docker_network:

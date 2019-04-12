@@ -3,6 +3,7 @@
     copy:
       src: "{{ iroha_custom_genesis_block_path }}"
       dest: "{{ role_path }}/files/genesis.block"
+    run_once: yes
     when: iroha_custom_genesis_block
     failed_when: iroha_custom_genesis_block_path is not defined
 

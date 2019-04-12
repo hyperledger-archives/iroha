@@ -10,3 +10,4 @@
 - debug:
     msg: "Stop Iroha containers with `docker-compose -f {{ iroha_deploy_dir }}/docker-compose.yml down`"
   when: iroha_update_runtime_configs
+  run_once: yes

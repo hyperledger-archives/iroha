@@ -34,7 +34,9 @@
       iroha_nodes: "{{ iroha_peers_map }}"
 
   - set_fact:
-      iroha_all_nodes: "{{ iroha_all_nodes | default([]) }} + {{ iroha_nodes }}"
+      iroha_all_nodes: "{{ iroha_all_nodes | default([]) }} + {{ hostvars[item]['iroha_nodes'] }}"
+    loop: "{{ ansible_play_hosts }}"
+    run_once: yes
 
   become: no
   delegate_to: localhost

@@ -9,7 +9,7 @@ services:
     expose:
       - {{ iroha_peer_port }}
     ports:
-        - 127.0.0.1:{{ iroha_torii_port | int + loop.index - 1 }}:{{ iroha_torii_port }}
+        - {{ iroha_torii_port | int + loop.index - 1 }}:{{ iroha_torii_port }}
 {% else %}
     container_name: {{ node.human_hostname }}
     ports:
@@ -40,6 +40,7 @@ services:
       - psql_storage-{{ node.human_hostname }}:/var/lib/postgresql/data
     networks:
       - iroha-db-net
+    restart: always
 {% if iroha_postgres_max_prepared_transactions is defined %}
     command: -c max_prepared_transactions={{ iroha_postgres_max_prepared_transactions }}
 {% endif %}
