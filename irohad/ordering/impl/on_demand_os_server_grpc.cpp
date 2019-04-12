@@ -120,12 +120,11 @@ OnDemandOsServerGrpc::fetchPeer(const std::string &pub_key) const {
   shared_model::crypto::PublicKey key{pub_key};
   shared_model::validation::ReasonsGroupType reason;
   field_validator_->validatePubkey(reason, key);
-  shared_model::validation::Answer answer;
-  answer.addReason(std::move(reason));
-  if (answer.hasErrors()) {
+  if (not reason.second.empty()) {
+    shared_model::validation::Answer answer;
+    answer.addReason(std::move(reason));
     log_->error("Failed to parse peer key struct, {}", answer.reason());
     return boost::none;
   }
-
   return key;
 }
