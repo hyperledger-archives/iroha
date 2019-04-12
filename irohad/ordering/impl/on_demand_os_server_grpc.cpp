@@ -27,14 +27,15 @@ OnDemandOsServerGrpc::OnDemandOsServerGrpc(
     std::shared_ptr<shared_model::interface::TransactionBatchFactory>
         transaction_batch_factory,
     std::shared_ptr<shared_model::validation::FieldValidator> field_validator,
+    std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy,
     logger::LoggerPtr log)
     : ordering_service_(ordering_service),
       transaction_factory_(std::move(transaction_factory)),
       batch_parser_(std::move(batch_parser)),
       batch_factory_(std::move(transaction_batch_factory)),
       field_validator_(std::move(field_validator)),
-      log_(std::move(log)) {
-}
+      proposal_creation_strategy_(proposal_creation_strategy),
+      log_(std::move(log)) {}
 
 shared_model::interface::types::SharedTxsCollectionType
 OnDemandOsServerGrpc::deserializeTransactions(
@@ -101,15 +102,15 @@ grpc::Status OnDemandOsServerGrpc::RequestProposal(
     const proto::ProposalRequest *request,
     proto::ProposalResponse *response) {
   fetchPeer(request->peer_key()) | [this, &request, &response](auto &&peer) {
-
-    ordering_service_->onRequestProposal(
-        {request->round().block_round(), request->round().reject_round()}, peer)
-        |
-        [&](auto &&proposal) {
-          *response->mutable_proposal() = std::move(
-              static_cast<const shared_model::proto::Proposal *>(proposal.get())
-                  ->getTransport());
-        };
+    consensus::Round round{request->round().block_round(),
+                           request->round().reject_round()};
+    // todo add force initialization of proposal
+    proposal_creation_strategy_->onProposal(peer, round);
+    ordering_service_->onRequestProposal(round, peer) | [&](auto &&proposal) {
+      *response->mutable_proposal() = std::move(
+          static_cast<const shared_model::proto::Proposal *>(proposal.get())
+              ->getTransport());
+    };
   };
   return ::grpc::Status::OK;
 }

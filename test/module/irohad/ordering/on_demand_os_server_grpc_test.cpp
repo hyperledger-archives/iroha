@@ -13,6 +13,7 @@
 #include "interfaces/iroha_internal/transaction_batch_impl.hpp"
 #include "interfaces/iroha_internal/transaction_batch_parser_impl.hpp"
 #include "module/irohad/ordering/mock_on_demand_os_notification_os_side.hpp"
+#include "module/irohad/ordering/mock_proposal_creation_strategy.hpp"
 #include "module/shared_model/interface/mock_transaction_batch_factory.hpp"
 #include "module/shared_model/validators/validators.hpp"
 
@@ -50,6 +51,8 @@ struct OnDemandOsServerGrpcTest : public ::testing::Test {
     // todo rework field validator with mock
     auto field_validator =
         std::make_shared<shared_model::validation::FieldValidator>();
+    proposal_creation_strategy =
+        std::make_shared<MockProposalCreationStrategy>();
 
     server =
         std::make_shared<OnDemandOsServerGrpc>(notification,
@@ -57,17 +60,19 @@ struct OnDemandOsServerGrpcTest : public ::testing::Test {
                                                std::move(batch_parser),
                                                batch_factory,
                                                field_validator,
+                                               proposal_creation_strategy,
                                                getTestLogger("OdOsServerGrpc"));
   }
 
   std::shared_ptr<MockOdOsNotificationOsSide> notification;
   std::shared_ptr<MockTransactionBatchFactory> batch_factory;
+  std::shared_ptr<MockProposalCreationStrategy> proposal_creation_strategy;
   std::shared_ptr<OnDemandOsServerGrpc> server;
   consensus::Round round{1, 2};
 };
 
 /**
- * Separate action required because CollectionType is non-copy1able
+ * Separate action required because CollectionType is non-copyable
  */
 ACTION_P(SaveArg0Move, var) {
   *var = std::move(arg0);

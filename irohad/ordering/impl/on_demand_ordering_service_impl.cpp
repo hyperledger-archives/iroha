@@ -83,8 +83,6 @@ OnDemandOrderingServiceImpl::onRequestProposal(consensus::Round round,
       result;
   {
     std::shared_lock<std::shared_timed_mutex> lock(proposals_mutex_);
-    // todo add force initialization of proposal
-    proposal_creation_strategy_->onProposal(requester, round);
     auto it = proposal_map_.find(round);
     result = boost::make_optional(it != proposal_map_.end(), it->second);
   }

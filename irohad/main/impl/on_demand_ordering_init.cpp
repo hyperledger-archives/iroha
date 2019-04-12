@@ -320,6 +320,7 @@ namespace iroha {
           std::move(batch_parser),
           std::move(transaction_batch_factory),
           field_validator,
+          creation_strategy,
           ordering_log_manager->getChild("Server")->getLogger());
       return createGate(
           ordering_service,

@@ -14,6 +14,7 @@
 #include "interfaces/iroha_internal/transaction_batch_parser.hpp"
 #include "logger/logger_fwd.hpp"
 #include "ordering.grpc.pb.h"
+#include "ordering/ordering_service_proposal_creation_strategy.hpp"
 #include "validators/field_validator.hpp"
 
 namespace iroha {
@@ -39,6 +40,8 @@ namespace iroha {
                 transaction_batch_factory,
             std::shared_ptr<shared_model::validation::FieldValidator>
                 field_validator,
+            std::shared_ptr<ProposalCreationStrategy>
+                proposal_creation_strategy,
             logger::LoggerPtr log);
 
         grpc::Status SendBatches(::grpc::ServerContext *context,
@@ -71,6 +74,7 @@ namespace iroha {
             batch_factory_;
         std::shared_ptr<shared_model::validation::FieldValidator>
             field_validator_;
+        std::shared_ptr<ProposalCreationStrategy> proposal_creation_strategy_;
 
         logger::LoggerPtr log_;
       };
