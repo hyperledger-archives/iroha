@@ -12,10 +12,11 @@
 
 #include <rxcpp/rx.hpp>
 #include "logger/logger_fwd.hpp"
-#include "ordering/impl/ordering_gate_cache/ordering_gate_resend_strategy.hpp"
 
 namespace iroha {
   namespace ordering {
+
+    class OrderingGateResendStrategy;
 
     /**
      * Proxy class which redirects requests to appropriate peers
@@ -71,7 +72,6 @@ namespace iroha {
       boost::optional<std::shared_ptr<const ProposalType>> onRequestProposal(
           consensus::Round round) override;
 
-     private:
       /**
        * Corresponding connections created by OdOsNotificationFactory
        * @see PeerType for individual descriptions
@@ -80,6 +80,7 @@ namespace iroha {
         PeerCollectionType<std::unique_ptr<transport::OdOsNotification>> peers;
       };
 
+     private:
       /**
        * Initialize corresponding peers in connections_ using factory_
        * @param peers to initialize connections with

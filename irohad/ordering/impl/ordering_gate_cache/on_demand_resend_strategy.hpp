@@ -21,18 +21,26 @@ namespace iroha {
       bool readyToUse(std::shared_ptr<shared_model::interface::TransactionBatch>
                           batch) override;
 
-      RoundSetType extract(
-          std::shared_ptr<shared_model::interface::TransactionBatch> batch)
-          override;
-
       void remove(
           const cache::OrderingGateCache::HashesSetType &hashes) override;
 
       void setCurrentRound(const consensus::Round &current_round) override;
 
-      consensus::Round getCurrentRound() const override;
+      void sendBatches(OnDemandConnectionManager::CollectionType batches,
+                       const OnDemandConnectionManager::CurrentConnections
+                           &connections) override;
 
      private:
+      /**
+       * Returns collection of interested future rounds for inserted and ready
+       * batch
+       * @param batch - batch to examine
+       */
+      RoundSetType extract(
+          std::shared_ptr<shared_model::interface::TransactionBatch> batch);
+
+      consensus::Round getCurrentRound() const;
+
       RoundSetType reachableInTwoRounds(const consensus::Round &round) const;
 
       std::unordered_map<

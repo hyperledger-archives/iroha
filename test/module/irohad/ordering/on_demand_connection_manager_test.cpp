@@ -82,16 +82,7 @@ TEST_F(OnDemandConnectionManagerTest, FactoryUsed) {
  */
 TEST_F(OnDemandConnectionManagerTest, onBatches) {
   OdOsNotification::CollectionType collection;
-
-  auto set_expect = [&](OnDemandConnectionManager::PeerType type) {
-    EXPECT_CALL(*connections[type], onBatches(collection)).Times(1);
-  };
-
-  set_expect(OnDemandConnectionManager::kRejectRejectConsumer);
-  set_expect(OnDemandConnectionManager::kRejectCommitConsumer);
-  set_expect(OnDemandConnectionManager::kCommitRejectConsumer);
-  set_expect(OnDemandConnectionManager::kCommitCommitConsumer);
-
+  EXPECT_CALL(*strategy, sendBatches(collection, testing::_)).Times(1);
   manager->onBatches(collection);
 }
 

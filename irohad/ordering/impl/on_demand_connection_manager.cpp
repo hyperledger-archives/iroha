@@ -10,6 +10,7 @@
 #include "interfaces/iroha_internal/transaction_batch_impl.hpp"
 #include "logger/logger.hpp"
 #include "ordering/impl/on_demand_common.hpp"
+#include "ordering/impl/ordering_gate_cache/ordering_gate_resend_strategy.hpp"
 
 using namespace iroha;
 using namespace iroha::ordering;
@@ -49,54 +50,8 @@ OnDemandConnectionManager::~OnDemandConnectionManager() {
 
 void OnDemandConnectionManager::onBatches(CollectionType batches) {
   std::shared_lock<std::shared_timed_mutex> lock(mutex_);
-  /*
-   * Transactions are always sent to the round after the next round (+2)
-   * There are 4 possibilities - all combinations of commits and rejects in the
-   * following two rounds. This can be visualised as a diagram, where: o -
-   * current round, x - next round, v - target round
-   *
-   *    0 1 2         0 1 2         0 1 2         0 1 2
-   *  0 o x v       0 o . .       0 o x .       0 o . .
-   *  1 . . .       1 x v .       1 v . .       1 x . .
-   *  2 . . .       2 . . .       2 . . .       2 v . .
-   * RejectReject  CommitReject  RejectCommit  CommitCommit
-   */
 
-  CollectionType reject_reject_batches{};
-  CollectionType reject_commit_batches{};
-  CollectionType commit_reject_batches{};
-  CollectionType commit_commit_batches{};
-
-  for (const auto &batch : batches) {
-    auto rounds = batch_resend_strategy_->extract(batch);
-    auto current_round = batch_resend_strategy_->getCurrentRound();
-
-    if (rounds.find(nextRejectRound(nextRejectRound(current_round)))
-        != rounds.end()) {
-      reject_reject_batches.push_back(batch);
-    }
-    if (rounds.find(nextCommitRound(nextRejectRound(current_round)))
-        != rounds.end()) {
-      reject_commit_batches.push_back(batch);
-    }
-    if (rounds.find(nextRejectRound(nextCommitRound(current_round)))
-        != rounds.end()) {
-      commit_reject_batches.push_back(batch);
-    }
-    if (rounds.find(nextCommitRound(nextCommitRound(current_round)))
-        != rounds.end()) {
-      commit_commit_batches.push_back(batch);
-    }
-  }
-
-  connections_.peers[kRejectRejectConsumer]->onBatches(
-      std::move(reject_reject_batches));
-  connections_.peers[kRejectCommitConsumer]->onBatches(
-      std::move(reject_commit_batches));
-  connections_.peers[kCommitRejectConsumer]->onBatches(
-      std::move(commit_reject_batches));
-  connections_.peers[kCommitCommitConsumer]->onBatches(
-      std::move(commit_commit_batches));
+  batch_resend_strategy_->sendBatches(batches, connections_);
 }
 
 boost::optional<std::shared_ptr<const OnDemandConnectionManager::ProposalType>>

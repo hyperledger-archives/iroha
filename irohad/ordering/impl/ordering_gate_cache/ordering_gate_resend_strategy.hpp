@@ -8,6 +8,7 @@
 
 #include <set>
 #include "consensus/round.hpp"
+#include "ordering/impl/on_demand_connection_manager.hpp"
 #include "ordering/impl/ordering_gate_cache/ordering_gate_cache.hpp"
 
 namespace iroha {
@@ -36,14 +37,6 @@ namespace iroha {
       using RoundSetType = std::set<consensus::Round>;
 
       /**
-       * Returns collection of interested future rounds for inserted and ready
-       * batch
-       * @param batch - batch to examine
-       */
-      virtual RoundSetType extract(
-          std::shared_ptr<shared_model::interface::TransactionBatch> batch) = 0;
-
-      /**
        * Removes batch with given hashes
        * @param hashes to remove batch with
        */
@@ -56,9 +49,13 @@ namespace iroha {
       virtual void setCurrentRound(const consensus::Round &current_round) = 0;
 
       /**
-       * Returns saved round
+       * Sends batches in respect the strategy
+       * @param batches - batches to send
+       * @param connections - connections to send the batch through
        */
-      virtual consensus::Round getCurrentRound() const = 0;
+      virtual void sendBatches(
+          OnDemandConnectionManager::CollectionType batches,
+          const OnDemandConnectionManager::CurrentConnections &connections) = 0;
     };
 
   }  // namespace ordering

@@ -53,14 +53,12 @@ namespace iroha {
       MOCK_METHOD1(
           readyToUse,
           bool(std::shared_ptr<shared_model::interface::TransactionBatch>));
-      MOCK_METHOD1(
-          extract,
-          std::set<consensus::Round>(
-              std::shared_ptr<shared_model::interface::TransactionBatch>));
       MOCK_METHOD1(remove,
                    void(const cache::OrderingGateCache::HashesSetType &hashes));
       MOCK_METHOD1(setCurrentRound, void(const consensus::Round &));
-      MOCK_CONST_METHOD0(getCurrentRound, consensus::Round());
+      MOCK_METHOD2(sendBatches,
+                   void(OnDemandConnectionManager::CollectionType,
+                        const OnDemandConnectionManager::CurrentConnections &));
     };
 
   }  // namespace ordering
