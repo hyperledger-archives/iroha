@@ -44,6 +44,10 @@ class SupermajorityCheckerTest
     return total_peers - getAllowedFaultyPeers(total_peers);
   }
 
+  size_t getMajority(size_t total_peers) const {
+    return getAllowedFaultyPeers(total_peers) + 1;
+  }
+
   std::string modelToString() const {
     return "`" + std::to_string(getK()) + " * f + 1' "
         + (GetParam() == ConsistencyModel::kBft ? "BFT" : "CFT") + " model";
@@ -112,7 +116,7 @@ TEST_P(CftAndBftSupermajorityCheckerTest, SuperMajorityCheckWithSize2) {
  * @when check range of voted participants
  * @then correct result
  */
-TEST_P(SupermajorityCheckerTest, SuperMajorityCheckWithSize4) {
+TEST_P(CftAndBftSupermajorityCheckerTest, SuperMajorityCheckWithSize4) {
   log_->info("-----------| F(x, 4), x in [0..5] |-----------");
 
   size_t A = 6;  // number of all peers
@@ -127,6 +131,24 @@ TEST_P(SupermajorityCheckerTest, SuperMajorityCheckWithSize4) {
       ASSERT_FALSE(hasSupermajority(i, A))
           << i << " votes out of " << A << " are not a supermajority in "
           << modelToString();
+    }
+  }
+}
+
+/**
+ * @given 4 participants
+ * @when check range of voted participants
+ * @then correct result
+ */
+TEST_P(CftAndBftSupermajorityCheckerTest, MajorityWithSize4) {
+  size_t A = 4;
+  for (size_t i = 0; i < 5; ++i) {
+    if (i >= getMajority(A) and i <= A) {
+      ASSERT_TRUE(hasMajority(i, A))
+          << i << " votes out of " << A << " in " << modelToString();
+    } else {
+      ASSERT_FALSE(hasMajority(i, A))
+          << i << " votes out of " << A << " in " << modelToString();
     }
   }
 }
