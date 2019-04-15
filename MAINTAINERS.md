@@ -28,3 +28,6 @@ This is the list of maintainers, including their email address for direct commun
 | Alexey Chernyshov      | @Alexey-N-Chernyshov     | chernyshov@soramitsu.co.jp     | Development                     |
 | Artyom Bakhtin         | @bakhtin                 | a@bakhtin.net                  | Ansible, Jenkins, artifacts     |
 | Anatoly Tyukushin      | @tyvision                | tyukushin@soramitsu.co.jp      | Ansible, Jenkins                |
+
+
+Former Contributors:
