@@ -24,6 +24,7 @@
 #include "module/shared_model/builders/protobuf/test_block_builder.hpp"
 #include "module/shared_model/builders/protobuf/test_proposal_builder.hpp"
 #include "module/shared_model/cryptography/mock_abstract_crypto_model_signer.hpp"
+#include "module/shared_model/interface_mocks.hpp"
 #include "module/shared_model/validators/validators.hpp"
 
 using namespace iroha;
@@ -75,8 +76,6 @@ class SimulatorTest : public ::testing::Test {
                                             getTestLogger("Simulator"));
   }
 
-  consensus::Round round;
-
   std::shared_ptr<MockStatefulValidator> validator;
   std::shared_ptr<MockTemporaryFactory> factory;
   std::shared_ptr<MockBlockQuery> query;
@@ -87,6 +86,8 @@ class SimulatorTest : public ::testing::Test {
   rxcpp::subjects::subject<OrderingEvent> ordering_events;
 
   std::shared_ptr<Simulator> simulator;
+  std::shared_ptr<PeerList> ledger_peers = std::make_shared<PeerList>(
+      PeerList{makePeer("127.0.0.1", shared_model::crypto::PublicKey("111"))});
 };
 
 shared_model::proto::Block makeBlock(int height) {
@@ -160,6 +161,11 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
   EXPECT_CALL(*crypto_signer, sign(A<shared_model::interface::Block &>()))
       .Times(1);
 
+  auto ledger_state =
+      std::make_shared<LedgerState>(ledger_peers, block.height());
+  auto ordering_event =
+      OrderingEvent{proposal, consensus::Round{}, ledger_state};
+
   auto proposal_wrapper =
       make_test_subscriber<CallExact>(simulator->onVerifiedProposal(), 1);
   proposal_wrapper.subscribe([&](auto event) {
@@ -168,6 +174,8 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
     EXPECT_EQ(verified_proposal->height(), proposal->height());
     EXPECT_EQ(verified_proposal->transactions(), proposal->transactions());
     EXPECT_TRUE(verification_result->rejected_transactions.empty());
+    EXPECT_EQ(*event.ledger_state->ledger_peers,
+              *ordering_event.ledger_state->ledger_peers);
   });
 
   auto block_wrapper = make_test_subscriber<CallExact>(simulator->onBlock(), 1);
@@ -175,10 +183,11 @@ TEST_F(SimulatorTest, ValidWhenPreviousBlock) {
     auto block = getBlockUnsafe(event);
     EXPECT_EQ(block->height(), proposal->height());
     EXPECT_EQ(block->transactions(), proposal->transactions());
+    EXPECT_EQ(*event.ledger_state->ledger_peers,
+              *ordering_event.ledger_state->ledger_peers);
   });
 
-  ordering_events.get_subscriber().on_next(
-      OrderingEvent{proposal, consensus::Round{}});
+  ordering_events.get_subscriber().on_next(ordering_event);
 
   EXPECT_TRUE(proposal_wrapper.validate());
   EXPECT_TRUE(block_wrapper.validate());
@@ -204,8 +213,9 @@ TEST_F(SimulatorTest, FailWhenNoBlock) {
   auto block_wrapper = make_test_subscriber<CallExact>(simulator->onBlock(), 0);
   block_wrapper.subscribe();
 
+  auto ledger_state = std::make_shared<LedgerState>(ledger_peers, 0);
   ordering_events.get_subscriber().on_next(
-      OrderingEvent{proposal, consensus::Round{}});
+      OrderingEvent{proposal, consensus::Round{}, ledger_state});
 
   ASSERT_TRUE(proposal_wrapper.validate());
   ASSERT_TRUE(block_wrapper.validate());
@@ -234,8 +244,10 @@ TEST_F(SimulatorTest, FailWhenSameAsProposalHeight) {
   auto block_wrapper = make_test_subscriber<CallExact>(simulator->onBlock(), 0);
   block_wrapper.subscribe();
 
+  auto ledger_state =
+      std::make_shared<LedgerState>(ledger_peers, block.height());
   ordering_events.get_subscriber().on_next(
-      OrderingEvent{proposal, consensus::Round{}});
+      OrderingEvent{proposal, consensus::Round{}, ledger_state});
 
   ASSERT_TRUE(proposal_wrapper.validate());
   ASSERT_TRUE(block_wrapper.validate());

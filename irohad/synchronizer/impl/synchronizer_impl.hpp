@@ -39,19 +39,35 @@ namespace iroha {
       rxcpp::observable<SynchronizationEvent> on_commit_chain() override;
 
      private:
+      using PublicKeysRange =
+          boost::any_range<shared_model::interface::types::PubkeyType,
+                           boost::forward_traversal_tag,
+                           const shared_model::interface::types::PubkeyType &>;
       /**
-       * Iterate through the peers which signed the commit_message, load and
+       * Iterate through the peers which signed the commit message, load and
        * apply the missing blocks
-       * @param commit_message - the commit that triggered synchronization
-       * @param height - the top block height of a peer that needs to be
-       * synchronized
+       * @param start_height - the block from which to start synchronization
+       * @param target_height - the block height that must be reached
+       * @param public_keys - public keys of peers from which to ask the blocks
        */
-      boost::optional<SynchronizationEvent> downloadMissingBlocks(
-          const consensus::VoteOther &msg,
-          const shared_model::interface::types::HeightType height);
+      boost::optional<std::unique_ptr<LedgerState>> downloadMissingBlocks(
+          const shared_model::interface::types::HeightType start_height,
+          const shared_model::interface::types::HeightType target_height,
+          const PublicKeysRange &public_keys);
 
       void processNext(const consensus::PairValid &msg);
-      void processDifferent(const consensus::VoteOther &msg);
+
+      /**
+       * Performs synchronization on rejects
+       * @param msg - consensus gate message with a list of peers and a round
+       * @param alternative_outcome - synchronization outcome when block store
+       * height is equal to expected height after synchronization
+       */
+      void processDifferent(const consensus::Synchronizable &msg,
+                            SynchronizationOutcomeType alternative_outcome);
+
+      boost::optional<shared_model::interface::types::HeightType>
+      getTopBlockHeight() const;
 
       boost::optional<std::unique_ptr<ametsuchi::MutableStorage>> getStorage();
 
@@ -61,6 +77,7 @@ namespace iroha {
       std::shared_ptr<network::BlockLoader> block_loader_;
 
       // internal
+      rxcpp::composite_subscription notifier_lifetime_;
       rxcpp::subjects::subject<SynchronizationEvent> notifier_;
       rxcpp::composite_subscription subscription_;
 

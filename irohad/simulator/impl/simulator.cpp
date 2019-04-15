@@ -23,7 +23,9 @@ namespace iroha {
         std::unique_ptr<shared_model::interface::UnsafeBlockFactory>
             block_factory,
         logger::LoggerPtr log)
-        : validator_(std::move(statefulValidator)),
+        : notifier_(notifier_lifetime_),
+          block_notifier_(block_notifier_lifetime_),
+          validator_(std::move(statefulValidator)),
           ametsuchi_factory_(std::move(factory)),
           block_query_factory_(block_query_factory),
           crypto_signer_(std::move(crypto_signer)),
@@ -36,12 +38,14 @@ namespace iroha {
                   this->processProposal(*getProposalUnsafe(event));
 
               if (validated_proposal_and_errors) {
-                notifier_.get_subscriber().on_next(VerifiedProposalCreatorEvent{
-                    *validated_proposal_and_errors, event.round});
+                notifier_.get_subscriber().on_next(
+                    VerifiedProposalCreatorEvent{*validated_proposal_and_errors,
+                                                 event.round,
+                                                 event.ledger_state});
               }
             } else {
-              notifier_.get_subscriber().on_next(
-                  VerifiedProposalCreatorEvent{boost::none, event.round});
+              notifier_.get_subscriber().on_next(VerifiedProposalCreatorEvent{
+                  boost::none, event.round, event.ledger_state});
             }
           });
 
@@ -54,16 +58,19 @@ namespace iroha {
               if (block) {
                 block_notifier_.get_subscriber().on_next(BlockCreatorEvent{
                     RoundData{proposal_and_errors->verified_proposal, *block},
-                    event.round});
+                    event.round,
+                    event.ledger_state});
               }
             } else {
-              block_notifier_.get_subscriber().on_next(
-                  BlockCreatorEvent{boost::none, event.round});
+              block_notifier_.get_subscriber().on_next(BlockCreatorEvent{
+                  boost::none, event.round, event.ledger_state});
             }
           });
     }
 
     Simulator::~Simulator() {
+      notifier_lifetime_.unsubscribe();
+      block_notifier_lifetime_.unsubscribe();
       proposal_subscription_.unsubscribe();
       verified_proposal_subscription_.unsubscribe();
     }

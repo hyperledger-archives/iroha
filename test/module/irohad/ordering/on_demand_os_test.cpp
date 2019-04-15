@@ -15,6 +15,7 @@
 #include "framework/test_logger.hpp"
 #include "interfaces/iroha_internal/transaction_batch_impl.hpp"
 #include "module/irohad/ametsuchi/ametsuchi_mocks.hpp"
+#include "module/irohad/common/validators_config.hpp"
 #include "module/shared_model/interface_mocks.hpp"
 #include "module/shared_model/validators/validators.hpp"
 #include "ordering/impl/on_demand_common.hpp"
@@ -50,7 +51,8 @@ class OnDemandOsTest : public ::testing::Test {
   void SetUp() override {
     // TODO: nickaleks IR-1811 use mock factory
     auto factory = std::make_unique<
-        shared_model::proto::ProtoProposalFactory<MockProposalValidator>>();
+        shared_model::proto::ProtoProposalFactory<MockProposalValidator>>(
+        iroha::test::kTestsValidatorsConfig);
     auto tx_cache =
         std::make_unique<NiceMock<iroha::ametsuchi::MockTxPresenceCache>>();
     mock_cache = tx_cache.get();
@@ -166,7 +168,8 @@ TEST_F(OnDemandOsTest, OverflowRound) {
 TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
   auto large_tx_limit = 10000u;
   auto factory = std::make_unique<
-      shared_model::proto::ProtoProposalFactory<MockProposalValidator>>();
+      shared_model::proto::ProtoProposalFactory<MockProposalValidator>>(
+      iroha::test::kTestsValidatorsConfig);
   auto tx_cache =
       std::make_unique<NiceMock<iroha::ametsuchi::MockTxPresenceCache>>();
   os = std::make_shared<OnDemandOrderingServiceImpl>(
@@ -194,8 +197,11 @@ TEST_F(OnDemandOsTest, DISABLED_ConcurrentInsert) {
 
 /**
  * @given initialized on-demand OS
- * @when  insert commit round and then proposal_limit reject rounds
+ * @when  insert commit round and then proposal_limit + 2 reject rounds
  * @then  first proposal still not expired
+ *
+ * proposal_limit + 2 reject rounds are required in order to trigger deletion in
+ * tryErase
  */
 TEST_F(OnDemandOsTest, Erase) {
   generateTransactionsAndInsert({1, 2});
@@ -204,11 +210,11 @@ TEST_F(OnDemandOsTest, Erase) {
   ASSERT_TRUE(os->onRequestProposal(
       {commit_round.block_round + 1, commit_round.reject_round}));
 
-  for (auto i = commit_round.reject_round;
-       i < commit_round.reject_round + proposal_limit;
+  for (auto i = commit_round.reject_round + 1;
+       i < (commit_round.reject_round + 1) + (proposal_limit + 2);
        ++i) {
     generateTransactionsAndInsert({1, 2});
-    os->onCollaborationOutcome({commit_round.block_round + 1, i});
+    os->onCollaborationOutcome({commit_round.block_round, i});
   }
   ASSERT_TRUE(os->onRequestProposal(
       {commit_round.block_round + 1, commit_round.reject_round}));

@@ -23,12 +23,8 @@ OnDemandConnectionManager::OnDemandConnectionManager(
     : log_(std::move(log)),
       factory_(std::move(factory)),
       batch_resend_strategy_(std::move(batch_resend_strategy)),
-      subscription_(peers.subscribe([this](const auto &peers) {
-        // exclusive lock
-        std::lock_guard<std::shared_timed_mutex> lock(mutex_);
-
-        this->initializeConnections(peers);
-      })) {}
+      subscription_(peers.subscribe(
+          [this](const auto &peers) { this->initializeConnections(peers); })) {}
 
 OnDemandConnectionManager::OnDemandConnectionManager(
     std::shared_ptr<transport::OdOsNotificationFactory> factory,
@@ -49,7 +45,18 @@ OnDemandConnectionManager::~OnDemandConnectionManager() {
 }
 
 void OnDemandConnectionManager::onBatches(CollectionType batches) {
-  std::shared_lock<std::shared_timed_mutex> lock(mutex_);
+  /*
+   * Transactions are always sent to the round after the next round (+2)
+   * There are 4 possibilities - all combinations of commits and rejects in the
+   * following two rounds. This can be visualised as a diagram, where: o -
+   * current round, x - next round, v - target round
+   *
+   *    0 1 2         0 1 2         0 1 2         0 1 2
+   *  0 o x v       0 o . .       0 o x .       0 o . .
+   *  1 . . .       1 x v .       1 v . .       1 x . .
+   *  2 . . .       2 . . .       2 . . .       2 v . .
+   * RejectReject  CommitReject  RejectCommit  CommitCommit
+   */
 
   batch_resend_strategy_->sendBatches(batches, connections_);
 }
@@ -66,6 +73,7 @@ OnDemandConnectionManager::onRequestProposal(consensus::Round round) {
 void OnDemandConnectionManager::initializeConnections(
     const CurrentPeers &peers) {
   auto create_assign = [this](auto &ptr, auto &peer) {
+    std::lock_guard<std::shared_timed_mutex> lock(mutex_);
     ptr = factory_->create(*peer);
   };
 
