@@ -118,15 +118,31 @@ Let's look in details what this command does:
 
 - ``docker run --name iroha \`` creates a container ``iroha``
 - ``-p 50051:50051 \`` exposes a port for communication with a client (we will use this later)
-- ``-v YOUR_PATH_TO_CONF_FILES:/opt/iroha_data \`` is how we pass our configuration files to docker container
+- ``-v YOUR_PATH_TO_CONF_FILES:/opt/iroha_data \`` is how we pass our configuration files to docker container. If you want to use an example to try Iroha out, you can use ``$(pwd)/iroha/example:/opt/iroha_data \``
 - ``-v blockstore:/tmp/block_store \`` adds persistent block storage (Docker volume) to a container, so that the blocks aren't lost after we stop the container
 - ``--network=iroha-network \`` adds our container to previously created ``iroha-network`` for communication with PostgreSQL server
 - ``hyperledger/iroha:latest`` is a reference to the image pointing to the last `release <https://github.com/hyperledger/iroha/releases>`__
 
+
+Launching Iroha Daemon
+^^^^^^^^^^^^^^^^^^^^^^
+Now you are in the interactive shell of Iroha's container. To actually run
+Iroha, we need to launch Iroha daemon – ``irohad``.
+
+.. code-block:: shell
+
+  irohad --config config.docker --genesis_block genesis.block --keypair_name node0
+
+.. Attention:: In the usual situation, you need to provide a config file, generate
+  genesis block and keypair. However, as a part of this guide, we provide an
+  example configuration for you. Please do not use these settings in a
+  production. You can read more about configuration here.
+
+Congratulations! You have an Iroha node up and running! 
 You can try using one of many sample guides in order to send some transactions to Iroha and query its state.
 
 Try other guides
-^^^^^^^^^^^^^^^^
+----------------
 
 .. toctree::
       :maxdepth: 1
