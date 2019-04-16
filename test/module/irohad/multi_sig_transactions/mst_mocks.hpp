@@ -61,5 +61,17 @@ namespace iroha {
     MOCK_CONST_METHOD0(onExpiredBatchesImpl, rxcpp::observable<DataType>());
     MOCK_CONST_METHOD1(batchInStorageImpl, bool(const DataType &));
   };
+
+  struct MockMovedBatch : public MovedBatch {
+    explicit MockMovedBatch(BatchPtr batch)
+        : MovedBatch(batch, std::make_shared<StorageLimitNone<BatchPtr>>()) {
+      EXPECT_CALL(*this, get()).WillRepeatedly(::testing::Return(batch));
+      EXPECT_CALL(*this, extract())
+          .Times(::testing::AtMost(1))
+          .WillRepeatedly(::testing::Return(batch));
+    }
+    MOCK_CONST_METHOD0(get, BatchPtr());
+    MOCK_METHOD0(extract, BatchPtr());
+  };
 }  // namespace iroha
 #endif  // IROHA_MST_MOCKS_HPP
