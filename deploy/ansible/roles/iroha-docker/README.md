@@ -7,9 +7,9 @@ The first one is easier to implement since it does not require preliminary confi
 
 This option is enabled by default.
 
-The second one can be used when there exists an overlay network between the hosts. In short, overlay network allows for Docker containers to communicate using a single subnet. Such that each container would have a unique IP address in that subnet. Learn more in official Docker documentation (https://docs.docker.com/network/overlay). Overlay network can be created if your instance is part of Swarm cluster. Another method does not involve creating a Swarm cluster but requires a distributed key-value storage. [There is a guide](https://docker-k8s-lab.readthedocs.io/en/latest/docker/docker-etcd.html) on how to create such overlay network.
+The second one can be used when there exists an overlay network between the hosts. In short, overlay network allows for Docker containers to communicate using a single subnet. Such that each container would have a unique IP address in that subnet. Learn more in official Docker documentation (https://docs.docker.com/network/overlay). Overlay network can be created if your instance is part of a Swarm cluster. Another method does not involve creating a Swarm cluster but requires a distributed key-value storage. [There is a guide](https://docker-k8s-lab.readthedocs.io/en/latest/docker/docker-etcd.html) on how to create such overlay network.
 
-The second way is also suitable for local-only deployments and does not require any key-value storage.
+This method is also suitable for local-only deployments and does not require any key-value storage.
 
 # Requirements
   Tested on Ubuntu 16.04, 18.04

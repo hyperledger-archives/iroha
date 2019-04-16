@@ -1,8 +1,8 @@
 # How many Iroha peers (containers) are deployed on each host. Can be set on a per-host level.
-# Minimum total nodes is 6 (5f+1) in order for consensus to work properly.
+# Minimum total nodes is 4 (3f+1) in order for consensus to work properly.
 #
-# Default: 6
-iroha_replicas: 6
+# Default: 4
+iroha_replicas: 4
 
 # Whether to use custom hostname for EACH container.
 # If set to `true`, Iroha peers will communicate using these hostnames. Hostnames should be set using
@@ -14,8 +14,8 @@ iroha_replicas: 6
 iroha_custom_hostnames: false
 
 # Affects how Iroha peers are communicated. If set to `true`, Docker overlay network with that
-# name will be used. It must be created beforehand. The recommended way is to use Calico plugin
-# for Docker (projectcalico.org).
+# name will be used. It must be created beforehand. The recommended way is to use Swarm cluster
+# or create a network manually using a KV storage.
 # Setting it to `true` without creating the network will only work for a single host deployment
 # (Iroha peers will only be able to communicate within that host). Suitable for local-only
 # deployments for testing purposes.
