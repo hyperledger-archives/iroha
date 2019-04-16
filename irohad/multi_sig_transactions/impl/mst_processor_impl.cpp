@@ -60,12 +60,10 @@ namespace iroha {
   // TODO [IR-1687] Akvinikym 10.09.18: three methods below should be one
   void FairMstProcessor::completedBatchesNotify(
       std::vector<std::shared_ptr<MovedBatch>> completed) const {
-    if (not completed.empty()) {
-      std::for_each(
-          completed.begin(), completed.end(), [this](const auto &batch) {
-            batches_subject_.get_subscriber().on_next(batch);
-          });
-    }
+    std::for_each(
+        completed.begin(), completed.end(), [this](const auto &batch) {
+          batches_subject_.get_subscriber().on_next(batch);
+        });
   }
 
   void FairMstProcessor::updatedBatchesNotify(ConstRefState state) const {
