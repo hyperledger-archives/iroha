@@ -13,6 +13,8 @@
 
 using namespace iroha;
 
+using StorageLimitDummy = iroha::StorageLimitNone<iroha::BatchPtr>;
+
 auto log_ = getTestLogger("MstStorageTest");
 
 class StorageTest : public testing::Test {
@@ -23,7 +25,7 @@ class StorageTest : public testing::Test {
     completer_ = std::make_shared<TestCompleter>();
     storage = std::make_shared<MstStorageStateImpl>(
         completer_,
-        std::make_shared<iroha::StorageLimitDummy>(),
+        std::make_shared<StorageLimitDummy>(),
         getTestLogger("MstState"),
         getTestLogger("MstStorage"));
     fillOwnState();
@@ -50,7 +52,7 @@ TEST_F(StorageTest, StorageWhenApplyOtherState) {
       "apply state");
 
   auto new_state = MstState::empty(completer_,
-                                   std::make_shared<iroha::StorageLimitDummy>(),
+                                   std::make_shared<StorageLimitDummy>(),
                                    getTestLogger("MstState"));
   new_state += makeTestBatch(txBuilder(5, creation_time));
   new_state += makeTestBatch(txBuilder(6, creation_time));

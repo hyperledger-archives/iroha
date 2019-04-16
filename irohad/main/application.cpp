@@ -541,7 +541,7 @@ void Irohad::initMstProcessor() {
         transaction_batch_factory_,
         persistent_cache,
         mst_completer,
-        mst_state_txs_limit_,
+        mst_storage_limit,
         keypair.publicKey(),
         std::move(mst_state_logger),
         mst_logger_manager->getChild("Transport")->getLogger());

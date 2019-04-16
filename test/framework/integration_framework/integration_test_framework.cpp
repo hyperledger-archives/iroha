@@ -375,7 +375,7 @@ namespace integration_framework {
     iroha_instance_->run();
   }
 
-  rxcpp::observable<std::shared_ptr<iroha::MstState>>
+  rxcpp::observable<std::shared_ptr<const iroha::MstState>>
   IntegrationTestFramework::getMstStateUpdateObservable() {
     return iroha_instance_->getIrohaInstance()
         ->getMstProcessor()

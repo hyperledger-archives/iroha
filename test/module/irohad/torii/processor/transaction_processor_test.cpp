@@ -120,7 +120,7 @@ class TransactionProcessorTest : public ::testing::Test {
     }
   }
 
-  rxcpp::subjects::subject<std::shared_ptr<iroha::MstState>>
+  rxcpp::subjects::subject<std::shared_ptr<const iroha::MstState>>
       mst_update_notifier;
   rxcpp::subjects::subject<std::shared_ptr<iroha::MovedBatch>>
       mst_prepared_notifier;

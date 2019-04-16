@@ -66,11 +66,3 @@ target_link_libraries(mst_to_pcs_propagation_test
     shared_model_proto_backend
     test_logger
     )
-
-AddTest(storage_limit_test storage_limit_test.cpp)
-target_link_libraries(storage_limit_test
-    schema
-    shared_model_interfaces_factories
-    shared_model_proto_backend
-    test_logger
-    )

@@ -78,7 +78,7 @@ namespace iroha {
         log_(std::move(other.log_)) {}
 
   MstState MstState::empty(const CompleterType &completer,
-                           std::shared_ptr<StorageLimit> storage_limit,
+                           std::shared_ptr<BatchStorageLimit> storage_limit,
                            logger::LoggerPtr log) {
     return MstState(completer, std::move(storage_limit), std::move(log));
   }
@@ -187,7 +187,7 @@ namespace iroha {
   }
 
   MstState::MstState(const CompleterType &completer,
-                     std::shared_ptr<StorageLimit> storage_limit,
+                     std::shared_ptr<BatchStorageLimit> storage_limit,
                      logger::LoggerPtr log)
       : MstState(completer,
                  std::move(storage_limit),
@@ -195,7 +195,7 @@ namespace iroha {
                  std::move(log)) {}
 
   MstState::MstState(const CompleterType &completer,
-                     std::shared_ptr<StorageLimit> storage_limit,
+                     std::shared_ptr<BatchStorageLimit> storage_limit,
                      const BatchesForwardCollectionType &batches,
                      logger::LoggerPtr log)
       : completer_(completer),

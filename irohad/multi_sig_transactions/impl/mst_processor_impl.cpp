@@ -36,7 +36,7 @@ namespace iroha {
       -> decltype(propagateBatch(batch)) {
     auto state_update = storage_->updateOwnState(batch);
     completedBatchesNotify(state_update.completed_state_);
-    updatedBatchesNotify(*state_update.updated_state_);
+    updatedBatchesNotify(state_update.updated_state_);
     expiredBatchesNotify(
         storage_->extractExpiredTransactions(time_provider_->getCurrentTime()));
     return state_update.updated_state_->contains(batch);
@@ -66,10 +66,10 @@ namespace iroha {
         });
   }
 
-  void FairMstProcessor::updatedBatchesNotify(ConstRefState state) const {
-    if (not state.isEmpty()) {
-      state_subject_.get_subscriber().on_next(
-          std::make_shared<MstState>(state));
+  void FairMstProcessor::updatedBatchesNotify(
+      std::shared_ptr<const MstState> state) const {
+    if (not state->isEmpty()) {
+      state_subject_.get_subscriber().on_next(state);
     }
   }
 
@@ -88,14 +88,14 @@ namespace iroha {
   // -------------------| MstTransportNotification override |-------------------
 
   void FairMstProcessor::onNewState(const shared_model::crypto::PublicKey &from,
-                                    ConstRefState new_state) {
+                                    MstState new_state) {
     log_->info("Applying new state");
     auto current_time = time_provider_->getCurrentTime();
 
     auto state_update = storage_->apply(from, new_state);
 
     // updated batches
-    updatedBatchesNotify(*state_update.updated_state_);
+    updatedBatchesNotify(state_update.updated_state_);
     log_->info("New state has {} batches and {} transactions.",
                state_update.updated_state_->batchesQuantity(),
                state_update.updated_state_->transactionsQuantity());

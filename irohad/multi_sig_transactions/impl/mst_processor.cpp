@@ -13,8 +13,8 @@ namespace iroha {
     return this->propagateBatchImpl(batch);
   }
 
-  rxcpp::observable<std::shared_ptr<MstState>> MstProcessor::onStateUpdate()
-      const {
+  rxcpp::observable<std::shared_ptr<const MstState>>
+  MstProcessor::onStateUpdate() const {
     return this->onStateUpdateImpl();
   }
 

@@ -42,7 +42,7 @@ namespace iroha {
     /**
      * Prove updating of state for handling status of signing
      */
-    rxcpp::observable<std::shared_ptr<MstState>> onStateUpdate() const;
+    rxcpp::observable<std::shared_ptr<const MstState>> onStateUpdate() const;
 
     /**
      * Observable emit batches which are prepared for further processing in

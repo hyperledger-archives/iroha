@@ -96,7 +96,7 @@ namespace iroha {
    public:
     // -----------------------------| public api |------------------------------
 
-    using StorageLimit = StorageLimit<BatchPtr>;
+    using BatchStorageLimit = StorageLimit<BatchPtr>;
 
     MstState(MstState &&other);
 
@@ -108,7 +108,7 @@ namespace iroha {
      * @return empty mst state
      */
     static MstState empty(const CompleterType &completer,
-                          std::shared_ptr<StorageLimit> storage_limit,
+                          std::shared_ptr<BatchStorageLimit> storage_limit,
                           logger::LoggerPtr log);
 
     /**
@@ -208,11 +208,11 @@ namespace iroha {
                                         BatchHashEquality>>;
 
     MstState(const CompleterType &completer,
-             std::shared_ptr<StorageLimit> storage_limit,
+             std::shared_ptr<BatchStorageLimit> storage_limit,
              logger::LoggerPtr log);
 
     MstState(const CompleterType &completer,
-             std::shared_ptr<StorageLimit> storage_limit,
+             std::shared_ptr<BatchStorageLimit> storage_limit,
              const BatchesForwardCollectionType &batches,
              logger::LoggerPtr log);
 
